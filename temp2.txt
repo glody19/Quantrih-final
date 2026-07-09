@@ -1,0 +1,15 @@
+
+ </div>
+ )}
+ </div>
+
+ <PortfolioAnalysisExplication results={results} />
+
+ </div>
+ </div>
+ )}
+ </div>
+ </div>
+ );
+}
+

@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. GLOBAL SAFETY NET: Default Deny
+    match /{document=**} { 
+      allow read, write: if false; 
+    }
+
+    // --- PRIMITIVES ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) {
+        return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    // --- VALIDATION BLUEPRINTS ---
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['updatedAt']) && 
+             data.updatedAt == request.time &&  
+             (data.keys().hasAny(['displayName']) ? data.displayName is string && data.displayName.size() <= 64 : true) &&
+             (data.keys().hasAny(['firstName']) ? data.firstName is string && data.firstName.size() <= 64 : true) &&
+             (data.keys().hasAny(['lastName']) ? data.lastName is string && data.lastName.size() <= 64 : true) &&
+             (data.keys().hasAny(['email']) ? data.email is string && data.email.size() <= 150 : true) &&
+             (data.keys().hasAny(['nationality']) ? data.nationality is string && data.nationality.size() <= 10 : true) &&
+             (data.keys().hasAny(['residenceCountry']) ? data.residenceCountry is string && data.residenceCountry.size() <= 10 : true) &&
+             (data.keys().hasAny(['phone']) ? data.phone is string && data.phone.size() <= 30 : true) &&
+             (data.keys().hasAny(['phoneCountryCode']) ? data.phoneCountryCode is string && data.phoneCountryCode.size() <= 10 : true) &&
+             (data.keys().hasAny(['phoneCountryFlag']) ? data.phoneCountryFlag is string && data.phoneCountryFlag.size() <= 10 : true) &&
+             (data.keys().hasAny(['avatarUrl']) ? data.avatarUrl is string && data.avatarUrl.size() <= 500 : true) &&
+             (data.keys().hasAny(['username']) ? data.username is string && data.username.size() <= 64 : true) &&
+             (data.keys().hasAny(['company']) ? data.company is string && data.company.size() <= 100 : true) &&
+             (data.keys().hasAny(['firmType']) ? data.firmType is string && data.firmType.size() <= 100 : true) &&
+             (data.keys().hasAny(['createdAt']) ? data.createdAt is timestamp : true) &&
+             (data.keys().hasAny(['lastLoginAt']) ? data.lastLoginAt is timestamp : true) &&
+             (data.keys().hasAny(['status']) ? data.status is string && data.status.size() <= 20 : true) &&
+             (data.keys().hasAny(['emailVerified']) ? data.emailVerified is bool : true) &&
+             (data.keys().hasAny(['canChangePassword']) ? data.canChangePassword is bool : true) &&
+             (data.keys().hasAny(['twoFactorEnabled']) ? data.twoFactorEnabled is bool : true) &&
+             (data.keys().hasAny(['twoFactorMethod']) ? data.twoFactorMethod is string && data.twoFactorMethod.size() <= 20 : true) &&
+             (data.keys().hasAny(['passwordLastChangedAt']) ? data.passwordLastChangedAt is timestamp : true) &&
+             (data.keys().hasAny(['securityNotificationsEnabled']) ? data.securityNotificationsEnabled is bool : true) &&
+             !data.keys().hasAny(['role']);
+    }
+
+    function isValidBacktest(data) {
+      return data.keys().hasAll(['name', 'userId', 'startYear', 'endYear', 'initialAmount']) && 
+             data.userId == request.auth.uid && 
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 && 
+             data.startYear is number && data.endYear is number && 
+             data.initialAmount is number && 
+             (data.keys().hasAny(['startMonth']) ? data.startMonth is number : true) &&
+             (data.keys().hasAny(['endMonth']) ? data.endMonth is number : true) &&
+             (data.keys().hasAny(['cashflowAmount']) ? data.cashflowAmount is number : true) &&
+             (data.keys().hasAny(['cashflowFrequency']) ? data.cashflowFrequency is string : true) &&
+             (data.keys().hasAny(['rebalancing']) ? data.rebalancing is string : true) &&
+             (data.keys().hasAny(['reinvestDividends']) ? data.reinvestDividends is bool : true) &&
+             (data.keys().hasAny(['dividendTaxRate']) ? data.dividendTaxRate is number : true) &&
+             (data.keys().hasAny(['capitalGainsTaxRate']) ? data.capitalGainsTaxRate is number : true) &&
+             (data.keys().hasAny(['inflationAdjusted']) ? data.inflationAdjusted is bool : true) &&
+             (data.keys().hasAny(['portfolios']) ? data.portfolios is list && data.portfolios.size() <= 20 : true) &&
+             (data.keys().hasAny(['allocRows']) ? data.allocRows is list && data.allocRows.size() <= 50 : true) &&
+             (data.keys().hasAny(['portNames']) ? data.portNames is list && data.portNames.size() <= 10 : true);
+    }
+
+    // --- MATCH BLOCKS ---
+    
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      
+      allow create: if isOwner(userId) && 
+                      isValidId(userId) &&
+                      isValidUser(incoming());
+
+      allow update: if isOwner(userId) && 
+                      isValidUser(incoming()) && (
+                        incoming().updatedAt == request.time &&
+                        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'firstName', 'lastName', 'email', 'nationality', 'residenceCountry', 'phone', 'phoneCountryCode', 'phoneCountryFlag', 'avatarUrl', 'username', 'company', 'firmType', 'updatedAt', 'lastLoginAt', 'status', 'emailVerified', 'canChangePassword', 'twoFactorEnabled', 'twoFactorMethod', 'passwordLastChangedAt', 'securityNotificationsEnabled'])
+                      );
+
+      match /backtests/{backtestId} {
+        allow list, get: if isOwner(userId);
+        
+        allow create: if isOwner(userId) && 
+                        isValidId(backtestId) &&
+                        isValidBacktest(incoming());
+
+        allow update: if isOwner(userId) && 
+                        isValidBacktest(incoming()) &&
+                        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'updatedAt', 'allocRows', 'portNames']);
+
+        allow delete: if isOwner(userId);
+      }
+    }
+    
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+    }
+  }
+}

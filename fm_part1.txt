@@ -1,0 +1,489 @@
+
+import { motion } from 'motion/react';
+import { Download, FileDown, Printer, FileText, Search, TrendingUp, DollarSign, Activity, BarChart2, Info, Sparkles, Newspaper, Filter, ChevronRight, Database, Presentation, Maximize2, Minimize2 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { TradingViewChart } from '../ui/TradingViewChart';
+import { AdvancedTradingViewChart } from '../ui/AdvancedTradingViewChart';
+import { cn } from '../../lib/utils';
+import { FMP_RATIOS } from '../../data/fmpRatios';
+import { useFinancialData } from '../../hooks/useFinancialData';
+import { StatCard } from '../ui/StatCard';
+import { TickerInput } from '../ui/TickerInput';
+import { AssetLogo } from '../ui/AssetLogo';
+import { FinancialTable } from '../ui/FinancialTable';
+import { InfoTooltip } from '../ui/InfoTooltip';
+import { generatePDFReport } from '../../lib/pdfGenerator';
+import { ASSET_DATA } from '../../constants';
+import { CryptoMarket } from './CryptoMarket';
+
+function PriceCell({ price, animate }: { price: number, animate?: boolean }) {
+  const [blink, setBlink] = useState('');
+  const prevPrice = useRef(price);
+
+  useEffect(() => {
+    if (!animate) return;
+    if (price > prevPrice.current) {
+      setBlink('');
+      setTimeout(() => setBlink('flash-green'), 10);
+    } else if (price < prevPrice.current) {
+      setBlink('');
+      setTimeout(() => setBlink('flash-red'), 10);
+    }
+    prevPrice.current = price;
+  }, [price, animate]);
+
+  return (
+    <td className={cn("px-2 py-1.5 text-right font-mono font-medium text-text-3 transition-colors", blink)}>
+      ${price.toFixed(2)}
+    </td>
+  );
+}
+
+function BlinkingPriceText({ price, className, formattedText }: { price: number, className?: string, formattedText?: string }) {
+  const [blink, setBlink] = useState('');
+  const prevPrice = useRef(price);
+
+  useEffect(() => {
+    if (price > prevPrice.current) {
+      setBlink('');
+      setTimeout(() => setBlink('flash-green'), 10);
+    } else if (price < prevPrice.current) {
+      setBlink('');
+      setTimeout(() => setBlink('flash-red'), 10);
+    }
+    prevPrice.current = price;
+  }, [price]);
+
+  return (
+    <span className={cn("transition-colors rounded px-0.5", blink, className)}>
+      {formattedText || price.toFixed(2)}
+    </span>
+  );
+}
+
+export function FinancialModeling() {
+  const [searchInput, setSearchInput] = useState('AAPL');
+  const [activeTab, setActiveTab] = useState('income');
+  const [advancedSearch, setAdvancedSearch] = useState('');
+  
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  
+  const [chartPeriod, setChartPeriod] = useState<{label: string, range: string, interval: string}>({label: '5D', range: '5d', interval: '15m'});
+  const [isChartExpanded, setIsChartExpanded] = useState(false);
+
+  const WATCHLIST = ['AAPL', 'NVDA', 'GOOG', 'META', 'TSLA', 'MSFT', 'AMZN'];
+  const WATCHLIST_COLORS = ['#ef4444', '#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#0ea5e9'];
+  const WATCHLIST_DOMAINS: Record<string, string> = { AAPL: 'apple.com', NVDA: 'nvidia.com', GOOG: 'google.com', META: 'meta.com', TSLA: 'tesla.com', MSFT: 'microsoft.com', AMZN: 'amazon.com' };
+  
+  const [watchlistData, setWatchlistData] = useState<any[]>([]);
+  const [watchlistQuotes, setWatchlistQuotes] = useState<Record<string, any>>({});
+  const [watchlistProfiles, setWatchlistProfiles] = useState<Record<string, any>>({});
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/stock/bulk-quotes?symbols=${WATCHLIST.join(',')}`)
+      .then(r => r.json())
+      .then(d => {
+         const quotesMap: Record<string, any> = {};
+         if (Array.isArray(d)) {
+            d.forEach(q => quotesMap[q.symbol] = q);
+         } else if (d && d.symbol) {
+            quotesMap[d.symbol] = d; 
+         }
+         setWatchlistQuotes(quotesMap);
+      });
+  }, []);
+
+
+  const {
+    symbol: activeSymbol,
+    loading,
+    error,
+    profile,
+    quote,
+    income,
+    balance,
+    cashFlow,
+    history,
+    ratios,
+    finnhubNews,
+    finnhubPeers,
+    finnhubRecommendation,
+    finnhubInsiderSentiment,
+    finnhubNewsSentiment,
+    finnhubMarketNews,
+    fetchStockData,
+    fetchChartHistory,
+    fetchFinancials
+  } = useFinancialData('AAPL');
+
+  const [financialsType, setFinancialsType] = useState<'annual' | 'quarterly'>('annual');
+
+  useEffect(() => {
+    if (activeSymbol) {
+      fetchFinancials(activeSymbol, financialsType);
+    }
+  }, [financialsType, activeSymbol, fetchFinancials]);
+
+  const [liveQuotePrice, setLiveQuotePrice] = useState<number | null>(null);
+  const [liveQuoteChangePct, setLiveQuoteChangePct] = useState<number | null>(null);
+  const [liveQuoteChange, setLiveQuoteChange] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!activeSymbol) return;
+    setLiveQuotePrice(null);
+    setLiveQuoteChangePct(null);
+    setLiveQuoteChange(null);
+    const fetchLiveQuote = async () => {
+      try {
+        const res = await fetch(`/api/stock/bulk-quotes?symbols=${activeSymbol}`);
+        if(res.ok) {
+           const data = await res.json();
+           if(Array.isArray(data) && data[0]) {
+              setLiveQuotePrice(data[0].regularMarketPrice);
+              setLiveQuoteChangePct(data[0].regularMarketChangePercent);
+              setLiveQuoteChange(data[0].regularMarketChange);
+           }
+        }
+      } catch (e) {}
+    };
+    fetchLiveQuote();
+    // Simulate real-time WS connection via frequent updates for now
+    const interval = setInterval(fetchLiveQuote, 1500);
+    return () => clearInterval(interval);
+  }, [activeSymbol]);
+
+
+
+  // Trigger chart fetch when period changes
+  useEffect(() => {
+    if (activeSymbol) {
+      fetchChartHistory(activeSymbol, chartPeriod.range, chartPeriod.interval);
+    }
+    
+    // Fetch watchlist data for movers module
+    const fetchWatchlist = async () => {
+       setWatchlistLoading(true);
+       try {
+           const promises = WATCHLIST.map(sym => 
+               fetch(`/api/stock/history/${sym}?range=${chartPeriod.range}&interval=${chartPeriod.interval}`).then(r => r.json())
+           );
+           const results = await Promise.allSettled(promises);
+           
+           const newMultiData: any[] = [];
+           WATCHLIST.forEach((sym, idx) => {
+              const res = results[idx];
+              if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+                  newMultiData.push({
+                      symbol: sym,
+                      color: WATCHLIST_COLORS[idx],
+                      data: res.value.map(d => ({ date: d.date, close: d.close }))
+                  });
+              }
+           });
+           setWatchlistData(newMultiData);
+       } catch(e) {}
+       setWatchlistLoading(false);
+    };
+    fetchWatchlist();
+  }, [activeSymbol, chartPeriod, fetchChartHistory]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sym = params.get('symbol');
+    const tab = params.get('tab');
+    if (sym) {
+      setSearchInput(sym);
+      fetchStockData(sym);
+    }
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [fetchStockData]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    let changed = false;
+    
+    if (activeSymbol && params.get('symbol') !== activeSymbol) {
+      params.set('symbol', activeSymbol);
+      changed = true;
+    }
+    if (activeTab && params.get('tab') !== activeTab) {
+      params.set('tab', activeTab);
+      changed = true;
+    }
+
+    if (changed) {
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [activeSymbol, activeTab]);
+
+  
+
+  useEffect(() => {
+    // Instant client-side matching on keypress
+    const val = searchInput.trim().toLowerCase();
+    if (val.length > 0) {
+      const allAssets = Object.entries(ASSET_DATA);
+      const matched = allAssets
+        .filter(([symbol, asset]) => 
+          symbol.toLowerCase().includes(val) || 
+          asset.label.toLowerCase().includes(val)
+        )
+        .map(([symbol, asset]) => ({
+          symbol,
+          description: asset.label,
+          type: asset.type
+        }))
+        .slice(0, 5);
+      
+      if (matched.length > 0) {
+        setSuggestions(matched);
+        setShowSuggestions(true);
+      }
+    } else {
+      setSuggestions([]);
+      return;
+    }
+
+    const fetchSuggestions = async () => {
+      try {
+        const res = await fetch(`/api/finnhub/search?q=${encodeURIComponent(searchInput)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const results = data.result ? data.result.slice(0, 5) : [];
+          if (results.length > 0) {
+            setSuggestions(results);
+            setShowSuggestions(true);
+          }
+        }
+      } catch(e) {}
+    };
+    
+    const timeout = setTimeout(() => {
+      if (searchInput.trim() !== activeSymbol) {
+        fetchSuggestions();
+      }
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchInput, activeSymbol]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchInput.trim()) {
+      setShowSuggestions(false);
+      fetchStockData(searchInput.trim().toUpperCase());
+    }
+  };
+
+  const handleSelectSuggestion = (sym: string) => {
+     setSearchInput(sym);
+     setShowSuggestions(false);
+     fetchStockData(sym);
+  };
+
+  const formatNumber = (num: number) => {
+    if (num === undefined || num === null || Number.isNaN(num)) return "N/A";
+    if (Math.abs(num) >= 1e9) return (num / 1e9).toFixed(2) + "B";
+    if (Math.abs(num) >= 1e6) return (num / 1e6).toFixed(2) + "M";
+    
+    // Format thousands with space and . for decimals
+    const parts = num.toFixed(2).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return parts.join('.');
+  };
+
+  const formatAggregate = (num: number) => {
+    if (num === undefined || num === null || Number.isNaN(num)) return "N/A";
+    if (Math.abs(num) >= 1e9) return (num / 1e9).toFixed(2) + "B";
+    if (Math.abs(num) >= 1e6) return (num / 1e6).toFixed(2) + "M";
+    if (Math.abs(num) >= 1e3) return (num / 1e3).toFixed(2) + "K";
+    const parts = num.toFixed(2).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    return parts.join('.');
+  };
+
+  const formatRatio = (val: number, unit: string) => {
+    if (val === undefined || val === null || Number.isNaN(val)) return "N/A";
+    if (unit === "%") return (val * 100).toFixed(2) + "%";
+    if (unit === "x" || unit === "score") return val.toFixed(2);
+    if (unit === "days") return Math.round(val).toString() + " days";
+    if (unit === "USD") return "$" + val.toFixed(2);
+    return val.toString();
+  };
+
+  const mustHaveRatios = FMP_RATIOS.filter(r => r.is_must_have);
+  const advancedRatiosItems = FMP_RATIOS.filter(r => !r.is_must_have && r.label.toLowerCase().includes(advancedSearch.toLowerCase()));
+
+  // Groups for Advanced Ratios
+  const advancedGrouped = advancedRatiosItems.reduce((acc, ratio) => {
+    if (!acc[ratio.category]) acc[ratio.category] = [];
+    acc[ratio.category].push(ratio);
+    return acc;
+  }, {} as Record<string, typeof FMP_RATIOS>);
+
+  const [cryptos, setCryptos] = useState([
+    { id: "btcusdt", name: "Bitcoin", symbol: "BTC", price: 0, change: 0, prevPrice: 0 },
+    { id: "ethusdt", name: "Ethereum", symbol: "ETH", price: 0, change: 0, prevPrice: 0 },
+    { id: "solusdt", name: "Solana", symbol: "SOL", price: 0, change: 0, prevPrice: 0 },
+    { id: "avaxusdt", name: "Avalanche", symbol: "AVAX", price: 0, change: 0, prevPrice: 0 },
+    { id: "linkusdt", name: "Chainlink", symbol: "LINK", price: 0, change: 0, prevPrice: 0 },
+    { id: "dotusdt", name: "Polkadot", symbol: "DOT", price: 0, change: 0, prevPrice: 0 },
+  ]);
+
+  const [markets, setMarkets] = useState([
+    { id: "^GSPC", name: "S&P 500", symbol: "S&P 500", price: 0, change: 0, prevPrice: 0 },
+    { id: "^DJI", name: "Dow Jones", symbol: "DOW", price: 0, change: 0, prevPrice: 0 },
+    { id: "^IXIC", name: "NASDAQ", symbol: "NASDAQ", price: 0, change: 0, prevPrice: 0 },
+    { id: "^STOXX50E", name: "Euro Stoxx 50", symbol: "EURO STOXX 50", price: 0, change: 0, prevPrice: 0 },
+    { id: "^FTSE", name: "FTSE 100", symbol: "FTSE 100", price: 0, change: 0, prevPrice: 0 },
+    { id: "^N225", name: "Nikkei 225", symbol: "NIKKEI", price: 0, change: 0, prevPrice: 0 },
+  ]);
+
+  const [bandType, setBandType] = useState<'crypto' | 'markets'>('markets');
+  const [isExporting, setIsExporting] = useState(false);
+  const [hoveredTime, setHoveredTime] = useState<number | null>(null);
+  const [activeCryptoToken, setActiveCryptoToken] = useState<string | null>(null);
+
+  const parsedWatchlistData = useMemo(() => {
+     return watchlistData.map(series => ({
+        symbol: series.symbol,
+        data: series.data.map((d: any) => ({
+           ts: Math.floor(new Date(d.date).getTime() / 1000),
+           close: d.close
+        }))
+     }));
+  }, [watchlistData]);
+
+  const activeDataPoints = useMemo(() => {
+    if (!hoveredTime || !parsedWatchlistData || parsedWatchlistData.length === 0) return null;
+    const result: Record<string, number> = {};
+    
+    parsedWatchlistData.forEach(series => {
+      // Find closest point within a day
+      const point = series.data.find((d: any) => Math.abs(d.ts - hoveredTime) < 86400);
+      if (point) {
+         result[series.symbol] = point.close;
+      }
+    });
+    return result;
+  }, [hoveredTime, parsedWatchlistData]);
+
+  const movers = WATCHLIST.map((sym, index) => {
+     const q = watchlistQuotes[sym] || {};
+     const historySeries = watchlistData.find(d => d.symbol === sym);
+     
+     let basePrice = 0;
+     let currentPrice = q.regularMarketPrice || 0;
+     let periodChangePct = 0;
+     
+     if (historySeries && historySeries.data.length > 0) {
+        const data = [...historySeries.data].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        basePrice = data[0].close;
+        currentPrice = q.regularMarketPrice || data[data.length - 1].close;
+     }
+
+     if (basePrice > 0) {
+        periodChangePct = ((currentPrice - basePrice) / basePrice) * 100;
+     }
+
+     let displayPrice = currentPrice;
+     let displayChangePct = periodChangePct;
+
+     if (hoveredTime && activeDataPoints && activeDataPoints[sym] !== undefined) {
+         // Display hovered price directly
+         displayPrice = activeDataPoints[sym];
+         if (basePrice > 0) {
+             // Or calculate from basePrice, which is what the relative graph plots
+             displayChangePct = ((displayPrice - basePrice) / basePrice) * 100;
+         }
+     }
+
+     return {
+         ticker: sym,
+         name: q.shortName || q.longName || sym,
+         price: displayPrice,
+         periodChangePct: displayChangePct,
+         index,
+         marketCap: q.marketCap || 0
+     };
+  }).sort((a,b) => b.marketCap - a.marketCap);
+
+  const handleMoverClick = (ticker: string) => {
+      setSearchInput(ticker);
+      fetchStockData(ticker);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      const params = new URLSearchParams(window.location.search);
+      params.set('tickers', WATCHLIST.join(','));
+      params.set('focus', ticker);
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.pushState({}, '', newUrl);
+  };
+
+  useEffect(() => {
+    // 1. Real-time Crypto Data (Binance WebSocket)
+    const cryptoWs = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@ticker/ethusdt@ticker/solusdt@ticker/avaxusdt@ticker/linkusdt@ticker/dotusdt@ticker");
+    
+    cryptoWs.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setCryptos(prev => prev.map(c => {
+        if (c.id === data.s.toLowerCase()) {
+          const newPrice = parseFloat(data.c);
+          return {
+            ...c,
+            prevPrice: c.price,
+            price: newPrice,
+            change: parseFloat(data.P)
+          };
+        }
+        return c;
+      }));
+    };
+
+    // 2. Market Indices Polling (since we don't have a reliable free WS for everything)
+    const fetchMarkets = async () => {
+       try {
+           const res = await fetch(`/api/stock/bulk-quotes?symbols=%5EGSPC,%5EDJI,%5EIXIC,%5ESTOXX50E,%5EFTSE,%5EN225`);
+           if(res.ok) {
+              const data = await res.json();
+              if(Array.isArray(data)) {
+                 setMarkets(prev => prev.map(m => {
+                    const quote = data.find((q: any) => q.symbol === m.id);
+                    if (quote) {
+                       return {
+                          ...m,
+                          prevPrice: m.price,
+                          price: quote.regularMarketPrice || m.price,
+                          change: quote.regularMarketChangePercent || m.change
+                       };
+                    }
+                    return m;
+                 }));
+              }
+           }
+       } catch (e) {
+          console.error("Market fetch error", e);
+       }
+    };
+    fetchMarkets();
+    const marketInterval = setInterval(fetchMarkets, 10000);
+
+    return () => {
+      cryptoWs.close();
+      clearInterval(marketInterval);
+    };
+  }, []);
+
+  const formatCryptoPrice = (price: number) => {
+    if (price === 0) return "Loading...";
+    return price < 10 ? price.toFixed(3) : price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  return (
+    <div className="w-full pb-16">
+      

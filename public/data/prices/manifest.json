@@ -1,0 +1,8 @@
+{
+  "^GSPC": "^GSPC.json",
+  "^IXIC": "^IXIC.json",
+  "BND": "BND.json",
+  "GLD": "GLD.json",
+  "QQQ": "QQQ.json",
+  "SPY": "SPY.json"
+}

@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. GLOBAL SAFETY NET: Default Deny
+    match /{document=**} { 
+      allow read, write: if false; 
+    }
+
+    // --- PRIMITIVES (Phase 3) ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Pillar 3: Path Variable Hardened ID check
+    function isValidId(id) { 
+       return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    // --- VALIDATION BLUEPRINTS (Pillar 2) ---
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['displayName', 'updatedAt']) &&
+             data.displayName is string && data.displayName.size() >= 2 && data.displayName.size() <= 64 &&
+             data.updatedAt == request.time && // Pillar 10: Strict Timestamps
+             !data.keys().hasAny(['role']); // Pillar 4: Role Isolation (Prevent Self-Assign)
+    }
+
+    function isValidBacktest(data) {
+      return data.keys().hasAll(['name', 'userId', 'startYear', 'endYear', 'initialAmount']) &&
+             data.userId == request.auth.uid && // Identity Integrity
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.startYear is number && data.endYear is number &&
+             data.initialAmount is number &&
+             (data.keys().hasAny(['allocRows']) ? data.allocRows is list && data.allocRows.size() <= 50 : true); // Pillar 5: Array Guard
+    }
+
+    // --- MATCH BLOCKS (Phase 4) ---
+
+    // USERS COLLECTION
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      
+      // CREATE: Strict schema + Identity Integrity
+      allow create: if isOwner(userId) && 
+                      isValidId(userId) &&
+                      isValidUser(incoming());
+
+      // UPDATE: Action-Based pattern (Pillar 4.2)
+      allow update: if isOwner(userId) && 
+                      isValidUser(incoming()) && (
+                        // Identity remains immutable
+                        incoming().updatedAt == request.time &&
+                        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'updatedAt'])
+                      );
+
+      // BACKTESTS SUB-COLLECTION
+      match /backtests/{backtestId} {
+        // Pillar 8: Secure List Queries
+        allow list, get: if isOwner(userId);
+        
+        allow create: if isOwner(userId) && 
+                        isValidId(backtestId) &&
+                        isValidBacktest(incoming());
+
+        allow update: if isOwner(userId) && 
+                        isValidBacktest(incoming()) &&
+                        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'updatedAt', 'allocRows', 'portNames']);
+
+        allow delete: if isOwner(userId);
+      }
+    }
+    
+    // ADMINS COLLECTION (ReadOnly by Admin)
+    match /admins/{adminId} {
+      allow read: if isSignedIn(); // Users can check if they are admin if needed
+    }
+  }
+}

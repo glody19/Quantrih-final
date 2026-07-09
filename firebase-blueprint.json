@@ -1,0 +1,110 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Public and private user profile data.",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "email": { "type": "string" },
+        "nationality": { "type": "string" },
+        "residenceCountry": { "type": "string" },
+        "phone": { "type": "string" },
+        "phoneCountryCode": { "type": "string" },
+        "phoneCountryFlag": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "username": { "type": "string" },
+        "company": { "type": "string" },
+        "firmType": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "lastLoginAt": { "type": "string" },
+        "status": { "type": "string" },
+        "emailVerified": { "type": "boolean" },
+        "canChangePassword": { "type": "boolean" },
+        "twoFactorEnabled": { "type": "boolean" },
+        "twoFactorMethod": { "type": "string" },
+        "passwordLastChangedAt": { "type": "string" },
+        "securityNotificationsEnabled": { "type": "boolean" },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"]
+        }
+      },
+      "required": ["updatedAt"]
+    },
+    "BacktestConfig": {
+      "title": "BacktestConfig",
+      "description": "Saved configuration for a portfolio backtest",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the saved backtest profile"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns this backtest"
+        },
+        "startYear": {
+          "type": "number"
+        },
+        "endYear": {
+          "type": "number"
+        },
+        "initialAmount": {
+          "type": "number"
+        },
+        "cashflowAmount": {
+          "type": "number",
+          "description": "Recurring cash flow amount"
+        },
+        "rebalancing": {
+          "type": "string",
+          "enum": ["annual", "none"]
+        },
+        "numPortfolios": {
+          "type": "number"
+        },
+        "allocRows": {
+          "type": "array"
+        },
+        "portNames": {
+          "type": "array"
+        },
+        "createdAt": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "userId",
+        "startYear",
+        "endYear",
+        "initialAmount",
+        "cashflowAmount",
+        "rebalancing",
+        "numPortfolios",
+        "allocRows",
+        "portNames",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Individual user profiles identified by UID."
+    },
+    "/users/{userId}/backtests/{backtestId}": {
+      "schema": "BacktestConfig",
+      "description": "User specific backtest configurations"
+    }
+  }
+}
