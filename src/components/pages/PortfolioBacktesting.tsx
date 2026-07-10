@@ -17,7 +17,7 @@ import { Line, Doughnut, Bar, Pie } from "react-chartjs-2";
 import { EliteDonut } from "../ui/EliteDonut";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
-import { generatePDFReport } from "../../lib/pdfGenerator";
+import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { calculateRollingReturns } from "../../engine/metrics";
 import { runMonteCarlo } from "../../engine/monte-carlo";
 import { downloadCSV } from "../../utils/export";
@@ -611,29 +611,6 @@ export function PortfolioBacktesting({
   return (
     <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
       <div className="space-y-8 animate-fade-up w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-24">
-        {hasRun && results.length > 0 && (
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() =>
-                generatePDFReport(
-                  "report-content",
-                  "Portfolio_Backtest_Report",
-                  setIsExporting,
-                )
-              }
-              disabled={isExporting}
-              className="flex items-center gap-2 bg-surface-3 hover:bg-pv-blue border border-border hover:border-pv-blue text-text px-5 py-2.5 rounded-[1.5rem] font-bold text-xs transition-all disabled:opacity-50 shadow-md"
-            >
-              {isExporting ? (
-                <span className="w-4 h-4 rounded-full border-2 border-t-white/30 animate-spin border-white"></span>
-              ) : (
-                <FileDown size={16} />
-              )}
-              {isExporting ? "Génération..." : "Exporter PDF"}
-            </button>
-          </div>
-        )}
-
         <div className="flex flex-col gap-8">
           {/* TITLE HEADER */}
           <div className="mb-16">
@@ -648,6 +625,7 @@ export function PortfolioBacktesting({
               }
             </p>
           </div>
+          <MobileZoomWrapper scaleMobile={0.22}>
           {/* PARAMETERS HEADER */}
           <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
@@ -1185,6 +1163,7 @@ export function PortfolioBacktesting({
               </button>
             </div>
           </div>
+          </MobileZoomWrapper>
 
           {/* RESULTS */}
           <div className="space-y-8">
@@ -1194,6 +1173,7 @@ export function PortfolioBacktesting({
                 <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
               </div>
             ) : (
+              <MobileZoomWrapper scaleMobile={0.22}>
               <div
                 id="report-content"
                 className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
@@ -1238,19 +1218,6 @@ export function PortfolioBacktesting({
                         className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
                       >
                         {"Edit Configuration"}
-                      </button>
-                      <button
-                        onClick={async () => {
-                          setIsExporting(true);
-                          await generatePDFReport(
-                            "report-content",
-                            "Quantrih_Portfolio_Analysis",
-                          );
-                          setIsExporting(false);
-                        }}
-                        className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
-                      >
-                        {"Export PDF"}
                       </button>
                       <button
                         onClick={() => {
@@ -2098,12 +2065,31 @@ export function PortfolioBacktesting({
                   </div>
 
                   <PortfolioAnalysisExplication results={results} />
+
+                  <div className="mt-8 mb-4 text-center text-[10px] text-black">
+                    Ce site est gratuit et sans publicité. Si vous appréciez nos outils d'analyse et de backtesting, vous pouvez soutenir notre travail par une donation.{" "}
+                    <a 
+                      href="/donate" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.location.href = "/donate";
+                      }}
+                      className="inline-block ml-1 px-1.5 py-0.5 border border-blue-500 text-blue-600 rounded text-[9px] hover:bg-blue-50 font-semibold"
+                    >
+                      Faire un don
+                    </a>
+                  </div>
                 </div>
               </div>
+              </MobileZoomWrapper>
             )}
-          </div>
+        </div>
+
+        <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-12 pt-6 text-center text-[11px] text-text-4 border-t border-border/40 mt-8 font-sans">
+          Avertissement : Les performances passées ne préjugent pas des performances futures. Les outils et analyses de Quantrih se basent exclusivement sur des données historiques du passé. L'investissement comporte des risques de perte en capital.
         </div>
       </div>
     </div>
+  </div>
   );
 }

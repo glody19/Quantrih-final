@@ -12,7 +12,6 @@ import { TickerInput } from '../ui/TickerInput';
 import { AssetLogo } from '../ui/AssetLogo';
 import { FinancialTable } from '../ui/FinancialTable';
 import { InfoTooltip } from '../ui/InfoTooltip';
-import { generatePDFReport } from '../../lib/pdfGenerator';
 import { ASSET_DATA } from '../../constants';
 import { EtfScreener } from './EtfScreener';
 import { useTranslation } from '../../contexts/LanguageContext';

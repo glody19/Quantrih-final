@@ -13,6 +13,9 @@ COPY . .
 # Build the frontend (Vite) and backend (esbuild -> dist/server.cjs)
 RUN npm run build
 
+# Ensure at least one .db file exists so the COPY wildcard in Stage 2 doesn't fail
+RUN touch dummy.db
+
 # ===== Stage 2: Production =====
 FROM node:20-slim
 
@@ -26,9 +29,7 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 
 # Copy the SQLite databases if they exist
-COPY --from=builder /app/*.db ./
-COPY --from=builder /app/*.db-shm ./
-COPY --from=builder /app/*.db-wal ./
+COPY --from=builder /app/*.db* ./
 
 # Optional: ensure metadata and .env.example are present if needed by system scripts
 COPY --from=builder /app/metadata.json ./metadata.json

@@ -21,11 +21,9 @@ import {
   Search,
   HelpCircle,
   TrendingUp,
-  FileDown,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { InfoTooltip } from "../ui/InfoTooltip";
-import { generatePDFReport } from "../../lib/pdfGenerator";
 import { TickerInput } from "../ui/TickerInput";
 
 function TooltipLabel({
@@ -80,28 +78,6 @@ export function DualMomentum() {
           </h1>
         </div>
       </div>
-      {hasRun && (
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() =>
-              generatePDFReport(
-                "report-content",
-                "Dual_Momentum_Report",
-                setIsExporting,
-              )
-            }
-            disabled={isExporting}
-            className="flex items-center gap-2 bg-slate-800/80 hover:bg-pv-blue border border-slate-700 hover:border-pv-blue text-white px-5 py-2.5 rounded-[1.5rem] font-bold text-xs transition-all disabled:opacity-50 mt-4 md:mt-0 shadow-xl"
-          >
-            {isExporting ? (
-              <span className="w-4 h-4 rounded-full border-2 border-t-white/30 animate-spin border-white"></span>
-            ) : (
-              <FileDown size={16} />
-            )}
-            {isExporting ? "Génération..." : "Exporter PDF"}
-          </button>
-        </div>
-      )}
 
       <div className="flex flex-col gap-8 items-start">
         <div className="w-full space-y-6">

@@ -93,12 +93,7 @@ function AppContent() {
   const location = useLocation();
   const currentPage = location.pathname === "/" ? "home" : location.pathname.substring(1);
 
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") || "dark";
-    }
-    return "dark";
-  });
+  const [theme, setTheme] = useState("light");
   const [baseCcy, setBaseCcy] = useState("EUR");
   const [isCommandOpen, setIsCommandOpen] = useState(false);
 
@@ -114,12 +109,11 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    document.documentElement.setAttribute("data-theme", "light");
+    localStorage.setItem("theme", "light");
+  }, []);
 
-  const toggleTheme = () =>
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  const toggleTheme = () => {};
 
   const handleNavigate = (page: string) => {
     if (page === "home" || page === "") {

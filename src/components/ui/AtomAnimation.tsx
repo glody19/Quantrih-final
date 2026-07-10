@@ -448,20 +448,65 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  });
  };
 
+ const handleTouchStart = (e: TouchEvent) => {
+  if (e.touches.length > 0) {
+   const rect = canvas.getBoundingClientRect();
+   const touch = e.touches[0];
+   mouseRef.current = {
+    x: touch.clientX - rect.left,
+    y: touch.clientY - rect.top,
+    active: true
+   };
+   handleMouseClick();
+  }
+ };
+
+ const handleTouchMove = (e: TouchEvent) => {
+  if (e.touches.length > 0) {
+   e.preventDefault();
+   const rect = canvas.getBoundingClientRect();
+   const touch = e.touches[0];
+   mouseRef.current = {
+    x: touch.clientX - rect.left,
+    y: touch.clientY - rect.top,
+    active: true
+   };
+  }
+ };
+
+ const handleTouchEnd = () => {
+  mouseRef.current.active = false;
+ };
+
  canvas.addEventListener('mousemove', handleMouseMove);
  canvas.addEventListener('mouseleave', handleMouseLeave);
  canvas.addEventListener('mousedown', handleMouseClick);
- window.addEventListener('resize', handleResize);
+ canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+ canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+ canvas.addEventListener('touchend', handleTouchEnd);
+
+ const resizeObserver = new ResizeObserver((entries) => {
+  for (let entry of entries) {
+   const { width: entryWidth, height: entryHeight } = entry.contentRect;
+   if (entryWidth > 0 && entryHeight > 0) {
+    handleResize();
+   }
+  }
+ });
+ resizeObserver.observe(canvas);
 
  init();
  animate();
 
  return () => {
  cancelAnimationFrame(animationFrameId);
- window.removeEventListener('resize', handleResize);
+ resizeObserver.disconnect();
  canvas.removeEventListener('mousemove', handleMouseMove);
  canvas.removeEventListener('mouseleave', handleMouseLeave);
  canvas.removeEventListener('mousedown', handleMouseClick);
+ canvas.removeEventListener('touchstart', handleTouchStart);
+ canvas.removeEventListener('touchmove', handleTouchMove);
+ canvas.removeEventListener('touchend', handleTouchEnd);
  };
  }, []);
 

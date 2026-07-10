@@ -15,8 +15,8 @@ import {
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { lazyPortfolios } from "./lazyPortfoliosData";
+import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 
-import { generatePDFReport } from "../../lib/pdfGenerator";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -385,30 +385,6 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
   return (
     <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
       <div className="space-y-8 animate-fade-up w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-24">
-        {/* Header */}
-        {mcResults && (
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() =>
-                generatePDFReport(
-                  "report-content",
-                  "Monte_Carlo_Report",
-                  setIsExporting,
-                )
-              }
-              disabled={isExporting}
-              className="flex items-center gap-2 bg-slate-800/80 hover:bg-pv-blue border border-slate-700 hover:border-pv-blue text-white px-5 py-2.5 rounded-[1.5rem] font-bold text-xs transition-all disabled:opacity-50 mt-4 md:mt-0 shadow-xl"
-            >
-              {isExporting ? (
-                <span className="w-4 h-4 rounded-full border-2 border-t-white/30 animate-spin border-white" />
-              ) : (
-                <FileDown size={16} />
-              )}
-              {isExporting ? "Generating..." : "Export PDF"}
-            </button>
-          </div>
-        )}
-
         <div className="flex flex-col gap-8">
           {/* TITLE HEADER */}
           <div className="mb-16">
@@ -423,7 +399,9 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
               }
             </p>
           </div>
-          {/* RESULTS SECTION */}
+          
+          <MobileZoomWrapper scaleMobile={0.22}>
+            {/* RESULTS SECTION */}
           {mcResults && mcResults[activeResIdx].result.length > 0 && (
             <div id="report-content" className="space-y-6">
               <div className="bg-surface border border-border rounded-[2rem] p-8 space-y-6 text-left shadow-sm">
@@ -669,6 +647,22 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
             </div>
             )}
           </div>
+        </div>
+      )}
+
+      {mcResults && (
+        <div className="mt-4 mb-4 text-center text-[10px] text-black">
+          Ce site est gratuit et sans publicité. Si vous appréciez nos outils d'analyse et de backtesting, vous pouvez soutenir notre travail par une donation.{" "}
+          <a 
+            href="/donate" 
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = "/donate";
+            }}
+            className="inline-block ml-1 px-1.5 py-0.5 border border-blue-500 text-blue-600 rounded text-[9px] hover:bg-blue-50 font-semibold"
+          >
+            Faire un don
+          </a>
         </div>
       )}
 
@@ -1167,6 +1161,11 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
               </div>
             </div>
           </div>
+          </MobileZoomWrapper>
+        </div>
+        
+        <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-12 pt-6 text-center text-[11px] text-text-4 border-t border-border/40 mt-8 font-sans">
+          Avertissement : Les performances passées ne préjugent pas des performances futures. Les outils et analyses de Quantrih se basent exclusivement sur des données historiques du passé. L'investissement comporte des risques de perte en capital.
         </div>
       </div>
     </div>

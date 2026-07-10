@@ -331,7 +331,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               {ObjectPages.map((p, i) => (
                 <div 
                   key={i} 
-                  className="float-card liquid-glass rounded-[32px] p-6 lg:p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] flex flex-col justify-between"
+                  className="float-card liquid-glass rounded-[32px] p-6 lg:p-8 transition-all duration-300 hover:-translate-y-2 hover:scale-105 active:scale-105 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] flex flex-col justify-between"
                   style={{ animationDelay: `${i * 0.5}s` }}
                 >
                   <div>
@@ -399,8 +399,8 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             <p className="text-slate-500 text-sm font-sans font-medium mt-2">
               Quantrih Engineering
             </p>
-            <p className="text-slate-600 text-xs font-sans tracking-wide mt-6 max-w-2xl mx-auto">
-              The analytics engines and pipelines provided are strictly algorithmic and informational. They do not constitute certified investment advice or brokerage signaling.
+            <p className="text-slate-400 text-xs font-sans tracking-wide mt-6 max-w-2xl mx-auto">
+              Avertissement : Les performances passées ne préjugent pas des performances futures. Les outils et analyses de Quantrih se basent exclusivement sur des données historiques du passé. L'investissement comporte des risques de perte en capital.
             </p>
           </div>
         </div>

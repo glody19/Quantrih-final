@@ -35,8 +35,27 @@ export function Header({
 
   const menus: MenuItem[] = [
     { id: "asset-allocation", label: "Asset Allocations" },
-    { id: "portfolio", label: "Portfolio Backtesting" },
-    { id: "tactical-allocation", label: "Tactical Allocation" },
+    {
+      id: "portfolio-group",
+      label: "Portfolio Backtesting",
+      children: [
+        { id: "portfolio", label: "Backtest Engine" },
+        { id: "portfolio-backtest", label: "Portfolio Evaluator" },
+        { id: "frontier", label: "Efficient Frontier" },
+        { id: "optimization", label: "Black-Litterman" },
+        { id: "mean-variance", label: "Mean-Variance" },
+      ],
+    },
+    {
+      id: "tactical-group",
+      label: "Tactical Allocation",
+      children: [
+        { id: "tactical-allocation", label: "Overview" },
+        { id: "moving-average", label: "Moving Average" },
+        { id: "dual-momentum", label: "Dual Momentum" },
+        { id: "relative-strength", label: "Relative Strength" },
+      ],
+    },
     { id: "montecarlo", label: "Monte Carlo" },
     { id: "fmp", label: "Markets" },
     { id: "education", label: "Education resources" },
