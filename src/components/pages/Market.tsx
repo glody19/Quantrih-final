@@ -6,6 +6,7 @@ import { useTranslation } from '../../contexts/LanguageContext';
 import { AdvancedTradingViewChart } from '../ui/AdvancedTradingViewChart';
 import { TrendingUp, Search } from 'lucide-react';
 import { TickerInput } from "../ui/TickerInput";
+import { MobileZoomWrapper } from '../ui/MobileZoomWrapper';
 
 export function Market() {
 
@@ -173,12 +174,12 @@ export function Market() {
  <td className="px-6 py-5">
  <div className="flex gap-2 flex-wrap max-w-sm">
  {Object.entries(p.composition).slice(0, 5).map(([sym, w]: [string, any]) => (
- <span key={sym} className="px-2 py-1 rounded bg-surface-3 text-text text-xs font-medium border border-border">
+ <span key={sym} className="px-2 py-1 rounded bg-surface-3 text-text text-sm font-medium border border-border">
  {sym} <span className="opacity-60">{w}%</span>
  </span>
  ))}
  {Object.keys(p.composition).length > 5 && (
- <span className="px-2 py-1 rounded bg-surface-3 text-text text-xs font-medium border border-border">
+ <span className="px-2 py-1 rounded bg-surface-3 text-text text-sm font-medium border border-border">
  +{Object.keys(p.composition).length - 5}
  </span>
  )}
@@ -208,6 +209,7 @@ export function Market() {
  );
 
  return (
+ <MobileZoomWrapper scaleMobile={0.5}>
  <div className="w-full mx-auto max-w-[1400px] px-6 md:px-12 space-y-12 pb-24 relative min-h-[calc(100vh-80px)] font-sans">
  <div className="relative pt-12 pb-8 border-b border-border/40 flex flex-col md:flex-row md:items-end justify-between gap-6">
  <div className="space-y-3">
@@ -222,8 +224,8 @@ export function Market() {
  </div>
  <div className="flex items-center gap-2">
  <div className="flex flex-col text-right">
- <span className="text-xs text-text font-bold mb-1">Status</span>
- <span className="text-xs text-text font-medium flex items-center justify-end gap-2">
+ <span className="text-sm text-text font-bold mb-1">Status</span>
+ <span className="text-sm text-text font-medium flex items-center justify-end gap-2">
  
       {!isWeekend && (
         <span className="flex items-center gap-2">
@@ -254,7 +256,7 @@ export function Market() {
  return (
  <div key={i} className="flex flex-col px-6 border-r border-border/40 items-end justify-center min-w-[120px] transition-colors cursor-default">
  <div className="flex w-full justify-between items-center gap-3">
- <span className="font-semibold text-xs text-text">{sym}</span>
+ <span className="font-semibold text-sm text-text">{sym}</span>
  <span className="text-sm text-text font-medium">{price}</span>
  </div>
  <span className={cn("text-sm font-medium mt-0.5", change >= 0 ? "text-emerald-600" : "text-rose-600")}>
@@ -270,7 +272,7 @@ export function Market() {
  {loading ? (
  <div className="flex flex-col items-center justify-center p-24 text-text gap-4">
  <RefreshCw className="animate-spin text-pv-blue opacity-50" size={24} />
- <span className="text-xs font-bold">Synchronizing Historical Cache...</span>
+ <span className="text-sm font-bold">Synchronizing Historical Cache...</span>
  </div>
  ) : (
  <div className="space-y-16">
@@ -284,7 +286,7 @@ export function Market() {
       </div>
       <div>
         <h2 className="text-lg font-medium text-text">{currentSymbol} Tracker</h2> 
-        <p className="text-xs text-text-4">{'Real-time performance chart'}</p>
+        <p className="text-sm text-text-4">{'Real-time performance chart'}</p>
       </div>
     </div>
     <form onSubmit={handleSearch} className="flex items-center gap-2">
@@ -314,7 +316,7 @@ export function Market() {
  <section className="space-y-6">
  <div className="space-y-2 border-b border-border/40 pb-4">
  <h2 className="text-xl font-medium tracking-tight text-text">Benchmark Portfolios</h2>
- <p className="text-xs text-text">Classic static allocations and real-time performance</p>
+ <p className="text-sm text-text">Classic static allocations and real-time performance</p>
  </div>
  {renderTable(portfolios.lazy)}
  </section>
@@ -322,5 +324,6 @@ export function Market() {
  </div>
  )}
  </div>
+ </MobileZoomWrapper>
  );
 }

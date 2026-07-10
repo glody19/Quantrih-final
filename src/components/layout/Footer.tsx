@@ -17,12 +17,22 @@ export function Footer({ onNavigate }: FooterProps) {
         
         {/* Discover */}
         <div className="flex flex-col gap-4">
-          <h4 className="text-text font-bold mb-2">Discover</h4>
+          <h4 className="text-text font-bold mb-2">Backtesting & Allocation</h4>
           <button onClick={() => { onNavigate('asset-allocation'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Asset Allocation</button>
           <button onClick={() => { onNavigate('portfolio-backtest'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Portfolio Backtesting</button>
           <button onClick={() => { onNavigate('tactical-allocation'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Tactical Allocation</button>
           <button onClick={() => { onNavigate('montecarlo'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Monte Carlo Dynamics</button>
-          <button onClick={() => { onNavigate('about'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">About Us</button>
+          
+
+        </div>
+
+        {/* Resources */}
+        <div className="flex flex-col gap-4">
+          <h4 className="text-text font-bold mb-2">Resources</h4>
+          <button onClick={() => { onNavigate('market'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Financial Market</button>
+          <button onClick={() => { onNavigate('etf-overview'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">ETF Overview</button>
+          <button onClick={() => { onNavigate('platforms'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Brokers & Platforms</button>
+          <button onClick={() => { onNavigate('education'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Education</button>
         </div>
 
         {/* Contact Us */}
@@ -38,13 +48,14 @@ export function Footer({ onNavigate }: FooterProps) {
           </div>
         </div>
 
-        {/* Legal */}
+        {/* Legal & About */}
         <div className="flex flex-col gap-4">
-          <h4 className="text-text font-bold mb-2">Legal</h4>
+          <h4 className="text-text font-bold mb-2">Company & Legal</h4>
+          <button onClick={() => { onNavigate('about'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">About Us</button>
+          <button onClick={() => { onNavigate('donate'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Donate</button>
           <button onClick={() => { onNavigate('cookies'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Cookies Policy</button>
           <button onClick={() => { onNavigate('privacy'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-left text-text-3 hover:text-blue-500 transition-colors">Privacy Policy</button>
         </div>
-
 
       </div>
       

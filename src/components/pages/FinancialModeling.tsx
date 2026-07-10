@@ -110,11 +110,11 @@ function TickerItem({ item, tickerPrices, formatCryptoPrice, onClick }: { item: 
  className="flex items-center gap-3 px-6 h-full transition-colors cursor-pointer bg-white hover:bg-surface-2"
  >
  <span className="text-sm font-medium text-text">{item.symbol}</span>
- <span className={cn("text-xs font-mono font-bold transition-all inline-block px-1", blink ? blink : "text-black")}>
+ <span className={cn("text-sm font-mono font-bold transition-all inline-block px-1", blink ? blink : "text-black")}>
  {item.id.includes('usdt') ? formatCryptoPrice(currentPrice) : currentPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
  </span>
  <div className={cn("flex flex-col items-end transition-colors", isUp ? "text-emerald-600" : "text-rose-600")}>
- <span className="text-xs font-semibold leading-none">
+ <span className="text-sm font-semibold leading-none">
  {isUp ? '▲' : '▼'} {Math.abs(changeVal || 0).toFixed(2)}%
  </span>
  </div>
@@ -1002,7 +1002,7 @@ export function FinancialModeling() {
   </div>
 
   {selectedLazyPortfolio ? (
- <div className="w-full max-w-[1800px] mx-auto px-4 md:px-8 pb-24 pt-8">
+ <div className="w-full px-8 pb-24 pt-8">
 
   
  <button 
@@ -1018,7 +1018,7 @@ export function FinancialModeling() {
  <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-pv-blue/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
  <div className="flex flex-col md:flex-row justify-between items-start gap-8 relative z-10">
  <div className="flex-1">
- <div className="text-pv-blue font-bold text-xs mb-3">{selectedLazyPortfolio.author} Strategy</div>
+ <div className="text-pv-blue font-bold text-sm mb-3">{selectedLazyPortfolio.author} Strategy</div>
  <p className="text-text font-medium text-sm leading-relaxed max-w-3xl">
  {selectedLazyPortfolio.description}
  </p>
@@ -1030,7 +1030,7 @@ export function FinancialModeling() {
  <div className="text-5xl font-semibold text-emerald-600 relative z-10">
  {selectedLazyPortfolio.y30.toFixed(2)}<span className="text-2xl text-emerald-600/50 ml-1">%</span>
  </div>
- <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-text">
+ <div className="mt-3 flex items-center gap-1.5 text-sm font-bold text-text">
  <TrendingUp size={14} className="text-emerald-500" /> Based on historical data
  </div>
  </div>
@@ -1048,7 +1048,7 @@ export function FinancialModeling() {
  <div className="flex flex-col gap-2.5">
  <div className="flex justify-between items-center text-sm font-bold">
  <span className="text-blue-700 text-sm">Equities (Stocks)</span>
- <span className="text-text bg-blue-50 px-2 py-0.5 rounded font-semibold text-xs">{selectedLazyPortfolio.stocks}%</span>
+ <span className="text-text bg-blue-50 px-2 py-0.5 rounded font-semibold text-sm">{selectedLazyPortfolio.stocks}%</span>
  </div>
  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
  <div className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full" style={{ width: `${selectedLazyPortfolio.stocks}%` }}></div>
@@ -1057,7 +1057,7 @@ export function FinancialModeling() {
  <div className="flex flex-col gap-2.5">
  <div className="flex justify-between items-center text-sm font-bold">
  <span className="text-text text-sm">Fixed Income (Bonds)</span>
- <span className="text-text bg-slate-100 px-2 py-0.5 rounded font-semibold text-xs">{selectedLazyPortfolio.bonds}%</span>
+ <span className="text-text bg-slate-100 px-2 py-0.5 rounded font-semibold text-sm">{selectedLazyPortfolio.bonds}%</span>
  </div>
  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
  <div className="h-full bg-gradient-to-r from-slate-300 to-slate-400 rounded-full" style={{ width: `${selectedLazyPortfolio.bonds}%` }}></div>
@@ -1066,7 +1066,7 @@ export function FinancialModeling() {
  <div className="flex flex-col gap-2.5">
  <div className="flex justify-between items-center text-sm font-bold">
  <span className="text-amber-600 text-sm">Commodities & Real Assets</span>
- <span className="text-text bg-amber-50 px-2 py-0.5 rounded font-semibold text-xs">{selectedLazyPortfolio.comm}%</span>
+ <span className="text-text bg-amber-50 px-2 py-0.5 rounded font-semibold text-sm">{selectedLazyPortfolio.comm}%</span>
  </div>
  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
  <div className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full" style={{ width: `${selectedLazyPortfolio.comm}%` }}></div>
@@ -1088,7 +1088,7 @@ export function FinancialModeling() {
  </h3>
  <div className="overflow-hidden border border-border/60 rounded-[2rem] shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
  <table className="w-full text-left">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-xs font-semibold text-text ">
+ <thead className="bg-[#f8f9fa] border-b border-border/80 text-sm font-semibold text-text ">
  <tr>
  <th className="py-3.5 px-6">Time Horizon</th>
  <th className="py-3.5 px-6 text-right">Ann. Return</th>
@@ -1119,15 +1119,15 @@ export function FinancialModeling() {
  <h4 className="text-sm font-medium text-text mb-5">Implementation Considerations</h4>
  <ul className="space-y-4 text-[13px] font-medium text-text">
  <li className="flex gap-4 items-start">
- <div className="w-6 h-6 rounded-full bg-slate-100 text-text flex items-center justify-center shrink-0 mt-0.5"><span className="text-xs font-bold">1</span></div>
+ <div className="w-6 h-6 rounded-full bg-slate-100 text-text flex items-center justify-center shrink-0 mt-0.5"><span className="text-sm font-bold">1</span></div>
  <span className="pt-0.5">Prioritize ultra-low-cost index ETFs or mutual funds from providers like Vanguard, State Street, or iShares to minimize fee drag over decades.</span>
  </li>
  <li className="flex gap-4 items-start">
- <div className="w-6 h-6 rounded-full bg-slate-100 text-text flex items-center justify-center shrink-0 mt-0.5"><span className="text-xs font-bold">2</span></div>
+ <div className="w-6 h-6 rounded-full bg-slate-100 text-text flex items-center justify-center shrink-0 mt-0.5"><span className="text-sm font-bold">2</span></div>
  <span className="pt-0.5">Rebalance strictly once per year to maintain target allocations (e.g. exactly {selectedLazyPortfolio.stocks}% equities). Do not rebalance based on market fluctuations.</span>
  </li>
  <li className="flex gap-4 items-start">
- <div className="w-6 h-6 rounded-full bg-slate-100 text-text flex items-center justify-center shrink-0 mt-0.5"><span className="text-xs font-bold">3</span></div>
+ <div className="w-6 h-6 rounded-full bg-slate-100 text-text flex items-center justify-center shrink-0 mt-0.5"><span className="text-sm font-bold">3</span></div>
  <span className="pt-0.5">Avoid tweaking, substituting, or timing the market based on short-term macroeconomic news. The power of this strategy is its absolute consistency over time.</span>
  </li>
  </ul>
@@ -1137,7 +1137,7 @@ export function FinancialModeling() {
  </div>
  </div>
  ) : (
- <div className="w-full max-w-[1800px] mx-auto px-4 md:px-8 pb-24 pt-8">
+ <div className="w-full px-8 pb-24 pt-8">
 
  {error && (
  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-[1.5rem] mb-8">
@@ -1228,7 +1228,7 @@ export function FinancialModeling() {
  {/* Price & Performance Block */}
  <div className="flex flex-col items-start xl:items-end gap-2 pt-2 bg-surface-2/40 xl:bg-transparent rounded-[2rem] xl:rounded-none p-6 xl:p-0 border border-border/50 xl:border-transparent">
  <div className="flex flex-col gap-0.5">
- <span className="text-xs font-bold text-text bg-transparent">
+ <span className="text-sm font-bold text-text bg-transparent">
  {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
  </span>
  <span className="text-2xl font-semibold font-mono text-text tracking-tighter leading-none flex items-baseline">
@@ -1248,9 +1248,9 @@ export function FinancialModeling() {
  
  <div className="flex flex-wrap items-center gap-6 mt-4 pt-4 border-t border-border/50 w-full xl:justify-end">
  <div className="flex flex-col xl:items-end gap-1">
- <span className="text-xs font-medium text-text">Varia. 5j</span>
+ <span className="text-sm font-medium text-text">Varia. 5j</span>
  <span className={cn(
- "text-xs font-mono font-bold px-2 py-0.5 rounded",
+ "text-sm font-mono font-bold px-2 py-0.5 rounded",
  history && history.length >= 5 
  ? (quote.price - history[history.length - 5].close >= 0 ? "text-text bg-emerald-50" : "text-text bg-rose-50") 
  : "text-text bg-surface-3"
@@ -1261,9 +1261,9 @@ export function FinancialModeling() {
  </span>
  </div>
  <div className="flex flex-col xl:items-end gap-1">
- <span className="text-xs font-medium text-text">Varia. 1 janv</span>
+ <span className="text-sm font-medium text-text">Varia. 1 janv</span>
  <span className={cn(
- "text-xs font-mono font-bold px-2 py-0.5 rounded",
+ "text-sm font-mono font-bold px-2 py-0.5 rounded",
  history && history.find(h => new Date(h.date).getFullYear() === new Date().getFullYear())
  ? (quote.price - history.find(h => new Date(h.date).getFullYear() === new Date().getFullYear())!.close >= 0 ? "text-text bg-emerald-50" : "text-text bg-rose-50") 
  : "text-text bg-surface-3"
@@ -1338,11 +1338,11 @@ export function FinancialModeling() {
  <div className="flex bg-surface-2 p-1 rounded-2xl border border-border shrink-0 self-start sm:self-auto">
  <button 
  onClick={() => setFinancialsType('annual')}
- className={cn("px-3 py-1 text-xs font-bold rounded-xl transition-colors", financialsType === 'annual' ? "bg-white text-pv-blue shadow-sm" : "text-text hover:text-text")}
+ className={cn("px-3 py-1 text-sm font-bold rounded-xl transition-colors", financialsType === 'annual' ? "bg-white text-pv-blue shadow-sm" : "text-text hover:text-text")}
  >Annuel</button>
  <button 
  onClick={() => setFinancialsType('quarterly')}
- className={cn("px-3 py-1 text-xs font-bold rounded-xl transition-colors", financialsType === 'quarterly' ? "bg-white text-pv-blue shadow-sm" : "text-text hover:text-text")}
+ className={cn("px-3 py-1 text-sm font-bold rounded-xl transition-colors", financialsType === 'quarterly' ? "bg-white text-pv-blue shadow-sm" : "text-text hover:text-text")}
  >Trimestriel</button>
  </div>
  )}
@@ -1355,7 +1355,7 @@ export function FinancialModeling() {
  <div className="w-full xl:w-1/3 bg-white border border-border/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] rounded-[1.5rem] p-6 h-[500px] shrink-0">
  <div className="mb-6 flex items-center justify-between">
  <h3 className="text-lg font-semibold text-text tracking-tight">Income Analysis</h3>
- <span className="text-xs font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
+ <span className="text-sm font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
  </div>
  <ResponsiveContainer width="100%" height={380}>
  <BarChart data={slicedIncome} margin={{ top: 20, right: 10, left: -20, bottom: 5 }} barGap={6} barCategoryGap="25%">
@@ -1393,7 +1393,7 @@ export function FinancialModeling() {
  <div className="w-full xl:w-1/3 bg-white border border-border/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] rounded-[1.5rem] p-6 h-[500px] shrink-0">
  <div className="mb-6 flex items-center justify-between">
  <h3 className="text-lg font-semibold text-text tracking-tight">Balance Sheet Analysis</h3>
- <span className="text-xs font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
+ <span className="text-sm font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
  </div>
  <ResponsiveContainer width="100%" height={380}>
  <BarChart data={slicedBalance} margin={{ top: 20, right: 10, left: -20, bottom: 5 }} barGap={6} barCategoryGap="25%">
@@ -1431,7 +1431,7 @@ export function FinancialModeling() {
  <div className="w-full xl:w-1/3 bg-white border border-border/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] rounded-[1.5rem] p-6 h-[500px] shrink-0">
  <div className="mb-6 flex items-center justify-between">
  <h3 className="text-lg font-semibold text-text tracking-tight">Cash Flow Analysis</h3>
- <span className="text-xs font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
+ <span className="text-sm font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
  </div>
  <ResponsiveContainer width="100%" height={380}>
  <BarChart data={slicedCashFlow} margin={{ top: 20, right: 10, left: -20, bottom: 5 }} barGap={6} barCategoryGap="25%">
@@ -1527,7 +1527,7 @@ export function FinancialModeling() {
  </div>
 
  <div className="flex justify-start">
- <div className="text-xs text-text font-mono font-medium relative group">
+ <div className="text-sm text-text font-mono font-medium relative group">
  {watchlist.length} actif(s) en comparaison • Cliquez sur une ligne pour cibler l'analyse globale
  </div>
  </div>
@@ -1551,7 +1551,7 @@ export function FinancialModeling() {
  setAddCompareError(null);
  }}
  placeholder="+ Ajouter"
- className=" font-bold font-mono bg-pv-blue/[0.04] border border-pv-blue/10 px-2 py-1 text-xs text-pv-blue hover:bg-pv-blue/[0.08] focus:bg-white focus:outline-none focus:ring-1 focus:ring-pv-blue/30 rounded-xl transition-all placeholder:text-pv-blue/50 w-24"
+ className=" font-bold font-mono bg-pv-blue/[0.04] border border-pv-blue/10 px-2 py-1 text-sm text-pv-blue hover:bg-pv-blue/[0.08] focus:bg-white focus:outline-none focus:ring-1 focus:ring-pv-blue/30 rounded-xl transition-all placeholder:text-pv-blue/50 w-24"
  onKeyDown={e => {
  if (e.key === 'Enter') {
  e.preventDefault();
@@ -1576,7 +1576,7 @@ export function FinancialModeling() {
  }}
  />
  {addCompareError && (
- <span className="absolute left-[calc(100%+6px)] top-1/2 -translate-y-1/2 text-xs text-rose-500 font-bold whitespace-nowrap">{addCompareError}</span>
+ <span className="absolute left-[calc(100%+6px)] top-1/2 -translate-y-1/2 text-sm text-rose-500 font-bold whitespace-nowrap">{addCompareError}</span>
  )}
  </div>
  </div>
@@ -1643,12 +1643,12 @@ export function FinancialModeling() {
  <AssetLogo ticker={m.ticker} name={m.name} className="w-5 h-5 rounded-full border border-border/60" />
  <div className="flex flex-col justify-center">
  <div className="flex items-center">
- <span className="font-bold text-text text-xs group-hover:text-pv-blue transition-colors line-clamp-1">{m.name}</span>
+ <span className="font-bold text-text text-sm group-hover:text-pv-blue transition-colors line-clamp-1">{m.name}</span>
  </div>
  <div className="flex items-center gap-1 mt-px">
- <span className="text-text text-xs font-semibold ">{m.ticker}</span>
- <span className="text-text/50 text-xs">•</span>
- <span className="text-text text-xs font-semibold ">
+ <span className="text-text text-sm font-semibold ">{m.ticker}</span>
+ <span className="text-text/50 text-sm">•</span>
+ <span className="text-text text-sm font-semibold ">
  {q.exchange?.includes('NASDAQ') ? 'NASDAQ' : (q.exchange || 'NYSE')}
  </span>
  </div>
@@ -1666,24 +1666,24 @@ export function FinancialModeling() {
  {/* Variation Percentage Pill */}
  <td className="py-2 px-3 text-right whitespace-nowrap bg-white/50 group-hover:bg-transparent">
  <div className="flex justify-end items-center">
- <span className={cn("inline-flex items-center px-1.5 py-[1px] rounded-[4px] font-bold text-xs min-w-[60px] justify-center transition-colors", isUp ? "bg-emerald-500/10 text-emerald-700" : isDown ? "bg-rose-500/10 text-rose-700" : "bg-surface-3 text-text")}>
+ <span className={cn("inline-flex items-center px-1.5 py-[1px] rounded-[4px] font-bold text-sm min-w-[60px] justify-center transition-colors", isUp ? "bg-emerald-500/10 text-emerald-700" : isDown ? "bg-rose-500/10 text-rose-700" : "bg-surface-3 text-text")}>
  {isUp ? '↗' : isDown ? '↘' : ''} {Math.abs(hoveredChange).toFixed(2)}%
  </span>
  </div>
  </td>
  
  {/* Market Cap */}
- <td className="py-2 px-3 text-right text-text font-medium text-xs hidden sm:table-cell whitespace-nowrap bg-white/50 group-hover:bg-transparent">
+ <td className="py-2 px-3 text-right text-text font-medium text-sm hidden sm:table-cell whitespace-nowrap bg-white/50 group-hover:bg-transparent">
  {m.marketCap ? formatAggregate(m.marketCap) + ' $' : '-'}
  </td>
  
  {/* Volume */}
- <td className="py-2 px-3 text-right text-text font-medium text-xs hidden lg:table-cell whitespace-nowrap bg-white/50 group-hover:bg-transparent">
+ <td className="py-2 px-3 text-right text-text font-medium text-sm hidden lg:table-cell whitespace-nowrap bg-white/50 group-hover:bg-transparent">
  {volume ? formatAggregate(volume) : '-'}
  </td>
  
  {/* IPO Date */}
- <td className="py-2 px-3 text-right text-text font-medium text-xs hidden md:table-cell whitespace-nowrap bg-white/50 group-hover:bg-transparent">
+ <td className="py-2 px-3 text-right text-text font-medium text-sm hidden md:table-cell whitespace-nowrap bg-white/50 group-hover:bg-transparent">
  <span className="opacity-70">{ipoText}</span>
  </td>
 
@@ -1722,20 +1722,20 @@ export function FinancialModeling() {
  <h3 className="text-xl font-bold text-text tracking-tight flex items-center gap-3">
  Market News
  </h3>
- <p className="text-text text-xs font-bold mt-1">Global Financial Insights</p>
+ <p className="text-text text-sm font-bold mt-1">Global Financial Insights</p>
  </div>
  <div className="flex items-center gap-2">
  <span className="relative flex h-2 w-2">
  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pv-blue opacity-75"></span>
  <span className="relative inline-flex rounded-full h-2 w-2 bg-pv-blue"></span>
  </span>
- <span className="text-xs font-medium text-pv-blue">Live</span>
+ <span className="text-sm font-medium text-pv-blue">Live</span>
  </div>
  </div>
 
  <div className="flex-1 overflow-y-auto px-4 py-2 relative z-10 custom-scrollbar">
  {marketNewsLoading ? (
- <div className="absolute inset-0 flex items-center justify-center text-text font-mono text-xs font-bold animate-pulse">
+ <div className="absolute inset-0 flex items-center justify-center text-text font-mono text-sm font-bold animate-pulse">
  LOADING...
  </div>
  ) : (
@@ -1752,7 +1752,7 @@ export function FinancialModeling() {
  <h4 className="text-[15px] leading-[1.6] font-semibold text-text group-hover:text-pv-blue transition-colors">
  {n.headline || n.summary}
  </h4>
- <div className="flex justify-start items-center text-xs font-bold mt-1 gap-3">
+ <div className="flex justify-start items-center text-sm font-bold mt-1 gap-3">
  <span className="text-text">
  {n.source?.toUpperCase() || 'FINANCE INC.'}
  </span>
@@ -1788,7 +1788,7 @@ export function FinancialModeling() {
  </div>
  </div>
  
- <div className="flex flex-col gap-2 mb-4 text-xs text-text leading-relaxed">
+ <div className="flex flex-col gap-2 mb-4 text-sm text-text leading-relaxed">
  <p>
  Metrics as of 31 May 2026. Columns are sortable by 30Y return. Returns over 1 year are annualized.
  <span className="text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded ml-2 border border-rose-100">Highlighted</span> indicate returns lower than US Inflation.
@@ -1847,7 +1847,7 @@ export function FinancialModeling() {
  </div>
  </div>
  
- <div className="flex flex-col gap-2 mb-4 text-xs text-text leading-relaxed">
+ <div className="flex flex-col gap-2 mb-4 text-sm text-text leading-relaxed">
  <p>
  Track the most referenced equity benchmark indices reflecting global macroeconomic stability and corporate health. Performance figures are native to local currencies.
  </p>
@@ -1904,7 +1904,7 @@ export function FinancialModeling() {
  <h4 className="text-xl font-bold text-text flex items-center gap-2">
  Lazy Portfolios
  </h4>
- <div className="text-xs font-bold text-text mt-1 flex items-center gap-2">
+ <div className="text-sm font-bold text-text mt-1 flex items-center gap-2">
  <span>Consolidated returns as of 31 May 2026</span>
  </div>
  </div>
@@ -1913,13 +1913,13 @@ export function FinancialModeling() {
  <div className="w-full bg-white rounded-[1.5rem] border border-border shadow-sm overflow-hidden transform transition-all duration-300 relative">
  <div className="overflow-x-auto relative z-10">
  <table className="w-full text-left border-none relative">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-xs font-semibold text-text leading-none">
+ <thead className="bg-[#f8f9fa] border-b border-border/80 text-sm font-semibold text-text leading-none">
  <tr>
  <th className="py-2.5 px-3 text-left whitespace-nowrap">Portfolio</th>
  <th className="py-2.5 px-2 text-center whitespace-nowrap border-l border-border" colSpan={3}>Allocation</th>
  <th className="py-2.5 px-2 text-center whitespace-nowrap border-l border-border" colSpan={4}>Annualized Returns</th>
  </tr>
- <tr className="bg-white border-b border-border text-xs text-text">
+ <tr className="bg-white border-b border-border text-sm text-text">
  <th className="py-1.5 px-3 text-left">Author & Strategy</th>
  <th className="py-1.5 px-1.5 text-center border-l border-border">STOCKS</th>
  <th className="py-1.5 px-1.5 text-center">BONDS</th>
@@ -1937,17 +1937,17 @@ export function FinancialModeling() {
  <td className="py-2 px-3 max-w-[240px]">
  <div className="flex flex-col">
  <div className="font-bold text-text text-sm truncate transition-colors leading-tight">{item.name}</div>
- <div className="text-xs text-text font-bold truncate leading-tight mt-0.5">{item.author}</div>
+ <div className="text-sm text-text font-bold truncate leading-tight mt-0.5">{item.author}</div>
  </div>
  </td>
  <td className="py-2 px-1 text-center border-l border-slate-50">
- <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded bg-blue-50/80 text-blue-700 font-bold text-xs">{item.stocks}</span>
+ <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded bg-blue-50/80 text-blue-700 font-bold text-sm">{item.stocks}</span>
  </td>
  <td className="py-2 px-1 text-center">
- <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded bg-surface-2 text-text font-bold text-xs">{item.bonds}</span>
+ <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded bg-surface-2 text-text font-bold text-sm">{item.bonds}</span>
  </td>
  <td className="py-2 px-1 text-center">
- <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded bg-amber-50 text-amber-700 font-bold text-xs">{item.comm}</span>
+ <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded bg-amber-50 text-amber-700 font-bold text-sm">{item.comm}</span>
  </td>
  <td className="py-2 px-2 text-right border-l border-slate-50 font-bold text-text">{item.y1.toFixed(2)}</td>
  <td className="py-2 px-2 text-right font-bold text-text">{item.y5.toFixed(2)}</td>
@@ -1977,25 +1977,21 @@ export function FinancialModeling() {
  <div className="w-full xl:w-1/2 flex flex-col gap-8">
  
  {/* BEST ETFs TABLE */}
- <div className="w-full">
- <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/80 pb-4 gap-4">
- <div>
- <h3 className="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
- <BarChart2 size={20} className="text-pv-blue" />
- Best of ETF
- </h3>
- </div>
- </div>
- 
- <div className="flex flex-col gap-2 mb-4 text-xs text-text leading-relaxed">
- <p>
- A curated selection of top performing exchange-traded funds globally over the trailing 12 months. Track momentum in leading thematic indexes and broad markets.
- </p>
- <p>
- Sorted by highest 1-Year trailing return. Includes equity, fixed income, and specialized strategy structures. Last update: 31 May 2026.
- </p>
- </div>
+		<div className="w-full">
+			<div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/80 pb-4 gap-4">
+				<div>
+					<h3 className="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
+						<BarChart2 size={20} className="text-pv-blue" />
+						BEST 100 ETF RETURNS - LAST 12 MONTHS
+					</h3>
+				</div>
+			</div>
 
+			<div className="flex flex-col gap-2 mb-4 text-sm text-text leading-relaxed">
+				<p>
+					Top performing global ETFs over the trailing 12 months, sorted by highest 1-Year return. Track leading thematic indexes. Last Update: 30 June 2026.
+				</p>
+			</div>
  <div className="w-full bg-white rounded-[2rem] border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
  <div className="overflow-x-auto">
  <table className="w-full text-left border-none relative">
@@ -2066,14 +2062,14 @@ export function FinancialModeling() {
  {!([0, 6].includes(new Date().getDay())) && (
  <button 
  onClick={() => setMarqueeMode('stocks')}
- className={cn("text-xs font-medium px-3 py-1.5 rounded-xl transition-all", marqueeMode === 'stocks' ? "bg-pv-blue text-white" : "text-text hover:bg-surface-2")}
+ className={cn("text-sm font-medium px-3 py-1.5 rounded-xl transition-all", marqueeMode === 'stocks' ? "bg-pv-blue text-white" : "text-text hover:bg-surface-2")}
  >
  Global
  </button>
  )} 
  <button 
  onClick={() => setMarqueeMode('crypto')}
- className={cn("text-xs font-medium px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5", marqueeMode === 'crypto' ? "bg-emerald-500 text-white" : "text-text hover:bg-surface-2")}
+ className={cn("text-sm font-medium px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5", marqueeMode === 'crypto' ? "bg-emerald-500 text-white" : "text-text hover:bg-surface-2")}
  >
  <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", marqueeMode === 'crypto' ? "bg-white" : "bg-emerald-500")} /> Live Crypto
  </button>
@@ -2085,16 +2081,16 @@ export function FinancialModeling() {
  const data = tickerPrices[sym];
  return (
  <div key={`stock-${sym}-${idx}`} className="flex items-center h-full gap-3 px-6 border-r border-border/40 whitespace-nowrap group hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => fetchStockData(sym)}>
- <span className="font-bold text-xs text-text">{sym}</span>
+ <span className="font-bold text-sm text-text">{sym}</span>
  {data ? (
  <>
- <span className="font-mono text-xs font-bold"><BlinkingPriceText price={data.price} formattedText={`$${formatCryptoPrice(data.price)}`} /></span>
- <span className={cn("text-xs font-bold flex items-center bg-transparent px-0", (data.changesPercentage || 0) >= 0 ? "text-green" : "text-pv-red")}>
+ <span className="font-mono text-sm font-bold"><BlinkingPriceText price={data.price} formattedText={`$${formatCryptoPrice(data.price)}`} /></span>
+ <span className={cn("text-sm font-bold flex items-center bg-transparent px-0", (data.changesPercentage || 0) >= 0 ? "text-green" : "text-pv-red")}>
  {(data.changesPercentage || 0) > 0 ? "+" : ""}{(data.changesPercentage || 0).toFixed(2)}%
  </span>
  </>
  ) : (
- <span className="font-mono text-xs text-text w-16 text-center animate-pulse">...</span>
+ <span className="font-mono text-sm text-text w-16 text-center animate-pulse">...</span>
  )}
  </div>
  );
@@ -2104,9 +2100,9 @@ export function FinancialModeling() {
  const isUp = c.change >= 0;
  return (
  <div key={`crypto-${c.id}-${idx}`} className="flex items-center h-full gap-3 px-6 border-r border-border/40 whitespace-nowrap group hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => setSelectedTradingViewSymbol(c.symbol)}>
- <span className="font-bold text-xs text-text">{c.symbol}</span>
- <span className="font-mono text-xs font-bold"><BlinkingPriceText price={c.price} formattedText={`$${c.price < 10 ? c.price.toFixed(4) : c.price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} /></span>
- <span className={cn("text-xs font-bold flex items-center bg-transparent px-0", isUp ? "text-green" : "text-pv-red")}>
+ <span className="font-bold text-sm text-text">{c.symbol}</span>
+ <span className="font-mono text-sm font-bold"><BlinkingPriceText price={c.price} formattedText={`$${c.price < 10 ? c.price.toFixed(4) : c.price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} /></span>
+ <span className={cn("text-sm font-bold flex items-center bg-transparent px-0", isUp ? "text-green" : "text-pv-red")}>
  {isUp ? "+" : ""}{c.change.toFixed(2)}%
  </span>
  </div>

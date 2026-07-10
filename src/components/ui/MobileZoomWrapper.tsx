@@ -29,7 +29,13 @@ export function MobileZoomWrapper({ children, scaleMobile }: MobileZoomWrapperPr
     const updateHeight = () => {
       if (containerRef.current) {
         const originalHeight = containerRef.current.scrollHeight || containerRef.current.offsetHeight;
-        setScaledHeight(originalHeight * scaleMobile);
+        const newHeight = originalHeight * scaleMobile;
+        setScaledHeight((prev) => {
+          if (typeof prev === "number" && Math.abs(prev - newHeight) < 1) {
+            return prev;
+          }
+          return newHeight;
+        });
       }
     };
 
@@ -37,7 +43,10 @@ export function MobileZoomWrapper({ children, scaleMobile }: MobileZoomWrapperPr
 
     // Use ResizeObserver to detect internal changes (results loaded, graphs resizing, etc.)
     const observer = new ResizeObserver(() => {
-      updateHeight();
+      // Use requestAnimationFrame to avoid "ResizeObserver loop limit exceeded" and state-update sync issues
+      window.requestAnimationFrame(() => {
+        updateHeight();
+      });
     });
     
     if (containerRef.current) {
@@ -51,7 +60,7 @@ export function MobileZoomWrapper({ children, scaleMobile }: MobileZoomWrapperPr
       observer.disconnect();
       clearTimeout(timer);
     };
-  }, [isMobile, scaleMobile, children]);
+  }, [isMobile, scaleMobile]);
 
   if (!isMobile) {
     return <>{children}</>;

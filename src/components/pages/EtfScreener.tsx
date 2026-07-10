@@ -37,6 +37,9 @@ export function EtfScreener() {
  }
  };
 
+ const [currentPage, setCurrentPage] = useState(1);
+ const ITEMS_PER_PAGE = 30;
+
  const parseNum = (val: string) => parseFloat(val.replace(/[^0-9,-]/g, '').replace(',', '.')) || 0;
 
  const filteredETFs = useMemo(() => {
@@ -74,10 +77,18 @@ export function EtfScreener() {
  });
  }, [search, selectedCategory, selectedDist, sortField, sortDirection, minAum, maxFee, minYtd]);
 
+ // Reset page when filters change
+ React.useEffect(() => {
+   setCurrentPage(1);
+ }, [search, selectedCategory, selectedDist, minAum, maxFee, minYtd]);
+
+ const totalPages = Math.ceil(filteredETFs.length / ITEMS_PER_PAGE);
+ const currentETFs = filteredETFs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
  return (
  <div className="w-full h-full flex flex-col bg-surface-2 text-text">
  
- <div className="flex-1 overflow-hidden flex flex-col w-full mx-auto p-2 md:p-6 lg:p-8">
+ <div className="flex-1 overflow-hidden flex flex-col w-full p-4">
  <div className="mb-6 flex flex-col gap-4">
  <div className="flex flex-col lg:flex-row gap-4">
  <div className="relative flex-1">
@@ -110,12 +121,12 @@ export function EtfScreener() {
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 p-5 bg-white border border-border rounded-[2rem] shadow-sm">
  
  <div className="space-y-1">
- <label className="text-xs font-bold text-text pl-1 font-mono">{'Category / Sector'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{'Category / Sector'}</label>
  <div className="relative">
  <select
  value={selectedCategory}
  onChange={(e) => setSelectedCategory(e.target.value)}
- className="appearance-none w-full pl-4 pr-10 py-2 bg-surface-2 border border-border rounded-2xl text-xs font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all truncate"
+ className="appearance-none w-full pl-4 pr-10 py-2 bg-surface-2 border border-border rounded-2xl text-sm font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all truncate"
  >
  {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
  </select>
@@ -124,12 +135,12 @@ export function EtfScreener() {
  </div>
 
  <div className="space-y-1">
- <label className="text-xs font-bold text-text pl-1 font-mono">{'Distribution Policy'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{'Distribution Policy'}</label>
  <div className="relative">
  <select
  value={selectedDist}
  onChange={(e) => setSelectedDist(e.target.value)}
- className="appearance-none w-full pl-4 pr-10 py-2 bg-surface-2 border border-border rounded-2xl text-xs font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all"
+ className="appearance-none w-full pl-4 pr-10 py-2 bg-surface-2 border border-border rounded-2xl text-sm font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all"
  >
  {dists.map(d => <option key={d} value={d}>{d}</option>)}
  </select>
@@ -138,37 +149,37 @@ export function EtfScreener() {
  </div>
 
  <div className="space-y-1">
- <label className="text-xs font-bold text-text pl-1 font-mono">{'Min AUM (M€)'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{'Min AUM (M€)'}</label>
  <input 
  type="number"
  placeholder="e.g. 500"
  value={minAum}
  onChange={(e) => setMinAum(e.target.value)}
- className="w-full px-4 py-2 bg-surface-2 border border-border rounded-2xl text-xs font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all placeholder:text-text"
+ className="w-full px-4 py-2 bg-surface-2 border border-border rounded-2xl text-sm font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all placeholder:text-text"
  />
  </div>
 
  <div className="space-y-1">
- <label className="text-xs font-bold text-text pl-1 font-mono">{'Max TER Fee (%)'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{'Max TER Fee (%)'}</label>
  <input 
  type="number"
  placeholder="e.g. 0.20"
  step="0.01"
  value={maxFee}
  onChange={(e) => setMaxFee(e.target.value)}
- className="w-full px-4 py-2 bg-surface-2 border border-border rounded-2xl text-xs font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all placeholder:text-text"
+ className="w-full px-4 py-2 bg-surface-2 border border-border rounded-2xl text-sm font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all placeholder:text-text"
  />
  </div>
 
  <div className="space-y-1">
- <label className="text-xs font-bold text-text pl-1 font-mono">{'Min YTD Return (%)'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{'Min YTD Return (%)'}</label>
  <input 
  type="number"
  placeholder="e.g. 5.1"
  step="0.1"
  value={minYtd}
  onChange={(e) => setMinYtd(e.target.value)}
- className="w-full px-4 py-2 bg-surface-2 border border-border rounded-2xl text-xs font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all placeholder:text-text"
+ className="w-full px-4 py-2 bg-surface-2 border border-border rounded-2xl text-sm font-semibold focus:ring-1 focus:ring-pv-blue outline-none text-text transition-all placeholder:text-text"
  />
  </div>
 
@@ -207,8 +218,8 @@ export function EtfScreener() {
  <th className="py-4 px-6 text-right whitespace-nowrap hidden lg:table-cell">{'Distribution'}</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-border/40 text-[13px]">
- {filteredETFs.map((etf, idx) => {
+ <tbody className="divide-y divide-border/40 text-sm">
+ {currentETFs.map((etf, idx) => {
  const ytdValue = parseNum(etf.ytdReturn);
  const isPositive = ytdValue >= 0;
  
@@ -217,11 +228,13 @@ export function EtfScreener() {
  <td className="py-3 px-6 font-bold text-text bg-white/50" title={etf.name}>
  <div className="flex flex-col">
  <span className="truncate max-w-[250px] md:max-w-[400px]">{etf.name}</span>
- {etf.ticker && <span className="text-xs text-text font-bold mt-0.5 ">{etf.ticker.toUpperCase()}</span>}
+ {etf.ticker && <span className="text-sm text-text font-bold mt-0.5 ">{etf.ticker.toUpperCase()}</span>}
  </div>
  </td>
- <td className="py-3 px-4 font-medium text-text hidden sm:table-cell">{etf.category}</td>
- <td className="py-3 px-4 font-mono text-text text-xs ">{etf.isin}</td>
+ <td className="py-3 px-4 font-medium hidden sm:table-cell">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold bg-pv-blue/10 text-pv-blue border border-pv-blue/20">{etf.category}</span>
+                        </td>
+ <td className="py-3 px-4 font-mono text-text text-sm ">{etf.isin}</td>
  <td className="py-3 px-4 text-right font-medium text-text">{etf.sizeM ? `€${etf.sizeM}` : '-'}</td>
  <td className="py-3 px-4 text-right font-medium text-text">{etf.fee}</td>
  <td className={cn(
@@ -247,6 +260,29 @@ export function EtfScreener() {
  </tbody>
  </table>
  </div>
+ {totalPages > 1 && (
+   <div className="flex items-center justify-between px-6 py-4 bg-surface-2 border-t border-border sticky bottom-0 z-10">
+     <span className="text-sm font-medium text-text">
+       Page {currentPage} of {totalPages}
+     </span>
+     <div className="flex items-center gap-2">
+       <button 
+         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+         disabled={currentPage === 1}
+         className="px-4 py-2 bg-white border border-border rounded-xl text-sm font-bold text-text disabled:opacity-50 hover:bg-surface transition-colors shadow-sm"
+       >
+         Previous
+       </button>
+       <button 
+         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+         disabled={currentPage === totalPages}
+         className="px-4 py-2 bg-white border border-border rounded-xl text-sm font-bold text-text disabled:opacity-50 hover:bg-surface transition-colors shadow-sm"
+       >
+         Next
+       </button>
+     </div>
+   </div>
+ )}
  </div>
  </div>
  </div>

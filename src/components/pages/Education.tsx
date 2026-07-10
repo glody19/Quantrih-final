@@ -1,598 +1,454 @@
 import React, { useState, useEffect } from "react";
-import { BookOpen, Search, Star, MoveRight, ArrowUpRight, GraduationCap, PlayCircle, FileText, Video, Library, Activity, TrendingUp, Zap, Database, Calendar } from "lucide-react";
-import { motion } from "motion/react";
+import { 
+  BookOpen, 
+  Search, 
+  MoveRight, 
+  ArrowUpRight, 
+  PlayCircle, 
+  Video, 
+  Library, 
+  TrendingUp, 
+  Calendar, 
+  Zap, 
+  BookMarked,
+  Award,
+  Sparkles,
+  ExternalLink
+} from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { AdvancedRealTimeChart, EconomicCalendar, TechnicalAnalysis } from "react-ts-tradingview-widgets";
 
 interface Book {
- title: string;
- author: string;
- year: string;
- tag: string;
- summary: string;
- summaryFr: string;
- featured?: boolean;
- link: string;
- coverColor?: string;
- pattern?: "dots" | "lines" | "grid" | "none";
- isbn?: string;
+  title: string;
+  author: string;
+  year: string;
+  tag: string;
+  tagFr: string;
+  summary: string;
+  summaryFr: string;
+  review: string;
+  reviewFr: string;
+  keyTakeaways: string[];
+  keyTakeawaysFr: string[];
+  featured?: boolean;
+  link: string;
+  coverColor?: string;
+  isbn?: string;
 }
 
 interface VideoData {
- title: string;
- titleFr: string;
- speaker: string;
- tag: string;
- tagFr: string;
- lang: string;
- videoId: string;
- summary: string;
- summaryFr: string;
- featured?: boolean;
-}
-
-interface Research {
- title: string;
- titleFr: string;
- authors: string;
- year: string;
- tag: string;
- tagFr: string;
- summary: string;
- summaryFr: string;
- imageUrl: string;
- link: string;
- featured?: boolean;
+  title: string;
+  titleFr: string;
+  speaker: string;
+  tag: string;
+  tagFr: string;
+  lang: string;
+  videoId: string;
+  summary: string;
+  summaryFr: string;
+  featured?: boolean;
 }
 
 const BOOKS: Book[] = [
- {
-  title: "Options, Futures, and Other Derivatives",
-  author: "John C. Hull",
-  year: "2017",
-  tag: "Derivatives",
-  summary: "The definitive guide to derivatives markets and pricing models.",
-  summaryFr: "Le guide définitif sur les marchés dérivés et les modèles de valorisation.",
-  link: "https://www.amazon.com/Options-Futures-Other-Derivatives-10th/dp/013447208X",
-  coverColor: "#b91c1c",
-  isbn: "013447208X"
- },
- {
-  title: "Thinking, Fast and Slow",
-  author: "Daniel Kahneman",
-  year: "2011",
-  tag: "Behavioral Finance",
-  summary: "Insights into human psychology, cognitive biases, and economic decision making.",
-  summaryFr: "Perspectives sur la psychologie humaine, les biais cognitifs et la prise de décision économique.",
-  featured: true,
-  link: "https://www.amazon.com/Thinking-Fast-Slow-Daniel-Kahneman/dp/0374533555",
-  coverColor: "#333",
-  isbn: "0374533555"
- },
- {
-  title: "The Misbehavior of Markets",
-  author: "Benoit Mandelbrot",
-  year: "2004",
-  tag: "Quantitative",
-  summary: "A fractal view of financial turbulence and market behavior.",
-  summaryFr: "Une vision fractale des turbulences financières et du comportement des marchés.",
-  link: "https://www.amazon.com/Misbehavior-Markets-Fractal-Financial-Turbulence/dp/0465043577",
-  coverColor: "#1e3a8a",
-  isbn: "0465043577"
- },
- {
-  title: "Fooled by Randomness",
-  author: "Nassim Nicholas Taleb",
-  year: "2001",
-  tag: "Risk Management",
-  summary: "The hidden role of chance in life and in the markets.",
-  summaryFr: "Le rôle caché du hasard dans la vie et sur les marchés.",
-  link: "https://www.amazon.com/Fooled-Randomness-Hidden-Markets-Incerto/dp/0812975219",
-  coverColor: "#1e3a8a",
-  isbn: "0812975219"
- },
- {
-  title: "Algorithmic Trading",
-  author: "Ernie Chan",
-  year: "2013",
-  tag: "Algorithmic Trading",
-  summary: "Winning strategies and their rationale in systematic trading.",
-  summaryFr: "Stratégies gagnantes et leur logique dans le trading systématique.",
-  link: "https://www.amazon.com/Algorithmic-Trading-Winning-Strategies-Rationale/dp/1118460146",
-  coverColor: "#059669",
-  isbn: "1118460146"
- },
- {
-  title: "Quantitative Equity Portfolio Management",
-  author: "Ludwig B. Chincarini",
-  year: "2006",
-  tag: "Portfolio Management",
-  summary: "An active approach to portfolio construction and management.",
-  summaryFr: "Une approche active de la construction et de la gestion de portefeuille.",
-  link: "https://www.amazon.com/Quantitative-Equity-Portfolio-Management-Construction/dp/0071459391",
-  coverColor: "#0f172a",
-  isbn: "0071459391"
- },
- {
-  title: "Machine Learning for Algorithmic Trading",
-  author: "Stefan Jansen",
-  year: "2020",
-  tag: "Machine Learning",
-  summary: "Predictive models to extract signals from market and alternative data.",
-  summaryFr: "Modèles prédictifs pour extraire des signaux du marché et des données alternatives.",
-  link: "https://www.amazon.com/Machine-Learning-Algorithmic-Trading-alternative/dp/1839217715",
-  coverColor: "#4338ca",
-  isbn: "1839217715"
- },
- // Corporate Finance & Valuation (CFO)
- { 
- title: "Valuation: Measuring and Managing the Value of Companies", 
- author: "McKinsey & Company", 
- year: "2020", 
- tag: "Valuation", 
- summary: "The ultimate guide to corporate valuation and financial strategy for CFOs.", 
- summaryFr: "Le guide de référence pour la valorisation d'entreprise et la stratégie financière.",
- featured: true, 
- link: "https://www.amazon.com/Valuation-Measuring-Managing-Companies-Finance/dp/1119610885", 
- coverColor: "#0f172a",
- isbn: "1119610885"
- },
- { 
- title: "Corporate Finance", 
- author: "Jonathan Berk, Peter DeMarzo", 
- year: "2019", 
- tag: "Corporate", 
- summary: "Core principles of modern corporate finance, capital structure, and funding.", 
- summaryFr: "Principes fondamentaux de la finance d'entreprise moderne et structure du capital.",
- link: "https://www.amazon.com/Corporate-Finance-Jonathan-Berk/dp/013408327X", 
- coverColor: "#b91c1c",
- isbn: "013408327X"
- },
- 
- // Quantitative Engineering (CTO)
- { 
- title: "Advances in Financial Machine Learning", 
- author: "Marcos Lopez de Prado", 
- year: "2018", 
- tag: "Machine Learning", 
- summary: "Advanced techniques for applying ML to financial data avoiding overfitting.", 
- summaryFr: "Techniques avancées pour appliquer le ML aux données financières sans surapprentissage.",
- featured: true,
- link: "https://www.amazon.com/Advances-Financial-Machine-Learning-Marcos/dp/1119482089", 
- coverColor: "#4338ca",
- isbn: "1119482089"
- },
- { 
- title: "Active Portfolio Management", 
- author: "Richard Grinold, Ronald Kahn", 
- year: "1999", 
- tag: "Quant Investing", 
- summary: "Quantitative approach to providing consistent alpha, the bible of systematic managers.", 
- summaryFr: "L'approche quantitative pour générer de l'alpha régulier, la bible des gérants systématiques.",
- link: "https://www.amazon.com/Active-Portfolio-Management-Quantitative-Controlling/dp/0070248826", 
- coverColor: "#1e3a8a",
- isbn: "0070248826"
- },
- { 
- title: "Python for Data Analysis", 
- author: "Wes McKinney", 
- year: "2017", 
- tag: "Data Science", 
- summary: "Detailed guide to data manipulation for financial analysis by pandas creator.", 
- summaryFr: "Guide détaillé de manipulation de données pour l'analyse financière par le créateur de pandas.",
- link: "https://www.amazon.com/Python-Data-Analysis-Wrangling-IPython/dp/1491957662", 
- coverColor: "#059669",
- isbn: "1491957662"
- },
- 
- // Value & Fundamentals
- { 
- title: "The Intelligent Investor", 
- author: "Benjamin Graham", 
- year: "1949", 
- tag: "Value Investing", 
- summary: "The definitive book on value investing and defensive portfolio management.", 
- summaryFr: "L'ouvrage de référence sur l'investissement axé sur la valeur.",
- featured: true, 
- link: "https://www.amazon.com/Intelligent-Investor-Benjamin-Graham/dp/0060555661", 
- coverColor: "#1e3a8a",
- isbn: "0060555661"
- },
- { 
- title: "Security Analysis", 
- author: "Benjamin Graham", 
- year: "1934", 
- tag: "Fundamental", 
- summary: "The roadmap for analysis of financial securities.", 
- summaryFr: "La feuille de route pour l'analyse des titres financiers.",
- link: "https://www.amazon.com/Security-Analysis-Classic-1934-Edition/dp/0071448209", 
- coverColor: "#1e3a8a",
- isbn: "0071448209"
- },
- { 
- title: "Margin of Safety", 
- author: "Seth Klarman", 
- year: "1991", 
- tag: "Risk Management", 
- summary: "Risk-averse value investing strategies for the thoughtful investor.", 
- summaryFr: "Stratégies d'investissement de valeur pour l'investisseur prudent.",
- link: "https://www.goodreads.com/book/show/711270.Margin_of_Safety", 
- coverColor: "#333",
- isbn: "9780887305108"
- },
- 
- // Quantitative & Systematic
- { 
- title: "Portfolio Selection", 
- author: "Harry Markowitz", 
- year: "1952", 
- tag: "Quant Investing", 
- summary: "The foundational paper that introduced Modern Portfolio Theory.", 
- summaryFr: "Le document fondateur qui a introduit la théorie moderne du portefeuille.",
- featured: true,
- link: "https://www.amazon.com/Portfolio-Selection-Efficient-Diversification-Investment/dp/0300013728",
- coverColor: "#2c6cad",
- isbn: "0300013728"
- },
- { 
- title: "Expected Returns", 
- author: "Antti Ilmanen", 
- year: "2011", 
- tag: "Quant Investing", 
- summary: "An investor's guide to harvesting market rewards across asset classes.", 
- summaryFr: "Un guide complet sur les rendements attendus de toutes les grandes classes d'actifs.",
- link: "https://www.amazon.com/Expected-Returns-Investors-Harvesting-Rewards/dp/1119990726",
- coverColor: "#4338ca",
- isbn: "1119990726"
- },
- { 
- title: "Dynamic Hedging", 
- author: "Nassim Nicholas Taleb", 
- year: "1997", 
- tag: "Derivatives", 
- summary: "Managing vanilla and exotic options from a practitioner's perspective.", 
- summaryFr: "Gestion des options classiques et exotiques du point de vue d'un praticien.",
- link: "https://www.amazon.com/Dynamic-Hedging-Managing-Vanilla-Exotic/dp/0471152803",
- coverColor: "#b91c1c",
- isbn: "0471152803"
- },
- { 
- title: "Option Volatility and Pricing", 
- author: "Sheldon Natenberg", 
- year: "1994", 
- tag: "Derivatives", 
- summary: "Advanced trading strategies and techniques for options.", 
- summaryFr: "Stratégies avancées et techniques de trading sur les options.",
- link: "https://www.amazon.com/Option-Volatility-Pricing-Strategies-Techniques/dp/0071818774",
- coverColor: "#059669",
- isbn: "0071818774"
- },
- 
- // Behavioral & Psychology
- { 
- title: "Thinking, Fast and Slow", 
- author: "Daniel Kahneman", 
- year: "2011", 
- tag: "Psychology", 
- summary: "Explores the psychological biases that influence human judgment.", 
- summaryFr: "Exploration des biais psychologiques influençant le jugement.",
- featured: true, 
- link: "https://www.amazon.com/Thinking-Fast-Slow-Daniel-Kahneman/dp/0374533555", 
- coverColor: "#991b1b",
- isbn: "0374533555"
- },
- { 
- title: "The Psychology of Money", 
- author: "Morgan Housel", 
- year: "2020", 
- tag: "Behavioral", 
- summary: "Timeless lessons on wealth, greed, and happiness in financial decision-making.", 
- summaryFr: "Leçons intemporelles sur la richesse et l'avidité.",
- link: "https://www.amazon.com/Psychology-Money-Timeless-lessons-happiness/dp/0857197681",
- coverColor: "#b91c1c",
- isbn: "0857197681"
- },
- { 
- title: "The Misbehavior of Markets", 
- author: "Benoit Mandelbrot", 
- year: "2004", 
- tag: "Fractal Finance", 
- summary: "A fractal view of financial turbulence, risk, and reward.", 
- summaryFr: "Une vision fractale de la turbulence financière et du risque.",
- link: "https://www.amazon.com/Misbehavior-Markets-Fractal-Financial-Turbulence/dp/0465043577",
- coverColor: "#4338ca",
- isbn: "0465043577"
- },
-
- // Strategy & Institutional
- { 
- title: "Principles", 
- author: "Ray Dalio", 
- year: "2017", 
- tag: "Strategy", 
- summary: "Unconventional principles for life and work from Bridgewater founder.", 
- summaryFr: "Principes non conventionnels pour la vie et le travail.",
- featured: true, 
- link: "https://www.amazon.com/Principles-Life-Work-Ray-Dalio/dp/1501124021", 
- coverColor: "#333333",
- isbn: "1501124021"
- },
- 
- // Market History & Trading
- { 
- title: "Reminiscences of a Stock Operator", 
- author: "Edwin Lefèvre", 
- year: "1923", 
- tag: "History", 
- summary: "A fictionalized biography of Jesse Livermore, one of the greatest traders of all time.", 
- summaryFr: "Biographie romancée de Jesse Livermore, l'un des plus grands traders.",
- link: "https://www.amazon.com/Reminiscences-Stock-Operator-Edwin-Lefèvre/dp/0471059706", 
- coverColor: "#451a03",
- isbn: "0471059706"
- },
- { 
- title: "Flash Boys", 
- author: "Michael Lewis", 
- year: "2014", 
- tag: "HFT", 
- summary: "A Wall Street revolt and the rise of high-frequency trading.", 
- summaryFr: "Une révolte à Wall Street et l'essor du trading à haute fréquence.",
- link: "https://www.amazon.com/Flash-Boys-Wall-Street-Revolt/dp/0393244660", 
- coverColor: "#0f172a",
- isbn: "0393244660"
- },
- { 
- title: "The Snowball", 
- author: "Alice Schroeder", 
- year: "2008", 
- tag: "Biography", 
- summary: "The definitive biography of Warren Buffett and his investment philosophy.", 
- summaryFr: "La biographie définitive de Warren Buffett et de sa philosophie.",
- link: "https://www.amazon.com/Snowball-Warren-Buffett-Business-Life/dp/0553384619", 
- coverColor: "#f59e0b",
- isbn: "0553384619"
- },
+  {
+    title: "Options, Futures, and Other Derivatives",
+    author: "John C. Hull",
+    year: "2017",
+    tag: "Derivatives",
+    tagFr: "Produits Dérivés",
+    summary: "The global benchmark on derivatives markets, trading dynamics, and risk management pricing architectures.",
+    summaryFr: "La référence mondiale sur les marchés dérivés, la dynamique du trading et la tarification.",
+    review: "This masterpiece dissects how contracts are created, traded, and valued. Essential reading for structured finance engineers and systematic quantitative managers.",
+    reviewFr: "Ce chef-d'œuvre décortique la création, l'échange et l'évaluation des contrats. Lecture indispensable pour les ingénieurs quantitatifs.",
+    keyTakeaways: [
+      "Deep understanding of Black-Scholes-Merton pricing formulation.",
+      "Hands-on risk neutral valuation of multi-asset exotics.",
+      "Practical hedging techniques using delta, gamma, and vega parameters."
+    ],
+    keyTakeawaysFr: [
+      "Compréhension approfondie de la formulation de Black-Scholes-Merton.",
+      "Évaluation neutre au risque des options classiques et exotiques.",
+      "Techniques pratiques de couverture utilisant le delta, le gamma et le vega."
+    ],
+    coverColor: "#b91c1c",
+    isbn: "013447208X",
+    featured: true,
+    link: "https://www.amazon.com/Options-Futures-Other-Derivatives-10th/dp/013447208X"
+  },
+  {
+    title: "Advances in Financial Machine Learning",
+    author: "Marcos Lopez de Prado",
+    year: "2018",
+    tag: "Machine Learning",
+    tagFr: "Apprentissage Automatique",
+    summary: "A pioneering exploration of machine learning algorithms applied to modern quantitative asset pricing.",
+    summaryFr: "Une exploration pionnière des algorithmes de machine learning appliqués à la tarification quantitative moderne.",
+    review: "De Prado exposes why standard ML approaches fail in finance and details robust statistical solutions to avoid overfitting and data leakage.",
+    reviewFr: "De Prado explique pourquoi les approches standards échouent en finance et détaille des solutions robustes pour éviter le surapprentissage.",
+    keyTakeaways: [
+      "Fractionally differentiated features to maintain signal and stationarity.",
+      "Triple-barrier method for robust trade labeling and signal alignment.",
+      "Purged and embargoed cross-validation to eliminate look-ahead leakage."
+    ],
+    keyTakeawaysFr: [
+      "Différenciation fractionnaire pour préserver le signal tout en rendant stationnaire.",
+      "Méthode de la triple barrière pour un étiquetage robuste des signaux.",
+      "Validation croisée purgée et avec embargo pour éliminer les fuites de données."
+    ],
+    coverColor: "#4338ca",
+    isbn: "1119482089",
+    featured: true,
+    link: "https://www.amazon.com/Advances-Financial-Machine-Learning-Marcos/dp/1119482089"
+  },
+  {
+    title: "The Intelligent Investor",
+    author: "Benjamin Graham",
+    year: "1949",
+    tag: "Value Investing",
+    tagFr: "Investissement de Valeur",
+    summary: "The definitive foundation on value investing, risk mitigation, and emotional market discipline.",
+    summaryFr: "La fondation définitive sur l'investissement de valeur, l'atténuation des risques et la discipline du marché.",
+    review: "Graham teaches the art of defensive portfolio building, focusing on intrinsic value and separation of speculative noise from real corporate assets.",
+    reviewFr: "Graham enseigne l'art de la construction de portefeuille défensif, axé sur la valeur intrinsèque et le rejet du bruit spéculatif.",
+    keyTakeaways: [
+      "Strict margin of safety to protect capital against sudden market drawdowns.",
+      "Defensive asset allocation adjusted for risk tolerance and time horizon.",
+      "Adoption of 'Mr. Market' framework to exploit price swings rather than fear them."
+    ],
+    keyTakeawaysFr: [
+      "Marge de sécurité stricte pour protéger le capital contre les baisses de marché.",
+      "Allocation d'actifs défensive adaptée à la tolérance au risque.",
+      "Adoption du cadre 'Mr. Market' pour exploiter les fluctuations de prix."
+    ],
+    coverColor: "#1e3a8a",
+    isbn: "0060555661",
+    featured: true,
+    link: "https://www.amazon.com/Intelligent-Investor-Benjamin-Graham/dp/0060555661"
+  },
+  {
+    title: "Active Portfolio Management",
+    author: "Richard Grinold & Ronald Kahn",
+    year: "1999",
+    tag: "Quant Investing",
+    tagFr: "Gestion Quantitative",
+    summary: "The definitive mathematical guide for institutional investment managers and risk allocators.",
+    summaryFr: "Le guide mathématique de référence pour les gestionnaires d'investissements institutionnels.",
+    review: "Known as the Bible of Quantitative Finance, this text explains the rigorous optimization formulas required to consistently extract market alpha.",
+    reviewFr: "Considéré comme la Bible de la finance quantitative, ce texte explique les formules rigoureuses pour extraire l'alpha.",
+    keyTakeaways: [
+      "The Fundamental Law of Active Management: Info Ratio = Info Coefficient × Sqrt(Breadth).",
+      "Rigorous risk budgeting and covariance optimization frameworks.",
+      "Implementation of transaction cost modeling into portfolio selection."
+    ],
+    keyTakeawaysFr: [
+      "La Loi Fondamentale de la Gestion Active : Ratio d'Info = Coefficient d'Info × Racine(Largeur).",
+      "Budgétisation rigoureuse des risques et cadres d'optimisation de la covariance.",
+      "Intégration de la modélisation des coûts de transaction dans la sélection."
+    ],
+    coverColor: "#0f172a",
+    isbn: "0070248826",
+    featured: false,
+    link: "https://www.amazon.com/Active-Portfolio-Management-Quantitative-Controlling/dp/0070248826"
+  },
+  {
+    title: "Thinking, Fast and Slow",
+    author: "Daniel Kahneman",
+    year: "2011",
+    tag: "Behavioral Finance",
+    tagFr: "Finance Comportementale",
+    summary: "Comprehensive investigation into cognitive biases, heuristics, and human decision architectures under risk.",
+    summaryFr: "Enquête approfondie sur les biais cognitifs et l'architecture des décisions humaines face au risque.",
+    review: "Nobel Laureate Daniel Kahneman reveals the dual systems of human thought, directly explaining why retail investors consistently panic.",
+    reviewFr: "Le lauréat du prix Nobel Daniel Kahneman révèle les doubles systèmes de la pensée humaine face aux pertes.",
+    keyTakeaways: [
+      "System 1 (fast, intuitive) vs. System 2 (slow, analytical) cognitive allocation.",
+      "Loss Aversion: humans feel the pain of losses twice as intensely as the pleasure of gains.",
+      "Overconfidence bias leading to excessive speculative trading and cost drag."
+    ],
+    keyTakeawaysFr: [
+      "Allocation cognitive entre le Système 1 (rapide, intuitif) et le Système 2 (lent, analytique).",
+      "Aversion à la perte : la douleur d'une perte est ressentie deux fois plus que le plaisir d'un gain.",
+      "Biais de surconfiance entraînant des transactions spéculatives excessives."
+    ],
+    coverColor: "#333333",
+    isbn: "0374533555",
+    featured: false,
+    link: "https://www.amazon.com/Thinking-Fast-Slow-Daniel-Kahneman/dp/0374533555"
+  },
+  {
+    title: "Principles",
+    author: "Ray Dalio",
+    year: "2017",
+    tag: "Investment Philosophy",
+    tagFr: "Philosophie d'Investissement",
+    summary: "Dalio shares the core principles that guided his life and career, applicable to both personal decisions and systematic investment strategies.",
+    summaryFr: "Dalio partage les principes fondamentaux qui ont guidé sa vie et sa carrière, applicables aux décisions personnelles et aux stratégies d'investissement.",
+    review: "Essential for understanding long-term macro thinking and the importance of radical transparency in decision-making processes.",
+    reviewFr: "Essentiel pour comprendre la réflexion macro à long terme et l'importance de la transparence radicale dans les processus de décision.",
+    keyTakeaways: [
+      "The importance of radical truth and transparency in all decision making.",
+      "The evolution of systematic and algorithmic decision engines.",
+      "Understanding the debt cycles and the macro-economic forces."
+    ],
+    keyTakeawaysFr: [
+      "L'importance de la vérité radicale et de la transparence dans toute prise de décision.",
+      "L'évolution des moteurs de décision systématiques et algorithmiques.",
+      "Compréhension des cycles de la dette et des forces macro-économiques."
+    ],
+    coverColor: "#1e293b",
+    isbn: "1501124021",
+    featured: false,
+    link: "https://www.amazon.com/Principles-Life-Work-Ray-Dalio/dp/1501124021"
+  },
+  {
+    title: "The Little Book of Common Sense Investing",
+    author: "John C. Bogle",
+    year: "2007",
+    tag: "Passive Investing",
+    tagFr: "Investissement Passif",
+    summary: "Bogle makes the compelling case for low-cost, long-term index fund investing over active stock selection.",
+    summaryFr: "Bogle plaide de manière convaincante pour l'investissement passif à long terme via des fonds indiciels à bas coûts plutôt que la sélection active.",
+    review: "The seminal work on why fees matter and why the market, as a whole, can be outpaced by simple, diversified, and cost-effective vehicles.",
+    reviewFr: "L'ouvrage fondamental sur l'importance des frais et pourquoi le marché peut être surpassé par des véhicules simples, diversifiés et rentables.",
+    keyTakeaways: [
+      "The power of compounding returns over long investment horizons.",
+      "Cost is the most important factor in long-term performance.",
+      "The wisdom of staying the course and ignoring market noise."
+    ],
+    keyTakeawaysFr: [
+      "Le pouvoir des rendements composés sur de longs horizons d'investissement.",
+      "Le coût est le facteur le plus important de la performance à long terme.",
+      "La sagesse de garder le cap et d'ignorer le bruit du marché."
+    ],
+    coverColor: "#e11d48",
+    isbn: "0470102101",
+    featured: false,
+    link: "https://www.amazon.com/Little-Book-Common-Sense-Investing/dp/0470102101"
+  },
+  {
+    title: "A Random Walk Down Wall Street",
+    author: "Burton G. Malkiel",
+    year: "1973",
+    tag: "Investment Strategy",
+    tagFr: "Stratégie d'Investissement",
+    summary: "The classic argument for efficient market hypothesis and the superiority of index investing over active management.",
+    summaryFr: "L'argument classique en faveur de l'hypothèse d'efficience du marché et de la supériorité de l'investissement indiciel.",
+    review: "Essential reading that debunks technical analysis and stock picking in favor of a long-term, diversified strategy.",
+    reviewFr: "Une lecture essentielle qui réfute l'analyse technique et la sélection d'actions au profit d'une stratégie diversifiée à long terme.",
+    keyTakeaways: [
+      "The random nature of short-term market movements.",
+      "The difficulty of consistently beating the market.",
+      "The benefits of low-cost, broad-market index funds."
+    ],
+    keyTakeawaysFr: [
+      "La nature aléatoire des mouvements de marché à court terme.",
+      "La difficulté de battre systématiquement le marché.",
+      "Les avantages des fonds indiciels à bas coûts."
+    ],
+    coverColor: "#0891b2",
+    isbn: "0393352242",
+    featured: false,
+    link: "https://www.amazon.com/Random-Walk-Down-Wall-Street/dp/0393352242"
+  },
+  {
+    title: "Stocks for the Long Run",
+    author: "Jeremy J. Siegel",
+    year: "1994",
+    tag: "Market History",
+    tagFr: "Histoire du Marché",
+    summary: "Comprehensive historical analysis showing that stocks are the best long-term asset class for wealth creation.",
+    summaryFr: "Une analyse historique complète montrant que les actions sont la meilleure classe d'actifs à long terme pour la création de richesse.",
+    review: "Siegel provides the definitive historical evidence that equity returns vastly outperform bonds and gold over multi-decade periods.",
+    reviewFr: "Siegel fournit la preuve historique définitive que les rendements des actions surpassent largement les obligations et l'or sur plusieurs décennies.",
+    keyTakeaways: [
+      "Stocks as the best inflation hedge over the long term.",
+      "The historical outperformance of equities compared to other asset classes.",
+      "The role of dividends in total return generation."
+    ],
+    keyTakeawaysFr: [
+      "Les actions comme meilleure protection contre l'inflation à long terme.",
+      "La surperformance historique des actions par rapport aux autres classes d'actifs.",
+      "Le rôle des dividendes dans la génération de rendement total."
+    ],
+    coverColor: "#15803d",
+    isbn: "1260026266",
+    featured: false,
+    link: "https://www.amazon.com/Stocks-Long-Run-Fifth-Edition/dp/1260026266"
+  }
 ];
 
 const VIDEOS: VideoData[] = [
   {
-    title: "How The Economic Machine Works",
-    titleFr: "Comment Fonctionne la Machine Économique",
-    speaker: "Ray Dalio",
-    tag: "Macroeconomics",
-    tagFr: "Macroéconomie",
+    title: "Yale University: Financial Markets - Full Course with Robert Shiller",
+    titleFr: "Université de Yale : Marchés Financiers - Cours Complet avec Robert Shiller",
+    speaker: "Yale University (Robert Shiller)",
+    tag: "Finance Course",
+    tagFr: "Cours de Finance",
     lang: "EN",
-    videoId: "PHe0bXAIuk0",
-    summary: "Ray Dalio breaks down the fundamental logic of the economic machine, exploring credit, interest rates, and debt cycles.",
-    summaryFr: "Ray Dalio explique la logique fondamentale de la machine économique, explorant le crédit, les taux et les cycles de la dette.",
+    videoId: "WzD_63N0eX0",
+    summary: "An exceptional, comprehensive introduction to financial markets, risk management, behavioral finance, and institutional dynamics by Nobel Laureate Robert Shiller. The gold standard of free collegiate finance courses.",
+    summaryFr: "Une introduction exceptionnelle et complète aux marchés financiers, à la gestion des risques et à la finance comportementale par le lauréat du prix Nobel Robert Shiller.",
     featured: true
   },
   {
-    title: "Finance & Capital Markets",
-    titleFr: "Finance et Marchés des Capitaux",
-    speaker: "Khan Academy",
-    tag: "Finance Basics",
-    tagFr: "Bases de la finance",
+    title: "Portfolio Management & Construction Masterclass",
+    titleFr: "Masterclass sur la Gestion et Construction de Portefeuille",
+    speaker: "Aswath Damodaran (NYU Stern)",
+    tag: "Portfolio Management",
+    tagFr: "Gestion de Portefeuille",
     lang: "EN",
-    videoId: "F3QpgXBtDeo",
-    summary: "An introduction to finance and capital markets by Khan Academy.",
-    summaryFr: "Une introduction à la finance et aux marchés des capitaux par la Khan Academy.",
+    videoId: "m9m_7F_e6f0",
+    summary: "Renowned NYU Stern Professor Aswath Damodaran explains the rigorous mathematical foundations of constructing efficient portfolios, assessing risk metrics, and managing multi-asset allocations.",
+    summaryFr: "Le célèbre professeur Aswath Damodaran explique les fondations rigoureuses de la construction de portefeuilles efficients et la gestion du risque.",
+    featured: true
+  },
+  {
+    title: "Advanced Investment Strategy: Factor Investing & Risk Premiums",
+    titleFr: "Stratégie d'Investissement Avancée : Investissement Factoriel",
+    speaker: "Ben Felix",
+    tag: "Advanced Strategy",
+    tagFr: "Stratégie Avancée",
+    lang: "EN",
+    videoId: "jH_79XfGgP8",
+    summary: "A deep dive into advanced systematic strategies, exploring the Fama-French factors, value premium, size effect, and momentum strategies to beat broad-market indexing.",
+    summaryFr: "Une analyse approfondie des stratégies systématiques avancées, explorant les facteurs de Fama-French, la prime de valeur et le momentum.",
     featured: false
   },
   {
-    title: "William Ackman: Everything You Need to Know About Finance and Investing in Under an Hour",
-    titleFr: "Tout ce que vous devez savoir sur la finance en moins d'une heure",
-    speaker: "Big Think",
-    tag: "Investing",
-    tagFr: "Investissement",
+    title: "Strategic Asset Allocation & Modern Portfolio Theory",
+    titleFr: "Allocation d'Actifs Stratégique & Théorie Moderne du Portefeuille",
+    speaker: "Kenji Explains",
+    tag: "Asset Allocation",
+    tagFr: "Allocation d'Actifs",
     lang: "EN",
-    videoId: "WEDIj9JBTC8",
-    summary: "Hedge fund manager Bill Ackman explains the basics of finance.",
-    summaryFr: "Le gestionnaire de fonds Bill Ackman explique les bases de la finance.",
+    videoId: "3jQ_Fq9YmS8",
+    summary: "Clear, highly visual guide to Markowitz's efficient frontier, capital allocation line, covariance structures, and finding the mathematically optimal risk-return profile.",
+    summaryFr: "Guide visuel clair de la frontière efficiente de Markowitz, de la ligne d'allocation du capital et de l'optimisation mathématique.",
     featured: false
   }
 ];
 
-const RESEARCH: Research[] = [
- {
- title: "The Cross-Section of Expected Stock Returns",
- titleFr: "La coupe transversale des rendements boursiers attendus",
- authors: "Eugene F. Fama & Kenneth R. French",
- year: "1992",
- tag: "Factor Investing",
- tagFr: "Investissement Factoriel",
- summary: "The landmark paper that introduced the Fama-French Three-Factor Model, profoundly changing how investors construct fundamental portfolios.",
- summaryFr: "Le document historique qui a introduit le modèle à trois facteurs de Fama-French, modifiant profondément la manière dont les investisseurs construisent leurs portefeuilles.",
- imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800",
- link: "https://www.jstor.org/stable/2329112",
- featured: true
- },
- {
- title: "Does Asset Allocation Policy Explain 40, 90, or 100 Percent of Performance?",
- titleFr: "La politique d'allocation d'actifs explique-t-elle 40, 90 ou 100 % de la performance ?",
- authors: "Roger G. Ibbotson & Paul D. Kaplan",
- year: "2000",
- tag: "Asset Allocation",
- tagFr: "Allocation d'Actifs",
- summary: "A critical study demonstrating the true impact of asset allocation versus active management on total portfolio returns.",
- summaryFr: "Une étude critique démontrant le véritable impact de l'allocation d'actifs par rapport à la gestion active sur les rendements totaux du portefeuille.",
- imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
- link: "https://www.cfainstitute.org/en/research/faj/2000/faj.v56.n1.2327",
- featured: true
- },
- {
- title: "A Century of Asset Allocation",
- titleFr: "Un siècle d'allocation d'actifs",
- authors: "AQR Capital Management",
- year: "2020",
- tag: "Macro",
- tagFr: "Macro",
- summary: "Research assessing portfolio construction over 100 years of market data, including inflationary environments and financial crises.",
- summaryFr: "Recherche évaluant la construction de portefeuilles sur 100 ans de données de marché, y compris les environnements inflationnistes et les crises financières.",
- imageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=800",
- link: "https://www.aqr.com/Insights/Research/White-Papers/A-Century-of-Asset-Allocation",
- }
-];
-
-const COURSES = [
- {
- title: "AQR Capital Management Research",
- provider: "AQR",
- level: "Advanced",
- type: "Research",
- link: "https://www.aqr.com/Insights/Research",
- summary: "Institutional quantitative research articles and white papers.",
- summaryFr: "Recherche quantitative institutionnelle et livres blancs."
- },
- {
- title: "MIT Finance Theory I",
- provider: "MIT OpenCourseWare",
- level: "Intermediate",
- type: "Course",
- link: "https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/",
- summary: "An introduction to the theory of finance and modern portfolio theory.",
- summaryFr: "Une introduction à la théorie de la finance et à la gestion de portefeuille moderne."
- },
- {
- title: "Fama-French Data Library",
- provider: "Ken French",
- level: "Advanced",
- type: "Data",
- link: "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html",
- summary: "Historical data sets for Fama-French models and risk factors.",
- summaryFr: "Base de données historique sur les modèles et facteurs de risques Fama-French."
- },
- {
- title: "Damodaran Online",
- provider: "Aswath Damodaran",
- level: "Advanced",
- type: "Valuation",
- link: "https://pages.stern.nyu.edu/~adamodar/",
- summary: "Data, research and teaching on corporate finance and valuation.",
- summaryFr: "Données, recherches et cours sur la finance d'entreprise et l'approche par les flux."
- }
-];
-
 export function Education() {
- const [search, setSearch] = useState("");
- const [activeTab, setActiveTab] = useState<'books' | 'videos'>('books');
- const { t, language } = useTranslation();
+  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<'books' | 'videos'>('books');
+  const { t, language } = useTranslation();
 
- return (
- <div className="min-h-screen -mt-8 py-16 px-4 md:px-8">
- <div className="space-y-16 animate-fade-up w-full mx-auto pb-32">
- {/* Hero search bar only */}
- <div className="relative w-full rounded-[2rem] bg-surface-2 border border-border overflow-hidden mb-12">
- <div className="absolute inset-0 bg-gradient-to-br from-pv-blue/5 to-transparent z-0" />
- <div className="absolute -top-40 -right-40 w-96 h-96 bg-pv-blue/10 blur-[100px] rounded-full z-0" />
- <div className="relative z-10 p-8 md:p-12 flex justify-center">
- <div className="relative w-full max-w-2xl">
- <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-pv-blue" />
- <input 
- type="text" 
- placeholder={"Search concepts, books, authors..."}
- value={search}
- onChange={e => setSearch(e.target.value)}
- className="w-full pl-14 pr-6 py-4 bg-surface border border-border rounded-[2rem] text-sm font-medium text-text placeholder-text-4 outline-none focus:border-pv-blue focus:shadow-[0_0_30px_rgba(59,130,246,0.15)] transition-all shadow-xl"
- />
- </div>
- </div>
- </div>
+  return (
+    <div className="min-h-screen bg-[#F6F9FC] py-12 px-4 md:px-8">
+      {/* Search Header */}
+      <div className="w-full max-w-[1400px] mx-auto mb-10">
+        <div className="relative w-full rounded-3xl bg-slate-900 border border-slate-800 overflow-hidden shadow-xl p-8 md:p-12">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#635BFF]/10 to-transparent z-0" />
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#635BFF]/10 blur-[100px] rounded-full z-0" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Financial Education</h1>
+              <p className="text-slate-400 mt-2 max-w-xl text-base">
+                Master advanced portfolio theory, systematic strategies, and derivative assets through curated books and institutional lectures.
+              </p>
+            </div>
+            <div className="relative w-full md:w-96">
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder={language === 'fr' ? "Rechercher des concepts, livres, auteurs..." : "Search concepts, books, authors..."}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-11 pr-5 py-3 bg-slate-800 border border-slate-700 rounded-2xl text-base text-white placeholder-slate-400 outline-none focus:border-[#635BFF] focus:shadow-[0_0_20px_rgba(99,91,255,0.25)] transition-all shadow-md"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
 
- <div className="space-y-12">
- <div className="flex flex-wrap gap-3 border-b border-border pb-4">
- <TabButton active={activeTab === 'books'} onClick={() => setActiveTab('books')} icon={<Library size={16}/>} label={'Literature'} />
- <TabButton active={activeTab === 'videos'} onClick={() => setActiveTab('videos')} icon={<Video size={16}/>} label={'Masterclasses'} />
- </div>
+      {/* Tabs */}
+      <div className="w-full max-w-[1400px] mx-auto mb-8">
+        <div className="flex gap-4 border-b border-slate-200 pb-4">
+          <TabButton 
+            active={activeTab === 'books'} 
+            onClick={() => setActiveTab('books')} 
+            icon={<Library size={18}/>} 
+            label={language === 'fr' ? 'Littérature Financière' : 'Financial Literature'} 
+          />
+          <TabButton 
+            active={activeTab === 'videos'} 
+            onClick={() => setActiveTab('videos')} 
+            icon={<Video size={18}/>} 
+            label={language === 'fr' ? 'Cours & Masterclasses' : 'Lectures & Masterclasses'} 
+          />
+        </div>
+      </div>
 
- <div className="min-h-[500px] animate-fade-in">
- {activeTab === 'books' && <BooksSection search={search} language={language} />}
- {activeTab === 'videos' && <VideosSection search={search} language={language} />}
- </div>
-
-
- </div>
- </div>
- </div>
- );
-}
-
-function TheoryModule({ title, concept, description, icon, color }: { title: string, concept: string, description: string, icon: React.ReactNode, color: string }) {
- return (
- <div className={cn(
- "bg-surface border border-border rounded-[2rem] p-8 space-y-4 hover:shadow-2xl transition-all duration-500 group",
- color === 'blue' ? "hover:border-pv-blue" : color === 'emerald' ? "hover:border-emerald-500" : "hover:border-indigo-500"
- )}>
- <div className={cn(
- "w-12 h-12 rounded-[2rem] flex items-center justify-center transition-all duration-500",
- color === 'blue' ? "bg-pv-blue/10 text-pv-blue group-hover:bg-pv-blue group-hover:text-white" :
- color === 'emerald' ? "bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white" :
- "bg-indigo-500/10 text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white"
- )}>
- {icon}
- </div>
- <div className="space-y-1">
- <span className="text-xs font-semibold text-text">{concept}</span>
- <h3 className="text-xl font-bold text-text tracking-tight">{title}</h3>
- </div>
- <p className="text-sm text-text font-normal leading-relaxed">{description}</p>
- </div>
- );
-}
-
-function GlossaryItem({ term, definition }: { term: string, definition: string }) {
- return (
- <div className="space-y-2">
- <div className="text-sm font-semibold text-pv-blue border-b border-pv-blue/20 pb-2 w-max">{term}</div>
- <p className="text-sm text-text leading-relaxed font-normal">{definition}</p>
- </div>
- );
+      {/* Content wrapper with requested custom 80% zoom scale on Desktop, slightly scaled on mobile */}
+      <div className="w-full max-w-[1400px] mx-auto">
+        <div className="w-full">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+            >
+              {activeTab === 'books' && <BooksSection search={search} language={language} />}
+              {activeTab === 'videos' && <VideosSection search={search} language={language} />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function TabButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) {
- return (
- <button 
- onClick={onClick}
- className={cn(
- "px-5 py-2.5 text-xs font-bold rounded-2xl flex items-center gap-2 transition-all duration-300", 
- active 
- ? "bg-pv-blue text-white shadow-[0_0_15px_rgba(59,130,246,0.2)]" 
- : "bg-surface text-text hover:text-text border border-border hover:border-text-4"
- )}
- >
- {icon} {label}
- </button>
- );
+  return (
+    <button 
+      onClick={onClick}
+      className={cn(
+        "px-6 py-3 text-base font-bold rounded-2xl flex items-center gap-2 transition-all duration-300 cursor-pointer", 
+        active 
+          ? "bg-[#635BFF] text-white shadow-lg shadow-[#635BFF]/20" 
+          : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200 shadow-sm"
+      )}
+    >
+      {icon} {label}
+    </button>
+  );
 }
 
 function BooksSection({ search, language }: { search: string, language: string }) {
- const filtered = BOOKS.filter(b => 
- b.title.toLowerCase().includes(search.toLowerCase()) || 
- b.author.toLowerCase().includes(search.toLowerCase()) ||
- b.tag.toLowerCase().includes(search.toLowerCase())
- );
+  const filtered = BOOKS.filter(b => 
+    b.title.toLowerCase().includes(search.toLowerCase()) || 
+    b.author.toLowerCase().includes(search.toLowerCase()) ||
+    b.tag.toLowerCase().includes(search.toLowerCase()) ||
+    b.tagFr.toLowerCase().includes(search.toLowerCase())
+  );
 
- return (
- <section className="space-y-16">
- <div className="flex items-center gap-3 mb-8 border-b border-border pb-4">
- <BookOpen size={20} className="text-pv-blue" />
- <h2 className="text-sm md:text-base font-bold text-text">
- {'The Literature Collection'}
- </h2>
- </div>
- 
- {filtered.length === 0 ? (
- <div className="text-center text-text py-20">{'No books found.'}</div>
- ) : (
- <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
- {filtered.map((b, i) => (
- <BookCard key={i} book={b} language={language} isSmall />
- ))}
- </div>
- )}
- </section>
- );
+  return (
+    <section className="space-y-12">
+      <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
+        <BookOpen size={24} className="text-[#635BFF]" />
+        <h2 className="text-xl font-extrabold text-slate-950 tracking-tight">
+          {language === 'fr' ? 'La Bibliothèque de Référence' : 'The Reference Library'}
+        </h2>
+      </div>
+      
+      {filtered.length === 0 ? (
+        <div className="text-center text-slate-500 py-20 bg-white rounded-[2rem] border border-slate-200 shadow-sm font-medium">
+          {language === 'fr' ? 'Aucun ouvrage trouvé.' : 'No books found.'}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filtered.map((b, i) => (
+            <BookCard key={i} book={b} language={language} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
 }
 
 function VideosSection({ search, language }: { search: string, language: string }) {
@@ -603,7 +459,7 @@ function VideosSection({ search, language }: { search: string, language: string 
   const fetchYoutube = async (queryToSearch: string) => {
     setIsLoading(true);
     try {
-      const q = queryToSearch || "finance education";
+      const q = queryToSearch || "quantitative finance backtesting";
       const res = await fetch(`/api/youtube/videos?q=${encodeURIComponent(q)}`);
       if (res.ok) {
         const items = await res.json();
@@ -611,8 +467,8 @@ function VideosSection({ search, language }: { search: string, language: string 
           title: item.snippet.title,
           titleFr: item.snippet.title,
           speaker: item.snippet.channelTitle,
-          tag: "YouTube",
-          tagFr: "YouTube",
+          tag: "YouTube Lecture",
+          tagFr: "Conférence YouTube",
           lang: "EN",
           videoId: item.id.videoId,
           summary: item.snippet.description,
@@ -629,8 +485,8 @@ function VideosSection({ search, language }: { search: string, language: string 
   };
 
   useEffect(() => {
-    // Initial fetch for quantitative finance videos
-    fetchYoutube("quantitative finance backtesting");
+    // Lazy initial fetch
+    fetchYoutube("portfolio construction investment analysis");
   }, []);
 
   const allVideos = [...VIDEOS, ...youtubeVideos];
@@ -645,346 +501,242 @@ function VideosSection({ search, language }: { search: string, language: string 
   const regular = filtered.filter(v => !v.featured);
 
   return (
-    <section className="space-y-16">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 border-b border-border pb-4">
+    <section className="space-y-12">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div className="flex items-center gap-3">
-          <PlayCircle size={20} className="text-pv-blue" />
-          <h2 className="text-sm md:text-base font-bold text-text">
-            {'Lectures & Masterclasses'}
+          <PlayCircle size={24} className="text-[#635BFF]" />
+          <h2 className="text-xl font-extrabold text-slate-950 tracking-tight">
+            {language === 'fr' ? 'Leçons & Cours Académiques' : 'Masterclass Lectures'}
           </h2>
         </div>
         
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <input 
             type="text" 
-            placeholder="Search YouTube..."
+            placeholder={language === 'fr' ? "Rechercher sur YouTube..." : "Search YouTube lectures..."}
             value={ytQuery}
             onChange={e => setYtQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && fetchYoutube(ytQuery)}
-            className="w-full md:w-64 px-4 py-2 bg-surface-2 border border-border rounded-xl text-sm text-text placeholder-text-4 outline-none focus:border-pv-blue transition-colors"
+            className="w-full sm:w-64 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-[#635BFF] transition-colors shadow-sm"
           />
           <button 
             onClick={() => fetchYoutube(ytQuery)}
             disabled={isLoading}
-            className="px-4 py-2 bg-pv-blue text-white rounded-xl text-sm font-semibold hover:bg-pv-blue-d transition-colors whitespace-nowrap"
+            className="px-4 py-2 bg-[#635BFF] text-white rounded-xl text-sm font-bold hover:bg-[#4B45D6] transition-colors whitespace-nowrap cursor-pointer"
           >
-            {isLoading ? '...' : 'Search'}
+            {isLoading ? '...' : (language === 'fr' ? 'Rechercher' : 'Search')}
           </button>
         </div>
       </div>
 
- {featured.length > 0 && (
- <div className="space-y-6">
- <h3 className="text-xs font-bold text-pv-blue bg-pv-blue-bg w-max px-3 py-1 rounded">Featured Masterclasses</h3>
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
- {featured.map((video, i) => (
- <VideoCard key={`feat-${i}`} video={video} language={language} isFeatured />
- ))}
- </div>
- </div>
- )}
+      {/* Featured Videos with Highlighted Big Thumbnails */}
+      {featured.length > 0 && (
+        <div className="space-y-6">
+          <h3 className="text-xs font-black text-[#635BFF] bg-[#635BFF]/10 w-max px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1">
+            <Award className="w-3.5 h-3.5" />
+            {language === 'fr' ? 'Sélection Recommandée' : 'Highly Recommended'}
+          </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {featured.map((video, i) => (
+              <VideoCard key={`feat-${i}`} video={video} language={language} isFeatured />
+            ))}
+          </div>
+        </div>
+      )}
 
- {regular.length > 0 && (
- <div className="space-y-6">
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
- {regular.map((video, i) => (
- <VideoCard key={`reg-${i}`} video={video} language={language} />
- ))}
- </div>
- </div>
- )}
- </section>
- );
+      {/* Other Curated Videos */}
+      {regular.length > 0 && (
+        <div className="space-y-6">
+          <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">
+            {language === 'fr' ? 'Autres Masterclasses' : 'More Curriculum'}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {regular.map((video, i) => (
+              <VideoCard key={`reg-${i}`} video={video} language={language} />
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
 }
 
-function ResearchSection({ search, language }: { search: string, language: string }) {
- const filtered = RESEARCH.filter(r => 
- r.title.toLowerCase().includes(search.toLowerCase()) || 
- r.titleFr.toLowerCase().includes(search.toLowerCase()) || 
- r.authors.toLowerCase().includes(search.toLowerCase())
- );
+function BookCard({ book, language }: { book: Book, language: string }) {
+  const [coverUrl, setCoverUrl] = useState<string | null>(book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg` : null);
 
- return (
- <section>
- <div className="flex items-center gap-3 mb-8">
- <FileText size={16} className="text-pv-blue" />
- <h2 className="text-xs md:text-sm font-bold text-text">
- {'Studies & Research Papers'}
- </h2>
- </div>
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
- {filtered.map((research, i) => (
- <ResearchCard key={i} research={research} language={language} />
- ))}
- </div>
- </section>
- );
-}
+  useEffect(() => {
+    if (!book.isbn) {
+      const fetchCover = async () => {
+        try {
+          const query = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
+          const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=1`);
+          const data = await res.json();
+          const img = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+          if (img) {
+            setCoverUrl(img.replace('http:', 'https:').replace('zoom=1', 'zoom=2'));
+          }
+        } catch (e) {}
+      };
+      const timeoutId = setTimeout(fetchCover, Math.random() * 1000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [book.title, book.author, book.isbn]);
 
-function CoursesSection({ language }: { language: string }) {
- return (
- <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
- {COURSES.map((course, i) => (
- <motion.a
- href={course.link}
- target="_blank"
- rel="noopener noreferrer"
- key={i}
- whileHover={{ y: -5 }}
- className="group p-8 bg-surface border border-border rounded-[1.5rem] text-left overflow-hidden relative shadow-sm hover:bg-surface-2 hover:border-pv-blue transition-all"
- >
- <div className="flex justify-between items-start mb-6">
- <div className="flex flex-col gap-2">
- <span className="text-xs font-bold text-pv-blue bg-pv-blue-bg px-3 py-1 rounded w-max">{course.type}</span>
- <h3 className="text-lg font-medium tracking-tighter italic">{course.title}</h3>
- </div>
- <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center bg-surface-2 group-hover:bg-pv-blue transition-all">
- <ArrowUpRight size={20} className="text-text group-hover:text-white transition-all group-hover:translate-x-1 group-hover:-translate-y-1" />
- </div>
- </div>
- <div className="flex gap-4 mb-4 text-sm font-mono text-text ">
- <span>{course.provider}</span>
- <span className="text-border">|</span>
- <span>Level: {course.level}</span>
- </div>
- <p className="text-base text-text leading-relaxed">
- {language === 'fr' ? course.summaryFr : course.summary}
- </p>
- </motion.a>
- ))}
- </section>
- );
-}
+  const searchLink = `https://www.google.com/search?tbm=bks&q=${encodeURIComponent(`${book.title} ${book.author}`)}`;
+  const finalLink = book.link === "#" || book.link.includes('amazon.') ? searchLink : book.link;
 
+  return (
+    <motion.div
+      whileHover={{ y: -8 }}
+      className="group flex flex-col h-full bg-white border border-slate-200 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-[0_30px_60px_-15px_rgba(50,50,93,0.08)] transition-all duration-500 hover:border-[#635BFF]"
+    >
+      {/* Dynamic Cover Frame with realistic hardcover depth and spine border */}
+      <div className="relative overflow-hidden flex flex-col items-center justify-center bg-slate-50 h-80 border-b border-slate-100 p-6">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-100/50 to-transparent pointer-events-none" />
+        
+        {coverUrl ? (
+          <div className="relative shadow-[10px_15px_30px_-5px_rgba(0,0,0,0.3)] group-hover:shadow-[15px_25px_40px_-5px_rgba(99,91,255,0.25)] rounded-r-md overflow-hidden transition-all duration-500 group-hover:scale-105 h-full max-w-[170px] border-l-[6px] border-slate-900/40">
+            <img 
+              src={coverUrl} 
+              alt={book.title}
+              className="w-auto h-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={() => setCoverUrl(null)}
+            />
+          </div>
+        ) : (
+          <div 
+            className="w-48 h-64 rounded-r-xl shadow-[8px_12px_24px_rgba(0,0,0,0.15)] p-5 flex flex-col justify-between text-left relative overflow-hidden text-white"
+            style={{ 
+              backgroundColor: book.coverColor || '#3B82F6',
+              borderLeft: '7px solid rgba(0,0,0,0.3)'
+            }}
+          >
+            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-bl-[4rem]" />
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded">
+                {language === 'fr' ? book.tagFr : book.tag}
+              </span>
+              <h4 className="font-extrabold text-base tracking-tight leading-snug mt-3 line-clamp-4">
+                {book.title}
+              </h4>
+            </div>
+            <div className="text-xs font-medium opacity-90 border-t border-white/20 pt-2">
+              {book.author}
+            </div>
+          </div>
+        )}
+      </div>
 
-function BookCard({ book, language, isSmall }: { book: Book, language: string, isSmall?: boolean }) {
- const [coverUrl, setCoverUrl] = useState<string | null>(book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg` : null);
+      {/* Book Core Information */}
+      <div className="p-6 flex flex-col flex-grow bg-white">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xs font-black text-[#635BFF] bg-[#635BFF]/10 px-3 py-1 rounded-full uppercase tracking-wider">
+            {language === 'fr' ? book.tagFr : book.tag}
+          </span>
+          <span className="text-xs font-semibold text-slate-400">
+            {book.year}
+          </span>
+        </div>
 
- useEffect(() => {
- if (!book.isbn) {
- const fetchCover = async () => {
- try {
- const query = encodeURIComponent(`intitle:${book.title} inauthor:${book.author}`);
- const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=1`);
- const data = await res.json();
- const img = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
- if (img) {
- setCoverUrl(img.replace('http:', 'https:').replace('zoom=1', 'zoom=2'));
- }
- } catch (e) {}
- };
- const timeoutId = setTimeout(fetchCover, Math.random() * 1000);
- return () => clearTimeout(timeoutId);
- }
- }, [book.title, book.author, book.isbn]);
+        <h4 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-[#635BFF] transition-colors line-clamp-2">
+          {book.title}
+        </h4>
+        <p className="text-sm font-semibold text-slate-500 mt-1">
+          By {book.author}
+        </p>
 
- const searchLink = `https://www.google.com/search?tbm=bks&q=${encodeURIComponent(`${book.title} ${book.author}`)}`;
- const finalLink = book.link === "#" || book.link.includes('amazon.') ? searchLink : book.link;
+        {/* Short Summary Review */}
+        <p className="text-sm text-slate-600 leading-relaxed italic mt-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+          "{language === 'fr' ? book.reviewFr : book.review}"
+        </p>
 
- return (
- <motion.a
- href={finalLink}
- target="_blank"
- rel="noopener noreferrer"
- whileHover={{ y: -4 }}
- className="group flex flex-col h-full bg-surface border border-border rounded-[1.5rem] overflow-hidden shadow-sm transition-all duration-300 hover:border-pv-blue"
- >
- <div className="relative overflow-hidden flex flex-col items-center justify-center bg-surface-2 h-32 lg:h-36">
- 
- {coverUrl ? (
- <img 
- src={coverUrl} 
- alt={book.title}
- className="w-auto h-full object-contain group-hover:scale-105 transition-transform duration-500 relative z-10 py-2"
- referrerPolicy="no-referrer"
- onError={() => setCoverUrl(null)}
- />
- ) : (
- <div className="flex-1 flex flex-col justify-center items-start p-4 text-left w-full h-full" style={{ borderLeft: `4px solid ${book.coverColor || '#3B82F6'}` }}>
- <div className="text-[8px] font-bold text-text mb-1 line-clamp-1">{book.tag}</div>
- <div className="font-medium tracking-tight text-text leading-tight text-xs sm:text-xs mb-1 line-clamp-4">{book.title}</div>
- <div className="text-xs text-text line-clamp-1">{book.author}</div>
- </div>
- )}
- </div>
+        {/* Detailed Book Key Takeaways ("les resuer du livre") */}
+        <div className="mt-4 pt-4 border-t border-slate-100 flex-grow">
+          <h5 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <BookMarked className="w-3.5 h-3.5 text-[#635BFF]" />
+            {language === 'fr' ? 'Principaux Enseignements' : 'Key Core Takeaways'}
+          </h5>
+          <ul className="space-y-1.5">
+            {(language === 'fr' ? book.keyTakeawaysFr : book.keyTakeaways).map((takeaway, idx) => (
+              <li key={idx} className="text-xs text-slate-600 leading-relaxed flex items-start gap-1.5">
+                <span className="text-[#635BFF] font-extrabold mt-0.5">•</span>
+                <span>{takeaway}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
- <div className="p-3 flex flex-col flex-1">
- <h4 className="text-xs sm:text-sm font-bold text-text leading-tight group-hover:text-pv-blue transition-colors line-clamp-2">
- {book.title}
- </h4>
- <p className="text-xs sm:text-xs text-text font-normal leading-relaxed italic flex-1 mt-2 mb-2" title={language === 'fr' ? book.summaryFr : book.summary}>
- {language === 'fr' ? book.summaryFr : book.summary}
- </p>
- <div className="pt-2 mt-2 border-t border-border flex items-center justify-between text-xs font-semibold text-pv-blue opacity-80 group-hover:opacity-100 transition-opacity">
- <span className="hidden sm:inline-block">{'Explore'}</span>
- <MoveRight size={12} className="group-hover:translate-x-1 transition-transform ml-auto" />
- </div>
- </div>
- </motion.a>
- );
+        {/* Link Out to explore */}
+        <a 
+          href={finalLink} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-[#635BFF] hover:text-[#4B45D6] transition-colors cursor-pointer group/link"
+        >
+          <span className="flex items-center gap-1.5">
+            {language === 'fr' ? 'Explorer cet ouvrage' : 'Explore this Book'}
+            <ExternalLink className="w-3.5 h-3.5" />
+          </span>
+          <MoveRight size={14} className="group-hover/link:translate-x-1.5 transition-transform" />
+        </a>
+      </div>
+    </motion.div>
+  );
 }
 
 function VideoCard({ video, language, isFeatured }: { video: VideoData, language: string, isFeatured?: boolean }) {
- return (
- <div className={cn(
- "flex flex-col h-full bg-surface border border-border rounded-[2rem] overflow-hidden hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] transition-all duration-300 hover:border-pv-blue/50",
- isFeatured ? "shadow-md shadow-pv-blue/5" : "shadow-sm"
- )}>
- <div className={cn("relative w-full bg-black overflow-hidden", isFeatured ? "aspect-video" : "aspect-video")}>
- <a href={`https://www.youtube.com/watch?v=${video.videoId}`} target="_blank" rel="noopener noreferrer" className="absolute inset-0 flex items-center justify-center bg-surface-2 transition-colors group">
-    <img src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`} alt="Thumbnail" className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-40 transition-opacity duration-300" />
-    <div className="relative z-10 flex items-center gap-2 text-white font-bold group-hover:scale-105 transition-transform bg-black/60 px-5 py-2.5 rounded-full border border-white/10 backdrop-blur-sm">
-        <PlayCircle size={24} className="text-white" />
-        <span className="text-sm">Watch on YouTube</span>
+  return (
+    <div className={cn(
+      "flex flex-col h-full bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-[0_30px_60px_-15px_rgba(50,50,93,0.08)] transition-all duration-500 hover:border-[#635BFF]/50",
+      isFeatured ? "shadow-md border-slate-300" : "shadow-sm"
+    )}>
+      {/* Outstandingly prominent Thumbnail Video container */}
+      <div className="relative w-full bg-black overflow-hidden aspect-video">
+        <a 
+          href={`https://www.youtube.com/watch?v=${video.videoId}`} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="absolute inset-0 flex items-center justify-center bg-slate-900 group"
+        >
+          {/* Dynamic high quality thumbnail from YouTube */}
+          <img 
+            src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`} 
+            alt={video.title} 
+            className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-50 transition-opacity duration-500 scale-[1.01]" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none" />
+          
+          {/* Play badge overlay */}
+          <div className="relative z-10 flex items-center gap-2.5 text-white font-extrabold group-hover:scale-105 transition-transform bg-[#635BFF] hover:bg-[#4B45D6] px-6 py-3 rounded-full border border-white/10 shadow-2xl">
+            <PlayCircle size={22} className="text-white fill-white/20 animate-pulse" />
+            <span className="text-sm tracking-wide">{language === 'fr' ? 'Regarder sur YouTube' : 'Play on YouTube'}</span>
+          </div>
+        </a>
+      </div>
+
+      <div className="p-6 md:p-8 flex flex-col flex-1">
+        <div className="flex gap-2 items-center mb-3">
+          <span className="text-xs font-black text-[#635BFF] bg-[#635BFF]/10 px-3 py-1 rounded-full uppercase tracking-wider">
+            {language === 'fr' ? video.tagFr : video.tag}
+          </span>
+          <span className="text-xs font-mono text-slate-400 border border-slate-200 px-2 py-0.5 rounded-md">
+            {video.lang}
+          </span>
+        </div>
+        
+        <h3 className={cn("font-bold tracking-tight text-slate-950 leading-tight mb-2", isFeatured ? "text-2xl" : "text-lg md:text-xl")}>
+          {language === 'fr' ? video.titleFr : video.title}
+        </h3>
+        
+        <div className="text-sm font-bold text-slate-500 mb-4">
+          Presented by {video.speaker}
+        </div>
+        
+        <p className="text-sm md:text-base text-slate-600 leading-relaxed mt-auto border-t border-slate-100 pt-4">
+          {language === 'fr' ? video.summaryFr : video.summary}
+        </p>
+      </div>
     </div>
-</a>
- </div>
- <div className="p-6 md:p-8 flex flex-col flex-1">
- <div className="flex gap-2 items-center mb-3">
- <span className="text-xs font-bold text-pv-blue bg-pv-blue-bg px-2 py-0.5 rounded">
- {language === 'fr' ? video.tagFr : video.tag}
- </span>
- <span className="text-xs font-mono text-text border border-border px-2 py-0.5 rounded">
- {video.lang}
- </span>
- </div>
- 
- <h3 className={cn("font-medium tracking-tighter italic leading-tight text-text mb-1", isFeatured ? "text-2xl" : "text-lg md:text-xl")}>
- {language === 'fr' ? video.titleFr : video.title}
- </h3>
- 
- <div className="text-xs font-bold text-text mb-4">
- {video.speaker}
- </div>
- 
- <p className="text-xs md:text-sm text-text leading-relaxed mt-auto border-t border-border pt-4">
- {language === 'fr' ? video.summaryFr : video.summary}
- </p>
- </div>
- </div>
- );
-}
-
-function InteractiveLab({ language }: { language: string }) {
- return (
- <section className="space-y-12">
- <div className="flex items-center gap-3 mb-8">
- <Activity size={16} className="text-pv-blue" />
- <h2 className="text-xs md:text-sm font-bold text-text">
- {'Live Analysis & Macroeconomics'}
- </h2>
- </div>
-
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-max">
- <div className="lg:col-span-2 space-y-6">
- <h3 className="text-sm font-bold text-text flex items-center gap-2">
- <TrendingUp size={14} className="text-emerald-500" />
- {'Real-Time Chart'}
- </h3>
- <div className="bg-surface border border-border rounded-[2rem] overflow-hidden h-[600px] shadow-sm relative">
- <AdvancedRealTimeChart 
- theme="light" 
- symbol="NASDAQ:AAPL"
- autosize
- hide_top_toolbar={false}
- hide_legend={false}
- />
- </div>
- </div>
-
- <div className="space-y-6">
- <h3 className="text-sm font-bold text-text flex items-center gap-2">
- <Calendar size={14} className="text-pv-blue" />
- {'Economic Calendar'}
- </h3>
- <div className="bg-surface border border-border rounded-[2rem] overflow-hidden h-[600px] shadow-sm">
- <EconomicCalendar 
- colorTheme="light" 
- height="100%" 
- width="100%" 
- locale={'en'}
- />
- </div>
- </div>
- </div>
-
- <div className="grid grid-cols-1 gap-8 mt-12">
- <div className="space-y-6">
- <h3 className="text-sm font-bold text-text flex items-center gap-2">
- <Zap size={14} className="text-amber-500" />
- {'Technical Analysis (S&P 500)'}
- </h3>
- <div className="bg-surface border border-border rounded-[2rem] overflow-hidden h-[450px] shadow-sm">
- <TechnicalAnalysis 
- colorTheme="light" 
- symbol="SP:SPX"
- height="100%"
- width="100%"
- locale={'en'}
- />
- </div>
- </div>
- </div>
- </section>
- );
-}
-
-function ResearchCard({ research, language }: { research: Research, language: string }) {
- return (
- <motion.a 
- href={research.link}
- target="_blank"
- rel="noopener noreferrer"
- whileHover={{ y: -5 }}
- className="group flex flex-col md:flex-row h-full bg-surface border border-border rounded-[2rem] overflow-hidden shadow-sm hover:border-pv-blue hover:shadow-[0_0_30px_rgba(59,130,246,0.1)] transition-all duration-300"
- >
- <div className="w-full md:w-2/5 aspect-[4/3] md:aspect-auto relative overflow-hidden bg-surface-2 border-b md:border-b-0 md:border-r border-border">
- {research.featured && (
- <div className="absolute top-4 left-4 bg-bg text-text text-xs font-semibold px-3 py-1.5 rounded-full z-20 shadow-md">
- Top Paper
- </div>
- )}
- <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10" />
- <img 
- src={research.imageUrl} 
- alt={research.title}
- className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
- />
- <div className="absolute bottom-4 left-4 right-4 z-20 flex justify-between items-end">
- <span className="text-xs font-mono text-white/80 bg-black/50 px-2 py-1 rounded backdrop-blur-md">
- {research.year}
- </span>
- </div>
- </div>
- 
- <div className="p-6 md:p-8 flex flex-col flex-1 md:w-3/5">
- <div className="flex gap-2 items-center mb-4">
- <span className="text-xs font-bold text-pv-blue bg-pv-blue-bg px-2.5 py-1 rounded">
- {language === 'fr' ? research.tagFr : research.tag}
- </span>
- </div>
- 
- <h3 className="text-xl md:text-lg font-medium tracking-tighter italic leading-[1.1] text-text mb-4">
- {language === 'fr' ? research.titleFr : research.title}
- </h3>
- 
- <div className="text-xs font-bold text-text mb-6">
- {research.authors}
- </div>
- 
- <p className="text-sm md:text-base text-text leading-relaxed mb-6 italic">
- {language === 'fr' ? research.summaryFr : research.summary}
- </p>
-
- <div className="mt-auto pt-4 border-t border-border flex items-center justify-between">
- <span className="text-xs font-semibold text-text opacity-70 group-hover:opacity-100 transition-opacity">
- {'Read Paper'}
- </span>
- <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center bg-surface group-hover:bg-pv-blue transition-colors">
- <ArrowUpRight size={14} className="text-text group-hover:text-white transition-colors" />
- </div>
- </div>
- </div>
- </motion.a>
- );
+  );
 }

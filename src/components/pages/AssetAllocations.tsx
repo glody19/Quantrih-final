@@ -87,7 +87,7 @@ function TooltipLabel({
 }) {
   return (
     <div className="flex items-center gap-1.5 mb-1.5">
-      <label className={cn("text-xs font-semibold text-text ", className)}>
+      <label className={cn("text-base font-semibold text-text ", className)}>
         {label}
       </label>
       <InfoTooltip content={<>{tooltip}</>} />
@@ -162,22 +162,21 @@ export function AssetAllocations({
 
   const [portfolioNames, setPortfolioNames] = useLocalStorage<
     { id: string; name: string }[]
-  >("aa_portfolioNames_v2", [
+  >("aa_portfolioNames_v4", [
     { id: "1", name: "Classic (60/40)" },
     { id: "2", name: "Dynamic (80/20)" },
-    { id: "3", name: "100% Equities" },
-    { id: "4", name: "Conservative (40/60)" },
-    { id: "5", name: "Permanent (Harry Browne)" },
+    { id: "3", name: "All Weather" },
+    { id: "4", name: "Permanent" },
   ]);
 
   const [portfolioAssets, setPortfolioAssets] = useLocalStorage<
     { symbol: string; weights: string[] }[]
-  >("aa_portfolioAssets_v3", [
-    { symbol: "VTI", weights: ["60", "80", "100", "40", "25"] },
-    { symbol: "BND", weights: ["40", "20", "0", "40", "25"] },
-    { symbol: "GLD", weights: ["0", "0", "0", "10", "25"] },
-    { symbol: "SHY", weights: ["0", "0", "0", "10", "25"] },
-    { symbol: "VNQ", weights: ["0", "0", "0", "0", "0"] },
+  >("aa_portfolioAssets_v4", [
+    { symbol: "VTI", weights: ["60", "80", "30", "25"] },
+    { symbol: "BND", weights: ["40", "20", "40", "25"] },
+    { symbol: "GLD", weights: ["0", "0", "15", "25"] },
+    { symbol: "SHY", weights: ["0", "0", "15", "25"] },
+    { symbol: "VNQ", weights: ["0", "0", "0", "0"] },
   ]);
 
   // Defined Asset Classes for the dropdown
@@ -402,7 +401,7 @@ export function AssetAllocations({
     try {
       const { runBacktest: engineRunBacktest } = await import("../../engine");
 
-      const colors = ["#2c6cad", "#1a467a", "#d97757"];
+      const colors = ["#2c6cad", "#1a467a", "#d97757", "#10b981"];
       const enginePortfolios = [];
 
       for (let pIdx = 0; pIdx < portfolios.length; pIdx++) {
@@ -636,7 +635,7 @@ export function AssetAllocations({
                   ),
                 )
               }
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-2.5 rounded-[1.5rem] font-bold text-xs transition-all"
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-2.5 rounded-[1.5rem] font-bold text-base transition-all"
             >
               <FileDown size={16} />
               CSV
@@ -655,11 +654,11 @@ export function AssetAllocations({
             }
           </p>
         </div>
-        <MobileZoomWrapper scaleMobile={0.22}>
+        <MobileZoomWrapper scaleMobile={0.5}>
         {/* PARAMETERS HEADER - HORIZONTAL (Matched to Backtesting) */}
         <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8">
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-            <h2 className="text-sm font-semibold tracking-tight text-text flex items-center gap-2">
+            <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
               <Settings size={14} className="text-pv-blue" />
               {"Strategy Parameters"}
             </h2>
@@ -667,7 +666,7 @@ export function AssetAllocations({
               <button
                 onClick={handleSaveConfig}
                 disabled={isSaving || !saveName}
-                className="py-2 px-4 bg-surface-2 border border-border text-text rounded-[1.5rem] text-xs font-semibold hover:text-pv-blue transition-all disabled:opacity-30"
+                className="py-2 px-4 bg-surface-2 border border-border text-text rounded-[1.5rem] text-base font-semibold hover:text-pv-blue transition-all disabled:opacity-30"
               >
                 {isSaving ? (
                   "Saving..."
@@ -682,7 +681,7 @@ export function AssetAllocations({
                 placeholder={t("mc.portfolio_name") + " (ex: 60/40 Split)"}
                 value={saveName}
                 onChange={(e) => setSaveName(e.target.value)}
-                className="bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-xs font-bold outline-none flex-1 md:w-48 focus:border-pv-blue"
+                className="bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-base font-bold outline-none flex-1 md:w-48 focus:border-pv-blue"
               />
             </div>
           </div>
@@ -693,13 +692,13 @@ export function AssetAllocations({
               <div className="space-y-1.5">
                 <TooltipLabel
                   label="Start Date"
-                  tooltip="Date de début pour l'analyse des rendements (Mois & Année)."
+                  tooltip="Start date for return analysis (Month & Year)."
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <select
                     value={startMonth}
                     onChange={(e) => setStartMonth(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-xs font-bold"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
                   >
                     <option value={1}>01 - Jan</option>
                     <option value={2}>02 - Fév</option>
@@ -717,7 +716,7 @@ export function AssetAllocations({
                   <select
                     value={startYear}
                     onChange={(e) => setStartYear(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-xs font-bold"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
                   >
                     {YEARS.map((y) => (
                       <option key={y} value={y}>
@@ -730,13 +729,13 @@ export function AssetAllocations({
               <div className="space-y-1.5">
                 <TooltipLabel
                   label="End Date"
-                  tooltip="Date de fin pour l'analyse des rendements (Mois & Année)."
+                  tooltip="End date for return analysis (Month & Year)."
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <select
                     value={endMonth}
                     onChange={(e) => setEndMonth(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-xs font-bold"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
                   >
                     <option value={1}>01 - Jan</option>
                     <option value={2}>02 - Fév</option>
@@ -754,7 +753,7 @@ export function AssetAllocations({
                   <select
                     value={endYear}
                     onChange={(e) => setEndYear(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-xs font-bold"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
                   >
                     {YEARS.map((y) => (
                       <option key={y} value={y}>
@@ -773,7 +772,7 @@ export function AssetAllocations({
                   type="number"
                   value={initialAmount}
                   onChange={(e) => setInitialAmount(parseFloat(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-mono"
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono"
                 />
               </div>
             </div>
@@ -791,7 +790,7 @@ export function AssetAllocations({
                   onChange={(e) =>
                     setCashflowAmount(parseFloat(e.target.value))
                   }
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-mono"
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono"
                 />
               </div>
               <div className="space-y-1.5">
@@ -802,7 +801,7 @@ export function AssetAllocations({
                 <select
                   value={cashflowFrequency}
                   onChange={(e) => setCashflowFrequency(e.target.value as any)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold"
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold"
                 >
                   <option value="none">None</option>
                   <option value="monthly">Monthly</option>
@@ -821,7 +820,7 @@ export function AssetAllocations({
                 <select
                   value={rebalancing}
                   onChange={(e) => setRebalancing(e.target.value)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold"
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold"
                 >
                   <option value="annually">Annual</option>
                   <option value="quarterly">Quarterly</option>
@@ -833,19 +832,19 @@ export function AssetAllocations({
               <div className="space-y-1.5 pt-2">
                 <TooltipLabel
                   label={t("pb.broker")}
-                  tooltip="Tarification du courtier simulée."
+                  tooltip="Simulated broker pricing."
                 />
                 <select
                   value={broker}
                   onChange={(e) => setBroker(e.target.value)}
-                  className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                 >
                   <option value="free">Sans Frais (0€)</option>
                   <option value="custom">Autre / Personnalisé</option>
                 </select>
                 {broker === "custom" && (
                   <div className="pt-2">
-                    <label className="text-xs font-bold text-text mb-1 block">
+                    <label className="text-base font-bold text-text mb-1 block">
                       {t("pb.customFee")}
                     </label>
                     <input
@@ -853,7 +852,7 @@ export function AssetAllocations({
                       step="0.1"
                       value={customFee}
                       onChange={(e) => setCustomFee(Number(e.target.value))}
-                      className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-sm font-mono outline-none focus:border-pv-blue transition-colors shadow-inner"
+                      className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors shadow-inner"
                     />
                   </div>
                 )}
@@ -866,7 +865,7 @@ export function AssetAllocations({
                 <TickerInput
                   value={benchmarkTicker}
                   onChange={setBenchmarkTicker}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold transition-colors"
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold transition-colors"
                   placeholder="e.g. SPY"
                 />
               </div>
@@ -886,7 +885,7 @@ export function AssetAllocations({
                     onChange={(e) =>
                       setDividendTaxRate(parseFloat(e.target.value))
                     }
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-sm font-mono"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-base font-mono"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -900,7 +899,7 @@ export function AssetAllocations({
                     onChange={(e) =>
                       setCapitalGainsTaxRate(parseFloat(e.target.value))
                     }
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-sm font-mono"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-base font-mono"
                   />
                 </div>
               </div>
@@ -916,7 +915,7 @@ export function AssetAllocations({
                   />
                   <label
                     htmlFor="inf"
-                    className="text-xs font-semibold text-text cursor-pointer"
+                    className="text-base font-semibold text-text cursor-pointer"
                   >
                     Adj. Inflation
                   </label>
@@ -931,7 +930,7 @@ export function AssetAllocations({
                   />
                   <label
                     htmlFor="reiv"
-                    className="text-xs font-semibold text-text cursor-pointer"
+                    className="text-base font-semibold text-text cursor-pointer"
                   >
                     Reinvest Divs
                   </label>
@@ -948,31 +947,31 @@ export function AssetAllocations({
                   <Database size={14} className="text-pv-blue" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-semibold text-text flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-text flex items-center gap-2">
                     Portfolio Assets
                   </h3>
                 </div>
               </div>
               <button
                 onClick={addPortfolio}
-                className="text-xs bg-pv-blue/10 text-pv-blue px-3 py-1.5 border border-pv-blue/20 rounded font-bold hover:bg-pv-blue/20 transition-colors"
+                className="text-base bg-pv-blue/10 text-pv-blue px-3 py-1.5 border border-pv-blue/20 rounded font-bold hover:bg-pv-blue/20 transition-colors"
               >
                 {t("pb.add")}
               </button>
             </div>
 
-            <div className="w-full overflow-x-auto bg-surface rounded-xl border border-border mt-4">
-              <table className="w-full text-left border-collapse min-w-[800px]">
+            <div className="w-full max-w-full mx-auto overflow-x-auto bg-surface rounded-[2rem] border border-border mt-4 shadow-sm">
+              <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[800px]">
                 <thead>
                   <tr className="border-b border-border bg-surface-2">
-                    <th className="p-3 text-sm font-semibold text-text w-24 whitespace-nowrap">
+                    <th className="p-3 text-base font-semibold text-text w-24 whitespace-nowrap">
                       Asset Class
                     </th>
                     <th className="p-3 w-64 border-r border-border"></th>
                     {portfolioNames.map((pn, i) => (
                       <th
                         key={pn.id}
-                        className="p-3 text-sm font-semibold min-w-[140px] text-center group"
+                        className={`p-3 text-base font-semibold min-w-[140px] text-center group ${i >= 2 ? "hidden lg:table-cell" : ""}`}
                       >
                         <div className="flex items-center justify-center gap-2">
                           <input
@@ -1004,7 +1003,7 @@ export function AssetAllocations({
                       key={aIdx}
                       className="border-b border-surface-2 last:border-0 hover:bg-surface-2"
                     >
-                      <td className="p-3 text-sm text-text font-medium whitespace-nowrap">
+                      <td className="p-1 lg:p-3 text-base lg:text-base text-text font-medium whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           Asset {aIdx + 1}
                           {portfolioAssets.length > 1 && (
@@ -1020,13 +1019,13 @@ export function AssetAllocations({
                         {aIdx === portfolioAssets.length - 1 && (
                           <button
                             onClick={addAssetRow}
-                            className="text-blue-600 hover:underline ml-2 text-xs break-keep whitespace-nowrap block mt-1"
+                            className="text-blue-600 hover:underline ml-2 text-[10px] lg:text-base break-keep whitespace-nowrap block mt-1"
                           >
                             (Add More)
                           </button>
                         )}
                       </td>
-                      <td className="p-3 border-r border-surface-2 min-w-[200px]">
+                      <td className="p-1 lg:p-3 border-r border-surface-2 min-w-[100px] lg:min-w-[200px]">
                         <div className="flex flex-col gap-1">
                           <div className="relative flex items-center shadow-sm">
                             <select
@@ -1034,7 +1033,7 @@ export function AssetAllocations({
                               onChange={(e) =>
                                 updateAssetSymbol(aIdx, e.target.value)
                               }
-                              className="bg-white text-sm p-2 border border-border rounded-xl outline-none focus:border-blue-500 transition-colors w-full box-border font-bold text-text"
+                              className="bg-white text-lg lg:text-base p-1 lg:p-2 border border-border rounded-xl outline-none focus:border-blue-500 transition-colors w-full box-border font-extrabold text-text"
                             >
                               <option value="" disabled>
                                 Select Asset Class
@@ -1053,7 +1052,7 @@ export function AssetAllocations({
                         </div>
                       </td>
                       {portfolioNames.map((pn, i) => (
-                        <td key={pn.id} className="p-3">
+                        <td key={pn.id} className={`p-1 lg:p-3 ${i >= 2 ? "hidden lg:table-cell" : ""}`}>
                           <div className="flex items-center shadow-sm max-w-[120px] mx-auto">
                             <input
                               type="number"
@@ -1062,9 +1061,9 @@ export function AssetAllocations({
                                 updateAssetWeight(aIdx, i, e.target.value)
                               }
                               placeholder=""
-                              className="bg-white text-sm p-2 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border text-text font-bold"
+                              className="bg-white text-lg lg:text-base p-1 lg:p-2 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border text-text font-extrabold"
                             />
-                            <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-2 py-2 text-xs text-text shrink-0 select-none">
+                            <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-2 lg:py-2 text-[10px] lg:text-base text-text shrink-0 select-none">
                               %
                             </div>
                           </div>
@@ -1075,7 +1074,7 @@ export function AssetAllocations({
 
                   {/* Totals Row */}
                   <tr className="bg-surface-2">
-                    <td className="p-3 text-sm font-bold text-text">Total</td>
+                    <td className="p-3 text-base font-bold text-text">Total</td>
                     <td className="p-3 border-r border-surface-2"></td>
                     {portfolioNames.map((pn, i) => {
                       const totalWeight = portfolioAssets.reduce(
@@ -1088,7 +1087,7 @@ export function AssetAllocations({
                           <div className="flex items-center shadow-sm max-w-[120px] mx-auto">
                             <div
                               className={cn(
-                                "text-sm p-2 border border-border rounded-l-md w-full box-border text-text outline-none",
+                                "text-base p-2 border border-border rounded-l-md w-full box-border text-text outline-none",
                                 isOk
                                   ? "bg-[#dff0d8] border-[#d6e9c6]"
                                   : "bg-white",
@@ -1098,7 +1097,7 @@ export function AssetAllocations({
                             </div>
                             <div
                               className={cn(
-                                "border border-l-0 border-border rounded-r-md px-3 py-2 text-xs text-text shrink-0",
+                                "border border-l-0 border-border rounded-r-md px-3 py-2 text-base text-text shrink-0",
                                 isOk
                                   ? "bg-[#dff0d8] border-[#d6e9c6]"
                                   : "bg-surface-2",
@@ -1115,7 +1114,7 @@ export function AssetAllocations({
               </table>
             </div>
             {error && (
-              <div className="p-3 bg-red/10 border border-red/20 text-red text-xs rounded-2xl mt-2 font-medium">
+              <div className="p-3 bg-red/10 border border-red/20 text-red text-base rounded-2xl mt-2 font-medium">
                 {error}
               </div>
             )}
@@ -1123,7 +1122,7 @@ export function AssetAllocations({
               <button
                 onClick={runBacktest}
                 disabled={isRunning}
-                className="py-3 px-8 bg-pv-blue text-white rounded-[1.5rem] text-sm font-semibold hover:bg-pv-blue-l transition-colors shadow-lg shadow-pv-blue/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-3 px-8 bg-pv-blue text-white rounded-[1.5rem] text-base font-semibold hover:bg-pv-blue-l transition-colors shadow-lg shadow-pv-blue/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isRunning ? (
                   <>
@@ -1155,12 +1154,12 @@ export function AssetAllocations({
 
       {/* Results Section */}
       {results && results.length > 0 && (
-        <MobileZoomWrapper scaleMobile={0.22}>
+        <MobileZoomWrapper scaleMobile={0.5}>
         <div
           id="report-content"
           className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
         >
-          <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 text-sm text-text font-sans">
+          <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 text-base text-text font-sans">
             {/* Header info */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-border pb-12">
               <div className="space-y-2">
@@ -1169,7 +1168,7 @@ export function AssetAllocations({
                   {results[0].yearsInteger[results[0].yearsInteger.length - 1]}
                 </p>
                 {results.some((r) => r.warnings && r.warnings.length > 0) && (
-                  <div className="flex flex-col gap-1 mt-4 text-gold bg-surface-3 px-4 py-2.5 rounded-[2rem] text-sm font-semibold border border-gold/50 text-left">
+                  <div className="flex flex-col gap-1 mt-4 text-gold bg-surface-3 px-4 py-2.5 rounded-[2rem] text-base font-semibold border border-gold/50 text-left">
                     {results
                       .flatMap((r) => r.warnings || [])
                       .filter((v, i, a) => a.indexOf(v) === i)
@@ -1187,7 +1186,7 @@ export function AssetAllocations({
                   onClick={() => {
                     window.scrollTo({ top: 380, behavior: "smooth" });
                   }}
-                  className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
+                  className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
                 >
                   Modifier la configuration
                 </button>
@@ -1204,7 +1203,7 @@ export function AssetAllocations({
                       ),
                     );
                   }}
-                  className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
+                  className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
                 >
                   {t("pb.export")}
                 </button>
@@ -1219,7 +1218,7 @@ export function AssetAllocations({
                 </h3>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm font-sans border-collapse">
+                <table className="w-full text-base font-sans border-collapse">
                   <thead>
                     <tr className="bg-surface-2 border-b border-border">
                       <th className="px-6 py-4 text-left font-semibold text-text">
@@ -1280,7 +1279,7 @@ export function AssetAllocations({
                               <div className="font-semibold text-text">
                                 {r.name}
                               </div>
-                              <div className="text-xs text-text-4">
+                              <div className="text-base text-text-4">
                                 Depuis {r.startYear}
                               </div>
                             </div>
@@ -1305,13 +1304,13 @@ export function AssetAllocations({
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-center text-text tabular-nums text-sm">
+                        <td className="px-4 py-4 text-center text-text tabular-nums text-base">
                           $
                           {r.initialAmount.toLocaleString("fr-FR", {
                             maximumFractionDigits: 0,
                           })}
                         </td>
-                        <td className="px-4 py-4 text-center font-medium text-text tabular-nums text-sm">
+                        <td className="px-4 py-4 text-center font-medium text-text tabular-nums text-base">
                           $
                           {r.endBalance.toLocaleString("fr-FR", {
                             maximumFractionDigits: 0,
@@ -1319,29 +1318,29 @@ export function AssetAllocations({
                         </td>
                         <td
                           className={cn(
-                            "px-4 py-4 text-center font-semibold tabular-nums text-sm",
+                            "px-4 py-4 text-center font-semibold tabular-nums text-base",
                             r.cagr >= 0 ? "text-green" : "text-red",
                           )}
                         >
                           {r.cagr >= 0 ? "+" : ""}
                           {r.cagr.toFixed(2)}%
                         </td>
-                        <td className="px-4 py-4 text-center text-text tabular-nums text-sm">
+                        <td className="px-4 py-4 text-center text-text tabular-nums text-base">
                           {r.stdev.toFixed(2)}%
                         </td>
-                        <td className="px-4 py-4 text-center font-medium text-red tabular-nums text-sm">
+                        <td className="px-4 py-4 text-center font-medium text-red tabular-nums text-base">
                           -{Math.abs(r.maxDrawdown).toFixed(2)}%
                         </td>
-                        <td className="px-4 py-4 text-center tabular-nums text-sm font-medium text-text">
+                        <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
                           {r.sharpe.toFixed(2)}
                         </td>
-                        <td className="px-4 py-4 text-center tabular-nums text-sm font-medium text-text">
+                        <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
                           {r.sortino.toFixed(2)}
                         </td>
                         {results.some((r) => r.metrics.alpha !== undefined) && (
                           <td
                             className={cn(
-                              "px-4 py-4 text-center tabular-nums text-sm font-medium",
+                              "px-4 py-4 text-center tabular-nums text-base font-medium",
                               r.metrics.alpha !== undefined &&
                                 r.metrics.alpha >= 0
                                 ? "text-green"
@@ -1356,13 +1355,13 @@ export function AssetAllocations({
                           </td>
                         )}
                         {results.some((r) => r.metrics.beta !== undefined) && (
-                          <td className="px-4 py-4 text-center text-text tabular-nums text-sm">
+                          <td className="px-4 py-4 text-center text-text tabular-nums text-base">
                             {r.metrics.beta !== undefined
                               ? r.metrics.beta.toFixed(2)
                               : "-"}
                           </td>
                         )}
-                        <td className="px-4 py-4 text-center tabular-nums text-sm whitespace-nowrap">
+                        <td className="px-4 py-4 text-center tabular-nums text-base whitespace-nowrap">
                           <span
                             className={cn(
                               "font-medium",
@@ -1393,7 +1392,7 @@ export function AssetAllocations({
             {/* Portfolio Growth Graph */}
             <div className="bg-surface border border-border rounded-3xl mb-8 overflow-hidden text-left shadow-sm">
               <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-surface-2">
-                <h3 className="text-sm font-semibold text-text flex items-center gap-2">
+                <h3 className="text-base font-semibold text-text flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-pv-blue animate-pulse"></span>
                   Cumulative Wealth Growth
                 </h3>
@@ -1497,7 +1496,7 @@ export function AssetAllocations({
               {/* Annual Returns Bar Chart */}
               <div className="bg-surface border border-border rounded-3xl overflow-hidden shadow-sm">
                 <div className="px-8 py-6 border-b border-border bg-surface-2">
-                  <h3 className="text-sm font-semibold text-text flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-text flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                     Annual Returns Comparison
                   </h3>
@@ -1592,7 +1591,7 @@ export function AssetAllocations({
               {/* Drawdowns Chart */}
               <div className="bg-surface border border-border rounded-3xl overflow-hidden shadow-sm">
                 <div className="px-8 py-6 border-b border-border bg-surface-2">
-                  <h3 className="text-sm font-semibold text-text flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-text flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
                     Portfolio Drawdowns
                   </h3>
@@ -1694,25 +1693,25 @@ export function AssetAllocations({
                 </h3>
               </div>
               <div className="overflow-x-auto p-6">
-                <table className="w-full text-sm border-collapse font-sans">
+                <table className="w-full text-base border-collapse font-sans">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                      <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                         Portfolio
                       </th>
-                      <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                      <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                         1 Year
                       </th>
-                      <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                      <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                         3 Years (Ann.)
                       </th>
-                      <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                      <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                         5 Years (Ann.)
                       </th>
-                      <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                      <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                         10 Years (Ann.)
                       </th>
-                      <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                      <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                         Full Period
                       </th>
                     </tr>
@@ -1776,16 +1775,16 @@ export function AssetAllocations({
                 </h3>
               </div>
               <div className="overflow-x-auto p-6">
-                <table className="w-full text-sm border-collapse font-sans">
+                <table className="w-full text-base border-collapse font-sans">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                      <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                         Year
                       </th>
                       {results.map((r, i) => (
                         <th
                           key={i}
-                          className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap"
+                          className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap"
                         >
                           {r.name}
                         </th>
@@ -1832,24 +1831,24 @@ export function AssetAllocations({
             {/* Historical Stress Scenarios Table */}
             <div className="bg-surface border border-border rounded-3xl shadow-md mb-12 overflow-hidden border-2 border-border text-left">
               <div className="px-10 py-8 border-b border-border flex items-center justify-between bg-surface-2">
-                <h3 className="text-sm font-semibold text-text ">
+                <h3 className="text-base font-semibold text-text ">
                   Market Stress Audits
                 </h3>
               </div>
               <div className="overflow-x-auto p-10">
-                <table className="w-full text-sm border-collapse">
+                <table className="w-full text-base border-collapse">
                   <thead>
                     <tr className="border-b-2 border-border">
-                      <th className="text-left font-semibold text-text py-5 px-6 text-xs whitespace-nowrap">
+                      <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">
                         Stress Period
                       </th>
-                      <th className="text-left font-semibold text-text py-5 px-6 text-xs whitespace-nowrap">
+                      <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">
                         Timeline
                       </th>
                       {results.map((r, i) => (
                         <th
                           key={i}
-                          className="text-right font-semibold text-text py-5 px-6 text-xs whitespace-nowrap"
+                          className="text-right font-semibold text-text py-5 px-6 text-base whitespace-nowrap"
                         >
                           {r.name}
                         </th>
@@ -1879,7 +1878,7 @@ export function AssetAllocations({
                         key={ei}
                         className="border-b border-border hover:bg-pv-blue/5 transition-all font-sans group"
                       >
-                        <td className="py-6 px-6 font-bold text-text whitespace-nowrap text-left text-xs tracking-tight">
+                        <td className="py-6 px-6 font-bold text-text whitespace-nowrap text-left text-base tracking-tight">
                           {event.name}
                         </td>
                         <td className="py-6 px-6 text-text whitespace-nowrap text-left font-mono tabular-nums">
@@ -1897,7 +1896,7 @@ export function AssetAllocations({
                             return (
                               <td
                                 key={i}
-                                className="py-6 px-6 text-right text-text font-bold italic text-xs font-mono"
+                                className="py-6 px-6 text-right text-text font-bold italic text-base font-mono"
                               >
                                 OUTSIDE SCOPE
                               </td>
@@ -1930,7 +1929,7 @@ export function AssetAllocations({
                     key={r.id}
                     onClick={() => setActiveResIdx(idx)}
                     className={cn(
-                      "px-6 py-3 text-xs font-semibold whitespace-nowrap transition-all rounded-[1.5rem]",
+                      "px-6 py-3 text-base font-semibold whitespace-nowrap transition-all rounded-[1.5rem]",
                       activeResIdx === idx
                         ? "bg-pv-blue text-white shadow-md font-extrabold"
                         : "text-text hover:text-text hover:bg-surface-3",
@@ -1949,7 +1948,7 @@ export function AssetAllocations({
                   <div className="flex flex-col xl:flex-row gap-12 items-start">
                     <div className="flex-1 w-full xl:w-2/3 overflow-x-auto">
                       <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xs font-semibold flex items-center gap-2 text-text">
+                        <h3 className="text-base font-semibold flex items-center gap-2 text-text">
                           <Activity size={14} /> Heatmap Mensuelle
                         </h3>
                       </div>
@@ -1958,7 +1957,7 @@ export function AssetAllocations({
                       />
                     </div>
                     <div className="w-full xl:w-1/3 shrink-0">
-                      <h3 className="text-xs font-semibold mb-6 flex items-center gap-2 text-text">
+                      <h3 className="text-base font-semibold mb-6 flex items-center gap-2 text-text">
                         <Activity size={14} /> Asset Allocation
                       </h3>
                       <div className="bg-surface rounded-[2rem] p-8 shadow-xl border border-border">

@@ -51,7 +51,7 @@ function TooltipLabel({
 }) {
   return (
     <div className="flex items-center gap-1.5 mb-1.5">
-      <label className={cn("text-xs font-bold text-text ", className)}>
+      <label className={cn("text-base font-bold text-text ", className)}>
         {label}
       </label>
       <InfoTooltip content={<>{tooltip}</>} />
@@ -369,11 +369,6 @@ export function TacticalAllocation() {
         };
       });
       setResults(finalResults);
-      setTimeout(() => {
-        document
-          .getElementById("bt-results-anchor")
-          ?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
     } catch (err) {
       console.error(err);
     } finally {
@@ -383,7 +378,7 @@ export function TacticalAllocation() {
 
   return (
     <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
-      <div className="space-y-8 animate-fade-up w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-24">
+      <div className="space-y-8 animate-fade-up w-full max-w-[1400px] mx-auto px-4 md:px-8 pb-24">
         {/* TITLE HEADER */}
         <div className="mb-16">
           <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
@@ -391,22 +386,22 @@ export function TacticalAllocation() {
               {t("ta.tit")}
             </h1>
           </div>
-          <p className="text-base text-text-2 font-medium leading-relaxed w-full max-w-[1308px]">
+          <p className="text-base text-text-2 font-medium leading-relaxed w-full max-w-[2000px]">
             {
               "Tactical allocation involves actively adjusting a portfolio's composition to capitalize on short or medium-term market anomalies while maintaining an overarching strategy. Explore how different dynamic strategies can optimize returns. The backtest begins at the year of common data availability for the assets."
             }
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 border-b border-border pb-4">
+        <div className="flex overflow-x-auto no-scrollbar gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem] border border-border/60">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "px-5 py-2.5 text-sm md:text-base font-bold rounded-[1.5rem] transition-colors border-2",
+                "px-6 py-3 text-base font-semibold whitespace-nowrap transition-all rounded-[1.5rem] cursor-pointer",
                 activeTab === tab.id
-                  ? "bg-pv-blue text-white border-pv-blue"
-                  : "bg-surface-2 text-text border-transparent hover:bg-surface-3 hover:text-text",
+                  ? "bg-pv-blue text-white shadow-md font-extrabold"
+                  : "text-text hover:text-text hover:bg-surface-3",
               )}
             >
               {tab.label}
@@ -414,15 +409,15 @@ export function TacticalAllocation() {
           ))}
         </div>
 
-        <MobileZoomWrapper scaleMobile={0.22}>
+        <MobileZoomWrapper scaleMobile={0.5}>
         <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8">
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-            <h2 className="text-sm font-semibold tracking-tight text-text flex items-center gap-2">
+            <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
               <Settings size={14} className="text-pv-blue" />
               {"Strategy Parameters"}
             </h2>
             <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
-              <label className="hidden md:inline-block text-xs font-semibold text-text ">
+              <label className="hidden md:inline-block text-base font-semibold text-text ">
                 {t("mc.portfolio_name")}
               </label>
               <input
@@ -444,7 +439,7 @@ export function TacticalAllocation() {
                   "Select whether the period is calculated year over year or month over month."
                 }
               />
-              <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+              <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                 <option>Year-to-Year</option>
                 <option>Month-to-Month</option>
               </select>
@@ -458,7 +453,7 @@ export function TacticalAllocation() {
                 type="number"
                 value={startYear}
                 onChange={(e) => setStartYear(parseInt(e.target.value))}
-                className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-mono outline-none focus:border-pv-blue transition-colors"
+                className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
               />
             </div>
             <div className="space-y-4">
@@ -470,7 +465,7 @@ export function TacticalAllocation() {
                 type="number"
                 value={endYear}
                 onChange={(e) => setEndYear(parseInt(e.target.value))}
-                className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-mono outline-none focus:border-pv-blue transition-colors"
+                className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
               />
             </div>
             <div className="space-y-4">
@@ -480,7 +475,7 @@ export function TacticalAllocation() {
                   "Include the current year (Year-To-Date) in the calculations."
                 }
               />
-              <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+              <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                 <option>No</option>
                 <option>Yes</option>
               </select>
@@ -495,7 +490,7 @@ export function TacticalAllocation() {
                 value={initialAmount}
                 onChange={(e) => setInitialAmount(parseFloat(e.target.value))}
                 step="0.01"
-                className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-mono outline-none focus:border-pv-blue transition-colors"
+                className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
               />
             </div>
 
@@ -513,14 +508,14 @@ export function TacticalAllocation() {
               <select
                 value={broker}
                 onChange={(e) => setBroker(e.target.value)}
-                className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
               >
                 <option value="free">Sans Frais (0€)</option>
                 <option value="custom">Autre / Personnalisé</option>
               </select>
               {broker === "custom" && (
                 <div className="pt-2">
-                  <label className="text-xs font-bold text-text mb-1 block">
+                  <label className="text-base font-bold text-text mb-1 block">
                     {t("pb.customFee")}
                   </label>
                   <input
@@ -528,7 +523,7 @@ export function TacticalAllocation() {
                     step="0.1"
                     value={customFee}
                     onChange={(e) => setCustomFee(Number(e.target.value))}
-                    className="w-full bg-surface border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-sm font-mono outline-none focus:border-pv-blue transition-colors shadow-inner"
+                    className="w-full bg-surface border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors shadow-inner"
                   />
                 </div>
               )}
@@ -540,7 +535,7 @@ export function TacticalAllocation() {
                   "Regular contributions or withdrawals applied to the portfolio."
                 }
               />
-              <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+              <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                 <option>None</option>
                 <option>Contribute fixed amount</option>
                 <option>Withdraw fixed amount</option>
@@ -551,7 +546,7 @@ export function TacticalAllocation() {
           {activeTab === "seasonal" && (
             <>
               <div className="bg-surface rounded-[2rem] shadow-sm border border-border p-6 flex flex-col gap-6 text-left mb-6">
-                <h3 className="text-xs font-semibold text-text flex items-center gap-2 mb-2">
+                <h3 className="text-base font-semibold text-text flex items-center gap-2 mb-2">
                   <Settings size={14} className="text-pv-blue" /> {"Parameters"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -564,7 +559,7 @@ export function TacticalAllocation() {
                     />
                     <select
                       defaultValue="May"
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
                       {[
                         "Jan",
@@ -595,7 +590,7 @@ export function TacticalAllocation() {
                     />
                     <select
                       defaultValue="Oct"
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
                       {[
                         "Jan",
@@ -626,7 +621,7 @@ export function TacticalAllocation() {
                     />
                     <select
                       defaultValue="Cash"
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
                       <option>Cash</option>
                       <option>BIL (1-3 Month T-Bill)</option>
@@ -640,7 +635,7 @@ export function TacticalAllocation() {
                         "Use of leverage or margin to increase exposure."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>None</option>
                       <option>Margin Factor</option>
                     </select>
@@ -652,7 +647,7 @@ export function TacticalAllocation() {
                         "The reference allocation used for comparison (Benchmark)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Default</option>
                       <option>Custom</option>
                     </select>
@@ -664,7 +659,7 @@ export function TacticalAllocation() {
                         "The benchmark index to compare overall performance."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>None</option>
                       <option>S&P 500</option>
                       <option>Vanguard 60/40</option>
@@ -679,22 +674,22 @@ export function TacticalAllocation() {
                     <div className="w-8 h-8 rounded-xl bg-pv-blue/10 flex items-center justify-center border border-pv-blue/20">
                       <Database size={14} className="text-pv-blue" />
                     </div>
-                    <h3 className="text-xs font-semibold text-text flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-text flex items-center gap-2">
                       Portfolio Assets
                     </h3>
                   </div>
                 </div>
-                <div className="w-full overflow-x-auto bg-surface rounded-xl border border-border mt-4">
-                  <table className="w-full text-left border-collapse min-w-[600px]">
+                <div className="w-full max-w-full mx-auto overflow-x-auto bg-surface rounded-[2rem] border border-border mt-4 shadow-sm">
+                  <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[600px]">
                     <thead>
                       <tr className="border-b border-border bg-surface-2 text-text">
-                        <th className="font-semibold py-3 px-4 text-sm w-[120px]">
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[120px]">
                           Asset
                         </th>
-                        <th className="font-semibold py-3 px-4 text-sm w-[140px]">
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[140px]">
                           {t("pb.alloc")}
                         </th>
-                        <th className="font-semibold py-3 px-4 text-sm w-[60px]"></th>
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[60px]"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -703,17 +698,17 @@ export function TacticalAllocation() {
                           key={index}
                           className="border-b border-border last:border-0 hover:bg-surface-2"
                         >
-                          <td className="py-2 px-4">
+                          <td className="py-1 px-1 lg:py-2 lg:px-4">
                             <TickerInput
                               value={asset.symbol}
                               onChange={(val) =>
                                 updateMaPortfolioAsset(index, "symbol", val)
                               }
                               placeholder="e.g. SPY"
-                              className="bg-surface text-sm p-2 border border-border rounded-xl outline-none focus:border-pv-blue transition-colors w-full box-border font-mono font-bold"
+                              className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-xl outline-none focus:border-pv-blue transition-colors w-full box-border font-mono font-extrabold"
                             />
                           </td>
-                          <td className="py-2 px-4">
+                          <td className="py-1 px-1 lg:py-2 lg:px-4">
                             <div className="flex w-full box-border group">
                               <input
                                 type="number"
@@ -726,9 +721,9 @@ export function TacticalAllocation() {
                                     e.target.value,
                                   )
                                 }
-                                className="bg-surface text-sm p-2 border border-border rounded-l-md outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-bold"
+                                className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-l-md outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-extrabold"
                               />
-                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-2 py-2 text-xs text-text shrink-0 select-none">
+                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-2 lg:py-2 text-[10px] lg:text-base text-text shrink-0 select-none flex items-center justify-center">
                                 %
                               </div>
                             </div>
@@ -760,7 +755,7 @@ export function TacticalAllocation() {
                         { symbol: "", alloc: "" },
                       ])
                     }
-                    className="text-xs font-bold text-pv-blue hover:underline"
+                    className="text-base font-bold text-pv-blue hover:underline"
                   >
                     + Add more assets
                   </button>
@@ -772,7 +767,7 @@ export function TacticalAllocation() {
           {(activeTab === "ma_single" || activeTab === "ma_portfolio") && (
             <>
               <div className="bg-surface rounded-[2rem] shadow-sm border border-border p-6 flex flex-col gap-6 text-left mb-6">
-                <h3 className="text-xs font-semibold text-text flex items-center gap-2 mb-2">
+                <h3 className="text-base font-semibold text-text flex items-center gap-2 mb-2">
                   <Settings size={14} className="text-pv-blue" /> {"Parameters"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -785,7 +780,7 @@ export function TacticalAllocation() {
                     />
                     <select
                       defaultValue="Cash"
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
                       <option>Cash</option>
                       <option>BIL (1-3 Month T-Bill)</option>
@@ -799,7 +794,7 @@ export function TacticalAllocation() {
                         "The condition necessary to trigger a buy signal."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Price &gt;= Moving average</option>
                       <option>Price &gt; Moving average</option>
                     </select>
@@ -811,7 +806,7 @@ export function TacticalAllocation() {
                         "The smoothing method (Simple or Exponential) of the moving average."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Simple Moving Average</option>
                       <option>Exponential Moving Average</option>
                     </select>
@@ -823,7 +818,7 @@ export function TacticalAllocation() {
                         "The past observation period to calculate signals (e.g. 10 months, 200 days)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>10 months</option>
                       <option>12 months</option>
                       <option>200 days</option>
@@ -836,7 +831,7 @@ export function TacticalAllocation() {
                         "Maximum drawdown level tolerated before automatic liquidation of a position."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>No stop-loss</option>
                       <option>Trailing stop-loss</option>
                     </select>
@@ -848,7 +843,7 @@ export function TacticalAllocation() {
                         "How often the strategy checks its signals to potentially readjust positions."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Monthly</option>
                       <option>Weekly</option>
                       <option>Daily</option>
@@ -861,7 +856,7 @@ export function TacticalAllocation() {
                         "The asset observed to generate market signals (may be different from the invested asset)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Same as investment</option>
                       <option>S&P 500 (SPY)</option>
                     </select>
@@ -873,7 +868,7 @@ export function TacticalAllocation() {
                         "Determines if the trade is executed at the closing price or at the opening of the next period."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Trade at end of month price</option>
                       <option>Trade at next month open</option>
                     </select>
@@ -885,7 +880,7 @@ export function TacticalAllocation() {
                         "Use of leverage or margin to increase exposure."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>None</option>
                       <option>Margin Factor</option>
                     </select>
@@ -899,22 +894,22 @@ export function TacticalAllocation() {
                     <div className="w-8 h-8 rounded-xl bg-pv-blue/10 flex items-center justify-center border border-pv-blue/20">
                       <Database size={14} className="text-pv-blue" />
                     </div>
-                    <h3 className="text-xs font-semibold text-text flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-text flex items-center gap-2">
                       Portfolio Assets
                     </h3>
                   </div>
                 </div>
-                <div className="w-full overflow-x-auto bg-surface rounded-xl border border-border mt-4">
-                  <table className="w-full text-left border-collapse min-w-[600px]">
+                <div className="w-full max-w-full mx-auto overflow-x-auto bg-surface rounded-[2rem] border border-border mt-4 shadow-sm">
+                  <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[600px]">
                     <thead>
                       <tr className="border-b border-border bg-surface-2 text-text">
-                        <th className="font-semibold py-3 px-4 text-sm w-[120px]">
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[120px]">
                           Asset
                         </th>
-                        <th className="font-semibold py-3 px-4 text-sm w-[140px]">
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[140px]">
                           {t("pb.alloc")}
                         </th>
-                        <th className="font-semibold py-3 px-4 text-sm w-[60px]"></th>
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[60px]"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -923,17 +918,17 @@ export function TacticalAllocation() {
                           key={index}
                           className="border-b border-border last:border-0 hover:bg-surface-2"
                         >
-                          <td className="py-2 px-4">
+                          <td className="py-1 px-1 lg:py-2 lg:px-4">
                             <TickerInput
                               value={asset.symbol}
                               onChange={(val) =>
                                 updateAdaptiveAsset(index, "symbol", val)
                               }
                               placeholder="e.g. SPY"
-                              className="bg-surface text-sm p-2 border border-border rounded-xl outline-none focus:border-pv-blue transition-colors w-full box-border font-mono font-bold"
+                              className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-xl outline-none focus:border-pv-blue transition-colors w-full box-border font-mono font-extrabold"
                             />
                           </td>
-                          <td className="py-2 px-4">
+                          <td className="py-1 px-1 lg:py-2 lg:px-4">
                             <div className="flex w-full box-border group">
                               <input
                                 type="number"
@@ -946,9 +941,9 @@ export function TacticalAllocation() {
                                     e.target.value,
                                   )
                                 }
-                                className="bg-surface text-sm p-2 border border-border rounded-l-md outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-bold"
+                                className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-l-md outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-extrabold"
                               />
-                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-2 py-2 text-xs text-text shrink-0 select-none">
+                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-2 lg:py-2 text-[10px] lg:text-base text-text shrink-0 select-none flex items-center justify-center">
                                 %
                               </div>
                             </div>
@@ -980,7 +975,7 @@ export function TacticalAllocation() {
                         { symbol: "", alloc: "" },
                       ])
                     }
-                    className="text-xs font-bold text-pv-blue hover:underline"
+                    className="text-base font-bold text-pv-blue hover:underline"
                   >
                     + Add more assets
                   </button>
@@ -992,7 +987,7 @@ export function TacticalAllocation() {
           {(activeTab === "mom_relative" || activeTab === "mom_dual") && (
             <>
               <div className="bg-surface rounded-[2rem] shadow-sm border border-border p-6 flex flex-col gap-6 text-left mb-6">
-                <h3 className="text-xs font-semibold text-text flex items-center gap-2 mb-2">
+                <h3 className="text-base font-semibold text-text flex items-center gap-2 mb-2">
                   <Settings size={14} className="text-pv-blue" /> {"Parameters"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -1006,7 +1001,7 @@ export function TacticalAllocation() {
                       value={relativeTickers}
                       onChange={(e) => setRelativeTickers(e.target.value)}
                       placeholder="Ticker symbols (comma separated)..."
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-mono outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
                     />
                   </div>
                   <div className="space-y-4">
@@ -1016,7 +1011,7 @@ export function TacticalAllocation() {
                         "Apply a single absolute momentum filter to the entire portfolio."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>No</option>
                       <option>Yes</option>
                     </select>
@@ -1030,7 +1025,7 @@ export function TacticalAllocation() {
                     />
                     <select
                       defaultValue="Cash"
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
                       <option>Cash</option>
                       <option>BIL (1-3 Month T-Bill)</option>
@@ -1044,7 +1039,7 @@ export function TacticalAllocation() {
                         "Calculate momentum over one or more performance periods."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Single Period</option>
                       <option>Multiple Periods</option>
                     </select>
@@ -1056,7 +1051,7 @@ export function TacticalAllocation() {
                         "The past observation period to calculate signals (e.g. 10 months, 200 days)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>12 months</option>
                       <option>6 months</option>
                       <option>3 months</option>
@@ -1069,7 +1064,7 @@ export function TacticalAllocation() {
                         "Excludes the most recent month in momentum calculation to avoid short-term stock market mean reversion."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>No</option>
                       <option>Yes</option>
                     </select>
@@ -1084,7 +1079,7 @@ export function TacticalAllocation() {
                     <input
                       type="number"
                       defaultValue="1"
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-mono outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
                     />
                   </div>
                   <div className="space-y-4">
@@ -1094,7 +1089,7 @@ export function TacticalAllocation() {
                         "The method to distribute capital (equal weight, risk parity, inverse volatility)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Equal Weight</option>
                       <option>Inverse Volatility</option>
                     </select>
@@ -1106,7 +1101,7 @@ export function TacticalAllocation() {
                         "Maximum drawdown level tolerated before automatic liquidation of a position."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>No stop-loss</option>
                       <option>Trailing stop-loss</option>
                     </select>
@@ -1118,7 +1113,7 @@ export function TacticalAllocation() {
                         "How often the strategy checks its signals to potentially readjust positions."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Monthly</option>
                       <option>Weekly</option>
                     </select>
@@ -1130,7 +1125,7 @@ export function TacticalAllocation() {
                         "Determines if the trade is executed at the closing price or at the opening of the next period."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Trade at end of month price</option>
                       <option>Trade at next month open</option>
                     </select>
@@ -1142,7 +1137,7 @@ export function TacticalAllocation() {
                         "Use of leverage or margin to increase exposure."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>None</option>
                       <option>Margin</option>
                     </select>
@@ -1155,7 +1150,7 @@ export function TacticalAllocation() {
           {activeTab === "mom_adaptive" && (
             <>
               <div className="bg-surface rounded-[2rem] shadow-sm border border-border p-6 flex flex-col gap-6 text-left mb-6">
-                <h3 className="text-xs font-semibold text-text flex items-center gap-2 mb-2">
+                <h3 className="text-base font-semibold text-text flex items-center gap-2 mb-2">
                   <Settings size={14} className="text-pv-blue" /> {"Parameters"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -1169,7 +1164,7 @@ export function TacticalAllocation() {
                       value={adaptiveTickers}
                       onChange={(e) => setAdaptiveTickers(e.target.value)}
                       placeholder="Ticker symbols (comma separated)..."
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-mono outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
                     />
                   </div>
                   <div className="space-y-4">
@@ -1179,7 +1174,7 @@ export function TacticalAllocation() {
                         "Calculate momentum over one or more performance periods."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Single Period</option>
                       <option>Multiple Periods</option>
                     </select>
@@ -1191,7 +1186,7 @@ export function TacticalAllocation() {
                         "The past observation period to calculate signals (e.g. 10 months, 200 days)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>12 months</option>
                       <option>6 months</option>
                       <option>3 months</option>
@@ -1204,7 +1199,7 @@ export function TacticalAllocation() {
                         "Excludes the most recent month in momentum calculation to avoid short-term stock market mean reversion."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>No</option>
                       <option>Yes</option>
                     </select>
@@ -1216,7 +1211,7 @@ export function TacticalAllocation() {
                         "Observation period to estimate recent historical volatility."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>3 months</option>
                       <option>6 months</option>
                       <option>1 month</option>
@@ -1232,7 +1227,7 @@ export function TacticalAllocation() {
                     <input
                       type="number"
                       defaultValue="2"
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-mono outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
                     />
                   </div>
                   <div className="space-y-4">
@@ -1242,7 +1237,7 @@ export function TacticalAllocation() {
                         "The method to distribute capital (equal weight, risk parity, inverse volatility)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Risk Parity</option>
                       <option>Minimum Variance</option>
                     </select>
@@ -1254,7 +1249,7 @@ export function TacticalAllocation() {
                         "Maximum drawdown level tolerated before automatic liquidation of a position."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>No stop-loss</option>
                       <option>Trailing stop-loss</option>
                     </select>
@@ -1266,7 +1261,7 @@ export function TacticalAllocation() {
                         "How often the strategy checks its signals to potentially readjust positions."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Monthly</option>
                       <option>Weekly</option>
                     </select>
@@ -1278,7 +1273,7 @@ export function TacticalAllocation() {
                         "Determines if the trade is executed at the closing price or at the opening of the next period."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>Trade at end of month price</option>
                       <option>Trade at next month open</option>
                     </select>
@@ -1290,7 +1285,7 @@ export function TacticalAllocation() {
                         "Use of leverage or margin to increase exposure."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option>None</option>
                       <option>Margin</option>
                     </select>
@@ -1304,7 +1299,7 @@ export function TacticalAllocation() {
             <button
               onClick={handleRunBacktest}
               disabled={isRunning}
-              className="py-3 px-8 bg-pv-blue text-white rounded-[1.5rem] text-sm font-semibold hover:bg-pv-blue-l transition-colors shadow-lg shadow-pv-blue/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="py-3 px-8 bg-pv-blue text-white rounded-[1.5rem] text-base font-semibold hover:bg-pv-blue-l transition-colors shadow-lg shadow-pv-blue/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Play size={16} fill="currentColor" />{" "}
               {isRunning ? "Running..." : "Run Backtest"}
@@ -1325,7 +1320,7 @@ export function TacticalAllocation() {
             id="report-content"
             className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
           >
-            <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 text-sm text-text font-sans">
+            <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 text-base text-text font-sans">
               {/* Header info */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-border pb-12">
                 <div className="space-y-2">
@@ -1338,7 +1333,7 @@ export function TacticalAllocation() {
                     }
                   </p>
                   {results.some((r) => r.warnings && r.warnings.length > 0) && (
-                    <div className="flex flex-col gap-1 mt-4 text-gold bg-surface-3 px-4 py-2.5 rounded-[2rem] text-sm font-semibold border border-gold/50 text-left">
+                    <div className="flex flex-col gap-1 mt-4 text-gold bg-surface-3 px-4 py-2.5 rounded-[2rem] text-base font-semibold border border-gold/50 text-left">
                       {results
                         .flatMap((r) => r.warnings || [])
                         .filter((v, i, a) => a.indexOf(v) === i)
@@ -1353,10 +1348,8 @@ export function TacticalAllocation() {
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <button
-                    onClick={() => {
-                      window.scrollTo({ top: 380, behavior: "smooth" });
-                    }}
-                    className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
+                    onClick={() => {}}
+                    className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
                   >
                     Modifier la configuration
                   </button>
@@ -1373,7 +1366,7 @@ export function TacticalAllocation() {
                         ),
                       );
                     }}
-                    className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
+                    className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
                   >
                     {t("pb.export")}
                   </button>
@@ -1388,7 +1381,7 @@ export function TacticalAllocation() {
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm font-sans border-collapse">
+                  <table className="w-full text-base font-sans border-collapse">
                     <thead>
                       <tr className="bg-surface-2 border-b border-border">
                         <th className="px-6 py-4 text-left font-semibold text-text">
@@ -1449,7 +1442,7 @@ export function TacticalAllocation() {
                                 <div className="font-semibold text-text">
                                   {r.name}
                                 </div>
-                                <div className="text-xs text-text-4">
+                                <div className="text-base text-text-4">
                                   Depuis {r.startYear}
                                 </div>
                               </div>
@@ -1474,13 +1467,13 @@ export function TacticalAllocation() {
                               )}
                             </div>
                           </td>
-                          <td className="px-4 py-4 text-center text-text tabular-nums text-sm">
+                          <td className="px-4 py-4 text-center text-text tabular-nums text-base">
                             $
                             {r.initialAmount.toLocaleString("fr-FR", {
                               maximumFractionDigits: 0,
                             })}
                           </td>
-                          <td className="px-4 py-4 text-center font-medium text-text tabular-nums text-sm">
+                          <td className="px-4 py-4 text-center font-medium text-text tabular-nums text-base">
                             $
                             {r.endBalance.toLocaleString("fr-FR", {
                               maximumFractionDigits: 0,
@@ -1488,23 +1481,23 @@ export function TacticalAllocation() {
                           </td>
                           <td
                             className={cn(
-                              "px-4 py-4 text-center font-semibold tabular-nums text-sm",
+                              "px-4 py-4 text-center font-semibold tabular-nums text-base",
                               r.cagr >= 0 ? "text-green" : "text-red",
                             )}
                           >
                             {r.cagr >= 0 ? "+" : ""}
                             {r.cagr.toFixed(2)}%
                           </td>
-                          <td className="px-4 py-4 text-center text-text tabular-nums text-sm">
+                          <td className="px-4 py-4 text-center text-text tabular-nums text-base">
                             {r.stdev.toFixed(2)}%
                           </td>
-                          <td className="px-4 py-4 text-center font-medium text-red tabular-nums text-sm">
+                          <td className="px-4 py-4 text-center font-medium text-red tabular-nums text-base">
                             -{Math.abs(r.maxDrawdown).toFixed(2)}%
                           </td>
-                          <td className="px-4 py-4 text-center tabular-nums text-sm font-medium text-text">
+                          <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
                             {r.sharpe.toFixed(2)}
                           </td>
-                          <td className="px-4 py-4 text-center tabular-nums text-sm font-medium text-text">
+                          <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
                             {r.sortino.toFixed(2)}
                           </td>
                           {results.some(
@@ -1512,7 +1505,7 @@ export function TacticalAllocation() {
                           ) && (
                             <td
                               className={cn(
-                                "px-4 py-4 text-center tabular-nums text-sm font-medium",
+                                "px-4 py-4 text-center tabular-nums text-base font-medium",
                                 r.metrics.alpha !== undefined &&
                                   r.metrics.alpha >= 0
                                   ? "text-green"
@@ -1529,13 +1522,13 @@ export function TacticalAllocation() {
                           {results.some(
                             (r) => r.metrics.beta !== undefined,
                           ) && (
-                            <td className="px-4 py-4 text-center text-text tabular-nums text-sm">
+                            <td className="px-4 py-4 text-center text-text tabular-nums text-base">
                               {r.metrics.beta !== undefined
                                 ? r.metrics.beta.toFixed(2)
                                 : "-"}
                             </td>
                           )}
-                          <td className="px-4 py-4 text-center tabular-nums text-sm whitespace-nowrap">
+                          <td className="px-4 py-4 text-center tabular-nums text-base whitespace-nowrap">
                             <span
                               className={cn(
                                 "font-medium",
@@ -1566,7 +1559,7 @@ export function TacticalAllocation() {
               {/* Portfolio Growth Graph */}
               <div className="bg-surface border border-border rounded-3xl mb-8 text-left shadow-sm">
                 <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-surface-2">
-                  <h3 className="text-sm font-semibold text-text flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-text flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-pv-blue animate-pulse"></span>
                     Cumulative Wealth Growth
                   </h3>
@@ -1670,7 +1663,7 @@ export function TacticalAllocation() {
                 {/* Annual Returns Bar Chart */}
                 <div className="bg-surface border border-border rounded-3xl shadow-sm">
                   <div className="px-8 py-6 border-b border-border bg-surface-2">
-                    <h3 className="text-sm font-semibold text-text flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-text flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                       Annual Returns Comparison
                     </h3>
@@ -1765,7 +1758,7 @@ export function TacticalAllocation() {
                 {/* Drawdowns Chart */}
                 <div className="bg-surface border border-border rounded-3xl shadow-sm">
                   <div className="px-8 py-6 border-b border-border bg-surface-2">
-                    <h3 className="text-sm font-semibold text-text flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-text flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
                       Portfolio Drawdowns
                     </h3>
@@ -1867,25 +1860,25 @@ export function TacticalAllocation() {
                   </h3>
                 </div>
                 <div className="overflow-x-auto p-6">
-                  <table className="w-full text-sm border-collapse font-sans">
+                  <table className="w-full text-base border-collapse font-sans">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="text-left font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                        <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                           Portfolio
                         </th>
-                        <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                        <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                           1 Year
                         </th>
-                        <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                        <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                           3 Years (Ann.)
                         </th>
-                        <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                        <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                           5 Years (Ann.)
                         </th>
-                        <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                        <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                           10 Years (Ann.)
                         </th>
-                        <th className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                        <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                           Full Period
                         </th>
                       </tr>
@@ -1949,16 +1942,16 @@ export function TacticalAllocation() {
                   </h3>
                 </div>
                 <div className="overflow-x-auto p-6">
-                  <table className="w-full text-sm border-collapse font-sans">
+                  <table className="w-full text-base border-collapse font-sans">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="text-left font-medium text-text py-3 px-4 text-xs whitespace-nowrap">
+                        <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
                           Year
                         </th>
                         {results.map((r, i) => (
                           <th
                             key={i}
-                            className="text-right font-medium text-text py-3 px-4 text-xs whitespace-nowrap"
+                            className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap"
                           >
                             {r.name}
                           </th>
@@ -2005,24 +1998,24 @@ export function TacticalAllocation() {
               {/* Historical Stress Scenarios Table */}
               <div className="bg-surface border border-border rounded-3xl shadow-md mb-12 border-2 border-border text-left">
                 <div className="px-10 py-8 border-b border-border flex items-center justify-between bg-surface-2">
-                  <h3 className="text-sm font-semibold text-text ">
+                  <h3 className="text-base font-semibold text-text ">
                     Market Stress Audits
                   </h3>
                 </div>
                 <div className="overflow-x-auto p-10">
-                  <table className="w-full text-sm border-collapse">
+                  <table className="w-full text-base border-collapse">
                     <thead>
                       <tr className="border-b-2 border-border">
-                        <th className="text-left font-semibold text-text py-5 px-6 text-xs whitespace-nowrap">
+                        <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">
                           Stress Period
                         </th>
-                        <th className="text-left font-semibold text-text py-5 px-6 text-xs whitespace-nowrap">
+                        <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">
                           Timeline
                         </th>
                         {results.map((r, i) => (
                           <th
                             key={i}
-                            className="text-right font-semibold text-text py-5 px-6 text-xs whitespace-nowrap"
+                            className="text-right font-semibold text-text py-5 px-6 text-base whitespace-nowrap"
                           >
                             {r.name}
                           </th>
@@ -2052,7 +2045,7 @@ export function TacticalAllocation() {
                           key={ei}
                           className="border-b border-border hover:bg-pv-blue/5 transition-all font-sans group"
                         >
-                          <td className="py-6 px-6 font-bold text-text whitespace-nowrap text-left text-xs tracking-tight">
+                          <td className="py-6 px-6 font-bold text-text whitespace-nowrap text-left text-base tracking-tight">
                             {event.name}
                           </td>
                           <td className="py-6 px-6 text-text whitespace-nowrap text-left font-mono tabular-nums">
@@ -2070,7 +2063,7 @@ export function TacticalAllocation() {
                               return (
                                 <td
                                   key={i}
-                                  className="py-6 px-6 text-right text-text font-bold italic text-xs font-mono"
+                                  className="py-6 px-6 text-right text-text font-bold italic text-base font-mono"
                                 >
                                   OUTSIDE SCOPE
                                 </td>
@@ -2103,7 +2096,7 @@ export function TacticalAllocation() {
                       key={r.id}
                       onClick={() => setActiveResIdx(idx)}
                       className={cn(
-                        "px-6 py-3 text-xs font-semibold whitespace-nowrap transition-all rounded-[1.5rem]",
+                        "px-6 py-3 text-base font-semibold whitespace-nowrap transition-all rounded-[1.5rem]",
                         activeResIdx === idx
                           ? "bg-pv-blue text-white shadow-md font-extrabold"
                           : "text-text hover:text-text hover:bg-surface-3",
@@ -2122,7 +2115,7 @@ export function TacticalAllocation() {
                     <div className="flex flex-col xl:flex-row gap-12 items-start">
                       <div className="flex-1 w-full xl:w-2/3 overflow-x-auto">
                         <div className="flex items-center justify-between mb-6">
-                          <h3 className="text-xs font-semibold flex items-center gap-2 text-text">
+                          <h3 className="text-base font-semibold flex items-center gap-2 text-text">
                             <Activity size={14} /> Heatmap Mensuelle
                           </h3>
                         </div>
@@ -2131,7 +2124,7 @@ export function TacticalAllocation() {
                         />
                       </div>
                       <div className="w-full xl:w-1/3 shrink-0">
-                        <h3 className="text-xs font-semibold mb-6 flex items-center gap-2 text-text">
+                        <h3 className="text-base font-semibold mb-6 flex items-center gap-2 text-text">
                           <Activity size={14} /> Asset Allocation
                         </h3>
                         <div className="bg-[#0f172a] rounded-[2rem] p-8 shadow-2xl border border-surface-3">

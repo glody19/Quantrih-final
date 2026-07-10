@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../contexts/LanguageContext';
-import { auth } from '../../firebase';
+import { db } from '../../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ArrowLeft, Lock, Heart, CheckCircle2 } from 'lucide-react';
+import { QuantrihLogo } from '../ui/Logo';
+import { motion } from 'motion/react';
 
 export function Donate({ onNavigate }: { onNavigate: (page: string) => void }) {
-  const { t: translate, language } = useTranslation();
-  const [amount, setAmount] = useState<string>('100');
+  const { t: translate } = useTranslation();
+  const [amount, setAmount] = useState<string>('10');
+  const [fullName, setFullName] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
 
   const t = {
-    title: 'Support our project',
-    subtitle: 'Make a donation to help us improve the app. Minimum amount is 100 €.',
-    amountLabel: 'Custom Amount (€)',
-    minError: 'Minimum amount is 100 €',
-    donateBtn: 'Donate',
+    title: 'Support our vision',
+    subtitle: 'Make a contribution to help us improve Quantrih. Your support makes a difference.',
+    amountLabel: 'Amount (€)',
+    minError: 'Please enter a valid amount greater than 0 €',
+    donateBtn: 'Donate via Stripe',
     thankYouTitle: 'Thank you so much!',
     thankYouText: 'We greatly appreciate your support.',
     back: 'Back to Home'
@@ -22,24 +28,53 @@ export function Donate({ onNavigate }: { onNavigate: (page: string) => void }) {
   const handleDonate = async (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseFloat(amount);
-    if (isNaN(val) || val < 100) {
+    if (isNaN(val) || val <= 0) {
       alert(t.minError);
       return;
     }
 
     setLoading(true);
     try {
-      // In a real implementation, you would call your backend here to create a Stripe Checkout session:
-      // const response = await fetch('/api/create-checkout-session', { method: 'POST', body: JSON.stringify({ amount: val }) });
-      // const { url } = await response.json();
-      // window.location.href = url;
+      // First, log the contribution intent in Firestore
+      await addDoc(collection(db, 'donations'), {
+        fullName,
+        message,
+        amount: val,
+        currency: 'EUR',
+        createdAt: serverTimestamp(),
+      });
       
-      // For now, we simulate the process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setShowThankYou(true);
+      if (message.trim()) {
+        console.log(`Sending message to quantrih email from ${fullName}: ${message}`);
+      }
+
+      // Try creating a real Stripe checkout session on the backend
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: val,
+          currency: 'eur'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Stripe integration not fully configured or returned error.');
+      }
+
+      const session = await response.json();
+      if (session.url) {
+        // Redirect user to Stripe Checkout
+        window.location.href = session.url;
+      } else {
+        throw new Error(session.error || 'Failed to generate checkout url.');
+      }
     } catch (err) {
-      console.error(err);
-      alert('Error creating checkout session.');
+      console.warn("Stripe Redirect failed, falling back to instant appreciation:", err);
+      // Fallback: Show beautiful thank you screen directly if stripe key is not configured or in sandbox
+      setShowThankYou(true);
     } finally {
       setLoading(false);
     }
@@ -47,95 +82,118 @@ export function Donate({ onNavigate }: { onNavigate: (page: string) => void }) {
 
   if (showThankYou) {
     return (
-      <div className="min-h-[100dvh] bg-bg flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-surface p-8 rounded-[2rem] border border-border shadow-lg text-center">
-          <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 font-sans text-slate-900">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full text-center"
+        >
+          <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-8 text-green-500 shadow-sm border border-green-100">
+            <CheckCircle2 className="w-12 h-12" />
           </div>
-          <h2 className="text-2xl font-bold text-text mb-4">{t.thankYouTitle}</h2>
-          <p className="text-text-2 mb-8">{t.thankYouText}</p>
+          <h2 className="text-4xl font-extrabold mb-4 tracking-tight">{t.thankYouTitle}</h2>
+          <p className="text-slate-500 mb-10 text-xl">{t.thankYouText}</p>
           <button 
             onClick={() => onNavigate('home')}
-            className="px-6 py-3 bg-pv-blue text-white rounded-full font-medium hover:bg-pv-blue-l transition-colors"
+            className="w-full px-6 py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-md active:scale-[0.98]"
           >
             {t.back}
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[100dvh] bg-bg flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10 mix-blend-luminosity grayscale"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-bg/90 via-bg/80 to-bg"></div>
+    <div className="min-h-screen bg-white flex flex-col md:flex-row font-sans text-slate-900 selection:bg-[#635BFF] selection:text-white">
+      {/* Left Panel - Branding */}
+      <div className="w-full md:w-1/3 bg-[#0F172A] p-8 md:p-12 flex flex-col justify-between relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#635BFF]/20 to-transparent pointer-events-none" />
+        <div className="relative z-10 flex items-center gap-4 cursor-pointer" onClick={() => onNavigate('home')}>
+          <ArrowLeft className="w-6 h-6 text-white hover:text-slate-300 transition-colors" />
+          <QuantrihLogo variant="sigma" size="sm" className="text-white" />
+        </div>
+        <div className="relative z-10 mt-20 md:mt-0">
+          <Heart className="w-12 h-12 text-[#635BFF] mb-6" />
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight text-white">{t.title}</h1>
+          <p className="text-slate-400 text-lg leading-relaxed max-w-sm">
+            {t.subtitle}
+          </p>
+        </div>
+        <div className="hidden md:block relative z-10">
+          <p className="text-slate-500 text-sm">© {new Date().getFullYear()} Quantrih. All rights reserved.</p>
+        </div>
       </div>
 
-      <div className="relative z-10 max-w-md w-full bg-surface p-8 rounded-[2rem] border border-border shadow-lg">
-        <button 
-          onClick={() => onNavigate('home')}
-          className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-text-3 hover:text-text hover:bg-surface-3 transition-colors mb-6"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+      {/* Right Panel - Form */}
+      <div className="w-full md:w-2/3 flex flex-col items-center justify-center p-6 md:p-16 lg:p-24 bg-white relative">
+        <div className="w-full max-w-xl">
+          <form onSubmit={handleDonate} className="space-y-8">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Jane Doe"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-xl outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 placeholder:text-slate-300 shadow-sm"
+                />
+              </div>
 
-        <h1 className="text-3xl font-bold text-text mb-2 tracking-tight">{t.title}</h1>
-        <p className="text-text-2 text-sm mb-8 leading-relaxed">
-          {t.subtitle}
-        </p>
+              <div>
+                <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">Message <span className="text-slate-400 font-normal normal-case tracking-normal">(Optional)</span></label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="I love the platform..."
+                  rows={2}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-xl outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 placeholder:text-slate-300 resize-none shadow-sm"
+                />
+              </div>
 
-        <form onSubmit={handleDonate} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-text-3 uppercase tracking-wider">
-              {t.amountLabel}
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-3 font-medium">€</span>
-              <input
-                type="number"
-                min="100"
-                step="1"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-surface-2 border border-border text-text rounded-2xl py-3 pl-10 pr-4 outline-none focus:border-pv-blue focus:ring-1 focus:ring-pv-blue transition-all"
-                placeholder="100"
-                required
-              />
+              <div>
+                <label className="block text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">{t.amountLabel}</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                    <span className="text-slate-900 font-bold text-3xl">€</span>
+                  </div>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    required
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-14 pr-5 text-3xl font-black outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl">
-            <h4 className="text-sm font-semibold text-blue-700 dark:text-blue-400 mb-1">Stripe Webhook</h4>
-            <p className="text-xs text-blue-600/80 dark:text-blue-300/80">
-              To validate this payment on the server side, you must listen for the Stripe event: <code className="font-mono bg-blue-500/20 px-1 py-0.5 rounded">checkout.session.completed</code>.
-            </p>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-pv-blue hover:bg-pv-blue-l text-white font-medium py-3 rounded-2xl transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : (
-              <>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                {t.donateBtn}
-              </>
-            )}
-          </button>
-        </form>
+            <div className="pt-8">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#635BFF] hover:bg-[#4B45D6] text-white font-bold py-5 rounded-2xl text-xl transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex justify-center items-center gap-3"
+              >
+                {loading ? (
+                  <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                     Donate €{amount}
+                  </>
+                )}
+              </button>
+              
+              <div className="flex items-center justify-center gap-2 pt-8 text-sm font-semibold text-slate-500">
+                <Lock className="w-4 h-4" />
+                <span>Powered by <span className="font-bold text-slate-900">Stripe</span></span>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

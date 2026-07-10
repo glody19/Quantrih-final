@@ -76,9 +76,6 @@ async function fetchJson(url: string, options: RequestInit = {}) {
 }
 
 // Correctly derive path info for both ESM and CJS
-const _filename = typeof import.meta.url === 'string' ? fileURLToPath(import.meta.url) : (typeof __filename !== 'undefined' ? __filename : '');
-const _dirname = typeof import.meta.url === 'string' ? path.dirname(_filename) : (typeof __dirname !== 'undefined' ? __dirname : '');
-
 async function startServer() {
   // Initialize Database
   try {
@@ -104,7 +101,7 @@ async function startServer() {
 
   const app = express();
   const PORT = 3000;
-
+  console.log("NODE_ENV:", process.env.NODE_ENV);
   app.set("trust proxy", 1);
 
   // Hardened Security Middlewares
@@ -117,12 +114,20 @@ async function startServer() {
     referrerPolicy: { policy: "strict-origin-when-cross-origin" }
   }));
   
+  if (process.env.NODE_ENV === "production") {
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+  }
   
   const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : [
     "https://ais-pre-cflazxyxvjulw7bdaz4ahl-2883134209.europe-west2.run.app",
+    "http://ais-pre-cflazxyxvjulw7bdaz4ahl-2883134209.europe-west2.run.app",
     "https://ais-dev-cflazxyxvjulw7bdaz4ahl-2883134209.europe-west2.run.app",
+    "http://ais-dev-cflazxyxvjulw7bdaz4ahl-2883134209.europe-west2.run.app",
     "https://quantrih.com",
-    "https://www.quantrih.com"
+    "http://quantrih.com",
+    "https://www.quantrih.com",
+    "http://www.quantrih.com"
   ];
   app.use(cors({
     origin: function (origin, callback) {
@@ -522,7 +527,7 @@ async function startServer() {
 
       res.json(prices);
     } catch (error: any) {
-      console.error(`Monthly prices error for ${req.params.symbol}:`, error.message);
+      console.warn(`Monthly prices error for ${req.params.symbol}:`, error.message);
       res.status(500).json({ error: "Failed to fetch monthly prices" });
     }
   });
@@ -1350,7 +1355,6 @@ ${pages.map(p => `  <url>
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
     
   app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));

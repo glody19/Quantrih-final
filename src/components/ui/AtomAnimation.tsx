@@ -22,7 +22,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  
  // Scale for High-DPI screens
  const setupCanvas = () => {
- const dpr = window.devicePixelRatio || 1;
+ const dpr = Math.max(2, window.devicePixelRatio || 1);
  width = canvas.offsetWidth;
  height = canvas.offsetHeight;
  canvas.width = width * dpr;
@@ -103,7 +103,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  nodes = [];
  gravityParticles = [];
  const numNodes = 1000; // Optimized for fluidity
- const radius = Math.min(width, height) * 0.42; // Adequate atom size
+ const radius = Math.min(width, height) * 0.42; // Increased radius
  const cx = width / 2;
  
  // Initialize Gravity Particles
@@ -279,17 +279,17 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  const rawOpacity = Math.max(0.1, Math.min(1, 1 - (pNode.z2 + 200) / 600));
  // Quantize opacity and scale to reduce CSS string generation and state changes
  const opacity = Math.round(rawOpacity * 10) / 10;
- const fontSize = Math.max(6, Math.floor(10 * pNode.scale + (interactScale * 4)));
+ const fontSize = Math.max(8, Math.floor(12 * pNode.scale + (interactScale * 5)));
  const rgb = currentColors[pNode.colorType];
  
  // Draw Ray
- const rayOpacity = Math.round(opacity * 0.3 * 10) / 10;
+ const rayOpacity = Math.round(opacity * 0.35 * 10) / 10;
  const newStrokeStyle = `rgba(${rgb}, ${rayOpacity})`;
  if (currentStrokeStyle !== newStrokeStyle) {
  ctx.strokeStyle = newStrokeStyle;
  currentStrokeStyle = newStrokeStyle;
  }
- ctx.lineWidth = interactScale > 0 ? 1 + interactScale * 2 : 0.5;
+ ctx.lineWidth = interactScale > 0 ? 1.5 + interactScale * 2 : 0.75;
  ctx.beginPath();
  ctx.moveTo(cx, cy);
  ctx.lineTo(finalX, finalY);
@@ -343,16 +343,20 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  p.y = height + Math.random() * 20;
  p.z = (Math.random() - 0.5) * 200;
  
- const isPositive = Math.random() > 0.1;
+ const randType = Math.random();
  const randNum = Math.random();
  const baseNum = (Math.random() * 15).toFixed(2);
  let numberStr = baseNum;
- if (isPositive) {
- if (randNum < 0.1) numberStr = (30 + Math.random() * 9.99).toFixed(2);
- else if (randNum < 0.3) numberStr = (20 + Math.random() * 9.99).toFixed(2);
+ if (randType < 0.33) {
+   p.val = `+${numberStr}%`;
+   p.color = 'rgba(6, 182, 212, '; // Cyan
+ } else if (randType < 0.66) {
+   p.val = `+${(Math.random() * 5).toFixed(2)}%`;
+   p.color = 'rgba(168, 85, 247, '; // Purple
+ } else {
+   p.val = `-${numberStr}%`;
+   p.color = 'rgba(239, 68, 68, '; // Red
  }
- p.val = isPositive ? `+${numberStr}%` : `-${numberStr}%`;
- p.color = isPositive ? 'rgba(34, 197, 94, ' : 'rgba(239, 68, 68, ';
  
  p.speed = 0.5 + Math.random() * 1.5;
  p.opacity = 0;
@@ -481,15 +485,15 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  canvas.addEventListener('mousemove', handleMouseMove);
  canvas.addEventListener('mouseleave', handleMouseLeave);
  canvas.addEventListener('mousedown', handleMouseClick);
- canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
- canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
- canvas.addEventListener('touchend', handleTouchEnd);
+ // canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+ // canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+ // canvas.addEventListener('touchend', handleTouchEnd);
 
  const resizeObserver = new ResizeObserver((entries) => {
   for (let entry of entries) {
    const { width: entryWidth, height: entryHeight } = entry.contentRect;
    if (entryWidth > 0 && entryHeight > 0) {
-    handleResize();
+    window.requestAnimationFrame(() => handleResize());
    }
   }
  });
@@ -518,7 +522,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  {/* Interactive 3D Canvas */}
  <canvas 
  ref={canvasRef} 
- className={"w-full h-full cursor-crosshair z-10 " + (fullScreen ? "" : "max-w-[950px] max-h-[950px] min-h-[480px]")}
+ className={"w-full h-full cursor-crosshair z-10 " + (fullScreen ? "" : "lg:max-w-[700px] lg:max-h-[700px] lg:min-h-[600px] max-w-[450px] max-h-[450px] min-h-[400px]")}
  />
  {/* Flat discreet base shadow */}
  <div className="absolute -bottom-[2%] left-1/2 -translate-x-1/2 w-[60%] h-1.5 pointer-events-none z-0">

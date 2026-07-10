@@ -110,7 +110,7 @@ export function runSimulation(
       const worstIdxs = new Set(worstN.map(x => x.idx));
       const remainingYears = yearsData.filter(x => !worstIdxs.has(x.idx));
       
-      const adjustedReturns = [];
+      const adjustedReturns: number[] = [];
       worstN.forEach(yr => adjustedReturns.push(...yr.rets));
       remainingYears.forEach(yr => adjustedReturns.push(...yr.rets));
       

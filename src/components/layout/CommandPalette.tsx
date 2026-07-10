@@ -15,11 +15,11 @@ export function CommandPalette({ onNavigate, isOpen, onClose }: CommandPalettePr
 
   const modules = [
     { title: 'Home', id: 'home', icon: <Presentation size={18} /> },
-    { title: 'Markets / Fin. Modeling', id: 'fmp', icon: <Search size={18} /> },
+    { title: 'Markets / Fin. Modeling', id: 'market', icon: <Search size={18} /> },
     { title: 'Asset Allocation', id: 'asset-allocation', icon: <PieChart size={18} /> },
-    { title: 'Portfolio Management', id: 'portfolio', icon: <Briefcase size={18} /> },
+    { title: 'Portfolio Management', id: 'portfolio-backtest', icon: <Briefcase size={18} /> },
+    { title: 'Tactical Allocation', id: 'tactical-allocation', icon: <Database size={18} /> },
     { title: 'Monte Carlo Simulation', id: 'montecarlo', icon: <Activity size={18} /> },
-    { title: 'Factor Analysis', id: 'factor-analysis', icon: <Database size={18} /> },
     { title: 'Library / Education', id: 'education', icon: <PlayCircle size={18} /> },
   ];
 

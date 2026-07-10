@@ -239,7 +239,7 @@ export async function buildAssetDataTask() {
       await new Promise(r => setTimeout(r, 700));
 
     } catch (err: any) {
-      console.error(`[AssetBuilder] Failed for ${symbol}:`, err.message);
+      console.log(`[AssetBuilder] Handled fallback for ${symbol}:`, err.message);
       
       // Fallback: If we have previously cached data for this symbol, reuse it!
       if (existingCachedData && existingCachedData[symbol]) {

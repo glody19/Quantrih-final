@@ -4,6 +4,7 @@ import { Header } from "./components/layout/Header";
 import { CommandPalette } from "./components/layout/CommandPalette";
 import { Footer } from "./components/layout/Footer";
 import { CookieConsent } from "./components/layout/CookieConsent";
+import { GoogleOneTapPrompt } from "./components/ui/GoogleOneTapPrompt";
 import { Home } from "./components/pages/Home";
 import { AssetAllocations } from "./components/pages/AssetAllocations";
 import { MonteCarlo } from "./components/pages/MonteCarlo";
@@ -13,12 +14,11 @@ import { MovingAverage } from "./components/pages/MovingAverage";
 import { DualMomentum } from "./components/pages/DualMomentum";
 import { RelativeStrength } from "./components/pages/RelativeStrength";
 import { Education } from "./components/pages/Education";
-import { FinancialModeling } from "./components/pages/FinancialModeling";
+import { FinancialModeling as MarketEquity } from "./components/pages/FinancialModeling";
 import { Platforms } from "./components/pages/Platforms";
 import { EtfScreener } from "./components/pages/EtfScreener";
 import { Auth } from "./components/pages/Auth";
 import { Profile } from "./components/pages/Profile";
-import { CryptoMarket } from "./components/pages/CryptoMarket";
 import { Donate } from "./components/pages/Donate";
 import { About } from "./components/pages/About";
 import { Legal } from "./components/pages/Legal";
@@ -113,6 +113,24 @@ function AppContent() {
     localStorage.setItem("theme", "light");
   }, []);
 
+  useEffect(() => {
+    const handleGlobalWheel = (e: WheelEvent) => {
+      let target = e.target as HTMLElement | null;
+      while (target && target !== document.body) {
+        if (target.classList && target.classList.contains('overflow-x-auto')) {
+          if (target.scrollWidth > target.clientWidth) {
+            target.scrollLeft += e.deltaY;
+            e.preventDefault();
+            return;
+          }
+        }
+        target = target.parentElement;
+      }
+    };
+    window.addEventListener('wheel', handleGlobalWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleGlobalWheel);
+  }, []);
+
   const toggleTheme = () => {};
 
   const handleNavigate = (page: string) => {
@@ -134,7 +152,7 @@ function AppContent() {
         baseCcy={baseCcy}
         setBaseCcy={setBaseCcy}
       />
-      <main className="flex-1 w-full mx-auto flex flex-col pt-24">
+      <main className={cn("flex-1 w-full mx-auto flex flex-col", currentPage === "home" ? "pt-0" : "pt-24")}>
         <Routes>
           <Route path="/" element={<Home onGoPage={handleNavigate} />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
@@ -142,19 +160,16 @@ function AppContent() {
           <Route path="/profile" element={<Profile onBack={() => handleNavigate("home")} />} />
           <Route path="/asset-allocation" element={<AssetAllocations baseCcy={baseCcy} onNavigate={handleNavigate} />} />
           <Route path="/portfolio" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="portfolio" />} />
-          <Route path="/backtest" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="backtest" />} />
           <Route path="/portfolio-backtest" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="portfolio-backtest" />} />
-          <Route path="/frontier" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="frontier" />} />
-          <Route path="/optimization" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="optimization" />} />
-          <Route path="/mean-variance" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="mean-variance" />} />
           <Route path="/montecarlo" element={<MonteCarlo baseCcy={baseCcy} />} />
           <Route path="/tactical-allocation" element={<TacticalAllocation />} />
           <Route path="/moving-average" element={<MovingAverage />} />
           <Route path="/dual-momentum" element={<DualMomentum />} />
           <Route path="/relative-strength" element={<RelativeStrength />} />
           <Route path="/platforms" element={<Platforms onNavigate={handleNavigate} />} />
-          <Route path="/fmp" element={<FinancialModeling />} />
-          <Route path="/education" element={<Education />} />
+          <Route path="/market" element={<MarketEquity />} />
+          <Route path="/etf-overview" element={<EtfScreener />} />
+          <Route path="/education" element={<div style={{ zoom: 0.6 }}><Education /></div>} />
           <Route path="/donate" element={<Donate onNavigate={handleNavigate} />} />
           <Route path="/about" element={<About />} />
           <Route path="/cookies" element={<Legal page="cookies" />} />
@@ -171,7 +186,7 @@ function AppContent() {
           setIsCommandOpen(false);
         }}
       />
-      {currentPage !== "fmp" && (
+      {currentPage !== "market" && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           className="fixed bottom-8 right-8 p-3 bg-sky-500/10 text-sky-500 backdrop-blur-md border border-sky-500/20 rounded-full shadow-xl hover:bg-sky-500/20 transition-all z-50 hover:-translate-y-1 group"
@@ -205,7 +220,8 @@ function AppContent() {
           </svg>
         </button>
       )}
-      {currentPage !== "fmp" && <Footer onNavigate={handleNavigate} />}
+      {currentPage !== "market" && <Footer onNavigate={handleNavigate} />}
+      <GoogleOneTapPrompt />
       <CookieConsent />
     </div>
   );

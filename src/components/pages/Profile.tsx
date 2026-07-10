@@ -1,616 +1,707 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { auth, db, handleFirestoreError, OperationType, serverTimestamp } from '../../firebase';
+import { auth, db } from '../../firebase';
 import { 
- updateProfile, 
- updateEmail, 
- updatePassword,
- signOut,
- sendEmailVerification
+  signOut, 
+  updateEmail, 
+  updatePassword, 
+  reauthenticateWithCredential, 
+  EmailAuthProvider,
+  deleteUser
 } from 'firebase/auth';
-import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { 
- User, 
- Mail, 
- Shield, 
- LogOut, 
- Save, 
- Key, 
- History,
- Settings,
- Bell,
- CreditCard,
- Globe,
- Zap,
- Lock as LockIcon,
- ShieldAlert,
- DollarSign,
- FileText,
- Plus,
- Trash2,
- Edit2
+  ArrowLeft, 
+  User, 
+  Mail, 
+  Globe, 
+  Briefcase, 
+  Save, 
+  LogOut, 
+  Lock, 
+  Trash2, 
+  CheckCircle,
+  AlertTriangle,
+  ChevronDown,
+  Search,
+  Download
 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
+import { countries, Country } from '../../data/countries';
 
 export function Profile({ onBack }: { onBack: () => void }) {
- const { user } = useAuth();
- const [displayName, setDisplayName] = useState(user?.displayName || '');
- const [firstName, setFirstName] = useState('');
- const [lastName, setLastName] = useState('');
- const [email, setEmail] = useState(user?.email || '');
- const [nationality, setNationality] = useState('');
- const [residenceCountry, setResidenceCountry] = useState('');
- const [phone, setPhone] = useState('');
- const [phoneCountryCode, setPhoneCountryCode] = useState('');
- const [phoneCountryFlag, setPhoneCountryFlag] = useState('');
- const [avatarUrl, setAvatarUrl] = useState('');
- const [username, setUsername] = useState('');
- const [canChangePassword, setCanChangePassword] = useState(true);
- const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
- const [twoFactorMethod, setTwoFactorMethod] = useState('app');
- const [passwordLastChangedAt, setPasswordLastChangedAt] = useState<any>(null);
- const [securityNotificationsEnabled, setSecurityNotificationsEnabled] = useState(true);
- const [createdAt, setCreatedAt] = useState<any>(null);
- const [status, setStatus] = useState('active');
- const [fetching, setFetching] = useState(true);
+  const { user } = useAuth();
+  
+  // Basic states
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState(user?.email || '');
+  const [residenceCountry, setResidenceCountry] = useState('');
+  const [accountType, setAccountType] = useState('Individual'); // 'Individual' | 'Corporate'
+  const [company, setCompany] = useState('');
+  
+  // Security credentials change states
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // Re-auth modal states for sensitive operations
+  const [showReauthModal, setShowReauthModal] = useState(false);
+  const [reauthPassword, setReauthPassword] = useState('');
+  const [reauthAction, setReauthAction] = useState<'update' | 'delete' | null>(null);
+  const [reauthError, setReauthError] = useState<string | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
- React.useEffect(() => {
-   if (!user) return;
-   const fetchUserData = async () => {
-     try {
-       const userRef = doc(db, `users/${user.uid}`);
-       const userSnap = await getDoc(userRef);
-       if (userSnap.exists()) {
-         const data = userSnap.data();
-         if (data.displayName) setDisplayName(data.displayName);
-         if (data.firstName) setFirstName(data.firstName);
-         if (data.lastName) setLastName(data.lastName);
-         if (data.nationality) setNationality(data.nationality);
-         if (data.residenceCountry) setResidenceCountry(data.residenceCountry);
-         if (data.phone) setPhone(data.phone);
-         if (data.phoneCountryCode) setPhoneCountryCode(data.phoneCountryCode);
-         if (data.phoneCountryFlag) setPhoneCountryFlag(data.phoneCountryFlag);
-         if (data.avatarUrl) setAvatarUrl(data.avatarUrl);
-         if (data.username) setUsername(data.username);
-         if (data.canChangePassword !== undefined) setCanChangePassword(data.canChangePassword);
-         if (data.twoFactorEnabled !== undefined) setTwoFactorEnabled(data.twoFactorEnabled);
-         if (data.twoFactorMethod) setTwoFactorMethod(data.twoFactorMethod);
-         if (data.passwordLastChangedAt) setPasswordLastChangedAt(data.passwordLastChangedAt);
-         if (data.securityNotificationsEnabled !== undefined) setSecurityNotificationsEnabled(data.securityNotificationsEnabled);
-         if (data.createdAt) setCreatedAt(data.createdAt);
-         if (data.status) setStatus(data.status);
-       }
-     } catch (err: any) {
-       console.error("Error fetching user data:", err);
-     } finally {
-       setFetching(false);
-     }
-   };
-   fetchUserData();
- }, [user]);
+  // Country search dropdown states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
- const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'billing' | 'fees' | 'reports'>('profile');
- const [newPassword, setNewPassword] = useState('');
- const [loading, setLoading] = useState(false);
- const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+  // Page state
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
- const handleVerifyEmail = async () => {
- if (!user) return;
- setLoading(true);
- try {
- await sendEmailVerification(user);
- setMessage({ text: 'Verification email sent. Please check your inbox.', type: 'success' });
- } catch (err: any) {
- console.warn(err);
- if (err.code === 'auth/too-many-requests') {
- setMessage({ text: 'Too many requests, please wait before resending.', type: 'error' });
- } else {
- setMessage({ text: 'Erreur lors de l\'envoi de la vérification.', type: 'error' });
- }
- } finally {
- setLoading(false);
- }
- };
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowCountryDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
- const handleUpdateProfile = async (e: React.FormEvent) => {
- e.preventDefault();
- if (!user) return;
- setLoading(true);
- setMessage(null);
+  // Fetch initial profile values from Firestore
+  useEffect(() => {
+    if (!user) return;
+    const fetchUserData = async () => {
+      try {
+        const userRef = doc(db, `users/${user.uid}`);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          if (data.firstName) setFirstName(data.firstName);
+          if (data.lastName) setLastName(data.lastName);
+          if (data.residenceCountry) setResidenceCountry(data.residenceCountry);
+          if (data.accountType) setAccountType(data.accountType);
+          if (data.company) setCompany(data.company);
+        } else {
+          // If Firestore document doesn't exist yet, try parsing the auth displayName
+          if (user.displayName) {
+            const parts = user.displayName.split(' ');
+            if (parts.length > 1) {
+              setFirstName(parts[0]);
+              setLastName(parts.slice(1).join(' '));
+            } else {
+              setFirstName(user.displayName);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchUserData();
+  }, [user]);
 
- try {
- if (displayName !== user.displayName) {
- await updateProfile(user, { displayName });
- }
- 
- const userPath = `users/${user.uid}`;
- const userRef = doc(db, userPath);
- await setDoc(userRef, {
- displayName,
- firstName,
- lastName,
- email: user.email,
- nationality,
- residenceCountry,
- phone,
- phoneCountryCode,
- phoneCountryFlag,
- avatarUrl,
- username,
- canChangePassword,
- twoFactorEnabled,
- twoFactorMethod,
- securityNotificationsEnabled,
- status,
- updatedAt: serverTimestamp(),
- }, { merge: true });
+  // Find the selected country flag
+  const selectedCountryObj = countries.find(
+    c => c.name.toLowerCase() === residenceCountry.toLowerCase()
+  );
+  const selectedFlag = selectedCountryObj ? selectedCountryObj.flag : '🏳️';
 
- setMessage({ text: 'Profile updated successfully.', type: 'success' });
- } catch (err: any) {
- handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}`);
- setMessage({ text: 'Error during update.', type: 'error' });
- } finally {
- setLoading(false);
- }
- };
+  // Filter countries list based on typing
+  const filteredCountries = countries.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
- const handleDeleteAccount = async () => {
- if (!user) return;
- const confirmDelete = window.confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.");
- if (!confirmDelete) return;
+  // Reauthentication flow before executing sensitive actions
+  const handleReauthenticate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !user.email) return;
+    setReauthError(null);
+    setLoading(true);
 
- setLoading(true);
- try {
- await user.delete();
- onBack();
- } catch (err: any) {
- console.warn(err);
- if (err.code === 'auth/requires-recent-login') {
- setMessage({ text: 'Please sign in again before deleting your account.', type: 'error' });
- } else {
- setMessage({ text: 'Error deleting account.', type: 'error' });
- }
- } finally {
- setLoading(false);
- }
- };
+    try {
+      const credential = EmailAuthProvider.credential(user.email, reauthPassword);
+      await reauthenticateWithCredential(user, credential);
+      
+      // If re-auth was successful, proceed to requested action
+      setShowReauthModal(false);
+      setReauthPassword('');
+      
+      if (reauthAction === 'update') {
+        await executeProfileUpdate();
+      } else if (reauthAction === 'delete') {
+        await executeAccountDeletion();
+      }
+    } catch (err: any) {
+      console.error("Re-authentication failed:", err);
+      setReauthError(err.message || "Invalid current password. Please try again.");
+      setLoading(false);
+    }
+  };
 
- const handleLogout = async () => {
- await signOut(auth);
- onBack();
- };
+  // Profile Update trigger
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    
+    if (newPassword && newPassword !== confirmPassword) {
+      setMessage({ text: 'New passwords do not match.', type: 'error' });
+      return;
+    }
 
- if (!user) {
- return (
- <div className="min-h-screen bg-bg flex items-center justify-center">
- <div className="text-text">Redirecting...</div>
- </div>
- );
- }
+    setMessage(null);
+    
+    // Check if email or password is being changed, which requires re-authentication
+    const isEmailChanged = email.toLowerCase() !== (user.email || '').toLowerCase();
+    const isPasswordChanged = newPassword.length > 0;
 
- return (
- <div className="min-h-screen bg-bg p-6 lg:p-12 relative overflow-x-hidden">
- <div className="max-w-6xl mx-auto w-full">
- <motion.div 
- initial={{ opacity: 0, y: 20 }}
- animate={{ opacity: 1, y: 0 }}
- className="flex flex-col lg:flex-row gap-8"
- >
- {/* Sidebar */}
- <div className="w-full lg:w-1/3 flex flex-col gap-4">
- <div className="p-8 bg-surface/80 border border-border rounded-3xl backdrop-blur-xl">
- <div className="flex flex-col items-center text-center mb-6">
- <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-text text-4xl font-bold mb-4 border-4 border-border shadow-2xl">
- {user.displayName?.[0] || user.email?.[0]?.toUpperCase()}
- </div>
- <h3 className="text-xl font-bold text-text tracking-tight italic">
- {user.displayName || 'Utilisateur Quantrih'}
- </h3>
- <div className="flex items-center gap-2 mt-2">
- <p className="text-text text-xs font-semibold ">
- Standard
- </p>
- {user.emailVerified && (
- <span className="flex items-center gap-1 text-xs bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20 font-semibold">
- <Shield size={10} /> Vérifié
- </span>
- )}
- </div>
- </div>
+    if (isEmailChanged || isPasswordChanged) {
+      setReauthAction('update');
+      setShowReauthModal(true);
+    } else {
+      setLoading(true);
+      await executeProfileUpdate();
+    }
+  };
 
- <div className="space-y-1">
- <button 
- onClick={() => setActiveTab('profile')}
- className={cn(
- "w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] font-bold text-sm transition-all",
- activeTab === 'profile' ? "bg-blue-600/10 text-blue-400" : "text-text hover:bg-text/5"
- )}
- >
- <User size={18} /> Profile & Identity
- </button>
- <button 
- onClick={() => setActiveTab('security')}
- className={cn(
- "w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] font-bold text-sm transition-all",
- activeTab === 'security' ? "bg-blue-600/10 text-blue-400" : "text-text hover:bg-text/5"
- )}
- >
- <Shield size={18} /> Sécurité & Edge
- </button>
- <button 
- onClick={() => setActiveTab('billing')}
- className={cn(
- "w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] font-bold text-sm transition-all",
- activeTab === 'billing' ? "bg-blue-600/10 text-blue-400" : "text-text hover:bg-text/5"
- )}
- >
- <CreditCard size={18} /> Plan & Facturation
- </button>
- <button 
- onClick={() => setActiveTab('fees')}
- className={cn(
- "w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] font-bold text-sm transition-all",
- activeTab === 'fees' ? "bg-blue-600/10 text-blue-400" : "text-text hover:bg-text/5"
- )}
- >
- <DollarSign size={18} /> Management Fees
- </button>
- <button 
- onClick={() => setActiveTab('reports')}
- className={cn(
- "w-full flex items-center gap-3 px-4 py-3 rounded-[1.5rem] font-bold text-sm transition-all",
- activeTab === 'reports' ? "bg-blue-600/10 text-blue-400" : "text-text hover:bg-text/5"
- )}
- >
- <FileText size={18} /> Reports
- </button>
- </div>
+  // Perform Firestore write and safe Auth field updates
+  const executeProfileUpdate = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      // 1. Update Auth Email if changed
+      if (email.toLowerCase() !== (user.email || '').toLowerCase()) {
+        await updateEmail(user, email);
+      }
 
- <div className="mt-8 pt-8 border-t border-border">
- <button 
- onClick={handleLogout}
- className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-[1.5rem] font-bold text-sm transition-all"
- >
- <LogOut size={18} /> Déconnexion
- </button>
- </div>
- </div>
- 
- <button 
- onClick={onBack}
- className="w-full p-4 bg-surface-2/50 border border-border rounded-[2rem] text-text font-bold text-xs hover:text-text transition-all"
- >
- Retour au terminal
- </button>
- </div>
+      // 2. Update Auth Password if changed
+      if (newPassword) {
+        await updatePassword(user, newPassword);
+        setNewPassword('');
+        setConfirmPassword('');
+      }
 
- {/* Main Content */}
- <div className="flex-1 space-y-6">
- {activeTab === 'profile' && (
- <div className="p-8 bg-surface/80 border border-border rounded-3xl backdrop-blur-xl">
- <h2 className="text-2xl font-bold text-text mb-8 tracking-tight italic flex items-center gap-3">
- <Settings className="text-blue-500" /> Account Settings
- </h2>
+      // 3. Update Firestore Document
+      const userRef = doc(db, `users/${user.uid}`);
+      const fullDisplayName = `${firstName} ${lastName}`.trim() || email.split('@')[0];
+      
+      await setDoc(userRef, {
+        firstName,
+        lastName,
+        displayName: fullDisplayName,
+        residenceCountry,
+        accountType,
+        company,
+        email: email,
+        updatedAt: new Date(),
+      }, { merge: true });
 
- <form onSubmit={handleUpdateProfile} className="space-y-6">
- {message && (
- <div className={cn(
- "p-4 rounded-[1.5rem] text-sm font-medium",
- message.type === 'success' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/30" : "bg-red-500/10 text-red-500 border border-red-500/30"
- )}>
- {message.text}
- </div>
- )}
+      setMessage({ text: 'Your account settings have been updated successfully.', type: 'success' });
+    } catch (err: any) {
+      console.error("Profile update error:", err);
+      if (err.code === 'auth/requires-recent-login') {
+        setReauthAction('update');
+        setShowReauthModal(true);
+      } else {
+        setMessage({ text: err.message || 'An error occurred during update.', type: 'error' });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="space-y-2">
- <label className="text-xs font-semibold text-text ">Display Name</label>
- <div className="relative">
- <User className="absolute left-4 top-1/2 -translate-y-1/2 text-text" size={16} />
- <input 
- type="text" 
- value={displayName}
- onChange={(e) => setDisplayName(e.target.value)}
- className="w-full bg-surface-2/50 border border-border rounded-[1.5rem] py-3 pl-12 pr-4 text-text outline-none focus:border-blue-500/50 transition-all"
- />
- </div>
- </div>
- <div className="space-y-2">
- <label className="text-xs font-semibold text-text ">Email</label>
- <div className="relative">
- <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text" size={16} />
- <input 
- type="email" 
- disabled
- value={email}
- className="w-full bg-surface-2/20 border border-border/50 rounded-[1.5rem] py-3 pl-12 pr-4 text-text cursor-not-allowed"
- />
- </div>
- <div className="flex items-center justify-between mt-2">
- <p className="text-xs text-text">Email is managed natively via the account.</p>
- {user.emailVerified ? (
- <span className="text-xs font-bold text-emerald-500 px-2 py-1 bg-emerald-500/10 rounded-full">✓ Email Verified</span>
- ) : (
- <div className="flex items-center gap-2">
- <span className="text-xs font-bold text-amber-500 px-2 py-1 bg-amber-500/10 rounded-full">⚠️ Unverified</span>
- <button 
- type="button"
- onClick={handleVerifyEmail}
- disabled={loading}
- className="text-xs bg-blue-600 hover:bg-blue-500 text-text font-bold px-2 py-1 rounded transition-colors disabled:opacity-50"
- >
- Resend
- </button>
- </div>
- )}
- </div>
- </div>
- </div>
+  // Download profile image helper
+  const downloadProfileImage = async () => {
+    if (!user?.photoURL) return;
+    try {
+      let url = user.photoURL;
+      if (!url.startsWith('data:')) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        url = window.URL.createObjectURL(blob);
+      }
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${firstName || 'profile'}_avatar.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      if (!user.photoURL.startsWith('data:')) {
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error("Failed to download image:", err);
+      window.open(user.photoURL, '_blank');
+    }
+  };
 
- <div className="pt-6 border-t border-border">
- <button 
- disabled={loading}
- className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-[1.5rem] transition-all flex items-center gap-2 disabled:opacity-50"
- >
- <Save size={18} /> Save Changes
- </button>
- </div>
- </form>
+  // Delete account confirmation
+  const handleDeleteAccountClick = () => {
+    setDeleteConfirmText('');
+    setShowDeleteConfirm(true);
+  };
 
- <div className="mt-8 pt-8 border-t border-border">
-   <h3 className="text-lg font-bold text-text mb-6 flex items-center gap-2"><History size={18} /> Account Metadata</h3>
-   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-     <div className="p-4 bg-surface-2/50 border border-border rounded-2xl">
-       <p className="text-xs text-text mb-1">Creation Date</p>
-       <p className="text-sm font-bold text-text">{createdAt ? new Date(createdAt.seconds ? createdAt.seconds * 1000 : createdAt).toLocaleDateString() : 'Not available'}</p>
-     </div>
-     <div className="p-4 bg-surface-2/50 border border-border rounded-2xl">
-       <p className="text-xs text-text mb-1">Last Login</p>
-       <p className="text-sm font-bold text-text">{user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString() : 'Not available'}</p>
-     </div>
-     <div className="p-4 bg-surface-2/50 border border-border rounded-2xl">
-       <p className="text-xs text-text mb-1">Last Updated</p>
-       <p className="text-sm font-bold text-text">Automatic</p>
-     </div>
-     <div className="p-4 bg-surface-2/50 border border-border rounded-2xl">
-       <p className="text-xs text-text mb-1">Account Status</p>
-       <p className="text-sm font-bold text-emerald-500 capitalize">{status}</p>
-     </div>
-   </div>
- </div>
- 
- </div>
- )}
+  const handleCancelDelete = () => {
+    setDeleteConfirmText('');
+    setShowDeleteConfirm(false);
+  };
 
- {activeTab === 'security' && (
- <div className="space-y-6">
- <div className="p-8 bg-surface/80 border border-border rounded-3xl backdrop-blur-xl">
- <h2 className="text-2xl font-bold text-text mb-2 tracking-tight italic flex items-center gap-3">
- <Globe className="text-blue-500" /> Infrastructure Edge
- </h2>
- <p className="text-text text-sm mb-8">Protection en temps réel par Quantrih Shield & Cloudflare CDN.</p>
- 
- <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
- <div className="p-4 bg-surface-2 border border-border rounded-[2rem]">
- <div className="flex items-center gap-2 mb-2">
- <Zap size={14} className="text-amber-500" />
- <span className="text-xs font-semibold text-text ">Latence Edge</span>
- </div>
- <p className="text-2xl font-bold text-text">12ms</p>
- <p className="text-xs text-emerald-500 font-bold mt-1">Excellent</p>
- </div>
- <div className="p-4 bg-surface-2 border border-border rounded-[2rem]">
- <div className="flex items-center gap-2 mb-2">
- <Globe size={14} className="text-blue-500" />
- <span className="text-xs font-semibold text-text ">Nearest Node</span>
- </div>
- <p className="text-2xl font-bold text-text">BRU-BEL</p>
- <p className="text-xs text-text font-bold mt-1">Brussels, Belgium</p>
- </div>
- <div className="p-4 bg-surface-2 border border-border rounded-[2rem]">
- <div className="flex items-center gap-2 mb-2">
- <ShieldAlert size={14} className="text-purple-500" />
- <span className="text-xs font-semibold text-text ">Bot Mitigation</span>
- </div>
- <p className="text-2xl font-bold text-text">Active</p>
- <p className="text-xs text-text font-bold mt-1">Active (Niveau Haute-Sécurité)</p>
- </div>
- </div>
+  // Initiate Account Deletion (triggers re-auth first)
+  const handleConfirmDelete = () => {
+    setShowDeleteConfirm(false);
+    setReauthAction('delete');
+    setShowReauthModal(true);
+  };
 
- <div className="h-48 bg-surface-3 rounded-[2rem] border border-border overflow-hidden relative group">
- <div className="absolute inset-0 bg-[#001] opacity-50" />
- <div className="absolute inset-0 flex items-center justify-center">
- <div className="relative">
- <div className="w-12 h-12 bg-blue-500/20 rounded-full animate-ping" />
- <div className="absolute inset-0 flex items-center justify-center">
- <div className="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
- </div>
- </div>
- </div>
- <div className="absolute bottom-4 left-6">
- <p className="text-xs font-semibold text-text mb-1">Global Status:</p>
- <div className="flex gap-2">
- {['LHR', 'FRA', 'CDG', 'JFK', 'SFO', 'NRT'].map(node => (
- <span key={node} className="text-[8px] px-1.5 py-0.5 rounded bg-surface-3 text-text font-bold border border-slate-700">{node}</span>
- ))}
- </div>
- </div>
- </div>
- </div>
+  // Permanently delete user data & auth entry
+  const executeAccountDeletion = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      // 1. Delete Firestore User Document
+      await deleteDoc(doc(db, `users/${user.uid}`));
+      
+      // 2. Delete Auth User
+      await deleteUser(user);
+      
+      // 3. Navigate back
+      onBack();
+    } catch (err: any) {
+      console.error("Account deletion error:", err);
+      if (err.code === 'auth/requires-recent-login') {
+        setReauthAction('delete');
+        setShowReauthModal(true);
+      } else {
+        setMessage({ text: err.message || 'Failed to delete account. Please try again.', type: 'error' });
+        setLoading(false);
+      }
+    }
+  };
 
- <div className="p-8 bg-surface/80 border border-border rounded-3xl backdrop-blur-xl">
- <h3 className="text-lg font-bold text-text mb-6 tracking-tight italic flex items-center gap-3">
- <LockIcon className="text-purple-500" /> Advanced Authentication
- </h3>
- 
- <div className="space-y-4">
- <div className="p-4 bg-surface-2/50 border border-border rounded-[2rem] flex items-center justify-between">
- <div>
- <p className="text-sm font-bold text-text">Change password</p>
- <p className="text-xs text-text">Last changed: 3 months ago</p>
- </div>
- <button className="text-xs font-semibold text-blue-500 hover:text-blue-400 transition-colors">Edit</button>
- </div>
+  const handleLogout = async () => {
+    await signOut(auth);
+    onBack();
+  };
 
- <div className="p-4 bg-surface-2/50 border border-border rounded-[2rem] flex items-center justify-between">
- <div>
- <p className="text-sm font-bold text-text">Double authentification (2FA)</p>
- <p className="text-xs text-text">Add an extra MFA layer</p>
- </div>
- <div 
-   onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-   className={`w-12 h-6 rounded-full relative cursor-pointer p-1 transition-colors ${twoFactorEnabled ? 'bg-blue-600' : 'bg-surface-3'}`}
- >
-   <div className={`w-4 h-4 bg-white rounded-full transition-transform ${twoFactorEnabled ? 'translate-x-6' : ''}`}></div>
- </div>
- </div>
- 
- <div className="p-4 bg-surface-2/50 border border-border rounded-[2rem] flex items-center justify-between">
- <div>
- <p className="text-sm font-bold text-text">Security Notifications</p>
- <p className="text-xs text-text">Suspicious login alerts</p>
- </div>
- <div 
-   onClick={() => setSecurityNotificationsEnabled(!securityNotificationsEnabled)}
-   className={`w-12 h-6 rounded-full relative cursor-pointer p-1 transition-colors ${securityNotificationsEnabled ? 'bg-blue-600' : 'bg-surface-3'}`}
- >
-   <div className={`w-4 h-4 bg-white rounded-full transition-transform ${securityNotificationsEnabled ? 'translate-x-6' : ''}`}></div>
- </div>
- </div>
- 
- <div className="pt-6">
-  <button 
-    onClick={handleUpdateProfile}
-    disabled={loading}
-    className="bg-blue-600 hover:bg-blue-500 text-text font-bold px-8 py-3 rounded-[1.5rem] transition-all flex items-center gap-2 disabled:opacity-50"
-  >
-    <Save size={18} /> Save Security Settings
-  </button>
- </div>
- </div>
- </div>
- </div>
- )}
+  if (!user || fetching) {
+    return (
+      <div className="min-h-screen bg-[#F6F9FC] flex flex-col items-center justify-center p-4">
+        <div className="w-10 h-10 border-4 border-[#635BFF]/30 border-t-[#635BFF] rounded-full animate-spin" />
+      </div>
+    );
+  }
 
- {activeTab === 'profile' && (
- <div className="p-8 bg-red-500/5 border border-red-500/10 rounded-3xl backdrop-blur-xl">
- <h3 className="text-lg font-bold text-red-500 mb-2 tracking-tight italic">Danger Zone</h3>
- <p className="text-text text-sm mb-6 font-light">Account deletion is irreversible. All your backtesting configurations will be lost.</p>
- <button onClick={handleDeleteAccount} className="text-red-500 font-bold text-xs py-2 px-4 border border-red-500/20 rounded-2xl hover:bg-red-500/10 transition-all">Delete Account</button>
- </div>
- )}
+  return (
+    <div className="min-h-screen bg-[#F6F9FC] flex flex-col items-center justify-center p-4 md:p-8 font-sans text-slate-900 selection:bg-[#635BFF] selection:text-white relative overflow-hidden">
+      {/* Back button */}
+      <button 
+        onClick={onBack}
+        className="absolute top-6 left-6 md:top-10 md:left-10 w-12 h-12 bg-white rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 shadow-sm border border-slate-100 transition-all hover:scale-105 hover:shadow-md z-50"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </button>
 
- {activeTab === 'fees' && (
- <div className="p-8 bg-surface/80 border border-border rounded-3xl backdrop-blur-xl">
- <div className="flex justify-between items-center mb-8">
- <h2 className="text-2xl font-bold text-text tracking-tight italic flex items-center gap-3">
- <DollarSign className="text-blue-500" /> Management Fees
- </h2>
- <div className="flex gap-2">
- <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-text px-4 py-2 rounded-[1.5rem] text-xs font-bold transition-all">
- <Plus size={14} /> Add Fee Structure
- </button>
- <button className="flex items-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-[1.5rem] text-xs font-bold hover:bg-red-500/20 transition-all">
- <Trash2 size={14} /> Delete All
- </button>
- </div>
- </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-xl relative z-10 flex flex-col items-center mt-12 md:mt-6 mb-12"
+      >
+        {/* Avatar badge */}
+        <div 
+          onClick={downloadProfileImage}
+          className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-md border-4 border-white mb-6 relative z-20 overflow-hidden cursor-pointer group"
+          title="Click to download profile image"
+        >
+          {user.photoURL ? (
+            <>
+              <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              {/* Hover overlay with download option */}
+              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <Download className="w-5 h-5 text-white mb-0.5" />
+                <span className="text-[9px] font-bold text-white uppercase tracking-wider">Download</span>
+              </div>
+            </>
+          ) : (
+            <div className="w-full h-full rounded-full bg-[#635BFF]/10 flex items-center justify-center text-[#635BFF] font-bold text-3xl uppercase">
+              {firstName.charAt(0) || email.charAt(0) || "?"}
+            </div>
+          )}
+        </div>
 
- <div className="overflow-x-auto">
- <table className="w-full text-left text-sm">
- <thead>
- <tr className="border-b border-border">
- <th className="py-4 px-2 text-text font-semibold text-xs ">#</th>
- <th className="py-4 px-2 text-text font-semibold text-xs ">Name</th>
- <th className="py-4 px-2 text-text font-semibold text-xs ">Type</th>
- <th className="py-4 px-2 text-text font-semibold text-xs ">Payment Schedule</th>
- <th className="py-4 px-2 text-text font-semibold text-xs text-right">Action</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-800/50">
- {[
- { id: 1, name: 'Fixed 1.0%', type: 'Annual percentage of 1.00%', schedule: 'Annual' },
- { id: 2, name: 'Fixed 1.50', type: 'Annual percentage of 1.50%', schedule: 'Annual' },
- { id: 3, name: 'Flat with Inflation', type: 'Annual fee of $1,500 adjusted for inflation', schedule: 'Annual' }
- ].map((fee) => (
- <tr key={fee.id} className="hover:bg-text/5 transition-colors">
- <td className="py-4 px-2 text-text">{fee.id}</td>
- <td className="py-4 px-2 font-bold text-text">{fee.name}</td>
- <td className="py-4 px-2 text-text">{fee.type}</td>
- <td className="py-4 px-2 text-text">{fee.schedule}</td>
- <td className="py-4 px-2 text-right">
- <div className="flex justify-end gap-2">
- <button className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-2xl transition-colors"><Edit2 size={14} /></button>
- <button className="p-2 text-red-400 hover:bg-red-400/10 rounded-2xl transition-colors"><Trash2 size={14} /></button>
- </div>
- </td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
- </div>
- )}
+        {/* Settings Container */}
+        <div className="w-full bg-white rounded-[2rem] shadow-[0_50px_100px_-20px_rgba(50,50,93,0.08),0_30px_60px_-30px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden relative -mt-16 pt-16">
+          <div className="p-8 md:p-10">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Account Settings</h2>
+              <p className="text-slate-500 mt-2">Manage your identity, country, and credentials</p>
+            </div>
 
- {activeTab === 'reports' && (
- <div className="p-8 bg-surface/80 border border-border rounded-3xl backdrop-blur-xl">
- <h2 className="text-2xl font-bold text-text mb-2 tracking-tight italic flex items-center gap-3">
- <FileText className="text-blue-500" /> Report Template
- </h2>
- <p className="text-text text-sm mb-8">Customize global report generation parameters and thematic styling.</p>
+            {message && (
+              <div className={`p-4 mb-6 rounded-2xl text-sm font-semibold text-center border ${
+                message.type === 'success' 
+                  ? 'bg-green-50 text-green-700 border-green-100' 
+                  : 'bg-red-50 text-red-700 border-red-100'
+              }`}>
+                {message.text}
+              </div>
+            )}
 
- <div className="space-y-6">
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="space-y-2">
- <label className="text-xs font-semibold text-text ">Company Name</label>
- <input type="text" defaultValue="Quantrih Analytics" className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-text outline-none focus:border-blue-500/50" />
- </div>
- <div className="space-y-2">
- <label className="text-xs font-semibold text-text ">Include Logo</label>
- <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-text outline-none">
- <option>Yes</option>
- <option>No</option>
- </select>
- </div>
- </div>
+            <form onSubmit={handleUpdateProfile} className="space-y-6">
+              
+              {/* Separate Name Fields as Requested: "nom enssuite prenom" */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Last Name (Nom)</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <User className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <input 
+                      type="text" 
+                      required 
+                      value={lastName} 
+                      onChange={e => setLastName(e.target.value)}
+                      placeholder="Doe"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-base outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm" 
+                    />
+                  </div>
+                </div>
 
- <div className="space-y-2">
- <label className="text-xs font-semibold text-text ">Logo Image</label>
- <div className="flex items-center gap-4">
- <input type="file" className="text-xs text-text file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file: file:bg-blue-600 file:text-text hover:file:bg-blue-500" />
- <span className="text-xs text-text italic">No file chosen</span>
- </div>
- </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">First Name (Prénom)</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                      <User className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <input 
+                      type="text" 
+                      required 
+                      value={firstName} 
+                      onChange={e => setFirstName(e.target.value)}
+                      placeholder="Jane"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-base outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm" 
+                    />
+                  </div>
+                </div>
+              </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
- <div className="space-y-2">
- <label className="text-xs font-semibold text-text ">Page Footer Text</label>
- <input type="text" defaultValue="analytics.quantrih.com" className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-text" />
- </div>
- <div className="space-y-2">
- <label className="text-xs font-semibold text-text ">Page Footer Link</label>
- <input type="text" defaultValue="https://analytics.quantrih.com" className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-text" />
- </div>
- </div>
+              {/* Editable Email Field */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Email Address</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <Mail className="w-4 h-4 text-slate-400" />
+                  </div>
+                  <input 
+                    type="email" 
+                    required
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="jane@example.com"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-base outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm" 
+                  />
+                </div>
+              </div>
 
- <div className="space-y-2">
- <label className="text-xs font-semibold text-text ">Disclosures</label>
- <textarea rows={4} placeholder="Leave blank to use defaults" className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-3 text-text outline-none focus:border-blue-500/50 resize-none text-sm" />
- </div>
+              {/* Searchable Country Field: "quand il tape le nom du pays il trouve et tu mets le drapeau à gauche" */}
+              <div className="relative" ref={dropdownRef}>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Country of Residence</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-xl">
+                    <span>{selectedFlag}</span>
+                  </div>
+                  <input 
+                    type="text" 
+                    required 
+                    value={residenceCountry} 
+                    onFocus={() => {
+                      setShowCountryDropdown(true);
+                      setSearchQuery(residenceCountry);
+                    }}
+                    onChange={e => {
+                      setResidenceCountry(e.target.value);
+                      setSearchQuery(e.target.value);
+                      setShowCountryDropdown(true);
+                    }} 
+                    placeholder="Search and select country..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-10 text-base outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm" 
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
 
- <div className="pt-6">
- <button className="bg-blue-600 hover:bg-blue-500 text-text font-bold px-8 py-3 rounded-[1.5rem] transition-all shadow-lg hover:shadow-blue-500/20 active:scale-95">
- Save Changes
- </button>
- <button className="ml-4 text-text font-bold text-xs hover:text-text transition-colors">Restore Defaults</button>
- </div>
- </div>
- </div>
- )}
- </div>
- </motion.div>
- </div>
- </div>
- );
+                {/* Country List Dropdown */}
+                <AnimatePresence>
+                  {showCountryDropdown && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto"
+                    >
+                      {filteredCountries.length > 0 ? (
+                        filteredCountries.map((c: Country) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            onClick={() => {
+                              setResidenceCountry(c.name);
+                              setShowCountryDropdown(false);
+                            }}
+                            className="w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center gap-3 text-sm text-slate-700 transition-colors border-b border-slate-50 last:border-0"
+                          >
+                            <span className="text-xl">{c.flag}</span>
+                            <span className="font-medium">{c.name}</span>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-sm text-slate-400 text-center">
+                          No country found
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Account Type Option */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Account Type</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <Briefcase className="w-4 h-4 text-slate-400" />
+                  </div>
+                  <select 
+                    value={accountType} 
+                    onChange={e => setAccountType(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-base outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm appearance-none"
+                  >
+                    <option value="Individual">Individual Investor</option>
+                    <option value="Corporate">Corporate / Institution</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+
+              {accountType === 'Corporate' && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Company Name</label>
+                  <input 
+                    type="text" 
+                    value={company} 
+                    onChange={e => setCompany(e.target.value)} 
+                    placeholder="Acme Corp"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-base outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm" 
+                  />
+                </div>
+              )}
+
+              {/* Separator / Credentials Modification heading */}
+              <div className="pt-4 border-t border-slate-100">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Security Credentials</h3>
+                <p className="text-xs text-slate-500 mb-4">Leave fields blank if you do not want to change your password</p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">New Password</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <Lock className="w-4 h-4 text-slate-400" />
+                      </div>
+                      <input 
+                        type="password" 
+                        value={newPassword} 
+                        onChange={e => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-base outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm" 
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">Confirm New Password</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <Lock className="w-4 h-4 text-slate-400" />
+                      </div>
+                      <input 
+                        type="password" 
+                        value={confirmPassword} 
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-base outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm" 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Profile Save and Sign Out Buttons */}
+              <div className="pt-6 flex flex-col sm:flex-row gap-4">
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  className="flex-1 bg-[#635BFF] hover:bg-[#4B45D6] text-white font-bold py-3.5 rounded-xl transition-all shadow-md active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2 cursor-pointer"
+                >
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  Save Changes
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleLogout}
+                  className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 font-bold py-3.5 rounded-xl transition-all shadow-sm active:scale-[0.98] flex justify-center items-center gap-2 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </div>
+
+              {/* Danger Zone: "proposer aussi de supprimé son compte" */}
+              <div className="pt-6 border-t border-slate-100">
+                <h3 className="text-[10px] font-extrabold text-slate-900 uppercase tracking-wider mb-1">Danger Zone</h3>
+                <p className="text-[10px] text-slate-400 mb-3">Deleting your account is permanent and will completely erase all of your profile data.</p>
+                
+                <button
+                  type="button"
+                  onClick={handleDeleteAccountClick}
+                  className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-900 hover:text-black border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 px-2 py-1 rounded-md transition-all cursor-pointer uppercase tracking-wider"
+                >
+                  <Trash2 className="w-3 h-3 text-slate-500" />
+                  Delete My Account
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Delete Account Confirmation Drawer/Dialog */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-[2rem] max-w-md w-full p-8 shadow-2xl border border-red-50"
+            >
+              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center text-red-500 mx-auto mb-4">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 text-center mb-2">Are you absolutely sure?</h3>
+              <p className="text-slate-500 text-center text-xs leading-relaxed mb-6">
+                This action is irreversible. All of your saved portfolios, configuration settings, and profile details will be permanently deleted from our servers.
+              </p>
+
+              <div className="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-100">
+                <p className="text-[11px] text-slate-600 font-semibold mb-2.5 text-center uppercase tracking-wider">
+                  Please type <span className="font-bold text-red-600 select-none">DELETE</span> to confirm:
+                </p>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE"
+                  className="w-full bg-white border border-slate-200 rounded-lg py-2 px-3 text-xs text-center outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all font-bold tracking-wider"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleConfirmDelete}
+                  disabled={deleteConfirmText !== 'DELETE'}
+                  className="w-full bg-slate-900 hover:bg-black text-white font-bold py-1.5 rounded-lg transition-all text-[11px] uppercase tracking-wider cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex justify-center items-center gap-1.5 shadow-sm"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Yes, Delete My Account
+                </button>
+                <button
+                  onClick={handleCancelDelete}
+                  className="w-full bg-slate-50 hover:bg-slate-100 text-slate-500 border border-slate-200 font-bold py-1.5 rounded-lg transition-all text-[11px] uppercase tracking-wider cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Security Re-authentication Modal */}
+      <AnimatePresence>
+        {showReauthModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-[2rem] max-w-md w-full p-8 shadow-2xl border border-slate-100"
+            >
+              <div className="w-12 h-12 bg-[#635BFF]/10 rounded-full flex items-center justify-center text-[#635BFF] mx-auto mb-6">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 text-center mb-2">Confirm Your Password</h3>
+              <p className="text-slate-500 text-center text-sm mb-6">
+                For security reasons, please enter your current account password to authorize these changes.
+              </p>
+              
+              <form onSubmit={handleReauthenticate} className="space-y-6">
+                <div>
+                  <input
+                    type="password"
+                    required
+                    value={reauthPassword}
+                    onChange={e => setReauthPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-base outline-none focus:bg-white focus:border-[#635BFF] focus:ring-4 focus:ring-[#635BFF]/10 transition-all text-slate-900 shadow-sm text-center"
+                  />
+                  {reauthError && (
+                    <p className="text-xs font-semibold text-red-600 text-center mt-2">
+                      {reauthError}
+                    </p>
+                  )}
+                </div>
+                
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="submit"
+                    className="w-full bg-[#635BFF] hover:bg-[#4B45D6] text-white font-bold py-3.5 rounded-xl shadow-lg transition-all cursor-pointer flex justify-center items-center"
+                  >
+                    Confirm & Proceed
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowReauthModal(false);
+                      setReauthPassword('');
+                      setReauthError(null);
+                    }}
+                    className="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 font-bold py-3.5 rounded-xl transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }

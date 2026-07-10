@@ -41,7 +41,7 @@ async function buildCache() {
         interval: '1mo'
       });
 
-      const prices = result.quotes.map(item => ({
+      const prices = result.quotes.map((item: any) => ({
         date: item.date.toISOString(),
         close: item.close,
         volume: item.volume

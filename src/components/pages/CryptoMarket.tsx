@@ -114,7 +114,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  }}
  >
  <div className="flex items-center gap-3">
- <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center font-bold text-text border border-border/50 text-xs">
+ <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center font-bold text-text border border-border/50 text-sm">
  {data.ticker.charAt(0)}
  </div>
  <div>
@@ -122,7 +122,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  <div className="text-sm font-medium text-text mt-0.5">{data.name}</div>
  </div>
  </div>
- <div className="text-xs font-semibold text-text bg-surface-2 px-2 py-1 rounded">
+ <div className="text-sm font-semibold text-text bg-surface-2 px-2 py-1 rounded">
  {data.category}
  </div>
  </div>
@@ -134,7 +134,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between mt-6 gap-6 border-b border-border/50 pb-6">
  <div className="flex items-center gap-6">
  {onBack && (
- <button onClick={onBack} className="text-text hover:text-pv-blue transition-colors flex items-center gap-2 text-xs font-bold mb-1">
+ <button onClick={onBack} className="text-text hover:text-pv-blue transition-colors flex items-center gap-2 text-sm font-bold mb-1">
  <ArrowLeft size={16} /> Returns
  </button>
  )}
@@ -166,17 +166,17 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  {/* Watchlist Table */}
  <div className="bg-white border border-border rounded-3xl overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.03)] ring-1 ring-slate-900/5">
  <div className="p-6 md:px-8 border-b border-surface-2 flex justify-between items-center bg-surface-2 backdrop-blur-sm">
- <h3 className="text-xs font-semibold text-text flex items-center gap-2"><Activity size={16} className="text-pv-blue" /> Crypto Tracker Live</h3>
+ <h3 className="text-sm font-semibold text-text flex items-center gap-2"><Activity size={16} className="text-pv-blue" /> Crypto Tracker Live</h3>
  </div>
  <div className="overflow-x-auto hide-scrollbar">
  <table className="w-full text-left border-collapse text-sm">
  <thead className="bg-white border-b border-surface-2">
  <tr>
- <th className="px-8 py-5 font-semibold text-text text-xs ">Actif</th>
- <th className="px-8 py-5 font-semibold text-text text-xs text-right">Prix</th>
- <th className="px-8 py-5 font-semibold text-text text-xs text-right">Variation 24h</th>
- <th className="px-8 py-5 font-semibold text-text text-xs text-right hidden sm:table-cell">Volume</th>
- <th className="px-8 py-5 font-semibold text-text text-xs text-right">Catégorie</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm ">Actif</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm text-right">Prix</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm text-right">Variation 24h</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm text-right hidden sm:table-cell">Volume</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm text-right">Catégorie</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-100">
@@ -198,7 +198,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  </div>
  <div className="flex flex-col">
  <span className={`font-bold transition-colors text-[14px] ${isActive ? 'text-pv-blue' : 'text-text group-hover:text-pv-blue'}`}>{tk.name}</span>
- <span className="text-text font-bold text-xs mt-0.5">{sym.replace('USDT','')}</span>
+ <span className="text-text font-bold text-sm mt-0.5">{sym.replace('USDT','')}</span>
  </div>
  </div>
  </td>
@@ -235,9 +235,9 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-sm border border-white/30">
  <TrendingUp size={16} />
  </div>
- <h3 className="text-xs font-semibold text-blue-100">Market Momentum</h3>
+ <h3 className="text-sm font-semibold text-blue-100">Market Momentum</h3>
  </div>
- <div className="px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-xs font-bold text-white ">
+ <div className="px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm font-bold text-white ">
  LIVE
  </div>
  </div>
@@ -262,17 +262,17 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center text-pv-blue border border-border/50">
  <Info size={16} />
  </div>
- <h3 className="text-xs font-semibold text-text">Market Statistics</h3>
+ <h3 className="text-sm font-semibold text-text">Market Statistics</h3>
  </div>
  
  {cryptoInfo ? (
  <div className="space-y-6">
  <div className="bg-surface-2 rounded-[2rem] p-5 border border-border/50">
- <p className="text-xs text-text font-bold mb-2">Current Price</p>
+ <p className="text-sm text-text font-bold mb-2">Current Price</p>
  <p className="text-4xl font-semibold text-text tracking-tighter">${formatNumber(parseFloat(cryptoInfo.lastPrice || '0'))}</p>
  </div>
  <div className="pt-6 border-t border-border/50">
- <p className="text-xs text-text font-bold mb-2">24h Change</p>
+ <p className="text-sm text-text font-bold mb-2">24h Change</p>
  <div className="flex items-center gap-3">
  <p className={`text-2xl font-semibold tracking-tight ${parseFloat(cryptoInfo.priceChangePercent || '0') >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
  {parseFloat(cryptoInfo.priceChangePercent || '0') > 0 ? '+' : ''}{parseFloat(cryptoInfo.priceChangePercent || '0').toFixed(2)}%
@@ -284,16 +284,16 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  </div>
  <div className="pt-6 border-t border-surface-2/80 grid grid-cols-2 gap-6">
  <div>
- <p className="text-xs text-text font-bold mb-2">24h High</p>
+ <p className="text-sm text-text font-bold mb-2">24h High</p>
  <p className="text-[15px] font-bold text-text tracking-tight">${formatNumber(parseFloat(cryptoInfo.highPrice || cryptoInfo.lastPrice || '0'))}</p>
  </div>
  <div>
- <p className="text-xs text-text font-bold mb-2">24h Low</p>
+ <p className="text-sm text-text font-bold mb-2">24h Low</p>
  <p className="text-[15px] font-bold text-text tracking-tight">${formatNumber(parseFloat(cryptoInfo.lowPrice || cryptoInfo.lastPrice || '0'))}</p>
  </div>
  </div>
  <div className="pt-6 border-t border-surface-2/80">
- <p className="text-xs text-text font-bold mb-2">24h Volume</p>
+ <p className="text-sm text-text font-bold mb-2">24h Volume</p>
  <p className="text-lg font-semibold text-text tracking-tight">{formatNumber(parseFloat(cryptoInfo.quoteVolume || '0'))}</p>
  </div>
  </div>

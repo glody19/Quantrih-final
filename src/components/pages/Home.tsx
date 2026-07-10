@@ -109,26 +109,14 @@ function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: 
                   <div className="w-full flex-1 rounded-3xl bg-slate-950/50 border border-border/80 shadow-inner flex overflow-hidden">
                     {/* Chart/UI Animation based on module index */}
                     {index === 0 && (
-                      <div className="flex-1 flex gap-3">
-                        <div className="w-2/3 h-full rounded-[2rem] bg-surface-2/50 border border-border/80 flex flex-col justify-end p-2.5 pb-0 gap-1.5 overflow-hidden relative">
-                          <div className="absolute bottom-0 left-0 w-full h-full flex items-end justify-center gap-2 p-2">
-                            {[40, 70, 45, 90, 65, 80].map((h, i) => (
-                              <motion.div 
-                                key={i}
-                                initial={{ height: "10%" }}
-                                animate={{ height: h + "%" }}
-                                transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", delay: i * 0.15 }}
-                                className="flex-1 bg-blue-500/80 rounded-t-sm max-w-[20%]"
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <div className="w-1/3 h-full rounded-[2rem] bg-surface-2/50 border border-border/80 flex flex-col gap-2 p-2">
-                          <div className="w-full h-6 rounded bg-surface-3/60 flex items-center px-1 gap-1">
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <div className="w-12 h-1.5 bg-slate-700/50 rounded"></div>
-                          </div>
-                        </div>
+                      <div className="flex-1 w-full h-full p-2 flex items-center justify-center">
+                  <div className="flex-1 w-full h-full p-2 flex items-center justify-center">
+                    <img 
+                      src="/allocation_chart.jpg" 
+                      alt="Allocation" 
+                      className="w-full h-full object-cover rounded-2xl"
+                    />
+                  </div>
                       </div>
                     )}
 
@@ -218,7 +206,7 @@ function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: 
 }
 
 export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
-  const { language } = useTranslation();
+  const { language, t } = useTranslation();
   const [heroHovered, setHeroHovered] = useState(false);
 
   const ObjectPages: PageInfo[] = [
@@ -226,30 +214,30 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       title: 'Asset Allocation', 
       id: 'asset-allocation', 
       color: 'text-blue-400',
-      cta: 'Define Universe',
-      desc: 'The primary node of the sequential architecture. Structure your foundational investment universe and visualize allocations via a matrix Heat Map.'
+      cta: 'Define Allocation',
+      desc: 'Build your investment basket. Select your stocks, ETFs, or bonds, and instantly visualize their allocation clearly and graphically with our interactive heatmap.'
     },
     {
       title: 'Portfolio Backtesting',
       id: 'portfolio-backtest',
       color: 'text-rose-400',
-      cta: 'Historical Backtest',
-      desc: 'Validate your portfolios over the long term. Analyze Drawdown metrics, compound growth, and volatility across extended periods with automated rebalancing rules.',
+      cta: 'Start Simulation',
+      desc: 'Travel back in time to test your ideas. Observe how your portfolio would have performed over the past 10, 20, or 30 years to understand its real returns and historical risks.',
       useLaptop: true
     },
     { 
       title: 'Tactical Allocation', 
       id: 'tactical-allocation', 
       color: 'text-orange-400',
-      cta: 'Program Algorithmic Logic',
-      desc: 'The terminal modeling sequence deploys active overlays atop the static matrix. Program logical thresholds driven by momentum crossovers, cyclical valuations, or continuous asset volatility shifts for active adaptation.'
+      cta: 'Program Rules',
+      desc: 'Automatically adapt your portfolio based on market trends. Define simple rules to buy or sell automatically, to protect your savings or seize opportunities.'
     },
     { 
       title: 'Monte Carlo Dynamics', 
       id: 'montecarlo', 
       color: 'text-emerald-400',
-      cta: 'Simulate Paths',
-      desc: 'Following optimization, the construct undergoes massive probabilistic iteration. This inference engine models the statistical dispersion of future paths, mapping out the mathematical probability of ruin during extreme market outliers.'
+      cta: 'Simulate Future',
+      desc: 'Forecast the future of your savings. Simulate thousands of future market scenarios to precisely evaluate the resilience of your financial strategy against crises and unforeseen events.'
     }
   ];
 
@@ -278,7 +266,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                 <h1 className="text-[12vw] sm:text-[10vw] md:text-8xl lg:text-[160px] max-w-[100vw] break-words font-semibold leading-[0.85] tracking-tighter shimmer-text-animate hover:scale-105 transition-transform duration-500 origin-left">
                   Quantrih
                 </h1>
-                <h2 id="hero-gradient-title" className="text-2xl lg:text-[32px] font-semibold leading-none tracking-tighter mt-4 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, #3b82f6, #06b6d4)' }}>
+                <h2 id="hero-gradient-title" className="text-3xl lg:text-5xl font-semibold leading-none tracking-tighter mt-4 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, #3b82f6, #06b6d4)' }}>
                   {'portfolio backtesting.'}
                 </h2>
               </motion.div>
@@ -288,68 +276,88 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                 transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="max-w-xl"
               >
-                <p className="text-slate-200 font-medium text-xl leading-relaxed border-l-2 border-border-2 pl-6 py-2">
-                  {"Advanced analysis platform and backtesting tools designed to optimize and build your investment strategies."}
+                <p className="text-slate-200 font-medium text-2xl md:text-3xl leading-relaxed border-l-2 border-border-2 pl-6 py-2">
+                  {Array.from(t("home.hero.subtitle")).map((char, index) => (
+                    <motion.span
+                      key={index}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4 + index * 0.03, duration: 0.1 }}
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
                 </p>
               </motion.div>
             </div>
           </div>
 
           {/* Right Animation Side */}
-          <div className="w-full lg:w-[55%] min-h-[40vh] lg:min-h-[75vh] relative z-10 flex items-center justify-center transform scale-110 lg:scale-[1.3] origin-center">
+          <div className="w-full lg:w-[55%] min-h-[40vh] lg:min-h-[75vh] relative z-10 flex items-center justify-center mt-10 lg:mt-20">
             <AtomAnimation isHovered={heroHovered} />
           </div>
         </div>
 
-        {/* Feature Tools System Flow */}
-        <div className="w-full relative py-16 lg:py-32">
+                {/* Feature Tools System Flow */}
+        <div className="w-full relative py-20 lg:py-40 overflow-hidden">
+
           
           <div className="w-full px-6 lg:px-24 z-20 relative">
-            <div className="mb-12 text-center">
-              <h3 className="text-3xl font-semibold text-white tracking-tight mb-4 hover:text-blue-400 transition-colors duration-300">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="mb-16 text-center"
+            >
+              <h3 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6 transition-colors duration-300">
                 {'Tools & Strategies'}
               </h3>
-              <p className="text-slate-200 text-lg max-w-2xl mx-auto">
-                {'End-to-end modeling of your quantitative systems and allocation universes.'}
+              <p className="text-slate-300 text-xl max-w-3xl mx-auto leading-relaxed">
+                {"Discover our 4 simplified analysis tools to design, test, and secure your investment portfolio."}
               </p>
-            </div>
+            </motion.div>
 
-            <style>{`
-              @keyframes floatAnimation {
-                0%, 100% { transform: translateY(0px); }
-                50% { transform: translateY(-10px); }
-              }
-              .float-card {
-                animation: floatAnimation 6s ease-in-out infinite;
-              }
-              .float-card:hover {
-                animation-play-state: paused;
-              }
-            `}</style>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10 w-full max-w-5xl mx-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 relative z-10 w-full max-w-[90rem] mx-auto px-2 md:px-4">
               {ObjectPages.map((p, i) => (
-                <div 
+                <motion.div 
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.6, delay: i * 0.15, ease: "easeOut" }}
                   key={i} 
-                  className="float-card liquid-glass rounded-[32px] p-6 lg:p-8 transition-all duration-300 hover:-translate-y-2 hover:scale-105 active:scale-105 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] flex flex-col justify-between"
-                  style={{ animationDelay: `${i * 0.5}s` }}
+                  className="group relative bg-[#0B1121] border border-slate-800/80 hover:border-slate-600 rounded-3xl p-8 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 shadow-xl hover:shadow-2xl overflow-hidden"
                 >
-                  <div>
-                    <h4 className={cn("text-xl lg:text-2xl font-semibold tracking-tight mb-3 transition-colors duration-300", p.color)}>
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
+                  <div className={cn("absolute top-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500", p.color.replace('text-', 'bg-'))} />
+                  
+                  <div className="relative z-10 mb-8">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center bg-[#151E32] border border-slate-700/50 shadow-inner group-hover:scale-110 transition-transform duration-500", p.color.replace('text-', 'text-'))}>
+                        <Activity className={cn("w-8 h-8", p.color)} />
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-500 group-hover:text-white transition-colors">
+                        <ArrowRight size={16} className="-rotate-45 group-hover:rotate-0 transition-transform duration-500" />
+                      </div>
+                    </div>
+                    <h4 className="text-2xl font-extrabold tracking-tight mb-3 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">
                       {p.title}
                     </h4>
-                    <p className="text-slate-200 text-sm lg:text-base leading-relaxed mb-6">
+                    <p className="text-slate-400 font-medium text-sm leading-relaxed">
                       {p.desc}
                     </p>
                   </div>
-                  <button 
-                    onClick={() => onGoPage(p.id)}
-                    className="w-full sm:w-auto px-6 py-2.5 bg-surface-3 hover:bg-slate-700 text-text font-medium rounded-xl transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] flex items-center justify-center gap-2 group"
-                  >
-                    {p.cta}
-                    <ArrowRight className="w-4 h-4 text-slate-200 group-hover:text-text group-hover:translate-x-1 transition-all" />
-                  </button>
-                </div>
+                  
+                  <div className="relative z-10 mt-auto pt-6">
+                    <button 
+                      onClick={() => onGoPage(p.id)}
+                      className="w-full py-3 bg-[#1E293B] hover:bg-[#334155] text-slate-300 hover:text-white font-bold text-sm rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
+                    >
+                      {p.cta}
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -359,7 +367,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         <div className="w-full px-6 lg:px-24 py-16 lg:py-32 z-20">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative overflow-hidden transition-all duration-500">
             <div className="max-w-3xl relative z-10 text-center lg:text-left">
-              <h3 className="text-text text-2xl lg:text-3xl font-medium tracking-tight mb-4">
+              <h3 className="text-white text-2xl lg:text-3xl font-medium tracking-tight mb-4">
                 {"Support the Evolution of Quantrih."}
               </h3>
               <p className="text-slate-200 text-xl leading-relaxed font-normal mb-8 max-w-2xl">
@@ -399,8 +407,8 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             <p className="text-slate-500 text-sm font-sans font-medium mt-2">
               Quantrih Engineering
             </p>
-            <p className="text-slate-400 text-xs font-sans tracking-wide mt-6 max-w-2xl mx-auto">
-              Avertissement : Les performances passées ne préjugent pas des performances futures. Les outils et analyses de Quantrih se basent exclusivement sur des données historiques du passé. L'investissement comporte des risques de perte en capital.
+            <p className="text-slate-400 text-sm font-sans tracking-wide mt-6 max-w-2xl mx-auto">
+              {"Disclaimer: Past performance is not indicative of future results. Quantrih's tools and analyses are based exclusively on historical data from the past. Investing involves risks, including the potential loss of capital."}
             </p>
           </div>
         </div>

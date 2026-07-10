@@ -70,7 +70,7 @@ export function DualMomentum() {
   });
 
   return (
-    <div className="space-y-8 animate-fade-up w-full max-w-[1800px] mx-auto px-4 md:px-8 pb-24 font-sans">
+    <div className="space-y-8 animate-fade-up w-full max-w-[1400px] mx-auto px-4 md:px-8 pb-24 font-sans">
       <div className="mb-16 mt-4">
         <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
           <h1 className="text-2xl font-bold text-pv-blue tracking-tight">

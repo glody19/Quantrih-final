@@ -1,9 +1,10 @@
 export const topETFs = [
-  { symbol: "EWY", name: "iShares MSCI South Korea ETF", m1: "+28.04", m3: "+35.98", m6: "+131.60", y1: "+247.11" },
+  { symbol: "DBMG.L", name: "iMGP DBi Managed Futures Fund R", m1: "+1.12", m3: "+1.17", m6: "+11.10", y1: "+12848.83" },
+  { symbol: "EWY", name: "iShares MSCI South Korea ETF", m1: "-1.91", m3: "+64.13", m6: "+107.67", y1: "+187.59" },
+  { symbol: "EWT", name: "iShares MSCI Taiwan ETF", m1: "+5.67", m3: "+53.14", m6: "+70.96", y1: "" },
   { symbol: "SLV", name: "iShares Silver Trust", m1: "+2.51", m3: "-19.60", m6: "+33.43", y1: "+127.77" },
   { symbol: "PHAG", name: "WisdomTree Physical Silver", m1: "+3.93", m3: "-17.71", m6: "+35.06", y1: "+122.49" },
   { symbol: "XAD2", name: "Xtrackers Physical Silver EUR Hedged", m1: "+3.25", m3: "-19.91", m6: "+33.14", y1: "+120.21" },
-  { symbol: "EWT", name: "iShares MSCI Taiwan ETF", m1: "+14.35", m3: "+35.83", m6: "+66.64", y1: "+105.23" },
   { symbol: "IRBO", name: "iShares Robotics and Artificial Intelligence ETF", m1: "+20.54", m3: "+46.36", m6: "+57.01", y1: "+102.77" },
   { symbol: "USO", name: "United States Oil Fund", m1: "-12.24", m3: "+57.52", m6: "+81.64", y1: "+92.24" },
   { symbol: "QTUM", name: "Defiance Quantum", m1: "+19.19", m3: "+37.50", m6: "+48.17", y1: "+90.71" },

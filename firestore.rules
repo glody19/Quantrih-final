@@ -32,6 +32,8 @@ service cloud.firestore {
              (data.keys().hasAny(['phoneCountryCode']) ? data.phoneCountryCode is string && data.phoneCountryCode.size() <= 10 : true) &&
              (data.keys().hasAny(['phoneCountryFlag']) ? data.phoneCountryFlag is string && data.phoneCountryFlag.size() <= 10 : true) &&
              (data.keys().hasAny(['avatarUrl']) ? data.avatarUrl is string && data.avatarUrl.size() <= 500 : true) &&
+             (data.keys().hasAny(['photoURL']) ? data.photoURL is string || data.photoURL == null : true) &&
+             (data.keys().hasAny(['accountType']) ? data.accountType is string && data.accountType.size() <= 50 : true) &&
              (data.keys().hasAny(['username']) ? data.username is string && data.username.size() <= 64 : true) &&
              (data.keys().hasAny(['company']) ? data.company is string && data.company.size() <= 100 : true) &&
              (data.keys().hasAny(['firmType']) ? data.firmType is string && data.firmType.size() <= 100 : true) &&
@@ -79,7 +81,7 @@ service cloud.firestore {
       allow update: if isOwner(userId) && 
                       isValidUser(incoming()) && (
                         incoming().updatedAt == request.time &&
-                        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'firstName', 'lastName', 'email', 'nationality', 'residenceCountry', 'phone', 'phoneCountryCode', 'phoneCountryFlag', 'avatarUrl', 'username', 'company', 'firmType', 'updatedAt', 'lastLoginAt', 'status', 'emailVerified', 'canChangePassword', 'twoFactorEnabled', 'twoFactorMethod', 'passwordLastChangedAt', 'securityNotificationsEnabled'])
+                        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'firstName', 'lastName', 'email', 'nationality', 'residenceCountry', 'phone', 'phoneCountryCode', 'phoneCountryFlag', 'avatarUrl', 'photoURL', 'accountType', 'username', 'company', 'firmType', 'updatedAt', 'lastLoginAt', 'status', 'emailVerified', 'canChangePassword', 'twoFactorEnabled', 'twoFactorMethod', 'passwordLastChangedAt', 'securityNotificationsEnabled'])
                       );
 
       match /backtests/{backtestId} {

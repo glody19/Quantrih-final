@@ -83,7 +83,7 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  {/* 1. RENDEMENTS */}
  <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
  <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">1. Rendements (Returns)</h3>
+ <h3 className="text-lg font-semibold text-text tracking-tight">1. Returns</h3>
  <p className="text-xs font-medium text-text mt-1 leading-relaxed">
  The absolute profitability of your investments. The Compound Annual Growth Rate (CAGR) is the most important metric because it accounts for the "snowball effect" of compound interest over time.
  </p>
@@ -92,7 +92,7 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  <table className="w-full text-sm">
  <thead>
  <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Métrique</th>
+ <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
  
  {advancedResults.map((r, i) => (
  <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
@@ -135,7 +135,7 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  <span className="font-bold text-text">Profitability Analysis:</span> The decisive parameter here is the CAGR (Geometric Mean). Unlike the simple average (Arithmetic Mean) which tends to positively exaggerate performance, the CAGR reflects exactly the real growth of the money invested year after year.
  </p>
  <p className="text-sm text-text leading-relaxed">
- Le portefeuille <span className="text-text font-semibold">{advancedResults.reduce((prev, curr) => prev.cagr > curr.cagr ? prev : curr).name}</span> demonstrates the best structural wealth creation capability here with a CAGR of <span className="font-mono bg-surface-3 px-1.5 py-0.5 rounded text-text">{formatPercent(Math.max(...advancedResults.map(r=>Number(r.cagr))))}</span>. This indicates a more efficient exposure to market risk premiums over the observed period.
+ The portfolio <span className="text-text font-semibold">{advancedResults.reduce((prev, curr) => prev.cagr > curr.cagr ? prev : curr).name}</span> demonstrates the best structural wealth creation capability here with a CAGR of <span className="font-mono bg-surface-3 px-1.5 py-0.5 rounded text-text">{formatPercent(Math.max(...advancedResults.map(r=>Number(r.cagr))))}</span>. This indicates a more efficient exposure to market risk premiums over the observed period.
  </p>
  </div>
  )}
@@ -145,16 +145,16 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  {/* 2. RISQUE / VOLATILITÉ */}
  <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
  <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">2. Risque / Volatilité (Risk)</h3>
+ <h3 className="text-lg font-semibold text-text tracking-tight">2. Risk & Volatility</h3>
  <p className="text-xs font-medium text-text mt-1 leading-relaxed">
- Mesure l'amplitude des variations de votre capital. Une forte volatilité peut mener à des rendements supérieurs mais augmente drastiquement la difficulté psychologique à conserver ses positions lors des crises.
+ Measures the amplitude of variations in your capital. High volatility can lead to higher returns but drastically increases the psychological difficulty of holding positions during crises.
  </p>
  </div>
  <div className="p-8 overflow-x-auto">
  <table className="w-full text-sm">
  <thead>
  <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Métrique</th>
+ <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
  
  {advancedResults.map((r, i) => (
  <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
@@ -197,7 +197,7 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  <span className="font-bold text-text">Vulnerability Analysis:</span> The Maximum Drawdown is by far the most concrete risk indicator. It simulates what you would have experienced at the worst time (2000, 2008, or 2020 crisis). 
  </p>
  <p className="text-sm text-text leading-relaxed">
- Le modèle <span className="text-text font-semibold">{advancedResults.reduce((prev, curr) => Math.abs(prev.maxDrawdown) < Math.abs(curr.maxDrawdown) ? prev : curr).name}</span> presents the most resilient profile with the most contained maximum drop (<span className="font-mono bg-surface-3 px-1.5 py-0.5 rounded text-text">{formatPercent(Math.max(...advancedResults.map(r=>Number(r.maxDrawdown))))}</span>). A lower Drawdown guarantees a faster return to breakeven (recovery time) and prevents panic selling. It is better to sacrifice a little yield if the gain in resilience is very important.
+ The model <span className="text-text font-semibold">{advancedResults.reduce((prev, curr) => Math.abs(prev.maxDrawdown) < Math.abs(curr.maxDrawdown) ? prev : curr).name}</span> presents the most resilient profile with the most contained maximum drop (<span className="font-mono bg-surface-3 px-1.5 py-0.5 rounded text-text">{formatPercent(Math.max(...advancedResults.map(r=>Number(r.maxDrawdown))))}</span>). A lower Drawdown guarantees a faster return to breakeven (recovery time) and prevents panic selling. It is better to sacrifice a little yield if the gain in resilience is very important.
  </p>
  </div>
  )}
@@ -207,16 +207,16 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  {/* 3. RAPPORT RISQUE RENDEMENT */}
  <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
  <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">3. Rapport Risque / Rentabilité</h3>
+ <h3 className="text-lg font-semibold text-text tracking-tight">3. Risk-Adjusted Returns</h3>
  <p className="text-xs font-medium text-text mt-1 leading-relaxed">
- Juge de l'efficience pure du portefeuille : chaque unité de risque (stress) prise a-t-elle été suffisamment récompensée par du rendement ?
+ Evaluates the pure efficiency of the portfolio: has each unit of risk (stress) taken been sufficiently rewarded with return?
  </p>
  </div>
  <div className="p-8 overflow-x-auto">
  <table className="w-full text-sm">
  <thead>
  <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Métrique</th>
+ <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
  
  {advancedResults.map((r, i) => (
  <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
@@ -260,10 +260,10 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  {isMulti && (
  <div className="mt-8 space-y-3">
  <p className="text-sm text-text leading-relaxed">
- <span className="font-bold text-text">Analyse d'Efficience :</span> Les professionnels s'accordent pour préférer le ratio de Sortino au ratio de Sharpe en gestion de portefeuilles longs, car la volatilité à la hausse (bien que capturée mathématiquement comme un risque dans Sharpe) est en réalité souhaitée par l'investisseur.
+ <span className="font-bold text-text">Efficiency Analysis:</span> Professionals agree on preferring the Sortino ratio over the Sharpe ratio for long portfolio management, because upside volatility (though mathematically captured as risk in Sharpe) is actually desired by the investor.
  </p>
  <p className="text-sm text-text leading-relaxed">
- L'allocation <span className="text-text font-semibold">{advancedResults.reduce((prev, curr) => prev.sortino > curr.sortino ? prev : curr).name}</span> est structurellement la plus optimale avec un Sortino Ratio dominant de <span className="font-mono bg-surface-3 px-1.5 py-0.5 rounded text-text">{formatNum(Math.max(...advancedResults.map(r=>Number(r.sortino))))}</span>. Elle compense très généreusement l'investisseur pour chaque goutte de volatilité baissière endurée. Si un portefeuille vous force à prendre beaucoup plus de risques pour très peu de rendement supplémentaire, ses ratios s'effondreront.
+ The allocation <span className="text-text font-semibold">{advancedResults.reduce((prev, curr) => prev.sortino > curr.sortino ? prev : curr).name}</span> is structurally the most optimal with a dominant Sortino Ratio of <span className="font-mono bg-surface-3 px-1.5 py-0.5 rounded text-text">{formatNum(Math.max(...advancedResults.map(r=>Number(r.sortino))))}</span>. It very generously compensates the investor for each drop of downside volatility endured. If a portfolio forces you to take much more risk for very little extra return, its ratios will collapse.
  </p>
  </div>
  )}
@@ -273,16 +273,16 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  {/* 4. PERTE EXTRÊME (VaR) */}
  <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
  <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">4. Risque Catastrophique Mensuel (VaR)</h3>
+ <h3 className="text-lg font-semibold text-text tracking-tight">4. Extreme Monthly Risk (VaR & CVaR)</h3>
  <p className="text-xs font-medium text-text mt-1 leading-relaxed">
- Exposition aux pires mois possibles : Value at Risk et Expected Shortfall modélisent le risque systémique extrême (queues de distribution).
+ Exposure to the worst possible months: Value at Risk and Expected Shortfall model extreme systemic risk (tail distributions).
  </p>
  </div>
  <div className="p-8 overflow-x-auto">
  <table className="w-full text-sm">
  <thead>
  <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Métrique</th>
+ <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
  
  {advancedResults.map((r, i) => (
  <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
@@ -323,16 +323,16 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  {/* 5. GESTION DES BAISSES */}
  <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
  <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">5. Fiabilité Mensuelle et Asymétrie</h3>
+ <h3 className="text-lg font-semibold text-text tracking-tight">5. Monthly Win Rate & Statistical Skewness</h3>
  <p className="text-xs font-medium text-text mt-1 leading-relaxed">
- Répartition temporelle de la performance : Fréquence des mois gagnants et distribution statistique autour de la moyenne.
+ Temporal distribution of performance: Win rate frequency of months in the green and statistical distribution around the mean.
  </p>
  </div>
  <div className="p-8 overflow-x-auto">
  <table className="w-full text-sm">
  <thead>
  <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Métrique</th>
+ <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
  
  {advancedResults.map((r, i) => (
  <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
@@ -343,7 +343,7 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  <tr className="border-b border-border hover:bg-surface-2">
  <td className="py-4 font-semibold text-text my-auto">
  <div className="flex items-center gap-1">
- Mois Positifs (Win Rate)
+ Positive Months (Win Rate)
  <InfoTooltip content={language === "fr" ? <>Probabilité qu'un mois donné clôture dans le vert. Indicateur clé du confort psychologique de l'investisseur.</> : <>Probability that a given month closes in the green. Key indicator of the investor's psychological comfort.</>} />
  </div>
  </td>
@@ -361,7 +361,7 @@ export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExpli
  <tr className="border-b border-border hover:bg-surface-2">
  <td className="py-4 font-semibold text-text my-auto">
  <div className="flex items-center gap-1">
- Skewness (Asymétrie)
+ Skewness
  <InfoTooltip content={language === "fr" ? <>Un Skewness très négatif avertit d'une forte asymétrie vers les krachs rapides (queue gauche épaisse). Un skewness proche de 0 ou positif est préférable.</> : <>A highly negative Skewness warns of a strong asymmetry towards rapid crashes (fat left tail). A skewness near 0 or positive is preferable.</>} />
  </div>
  </td>
