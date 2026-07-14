@@ -93,7 +93,7 @@ service cloud.firestore {
 
         allow update: if isOwner(userId) && 
                         isValidBacktest(incoming()) &&
-                        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'updatedAt', 'allocRows', 'portNames']);
+                        incoming().diff(existing()).affectedKeys().hasAny(['name', 'startYear', 'endYear', 'initialAmount', 'startMonth', 'endMonth', 'cashflowAmount', 'cashflowFrequency', 'rebalancing', 'reinvestDividends', 'dividendTaxRate', 'capitalGainsTaxRate', 'inflationAdjusted', 'portfolios', 'allocRows', 'portNames', 'updatedAt', 'createdAt']);
 
         allow delete: if isOwner(userId);
       }

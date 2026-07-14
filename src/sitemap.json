@@ -1,0 +1,25 @@
+{
+  "sitemap": [
+    { "name": "Home", "path": "/" },
+    { "name": "Authentication", "path": "/auth" },
+    { "name": "Profile", "path": "/profile" },
+    { "name": "Asset Allocation", "path": "/asset-allocation" },
+    { "name": "Portfolio", "path": "/portfolio" },
+    { "name": "Portfolio Backtesting", "path": "/portfolio-backtest" },
+    { "name": "Monte Carlo", "path": "/montecarlo" },
+    { "name": "Tactical Allocation", "path": "/tactical-allocation" },
+    { "name": "Moving Average", "path": "/moving-average" },
+    { "name": "Dual Momentum", "path": "/dual-momentum" },
+    { "name": "Relative Strength", "path": "/relative-strength" },
+    { "name": "Platforms", "path": "/platforms" },
+    { "name": "Markets", "path": "/market", "subpages": [
+      { "name": "Market Equity", "path": "/market" },
+      { "name": "ETF Overview", "path": "/etf-overview" }
+    ]},
+    { "name": "Education", "path": "/education" },
+    { "name": "Donate", "path": "/donate" },
+    { "name": "About", "path": "/about" },
+    { "name": "Cookies Policy", "path": "/cookies" },
+    { "name": "Privacy Policy", "path": "/privacy" }
+  ]
+}

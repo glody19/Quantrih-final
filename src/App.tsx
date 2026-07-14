@@ -19,7 +19,6 @@ import { Platforms } from "./components/pages/Platforms";
 import { EtfScreener } from "./components/pages/EtfScreener";
 import { Auth } from "./components/pages/Auth";
 import { Profile } from "./components/pages/Profile";
-import { Donate } from "./components/pages/Donate";
 import { About } from "./components/pages/About";
 import { Legal } from "./components/pages/Legal";
 import { cn } from "./lib/utils";
@@ -27,6 +26,7 @@ import { useTranslation } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ASSET_DATA } from "./constants";
 import { Activity } from "lucide-react";
+import { QuantrihLogo } from "./components/ui/Logo";
 
 export default function App() {
   const [configLoaded, setConfigLoaded] = useState(false);
@@ -66,11 +66,38 @@ export default function App() {
 
   if (!configLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-text font-sans">
-        <div className="flex flex-col items-center gap-4 text-pv-blue animate-pulse">
-          <Activity className="w-8 h-8" />
-          <div className="text-[10px] font-bold uppercase tracking-widest text-text-4">
-            Loading Backend Assets...
+      <div className="min-h-screen flex flex-col items-center justify-center bg-bg font-sans overflow-hidden relative">
+        {/* Background ambient light */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-sky-500/10 blur-[100px] rounded-full pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="animate-[pulse_3s_ease-in-out_infinite] scale-[1.7] mb-12">
+            <QuantrihLogo variant="sigma" size="lg" className="text-sky-400" />
+          </div>
+          
+          {/* Innovative dotted loading */}
+          <div className="relative flex justify-center items-center mt-6 h-8 w-32">
+            <div className="absolute inset-0 flex justify-center items-center animate-[spin_3s_linear_infinite]">
+              <div className="w-full h-full rounded-full border border-sky-500/10 border-t-sky-400/60 border-b-blue-500/60" />
+            </div>
+            <div className="absolute inset-0 flex justify-center items-center animate-[spin_4s_linear_infinite_reverse]">
+              <div className="w-[120%] h-[120%] rounded-full border border-indigo-500/10 border-r-indigo-400/40 border-l-sky-400/40" />
+            </div>
+            
+            <div className="flex gap-2.5 items-center z-10">
+              <div className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-[ping_1.5s_infinite_-0.4s] opacity-80" />
+              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-[ping_1.5s_infinite_-0.2s] opacity-80" />
+              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-[ping_1.5s_infinite] opacity-80" />
+            </div>
+            <div className="absolute flex gap-2.5 items-center z-20">
+              <div className="w-1.5 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,1)] animate-[pulse_1.5s_infinite_-0.4s]" />
+              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,1)] animate-[pulse_1.5s_infinite_-0.2s]" />
+              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,1)] animate-[pulse_1.5s_infinite]" />
+            </div>
+          </div>
+          
+          <div className="mt-10 text-[10px] font-bold uppercase tracking-[0.3em] text-text-3 animate-pulse">
+            Initialisation de l'espace
           </div>
         </div>
       </div>
@@ -134,6 +161,10 @@ function AppContent() {
   const toggleTheme = () => {};
 
   const handleNavigate = (page: string) => {
+    if (page === "donate") {
+      window.open("https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00", "_blank", "noopener,noreferrer");
+      return;
+    }
     if (page === "home" || page === "") {
       navigate("/");
     } else {
@@ -152,7 +183,7 @@ function AppContent() {
         baseCcy={baseCcy}
         setBaseCcy={setBaseCcy}
       />
-      <main className={cn("flex-1 w-full mx-auto flex flex-col", currentPage === "home" ? "pt-0" : "pt-24")}>
+      <main className={cn("flex-1 w-full mx-auto flex flex-col", currentPage === "home" ? "pt-0" : "pt-16")}>
         <Routes>
           <Route path="/" element={<Home onGoPage={handleNavigate} />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
@@ -169,8 +200,8 @@ function AppContent() {
           <Route path="/platforms" element={<Platforms onNavigate={handleNavigate} />} />
           <Route path="/market" element={<MarketEquity />} />
           <Route path="/etf-overview" element={<EtfScreener />} />
-          <Route path="/education" element={<div style={{ zoom: 0.6 }}><Education /></div>} />
-          <Route path="/donate" element={<Donate onNavigate={handleNavigate} />} />
+          <Route path="/education" element={<Education />} />
+          <Route path="/donate" element={<Navigate to="/" replace />} />
           <Route path="/about" element={<About />} />
           <Route path="/cookies" element={<Legal page="cookies" />} />
           <Route path="/privacy" element={<Legal page="privacy" />} />
@@ -186,40 +217,6 @@ function AppContent() {
           setIsCommandOpen(false);
         }}
       />
-      {currentPage !== "market" && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-8 right-8 p-3 bg-sky-500/10 text-sky-500 backdrop-blur-md border border-sky-500/20 rounded-full shadow-xl hover:bg-sky-500/20 transition-all z-50 hover:-translate-y-1 group"
-          title="Scroll to parameters"
-        >
-          <svg
-            className="w-5 h-5 group-hover:block hidden"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 10l7-7m0 0l7 7m-7-7v18"
-            />
-          </svg>
-          <svg
-            className="w-5 h-5 group-hover:hidden block"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 15l7-7 7 7"
-            />
-          </svg>
-        </button>
-      )}
       {currentPage !== "market" && <Footer onNavigate={handleNavigate} />}
       <GoogleOneTapPrompt />
       <CookieConsent />

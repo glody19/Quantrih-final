@@ -16,6 +16,12 @@ import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { lazyPortfolios } from "./lazyPortfoliosData";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
+import { ViewToggle } from "../ui/ViewToggle";
+import { Disclaimer } from "../ui/Disclaimer";
+import { auth, db } from "../../firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { collection, query, where, getDocs, orderBy, doc, deleteDoc } from "firebase/firestore";
+import { CloudSaveLoad } from "../ui/CloudSaveLoad";
 
 import {
   Chart as ChartJS,
@@ -75,8 +81,204 @@ const formatPct = (num: number) => {
   return num.toFixed(2) + "%";
 };
 
+const ASSET_CLASSES = [
+  {
+    group: "US Equity",
+    options: [
+      { label: "US Stock Market", symbol: "VTI" },
+      { label: "US Large Cap", symbol: "VV" },
+      { label: "US Large Cap Value", symbol: "VTV" },
+      { label: "US Large Cap Growth", symbol: "VUG" },
+      { label: "US Mid Cap", symbol: "VO" },
+      { label: "US Mid Cap Value", symbol: "VOE" },
+      { label: "US Mid Cap Growth", symbol: "VOT" },
+      { label: "US Small Cap", symbol: "VB" },
+      { label: "US Small Cap Value", symbol: "VBR" },
+      { label: "US Small Cap Growth", symbol: "VBK" },
+      { label: "US Micro Cap", symbol: "IWC" },
+    ],
+  },
+  {
+    group: "International Equity",
+    options: [
+      { label: "Global ex-US Equity", symbol: "VXUS" },
+      { label: "Developed Markets", symbol: "VEA" },
+      { label: "Emerging Markets", symbol: "VWO" },
+    ],
+  },
+  {
+    group: "European Equity (USD)",
+    options: [
+      { label: "Vanguard FTSE Europe", symbol: "VGK" },
+      { label: "iShares MSCI Eurozone", symbol: "EZU" },
+      { label: "iShares Core MSCI Europe", symbol: "IEUR" },
+      { label: "SPDR EURO STOXX 50", symbol: "FEZ" },
+      { label: "iShares MSCI United Kingdom", symbol: "EWU" },
+      { label: "iShares MSCI Germany", symbol: "EWG" },
+    ],
+  },
+  {
+    group: "European Equity (EUR)",
+    options: [
+      { label: "Amundi PEA MSCI Europe", symbol: "PCEU.PA" },
+      { label: "Amundi Core Stoxx Europe 600", symbol: "MEUD.PA" },
+      { label: "iShares Core EURO STOXX 50", symbol: "CSX5.AS" },
+      { label: "Vanguard FTSE Dev Europe", symbol: "VEUR.AS" },
+    ],
+  },
+  {
+    group: "Fixed Income",
+    options: [
+      { label: "Total US Bond Market", symbol: "BND" },
+      { label: "Long Term Treasury", symbol: "TLT" },
+      { label: "Intermediate Treasury", symbol: "IEF" },
+      { label: "Short Term Treasury", symbol: "SHY" },
+    ],
+  },
+  {
+    group: "Alternatives",
+    options: [
+      { label: "REITs", symbol: "VNQ" },
+      { label: "Gold", symbol: "GLD" },
+      { label: "Commodities", symbol: "PDBC" },
+    ],
+  },
+];
+
 export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
   const { t, language } = useTranslation();
+  const [activeMainView, setActiveMainView] = useState<"simulator" | "dashboard">("simulator");
+  const [user] = useAuthState(auth);
+
+  const [savedConfigs, setSavedConfigs] = useState<any[]>([]);
+  const [configsLoading, setConfigsLoading] = useState(false);
+
+  const loadSavedConfigs = async () => {
+    if (!user) return;
+    setConfigsLoading(true);
+    try {
+      const q = query(
+        collection(db, "users", user.uid, "backtests"),
+        orderBy("createdAt", "desc")
+      );
+      const snap = await getDocs(q);
+      const configs = snap.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((c: any) => c.pageId === "monte-carlo");
+      setSavedConfigs(configs);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setConfigsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeMainView === "dashboard") {
+      loadSavedConfigs();
+    }
+  }, [activeMainView, user]);
+
+  const handleCloudLoad = (data: any) => {
+    if (!data) return;
+    if (data.initialAmount) setInitialAmount(data.initialAmount);
+    if (data.cashflowType) setCashflowType(data.cashflowType);
+    if (data.cashflowAmount) setCashflowAmount(data.cashflowAmount);
+    if (data.horizon) setHorizon(data.horizon);
+    if (data.portfolioNames) setPortfolioNames(data.portfolioNames);
+    if (data.portfolioAssets) setPortfolioAssets(data.portfolioAssets);
+    setActiveMainView("simulator");
+  };
+
+  const deleteConfig = async (id: string) => {
+    if (!user) return;
+    if (!window.confirm("Are you sure you want to permanently delete this saved simulation? This action cannot be undone.")) return;
+    try {
+      await deleteDoc(doc(db, "users", user.uid, "backtests", id));
+      loadSavedConfigs();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to delete simulation.");
+    }
+  };
+
+  const renderSavedScenarios = () => {
+    if (!user) {
+      return (
+        <div className="bg-surface border border-border p-12 rounded-[2rem] text-center max-w-2xl mx-auto my-12 shadow-sm flex flex-col items-center gap-6 animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-pv-blue/10 flex items-center justify-center text-pv-blue">
+            <Database size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-text">Activate Saved Scenarios</h2>
+          <p className="text-sm text-text-2 leading-relaxed">Log in to save your Monte Carlo simulations and access them from anywhere.</p>
+        </div>
+      );
+    }
+
+    if (configsLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <div className="w-8 h-8 border-4 border-pv-blue/30 border-t-pv-blue rounded-full animate-spin" />
+          <p className="text-text-3 font-medium animate-pulse">Loading your simulations...</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div className="bg-surface border border-border rounded-[2rem] overflow-hidden shadow-sm">
+          <div className="px-6 py-4 border-b border-border bg-surface-2 flex items-center justify-between">
+            <h3 className="font-bold text-text flex items-center gap-2">
+              <Database size={16} className="text-pv-blue" />
+              Saved Simulations
+            </h3>
+            <span className="text-xs font-bold bg-pv-blue/10 text-pv-blue px-2 py-1 rounded-full">
+              {savedConfigs.length} Total
+            </span>
+          </div>
+          <div className="divide-y divide-border">
+            {savedConfigs.length === 0 ? (
+              <div className="p-12 text-center text-text-4">
+                No saved simulations yet. Save one in the Simulator.
+              </div>
+            ) : (
+              savedConfigs.map((config) => (
+                <div key={config.id} className="p-4 hover:bg-surface-2 transition-colors flex items-center justify-between group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-surface-3 flex items-center justify-center border border-border">
+                      <Activity size={18} className="text-pv-blue" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-text">{config.name}</h4>
+                      <div className="flex items-center gap-3 text-xs text-text-4 font-medium mt-1">
+                        <span>{new Date(config.createdAt?.seconds * 1000).toLocaleDateString()}</span>
+                        <span className="w-1 h-1 rounded-full bg-border" />
+                        <span>Horizon: {config.data?.horizon} yrs</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleCloudLoad(config.data)}
+                      className="px-4 py-2 bg-pv-blue text-white rounded-xl text-sm font-bold transition-all"
+                    >
+                      Load
+                    </button>
+                    <button
+                      onClick={() => deleteConfig(config.id)}
+                      className="p-2 text-text-4 hover:text-red-500 rounded-xl transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Config
   const [initialAmount, setInitialAmount] = useLocalStorage(
@@ -155,21 +357,39 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
 
   const [portfolioNames, setPortfolioNames] = useLocalStorage<
     { id: string; name: string }[]
-  >("mc_portfolioNames_v4", [
-    { id: "1", name: "Classic (60/40)" },
-    { id: "2", name: "Dynamic (80/20)" },
-    { id: "3", name: "All Weather" },
-    { id: "4", name: "Permanent" },
-  ]);
+  >("mc_portfolioNames_v7", typeof window !== "undefined" && window.innerWidth >= 1024
+    ? [
+        { id: "1", name: "Balanced (60/40)" },
+        { id: "2", name: "All-Weather (Dalio)" },
+        { id: "3", name: "Warren Buffett" },
+        { id: "4", name: "Permanent Portfolio" },
+      ]
+    : [
+        { id: "1", name: "Balanced (60/40)" },
+        { id: "2", name: "All-Weather (Dalio)" },
+      ]
+  );
 
   const [portfolioAssets, setPortfolioAssets] = useLocalStorage<
     { symbol: string; weights: string[] }[]
-  >("mc_portfolioAssets_v4", [
-    { symbol: "VFINX", weights: ["60", "80", "30", "25"] },
-    { symbol: "VBMFX", weights: ["40", "20", "40", "25"] },
-    { symbol: "GLD", weights: ["0", "0", "15", "25"] },
-    { symbol: "VGSIX", weights: ["0", "0", "15", "25"] },
-  ]);
+  >("mc_portfolioAssets_v7", typeof window !== "undefined" && window.innerWidth >= 1024
+    ? [
+        { symbol: "VTI", weights: ["60", "30", "90", "25"] },
+        { symbol: "BND", weights: ["40", "0", "10", "0"] },
+        { symbol: "TLT", weights: ["0", "40", "0", "25"] },
+        { symbol: "IEF", weights: ["0", "15", "0", "25"] },
+        { symbol: "GLD", weights: ["0", "7.5", "0", "25"] },
+        { symbol: "PDBC", weights: ["0", "7.5", "0", "0"] },
+      ]
+    : [
+        { symbol: "VTI", weights: ["60", "30"] },
+        { symbol: "BND", weights: ["40", "0"] },
+        { symbol: "TLT", weights: ["0", "40"] },
+        { symbol: "IEF", weights: ["0", "15"] },
+        { symbol: "GLD", weights: ["0", "7.5"] },
+        { symbol: "PDBC", weights: ["0", "7.5"] },
+      ]
+  );
 
   const portfolios = portfolioNames.map((pn, i) => ({
     id: pn.id,
@@ -218,6 +438,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
   };
 
   const addAssetRow = () => {
+    
     setPortfolioAssets([
       ...portfolioAssets,
       { symbol: "", weights: portfolioNames.map(() => "") },
@@ -388,10 +609,19 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
         <div className="flex flex-col gap-8">
           {/* TITLE HEADER */}
           <div className="mb-16">
-            <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
-              <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
-                {t("mc.title")}
-              </h1>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-4">
+              <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20">
+                <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
+                  Monte Carlo
+                </h1>
+              </div>
+
+              <ViewToggle 
+                activeView={activeMainView} 
+                onViewChange={(view) => setActiveMainView(view)} 
+                simulatorLabel="Simulator"
+                dashboardLabel="Saved Scenarios"
+              />
             </div>
             <p className="text-base text-text-2 font-medium leading-relaxed w-full max-w-[1308px]">
               {
@@ -399,13 +629,16 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
               }
             </p>
           </div>
+
+          {activeMainView === "dashboard" ? renderSavedScenarios() : (
+            <div className="simulator-view space-y-8">
           
           <MobileZoomWrapper scaleMobile={0.5}>
             {/* RESULTS SECTION */}
           {mcResults && mcResults[activeResIdx].result.length > 0 && (
             <div id="report-content" className="space-y-6">
               <div className="bg-surface border border-border rounded-[2rem] p-8 space-y-6 text-left shadow-sm">
-                <div className="flex border-b border-border overflow-x-auto no-scrollbar gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem]">
+                <div className="flex border-b border-border flex-wrap gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem]">
                   {mcResults.map((r, idx) => (
                     <button
                       key={r.id}
@@ -426,7 +659,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                   <div className="space-y-6">
                     <div className="bg-surface border border-border rounded-[1.5rem] p-8 shadow-sm">
                     <h3 className="text-lg font-semibold tracking-tight mb-4">
-                      {mcResults[activeResIdx].name} - Monte Carlo Simulation
+                      {mcResults[activeResIdx].name} - Monte Carlo
                     </h3>
                 <p className="text-base text-text font-medium leading-relaxed w-full max-w-[1308px]">
                   Monte Carlo simulation results for <b>{sims} portfolios</b>{" "}
@@ -651,18 +884,13 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
       )}
 
       {mcResults && (
-        <div className="mt-4 mb-4 text-center text-[10px] text-black">
-          Ce site est gratuit et sans publicité. Si vous appréciez nos outils d'analyse et de backtesting, vous pouvez soutenir notre travail par une donation.{" "}
-          <a 
-            href="/donate" 
-            onClick={(e) => {
-              e.preventDefault();
-              window.location.href = "/donate";
-            }}
-            className="inline-block ml-1 px-1.5 py-0.5 border border-blue-500 text-blue-600 rounded text-[9px] hover:bg-blue-50 font-semibold"
-          >
-            Faire un don
-          </a>
+        <div className="mt-10 p-6 border border-blue-500/30 bg-blue-500/5 rounded-2xl text-center text-sm sm:text-base lg:text-lg text-blue-600 dark:text-blue-400 max-w-4xl mx-auto space-y-3 shadow-sm font-semibold">
+          <p className="font-extrabold uppercase tracking-wider text-[11px] sm:text-xs flex items-center justify-center gap-1 text-blue-700 dark:text-blue-300">
+            <span className="text-xs">⚠️</span> DISCLAIMER & LIABILITY LIMITATION
+          </p>
+          <p className="leading-relaxed text-sm sm:text-base lg:text-lg font-normal">
+            Past performance is not indicative of future results. Quantrih's tools, simulations, calculations, and analyses are based exclusively on historical data and are provided solely for informational and educational purposes. They do not constitute financial, investment, legal, tax, or professional advice, nor do they represent an offer or solicitation to buy or sell any financial instruments. Investing in financial markets involves high risks, including the complete loss of capital. Quantrih does not act as a financial advisor, investment advisor, or broker, and does not guarantee the accuracy, completeness, or reliability of any data or simulations. Users are solely responsible for their investment decisions and should consult a certified financial professional before executing any transactions.
+          </p>
         </div>
       )}
 
@@ -674,7 +902,20 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                 {"Strategy Parameters"}
               </h2>
               <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
-                
+                <CloudSaveLoad
+                  pageId="monte-carlo"
+                  currentData={{
+                    initialAmount,
+                    cashflowType,
+                    cashflowAmount,
+                    horizon,
+                    portfolioNames,
+                    portfolioAssets,
+                    resultsSummary: mcResults ? mcResults.map(r => ({ name: r.name, solvency: r.metrics.solvency })) : []
+                  }}
+                  onLoad={handleCloudLoad}
+                  onListUpdate={loadSavedConfigs}
+                />
                 <button
                   onClick={handleRunSimulation}
                   disabled={isRunning}
@@ -973,7 +1214,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     <Activity size={14} className="text-pv-blue" /> Predefined Portfolios
                  </h3>
                  <div className="flex flex-wrap gap-2">
-                    {lazyPortfolios.slice(0, 8).map((preset, idx) => (
+                    {lazyPortfolios.map((preset, idx) => (
                         <button 
                             key={idx}
                             onClick={() => applyPredefinedPortfolio(preset)}
@@ -1076,26 +1317,32 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                         </td>
                         <td className="p-1 lg:p-3 border-r border-border min-w-[100px] lg:min-w-[200px]">
                           <div className="flex flex-col gap-1">
-                            <div className="relative flex items-center ">
-                              <TickerInput
+                            <div className="relative flex items-center shadow-sm">
+                              <select
                                 value={asset.symbol}
-                                onChange={(val) => updateAssetSymbol(aIdx, val)}
-                                placeholder="Ticker"
-                                className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border font-mono font-extrabold"
-                              />
-                              <div className="hidden md:flex bg-surface-2 border border-l-0 border-border rounded-r-md px-3 py-2 items-center justify-center">
-                                <Search className="w-4 h-4 text-text" />
-                              </div>
+                                onChange={(e) =>
+                                  updateAssetSymbol(aIdx, e.target.value)
+                                }
+                                className="bg-surface text-sm p-1 lg:p-1.5 border border-border rounded-xl outline-none focus:border-blue-500 transition-colors w-full box-border font-bold text-text"
+                              >
+                                <option value="" disabled>
+                                  Select Asset Class
+                                </option>
+                                {ASSET_CLASSES.map((group) => (
+                                  <optgroup key={group.group} label={group.group}>
+                                    {group.options.map((opt) => (
+                                      <option key={opt.symbol} value={opt.symbol}>
+                                        {opt.label}
+                                      </option>
+                                    ))}
+                                  </optgroup>
+                                ))}
+                              </select>
                             </div>
-                            {ASSET_DATA[asset.symbol]?.label && (
-                              <span className="text-[10px] lg:text-base text-text font-medium truncate max-w-[250px]">
-                                {ASSET_DATA[asset.symbol].label}
-                              </span>
-                            )}
                           </div>
                         </td>
                         {portfolioNames.map((pn, i) => (
-                          <td key={pn.id} className={`p-1 lg:p-3 ${i >= 2 ? "hidden lg:table-cell" : ""}`}>
+                          <td key={pn.id} className={`p-1 lg:p-3 `}>
                             <div className="flex items-center max-w-[120px] mx-auto">
                               <input
                                 type="number"
@@ -1104,9 +1351,9 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                                   updateAssetWeight(aIdx, i, e.target.value)
                                 }
                                 placeholder=""
-                                className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border text-text font-extrabold"
+                                className="bg-surface text-sm p-1 lg:p-1.5 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border text-text font-bold"
                               />
-                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-2 lg:py-2 text-[10px] lg:text-base text-text shrink-0 select-none">
+                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-1.5 lg:py-1.5 text-[10px] lg:text-xs text-text shrink-0 select-none">
                                 %
                               </div>
                             </div>
@@ -1161,13 +1408,12 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
               </div>
             </div>
           </div>
+          <Disclaimer />
           </MobileZoomWrapper>
         </div>
-        
-        <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-12 pt-6 text-center text-[11px] text-text-4 border-t border-border/40 mt-8 font-sans">
-          Avertissement : Les performances passées ne préjugent pas des performances futures. Les outils et analyses de Quantrih se basent exclusivement sur des données historiques du passé. L'investissement comporte des risques de perte en capital.
-        </div>
-      </div>
+      )}
     </div>
+  </div>
+</div>
   );
 }

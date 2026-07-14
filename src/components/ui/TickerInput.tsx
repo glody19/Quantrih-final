@@ -55,12 +55,18 @@ export function TickerInput({
  const val = value.trim().toUpperCase();
  
  const popularAssets = [
- {symbol: 'AAPL', label: 'Apple Inc.', type: 'Equity'},
- {symbol: 'MSFT', label: 'Microsoft', type: 'Equity'},
- {symbol: 'TSLA', label: 'Tesla', type: 'Equity'},
- {symbol: 'BTCUSDT', label: 'Bitcoin USD', type: 'Crypto'},
- {symbol: 'ETHUSDT', label: 'Ethereum USD', type: 'Crypto'},
- {symbol: 'NVDA', label: 'NVIDIA Corp', type: 'Equity'}
+ {symbol: 'AAPL', label: 'Apple Inc.', type: 'Equity (US)'},
+ {symbol: 'MSFT', label: 'Microsoft', type: 'Equity (US)'},
+ {symbol: 'NVDA', label: 'NVIDIA Corp', type: 'Equity (US)'},
+ {symbol: 'MC.PA', label: 'LVMH', type: 'Equity (FR)'},
+ {symbol: 'OR.PA', label: 'L\'Oréal', type: 'Equity (FR)'},
+ {symbol: 'TTE.PA', label: 'TotalEnergies', type: 'Equity (FR)'},
+ {symbol: 'SAN.PA', label: 'Sanofi', type: 'Equity (FR)'},
+ {symbol: 'SHEL.L', label: 'Shell', type: 'Equity (UK)'},
+ {symbol: 'AZN.L', label: 'AstraZeneca', type: 'Equity (UK)'},
+ {symbol: 'HSBA.L', label: 'HSBC', type: 'Equity (UK)'},
+ {symbol: 'ULVR.L', label: 'Unilever', type: 'Equity (UK)'},
+ {symbol: 'BTC-USD', label: 'Bitcoin', type: 'Crypto'},
  ];
 
  if (!val) {

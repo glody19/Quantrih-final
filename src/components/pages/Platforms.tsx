@@ -1,32 +1,136 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
  Building2, Activity, ShieldCheck, Server, Smartphone, CheckCircle2,
  Lock, Search, ArrowRight, Plus, Star, Info, DollarSign, Globe,
- Wallet, Coins, LineChart, ChevronRight, Check
+ Wallet, Coins, LineChart, ChevronRight, Check, ChevronLeft
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { PLATFORMS } from "./platformsData";
 import { EtfScreener } from "./EtfScreener";
 import { cn } from "../../lib/utils";
+import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 
 export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void }) {
  const { language } = useTranslation();
  const [activeTab, setActiveTab] = useState<'platforms' | 'screener'>('platforms');
  const [selectedId, setSelectedId] = useState<string | null>(null);
+ const [isMobile, setIsMobile] = useState(false);
+
+ useEffect(() => {
+  const handleResize = () => {
+   setIsMobile(window.innerWidth < 1024);
+  };
+  handleResize();
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+ }, []);
 
  const displayedPlatforms = activeTab === 'platforms' ? PLATFORMS.filter(p => p.type !== 'screener') : [];
  
- // Set first item as selected by default when switching tabs
- React.useEffect(() => {
- if (activeTab === 'platforms' && displayedPlatforms.length > 0 && !selectedId) {
- setSelectedId(displayedPlatforms[0].id);
- }
+ // Set first item as selected by default when switching tabs (only on desktop!)
+ useEffect(() => {
+  const isMobileSize = window.innerWidth < 1024;
+  if (!isMobileSize && activeTab === 'platforms' && displayedPlatforms.length > 0 && !selectedId) {
+   setSelectedId(displayedPlatforms[0].id);
+  }
  }, [activeTab, displayedPlatforms, selectedId]);
 
- const selectedPlatform = PLATFORMS.find(p => p.id === selectedId) || displayedPlatforms[0];
+ const selectedPlatform = PLATFORMS.find(p => p.id === selectedId) || (!isMobile ? displayedPlatforms[0] : null);
+
+ const renderMobileInnovation = () => {
+  return (
+   <div className="space-y-6 w-full px-2 animate-fade-in pb-12">
+    <div className="text-center space-y-2 mb-6">
+     <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#2563eb] bg-[#2563eb]/10 px-3 py-1 rounded-full">
+      Modèle Mobile Innovant
+     </span>
+     <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+      Découvrez Votre Courtier Idéal
+     </h2>
+     <p className="text-xs text-slate-500 font-medium">
+      Faites défiler horizontalement ou touchez un courtier pour l'analyser
+     </p>
+    </div>
+
+    <div className="flex gap-4 overflow-x-auto py-4 px-1 snap-x snap-mandatory hide-scrollbar">
+     {displayedPlatforms.map((platform) => {
+      return (
+       <motion.div
+        key={platform.id}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setSelectedId(platform.id)}
+        className="w-[85%] shrink-0 snap-center bg-white border border-slate-150 rounded-[2.5rem] p-6 shadow-lg shadow-slate-200/50 flex flex-col justify-between h-[360px] relative overflow-hidden group border-b-4 border-b-[#2563eb] cursor-pointer text-left"
+       >
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 to-indigo-50/10 opacity-50 pointer-events-none" />
+        
+        <div className="relative z-10 space-y-4">
+         <div className="flex items-center justify-between">
+          <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+           {platform.type === 'crypto' ? 'Crypto' : platform.type === 'bank' ? 'Banque' : platform.type === 'neobank' ? 'Neo' : 'Courtier'}
+          </span>
+          <div className="flex items-center gap-1">
+           <Star size={12} className="text-amber-400 fill-amber-400" />
+           <span className="text-xs font-bold text-slate-700">4.8</span>
+          </div>
+         </div>
+
+         <div className="space-y-1">
+          <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+           {platform.name}
+          </h3>
+          <p className="text-xs text-slate-500 font-medium leading-relaxed line-clamp-2">
+           {platform.bestFor}
+          </p>
+         </div>
+
+         <div className="flex flex-wrap gap-1.5 pt-1">
+          {platform.pros.slice(0, 2).map((pro: string, index: number) => (
+           <span key={index} className="inline-flex items-center px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-600 truncate max-w-[200px]">
+            ✓ {pro}
+           </span>
+          ))}
+         </div>
+        </div>
+
+        <div className="relative z-10 border-t border-slate-100 pt-4 mt-4 flex items-center justify-between">
+         <div>
+          <span className="text-[9px] font-extrabold text-slate-400 block uppercase tracking-wider">Frais</span>
+          <span className="text-xs font-black text-[#2563eb]">{platform.fees}</span>
+         </div>
+         <button className="px-4 py-2 bg-slate-950 text-white rounded-xl text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+          Analyser
+          <ArrowRight size={12} />
+         </button>
+        </div>
+       </motion.div>
+      );
+     })}
+    </div>
+
+    <div className="bg-slate-50 border border-slate-200/60 rounded-[2rem] p-6 space-y-4 text-left">
+     <h4 className="text-xs font-extrabold uppercase tracking-widest text-slate-400">
+      Aperçu Express du Marché
+     </h4>
+     <div className="grid grid-cols-2 gap-4">
+      <div className="bg-white border border-slate-150 p-4 rounded-2xl shadow-sm">
+       <span className="text-[10px] font-bold text-slate-400 block">Courtier le moins cher</span>
+       <span className="text-xs font-black text-emerald-600">Trade Republic</span>
+       <span className="text-[9px] text-slate-400 block mt-0.5">1€ plat par ordre</span>
+      </div>
+      <div className="bg-white border border-slate-150 p-4 rounded-2xl shadow-sm">
+       <span className="text-[10px] font-bold text-slate-400 block">Plus d'actifs mondiaux</span>
+       <span className="text-xs font-black text-indigo-600">Interactive Brokers</span>
+       <span className="text-[9px] text-slate-400 block mt-0.5">Accès universel</span>
+      </div>
+     </div>
+    </div>
+   </div>
+  );
+ };
 
  return (
+ <MobileZoomWrapper scaleMobile={0.6}>
  <div className="w-full mx-auto px-4 md:px-8 py-8 lg:py-12 relative min-h-[calc(100vh-80px)] font-sans">
  {/* Background Decor */}
  <div className="fixed top-0 right-0 w-[800px] h-[800px] bg-pv-blue/[0.04] rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
@@ -54,36 +158,46 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
  <div className="flex flex-col lg:flex-row gap-8 relative z-10 items-start w-full animate-fade-in h-[calc(100vh-220px)] min-h-[700px] mb-10">
  
  {/* Left Master List */}
- <div className="w-full lg:w-[400px] shrink-0 h-full overflow-y-auto pr-2 pb-10 hide-scrollbar flex flex-col gap-3">
- {displayedPlatforms.map(platform => {
- const isSelected = selectedId === platform.id;
- return (
- <motion.div 
- key={platform.id}
- onClick={() => setSelectedId(platform.id)}
- className={cn(
- "relative p-5 rounded-[2rem] cursor-pointer transition-all duration-300 border backdrop-blur-sm group origin-left",
- isSelected 
- ? "bg-white border-pv-blue/30 shadow-[0_8px_30px_rgba(37,99,235,0.06)] scale-[1.02] z-10" 
- : "bg-surface-2/80 border-border/50 hover:bg-surface hover:border-border hover:shadow-sm"
+ {isMobile && !selectedId ? (
+  renderMobileInnovation()
+ ) : (
+  <div className={cn(
+   "w-full lg:w-[400px] shrink-0 h-full overflow-y-auto pr-2 pb-10 hide-scrollbar flex flex-col gap-3",
+   isMobile && selectedId ? "hidden" : "block"
+  )}>
+  {displayedPlatforms.map(platform => {
+  const isSelected = selectedId === platform.id;
+  return (
+  <motion.div 
+  key={platform.id}
+  onClick={() => setSelectedId(platform.id)}
+  className={cn(
+  "relative p-5 rounded-[2rem] cursor-pointer transition-all duration-300 border backdrop-blur-sm group origin-left",
+  isSelected 
+  ? "bg-white border-pv-blue/30 shadow-[0_8px_30px_rgba(37,99,235,0.06)] scale-[1.02] z-10" 
+  : "bg-surface-2/80 border-border/50 hover:bg-surface hover:border-border hover:shadow-sm"
+  )}
+  >
+  {isSelected && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-pv-blue rounded-r-full" />}
+  <div className="flex items-center gap-4">
+  <div className="flex-1 min-w-0">
+  <h3 className={cn("text-base font-semibold truncate transition-colors", isSelected ? "text-pv-blue" : "text-text")}>{platform.name}</h3>
+  <div className="flex items-center gap-3 mt-1.5 opacity-80">
+  <span className="text-sm font-bold text-text truncate">{platform.type === 'crypto' ? 'Crypto' : platform.type === 'bank' ? 'Banque' : platform.type === 'neobank' ? 'NeoBanque' : 'Courtier'}</span>
+  <span className="text-sm font-bold text-pv-blue truncate">{platform.fees}</span>
+  </div>
+  </div>
+  </div>
+  </motion.div>
+  )})}
+  </div>
  )}
- >
- {isSelected && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-pv-blue rounded-r-full" />}
- <div className="flex items-center gap-4">
- <div className="flex-1 min-w-0">
- <h3 className={cn("text-base font-semibold truncate transition-colors", isSelected ? "text-pv-blue" : "text-text")}>{platform.name}</h3>
- <div className="flex items-center gap-3 mt-1.5 opacity-80">
- <span className="text-sm font-bold text-text truncate">{platform.type === 'crypto' ? 'Crypto' : platform.type === 'bank' ? 'Banque' : platform.type === 'neobank' ? 'NeoBanque' : 'Courtier'}</span>
- <span className="text-sm font-bold text-pv-blue truncate">{platform.fees}</span>
- </div>
- </div>
- </div>
- </motion.div>
- )})}
- </div>
 
  {/* Right Detail Pane */}
- <div className="flex-1 h-full w-full hidden lg:block overflow-hidden relative rounded-3xl bg-white border border-border/80 shadow-[0_10px_40px_rgba(0,0,0,0.03)] selection:bg-pv-blue/10 selection:text-pv-blue">
+ <div className={cn(
+  "flex-1 h-full w-full overflow-hidden relative rounded-3xl bg-white border border-border/80 shadow-[0_10px_40px_rgba(0,0,0,0.03)] selection:bg-pv-blue/10 selection:text-pv-blue lg:block",
+  isMobile && !selectedId ? "hidden" : "block"
+ )}>
  <AnimatePresence mode="wait">
  {selectedPlatform && (
  <motion.div 
@@ -94,6 +208,17 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
  transition={{ duration: 0.3, ease: "easeOut" }}
  className="absolute inset-0 overflow-y-auto hide-scrollbar"
  >
+ {isMobile && (
+  <div className="p-8 pb-0">
+   <button 
+    onClick={() => setSelectedId(null)} 
+    className="flex items-center gap-2 text-[#2563eb] font-bold text-sm bg-[#2563eb]/10 px-4 py-2 rounded-xl w-fit cursor-pointer"
+   >
+    <ChevronLeft size={16} />
+    {language === 'fr' ? 'Retour aux courtiers' : 'Back to brokers'}
+   </button>
+  </div>
+ )}
  {/* Header Section */}
  <div className="p-10 border-b border-border/40 relative overflow-hidden bg-gradient-to-br from-surface to-surface-2/50">
  <div className="flex flex-col md:flex-row items-start md:items-center gap-8 relative z-10">
@@ -205,5 +330,6 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
  </div>
  )}
  </div>
+ </MobileZoomWrapper>
  );
 }

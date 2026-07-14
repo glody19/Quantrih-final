@@ -80,6 +80,9 @@ const translations: Record<Language, Record<string, string>> = {
     "header.access": "Access level",
     "header.institutional": "Standard Institutional",
     "header.profile": "Profile Settings",
+    "header.logout": "Logout",
+    "header.login": "Login",
+    "header.donate": "Donate",
     "footer.rights": "© 2026 Quantrih · Proprietary Quantitative Strategy Suite",
     "footer.version": "Global Multi-Asset Analytics Framework v4.2.1 Stable",
     "backtest.title": "Portfolio Backtesting",
@@ -94,6 +97,10 @@ const translations: Record<Language, Record<string, string>> = {
     "backtest.run": "Run Simulation",
     "backtest.saved": "Saved Sets",
     "backtest.auth_required": "Authentication required for cloud configuration persistence.",
+    "cloud.save_load": "Cloud Save/Load",
+    "cloud.saved_configs": "Cloud Configurations",
+    "cloud.save_new": "Save Current",
+    "cloud.load_existing": "Saved Configurations",
     "mc.title": "Portfolio Monte Carlo Simulation",
     "mc.overview": "Overview",
     "mc.config": "Simulation Model Configuration",
@@ -261,6 +268,9 @@ const translations: Record<Language, Record<string, string>> = {
     "header.access": "Niveau d'accès",
     "header.institutional": "Institutionnel Standard",
     "header.profile": "Paramètres du Profil",
+    "header.logout": "Déconnexion",
+    "header.login": "Connexion",
+    "header.donate": "Donation",
     "footer.rights": "© 2026 Quantrih · Suite de Stratégies Quantitatives Propriétaires",
     "footer.version": "Cadre d'Analyse Globale Multi-Actifs v4.2.1 Stable",
     "backtest.title": "Backtesting de Portefeuille",
@@ -337,6 +347,9 @@ const translations: Record<Language, Record<string, string>> = {
     "header.institutional": "Institutionell",
     "header.profile": "Profil",
     "header.signout": "Sitzung beenden",
+    "header.logout": "Abmelden",
+    "header.login": "Anmelden",
+    "header.donate": "Spenden",
     "common.run": "Ausführen",
     "common.optimize": "Optimieren",
   },
@@ -382,6 +395,9 @@ const translations: Record<Language, Record<string, string>> = {
     "header.institutional": "Institutioneel",
     "header.profile": "Profiel",
     "header.signout": "Sessie beëindigen",
+    "header.logout": "Afmelden",
+    "header.login": "Inloggen",
+    "header.donate": "Doneren",
     "common.run": "Uitvoeren",
     "common.optimize": "Optimaliseren",
       "pb.setup": "Configuratie",
@@ -465,6 +481,9 @@ const translations: Record<Language, Record<string, string>> = {
     "header.institutional": "Institucional",
     "header.profile": "Perfil",
     "header.signout": "Cerrar Sesión",
+    "header.logout": "Cerrar sesión",
+    "header.login": "Iniciar sesión",
+    "header.donate": "Donar",
     "common.run": "Ejecutar",
     "common.optimize": "Optimizar",
     "pb.setup": "Configuración",
@@ -511,10 +530,18 @@ const translations: Record<Language, Record<string, string>> = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>("en");
+  const language: Language = "en";
+  const setLanguage = (l: Language) => {};
 
   const t = (key: string) => {
-    return translations[language][key] || key;
+    if (translations["en"] && translations["en"][key]) {
+      return translations["en"][key];
+    }
+    if (key.startsWith("header.")) {
+      const fallback = key.substring(7); // remove "header."
+      return fallback.charAt(0).toUpperCase() + fallback.slice(1);
+    }
+    return key;
   };
 
   return (

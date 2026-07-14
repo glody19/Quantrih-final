@@ -48,19 +48,19 @@ export function GoogleOneTapPrompt() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-          className="fixed top-24 right-4 sm:right-8 z-50 w-full max-w-[340px]"
+          className="fixed top-20 right-4 sm:right-6 z-50 w-full max-w-[270px]"
         >
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden relative">
+          <div className="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden relative">
             <button 
               onClick={handleClose}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors bg-gray-50 rounded-full p-1"
+              className="absolute top-2.5 right-2.5 text-gray-400 hover:text-gray-600 transition-colors bg-gray-50 rounded-full p-0.5"
             >
-              <X size={16} />
+              <X size={14} />
             </button>
-            <div className="p-5">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shrink-0 border border-gray-100 shadow-sm">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <div className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shrink-0 border border-gray-100 shadow-sm">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -68,20 +68,20 @@ export function GoogleOneTapPrompt() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-sm">Sign in with Google</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">Quick and secure access to your portfolio</p>
+                  <h3 className="font-bold text-gray-900 text-xs">Sign in with Google</h3>
+                  <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">Quick portfolio access</p>
                 </div>
               </div>
               <button 
                 onClick={handleContinue}
-                className="w-full bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium text-sm py-2.5 px-4 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2"
+                className="w-full bg-[#1a73e8] hover:bg-[#1557b0] text-white font-medium text-xs py-2 px-3 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1.5"
               >
                 Continue with Google
               </button>
             </div>
-            <div className="bg-gray-50 px-5 py-3 border-t border-gray-100">
-               <p className="text-[10px] text-gray-400 text-center leading-tight">
-                 By continuing, you agree to Portfolio Vision's Terms of Service and Privacy Policy.
+            <div className="bg-gray-50 px-4 py-2 border-t border-gray-100">
+               <p className="text-[9px] text-gray-400 text-center leading-tight">
+                 By continuing, you agree to the Terms of Service.
                </p>
             </div>
           </div>

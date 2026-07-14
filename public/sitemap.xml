@@ -1,82 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://portfoliovision.com/</loc>
+    <loc>https://quantrih.com/</loc>
     <priority>1.0</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/asset-allocation</loc>
+    <loc>https://quantrih.com/asset-allocation</loc>
     <priority>0.8</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/portfolio-backtest</loc>
+    <loc>https://quantrih.com/portfolio-backtest</loc>
     <priority>0.8</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/tactical-allocation</loc>
+    <loc>https://quantrih.com/tactical-allocation</loc>
     <priority>0.8</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/montecarlo</loc>
+    <loc>https://quantrih.com/montecarlo</loc>
     <priority>0.8</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/moving-average</loc>
-    <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
+    <loc>https://quantrih.com/moving-average</loc>
+    <priority>0.8</priority>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/dual-momentum</loc>
-    <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
+    <loc>https://quantrih.com/dual-momentum</loc>
+    <priority>0.8</priority>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/relative-strength</loc>
-    <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
+    <loc>https://quantrih.com/relative-strength</loc>
+    <priority>0.8</priority>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/market</loc>
+    <loc>https://quantrih.com/market</loc>
     <priority>0.8</priority>
     <changefreq>daily</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/etf-overview</loc>
+    <loc>https://quantrih.com/etf-overview</loc>
     <priority>0.8</priority>
     <changefreq>daily</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/platforms</loc>
+    <loc>https://quantrih.com/platforms</loc>
     <priority>0.7</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/education</loc>
+    <loc>https://quantrih.com/education</loc>
     <priority>0.7</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/about</loc>
+    <loc>https://quantrih.com/about</loc>
     <priority>0.6</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/donate</loc>
+    <loc>https://quantrih.com/donate</loc>
     <priority>0.5</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/cookies</loc>
+    <loc>https://quantrih.com/cookies</loc>
     <priority>0.4</priority>
     <changefreq>yearly</changefreq>
   </url>
   <url>
-    <loc>https://portfoliovision.com/privacy</loc>
+    <loc>https://quantrih.com/privacy</loc>
     <priority>0.4</priority>
     <changefreq>yearly</changefreq>
   </url>

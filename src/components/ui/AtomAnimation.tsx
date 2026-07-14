@@ -26,8 +26,10 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  width = canvas.offsetWidth;
  height = canvas.offsetHeight;
  canvas.width = width * dpr;
- canvas.height = height * dpr;
- ctx.scale(dpr, dpr);
+	canvas.height = height * dpr;
+	canvas.style.width = width + "px";
+	canvas.style.height = height + "px";
+	ctx.scale(dpr, dpr);
  };
  setupCanvas();
 
@@ -103,7 +105,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  nodes = [];
  gravityParticles = [];
  const numNodes = 1000; // Optimized for fluidity
- const radius = Math.min(width, height) * 0.42; // Increased radius
+ const radius = Math.min(width, height) * (width < 640 ? 0.34 * 1.2 : 0.48); // Dynamic scale with +20% on mobile only
  const cx = width / 2;
  
  // Initialize Gravity Particles
@@ -125,9 +127,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  const z = Math.sin(theta) * r * actualRadius;
  const yScaled = y * actualRadius;
  
- let colorType = 0;
- if (Math.random() > 0.7) colorType = 1;
- if (Math.random() > 0.9) colorType = 2;
+ const colorType = i % 3;
 
  const val = Math.floor(Math.random() * 10).toString();
  nodes.push(new Node(x, yScaled, z, colorType, val));
@@ -279,7 +279,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  const rawOpacity = Math.max(0.1, Math.min(1, 1 - (pNode.z2 + 200) / 600));
  // Quantize opacity and scale to reduce CSS string generation and state changes
  const opacity = Math.round(rawOpacity * 10) / 10;
- const fontSize = Math.max(8, Math.floor(12 * pNode.scale + (interactScale * 5)));
+ const fontSize = Math.max(12, Math.floor(18 * pNode.scale + (interactScale * 6)));
  const rgb = currentColors[pNode.colorType];
  
  // Draw Ray
@@ -515,14 +515,14 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  }, []);
 
  return (
- <div className={"w-full h-full flex flex-col items-center justify-center relative " + (className || "")}>
+ <div className={"w-full h-full flex flex-col items-center justify-center relative max-sm:scale-90 origin-center " + (className || "")}>
  {/* Ambient glowing background aura */}
  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#06b6d4]/5 to-transparent blur-3xl pointer-events-none" />
  
  {/* Interactive 3D Canvas */}
  <canvas 
  ref={canvasRef} 
- className={"w-full h-full cursor-crosshair z-10 " + (fullScreen ? "" : "lg:max-w-[700px] lg:max-h-[700px] lg:min-h-[600px] max-w-[450px] max-h-[450px] min-h-[400px]")}
+ className={"w-full h-full cursor-crosshair z-10 " + (fullScreen ? "" : "lg:max-w-[700px] lg:max-h-[700px] lg:min-h-[600px] max-w-[400px] max-h-[400px] min-h-[360px]")}
  />
  {/* Flat discreet base shadow */}
  <div className="absolute -bottom-[2%] left-1/2 -translate-x-1/2 w-[60%] h-1.5 pointer-events-none z-0">

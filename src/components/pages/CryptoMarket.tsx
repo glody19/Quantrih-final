@@ -44,15 +44,14 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  try {
  const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`);
  if(res.ok) {
- const json = await res.json();
- setCryptoInfo(json);
+  const ct = res.headers.get("content-type"); if (ct && ct.includes("application/json")) { const json = await res.json(); setCryptoInfo(json); }
  }
  } catch (e) {
  console.warn(e);
  }
  };
  get24HTicker();
- const interval = setInterval(get24HTicker, 10000);
+ const interval = setInterval(get24HTicker, 20000);
  return () => clearInterval(interval);
  }, [symbol]);
 
@@ -62,7 +61,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  const cryptos = Object.keys(CRYPTO_TOKENS);
  for(let cr of cryptos) {
  fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${cr}`)
- .then(r => r.json())
+  .then(r => { const ct = r.headers.get("content-type"); if (r.ok && ct && ct.includes("application/json")) return r.json(); throw new Error("Invalid response"); })
  .then(data => {
  setWatchlistQuotes(prev => ({
  ...prev, 
@@ -72,7 +71,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  }
  };
  getWatchlist();
- const interval = setInterval(getWatchlist, 15000);
+ const interval = setInterval(getWatchlist, 30000);
  return () => clearInterval(interval);
  }, []);
 

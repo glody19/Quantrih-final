@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Activity, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { cn } from "../../lib/utils";
+import { AssetAllocationGraphic } from "../ui/AssetAllocationGraphic";
 import { AtomAnimation } from "../ui/AtomAnimation";
 import { LaptopDemo } from "../ui/LaptopDemo";
+import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
+import { HexBadgeOrbit } from "../ui/HexBadgeOrbit";
+import datacenterBg from "../../assets/images/datacenter_background_1783804486565.jpg";
 
 interface PageInfo {
   title: string;
@@ -205,6 +209,85 @@ function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: 
   );
 }
 
+function TypewriterText({ text }: { text: string }) {
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    let i = 0;
+    setDisplayedText("");
+    setIsTyping(true);
+
+    const timer = setInterval(() => {
+      if (i < text.length) {
+        if (isMounted) {
+          setDisplayedText(text.slice(0, i + 1));
+        }
+        i++;
+      } else {
+        setIsTyping(false);
+        clearInterval(timer);
+      }
+    }, 8); // Very fast typing animation
+
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
+  }, [text]); // Only run once per text change (on mount)
+
+  return (
+    <p className="text-slate-300 font-medium text-[9.5px] sm:text-base lg:text-lg leading-snug sm:leading-relaxed transition-all">
+      {displayedText}
+      {isTyping && (
+        <span className="inline-block w-0.5 h-2.5 ml-0.5 bg-sky-400 animate-pulse align-middle" />
+      )}
+    </p>
+  );
+}
+
+function ModuleCard({ p, i, onGoPage }: { p: PageInfo; i: number; onGoPage: (id: string) => void }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const isLeft = i % 2 === 0;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: isLeft ? -50 : 50 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.8, delay: i * 0.15, ease: "easeOut" }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group relative bg-slate-900 border border-slate-700/60 hover:border-slate-500 rounded-[2rem] p-4 sm:p-6 lg:p-8 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2.5 hover:scale-[1.01] shadow-[0_25px_50px_rgba(0,0,0,0.85)] overflow-hidden w-full h-[180px] sm:h-[260px] lg:h-[280px]"
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+      <div className={cn("absolute top-0 left-0 right-0 h-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-500", p.color.replace('text-', 'bg-'))} />
+      
+      <div className="relative z-10 flex-1 flex flex-col justify-start overflow-hidden">
+        <h4 className="text-[14px] sm:text-xl lg:text-3xl font-extrabold tracking-tight mb-1 sm:mb-3 text-blue-500 uppercase transition-all">
+          {p.title}
+        </h4>
+        <div className="flex-1 overflow-hidden">
+          <TypewriterText text={p.desc} />
+        </div>
+      </div>
+      
+      <div className="relative z-10 mt-2 sm:mt-5 pt-1 sm:pt-2 flex justify-center">
+        <button 
+          onClick={() => onGoPage(p.id)}
+          className="px-4 sm:px-6 py-1 sm:py-2.5 bg-slate-800 hover:bg-blue-600 hover:text-white border border-slate-700 hover:border-blue-500 text-slate-300 hover:text-white font-bold text-[9px] sm:text-xs rounded-full transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 shadow-lg"
+        >
+          {p.cta}
+          <svg className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   const { language, t } = useTranslation();
   const [heroHovered, setHeroHovered] = useState(false);
@@ -233,7 +316,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       desc: 'Automatically adapt your portfolio based on market trends. Define simple rules to buy or sell automatically, to protect your savings or seize opportunities.'
     },
     { 
-      title: 'Monte Carlo Dynamics', 
+      title: 'Monte Carlo', 
       id: 'montecarlo', 
       color: 'text-emerald-400',
       cta: 'Simulate Future',
@@ -242,16 +325,48 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   ];
 
   return (
-    <div
-      className="flex flex-col w-full min-h-[100dvh] relative overflow-hidden selection:bg-blue-500/30"
-      style={{ background: 'radial-gradient(ellipse at top, #1e3a8a 0%, #0a0f1e 55%, #020617 100%)' }}>
-      
-      <div className="relative z-10 w-full max-w-[1600px] flex-1 flex flex-col mx-auto">
+    <MobileZoomWrapper scaleMobile={0.8}>
+      <div
+        className="flex flex-col w-full min-h-[100dvh] relative overflow-hidden selection:bg-blue-500/30"
+        style={{ background: 'radial-gradient(ellipse at top, #1e3a8a 0%, #0a0f1e 55%, #020617 100%)' }}>
         
-        {/* Top Hero Section */}
-        <div 
-          className="flex-1 flex flex-col lg:flex-row w-full min-h-[75vh]"
-          onMouseEnter={() => setHeroHovered(true)}
+        {/* Animated Full-Page Datacenter Background (seamlessly flowing from top past Atom down to Tools & Strategies) */}
+        <motion.div 
+          className="absolute inset-0 z-0 pointer-events-none opacity-[0.14]"
+          style={{ 
+            backgroundImage: `url(${datacenterBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'repeat-y'
+          }}
+          animate={{
+            scale: [1, 1.04, 1.01, 1.05, 1],
+            y: [0, -12, 12, -6, 0],
+            x: [0, 8, -8, 4, 0],
+            filter: [
+              "hue-rotate(0deg) contrast(1.1) brightness(0.7) saturate(1.2)",
+              "hue-rotate(12deg) contrast(1.25) brightness(0.85) saturate(1.4)",
+              "hue-rotate(-8deg) contrast(1.05) brightness(0.6) saturate(1.1)",
+              "hue-rotate(0deg) contrast(1.1) brightness(0.7) saturate(1.2)"
+            ]
+          }}
+          transition={{
+            duration: 45,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+
+        {/* Global smooth vignette to blend the datacenter image perfectly across all sections and fade to deep solid black at the bottom */}
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 20%, transparent 30%, #0a0f1e 95%)' }} />
+        <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-transparent via-[#03060d]/60 to-[#010204]" />
+
+        <div className="relative z-10 w-full max-w-[1600px] flex-1 flex flex-col mx-auto">
+          
+          {/* Top Hero Section */}
+          <div 
+            className="flex-1 flex flex-col lg:flex-row w-full min-h-[75vh]"
+            onMouseEnter={() => setHeroHovered(true)}
           onMouseLeave={() => setHeroHovered(false)}
         >
           {/* Left Text Side */}
@@ -261,12 +376,12 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="mb-10 lg:pt-12"
+                className="mb-10 pt-16 sm:pt-0 lg:pt-12"
               >
-                <h1 className="text-[12vw] sm:text-[10vw] md:text-8xl lg:text-[160px] max-w-[100vw] break-words font-semibold leading-[0.85] tracking-tighter shimmer-text-animate hover:scale-105 transition-transform duration-500 origin-left">
+                <h1 className="text-[18vw] sm:text-[10vw] md:text-8xl lg:text-[140px] max-w-[100vw] break-keep whitespace-nowrap font-semibold leading-[0.85] tracking-tighter shimmer-text-animate hover:scale-105 transition-transform duration-500 origin-left overflow-visible">
                   Quantrih
                 </h1>
-                <h2 id="hero-gradient-title" className="text-3xl lg:text-5xl font-semibold leading-none tracking-tighter mt-4 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, #3b82f6, #06b6d4)' }}>
+                <h2 id="hero-gradient-title" className="text-3xl lg:text-4xl font-semibold leading-none tracking-tighter mt-4 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, #3b82f6, #06b6d4)' }}>
                   {'portfolio backtesting.'}
                 </h2>
               </motion.div>
@@ -293,15 +408,50 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
           </div>
 
           {/* Right Animation Side */}
-          <div className="w-full lg:w-[55%] min-h-[40vh] lg:min-h-[75vh] relative z-10 flex items-center justify-center mt-10 lg:mt-20">
+          <div className="w-full lg:w-[55%] min-h-[40vh] lg:min-h-[75vh] relative z-10 flex items-center justify-center mt-10 lg:mt-32 xl:mt-40">
             <AtomAnimation isHovered={heroHovered} />
           </div>
         </div>
 
-                {/* Feature Tools System Flow */}
-        <div className="w-full relative py-20 lg:py-40 overflow-hidden">
+        {/* Why Backtest Before Investing? */}
+        <motion.div 
+          initial={{ opacity: 0, x: 100 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="w-full px-6 lg:px-24 pt-20"
+        >
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.h4
+              initial="hidden"
+              whileInView="visible"
+              variants={{
+                visible: { transition: { staggerChildren: 0.02 } }
+              }}
+              className="text-xl font-bold text-white mb-4"
+            >
+              {"Why Backtest Before Investing?".split("").map((char, i) => (
+                <motion.span key={i} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}>{char}</motion.span>
+              ))}
+            </motion.h4>
+            <motion.p
+              initial="hidden"
+              whileInView="visible"
+              variants={{
+                visible: { transition: { staggerChildren: 0.003 } }
+              }}
+              className="text-slate-300 leading-relaxed"
+            >
+              {"Before you commit your capital to the markets, it is crucial to understand how your investment strategy would have performed historically. Backtesting allows you to simulate your strategy against real market data from the past, helping you identify strengths, understand risks, and refine your approach to build a more resilient portfolio. Test your ideas first, invest with confidence later.".split("").map((char, i) => (
+                <motion.span key={i} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}>{char}</motion.span>
+              ))}
+            </motion.p>
+          </div>
+        </motion.div>
 
-          
+        {/* Feature Tools System Flow */}
+        <div className="w-full relative py-20 lg:py-40 overflow-hidden bg-transparent">
+
           <div className="w-full px-6 lg:px-24 z-20 relative">
             <motion.div 
               initial={{ opacity: 0, y: 30 }}
@@ -310,110 +460,67 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="mb-16 text-center"
             >
-              <h3 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6 transition-colors duration-300">
+              <h3 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4 transition-colors duration-300">
                 {'Tools & Strategies'}
               </h3>
-              <p className="text-slate-300 text-xl max-w-3xl mx-auto leading-relaxed">
+              <p className="text-slate-300 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
                 {"Discover our 4 simplified analysis tools to design, test, and secure your investment portfolio."}
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 relative z-10 w-full max-w-[90rem] mx-auto px-2 md:px-4">
-              {ObjectPages.map((p, i) => (
-                <motion.div 
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.6, delay: i * 0.15, ease: "easeOut" }}
-                  key={i} 
-                  className="group relative bg-[#0B1121] border border-slate-800/80 hover:border-slate-600 rounded-3xl p-8 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 shadow-xl hover:shadow-2xl overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
-                  <div className={cn("absolute top-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500", p.color.replace('text-', 'bg-'))} />
-                  
-                  <div className="relative z-10 mb-8">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center bg-[#151E32] border border-slate-700/50 shadow-inner group-hover:scale-110 transition-transform duration-500", p.color.replace('text-', 'text-'))}>
-                        <Activity className={cn("w-8 h-8", p.color)} />
-                      </div>
-                      <div className="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-500 group-hover:text-white transition-colors">
-                        <ArrowRight size={16} className="-rotate-45 group-hover:rotate-0 transition-transform duration-500" />
-                      </div>
-                    </div>
-                    <h4 className="text-2xl font-extrabold tracking-tight mb-3 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-400 transition-all">
-                      {p.title}
-                    </h4>
-                    <p className="text-slate-400 font-medium text-sm leading-relaxed">
-                      {p.desc}
-                    </p>
-                  </div>
-                  
-                  <div className="relative z-10 mt-auto pt-6">
-                    <button 
-                      onClick={() => onGoPage(p.id)}
-                      className="w-full py-3 bg-[#1E293B] hover:bg-[#334155] text-slate-300 hover:text-white font-bold text-sm rounded-xl transition-all duration-300 flex items-center justify-center gap-2"
-                    >
-                      {p.cta}
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+            {/* Solid Rectangular Frame Box for the 4 modules */}
+            <div className="bg-slate-800/98 border-t border-l border-slate-700/90 border-r-2 border-b-2 border-slate-900/95 p-4 sm:p-10 lg:p-12 shadow-[-10px_-20px_40px_rgba(255,255,255,0.01),0_40px_80px_rgba(0,0,0,0.9)] relative z-10 rounded-[3rem] w-full max-w-[90rem] mx-auto">
+              <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full">
+                {ObjectPages.map((p, i) => (
+                  <ModuleCard key={i} p={p} i={i} onGoPage={onGoPage} />
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Support Section */}
-        <div className="w-full px-6 lg:px-24 py-16 lg:py-32 z-20">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 relative overflow-hidden transition-all duration-500">
-            <div className="max-w-3xl relative z-10 text-center lg:text-left">
-              <h3 className="text-white text-2xl lg:text-3xl font-medium tracking-tight mb-4">
+          {/* Global Interactive Navigation HexBadge Orbit map */}
+          <div className="w-full pt-24 pb-20 md:pt-28 md:pb-24 lg:pt-36 lg:pb-32 relative z-20 flex flex-col items-center justify-center">
+            <h3 className="text-white text-3xl md:text-4xl font-extrabold tracking-tight mb-4">Quantrih</h3>
+            <p className="text-slate-300 mb-12 text-center max-w-md px-6 leading-relaxed font-bold">
+              {"Explore our other pages and interesting data"}
+            </p>
+            <HexBadgeOrbit onNavigate={onGoPage} />
+          </div>
+
+          {/* Support Section */}
+          <div className="w-full px-6 lg:px-24 pt-16 pb-20 lg:pt-24 lg:pb-32 z-20">
+            <div className="max-w-4xl mx-auto text-center relative z-10">
+              <h3 className="text-white text-lg sm:text-xl lg:text-3xl font-black tracking-widest mb-4 uppercase drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
                 {"Support the Evolution of Quantrih."}
               </h3>
-              <p className="text-slate-200 text-xl leading-relaxed font-normal mb-8 max-w-2xl">
-                {"This systemic architecture is designed to neutralize the entry barrier to complex quant tools. Your support enables continuous funding for financial data pipes and rigorous stress-test research."}
+              <p className="text-white text-sm sm:text-base lg:text-lg leading-relaxed font-extrabold mb-10 max-w-2xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                {"This systemic architecture is designed to neutralize the entry barrier to complex quant tools. Your support enables continuous funding for financial data pipes, high-quality data acquisition for each asset class, and rigorous stress-test research."}
               </p>
-              <div className="text-xs text-slate-300 font-mono flex flex-col gap-1">
-                <span>Direct Inquiry Protocol: <a href="mailto:contact@quantrih.com" className="text-blue-500 hover:text-blue-400 transition-colors">contact@quantrih.com</a></span>
+              <div className="flex flex-col items-center justify-center gap-4">
+                <button 
+                  onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')}
+                  className="px-10 py-4 bg-blue-600 hover:bg-blue-500 hover:scale-[1.03] text-white rounded-full shadow-[0_0_20px_rgba(37,99,235,0.15)] hover:shadow-[0_0_35px_rgba(37,99,235,0.35)] transition-all duration-300 text-sm sm:text-base lg:text-lg font-black tracking-wide text-center uppercase"
+                >
+                  {'Donation'}
+                </button>
+                <div className="text-xs sm:text-sm lg:text-base text-slate-300 font-mono mt-2">
+                  Direct Inquiry Protocol: <a href="mailto:contact@quantrih.com" className="text-blue-500 hover:text-blue-400 transition-colors font-bold underline underline-offset-4">contact@quantrih.com</a>
+                </div>
               </div>
-            </div>
-            <div className="w-auto relative z-10">
-              <button 
-                onClick={async () => {
-                  try {
-                    const res = await fetch('/api/stripe/create-checkout-session', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ amount: 10, currency: 'eur' })
-                    });
-                    const session = await res.json();
-                    if (session.url) window.location.href = session.url;
-                    else throw new Error(session.error || 'Unknown error');
-                  } catch (e) {
-                    alert("Payment Gateway Notice: Stripe configuration requires provisioning.");
-                  }
-                }}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl shadow-[0_0_30px_rgba(37,99,235,0.2)] hover:shadow-[0_0_50px_rgba(37,99,235,0.4)] transition-all duration-300 text-sm font-bold text-center"
-              >
-                {'Donation'}
-              </button>
             </div>
           </div>
         </div>
 
         {/* Professional Branding Section */}
-        <div className="w-full border-t border-border/60 py-16 z-20">
+        <div className="w-full pb-16 z-20 mt-12">
           <div className="px-6 lg:px-24 flex flex-col items-center justify-center text-center space-y-4">
-            <p className="text-slate-500 text-sm font-sans font-medium mt-2">
-              Quantrih Engineering
-            </p>
-            <p className="text-slate-400 text-sm font-sans tracking-wide mt-6 max-w-2xl mx-auto">
+            <p className="text-white/80 text-[10px] sm:text-xs font-sans tracking-wide max-w-3xl mx-auto leading-relaxed">
               {"Disclaimer: Past performance is not indicative of future results. Quantrih's tools and analyses are based exclusively on historical data from the past. Investing involves risks, including the potential loss of capital."}
             </p>
           </div>
         </div>
-
       </div>
-    </div>
+    </MobileZoomWrapper>
   );
 }

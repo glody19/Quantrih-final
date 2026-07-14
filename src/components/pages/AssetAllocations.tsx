@@ -39,8 +39,12 @@ import { db } from "../../firebase";
 import { handleFirestoreError, OperationType } from "../../lib/firestoreUtils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { InfoTooltip } from "../ui/InfoTooltip";
+import { Disclaimer } from "../ui/Disclaimer";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
+import { ViewToggle } from "../ui/ViewToggle";
+import { lazyPortfolios } from "./lazyPortfoliosData";
 import { TickerInput } from "../ui/TickerInput";
+import { CloudSaveLoad } from "../ui/CloudSaveLoad";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -105,6 +109,8 @@ interface AllocRow {
   weights: number[]; // weights for P1, P2...
 }
 
+import { runBacktest as engineRunBacktest } from "../../engine";
+
 export function AssetAllocations({
   baseCcy,
   onNavigate,
@@ -158,26 +164,44 @@ export function AssetAllocations({
   );
   const [results, setResults] = useState<any[] | null>(null);
   const [activeResIdx, setActiveResIdx] = useState(0);
-  const [isExporting, setIsExporting] = useState(false);
-
-  const [portfolioNames, setPortfolioNames] = useLocalStorage<
-    { id: string; name: string }[]
-  >("aa_portfolioNames_v4", [
-    { id: "1", name: "Classic (60/40)" },
-    { id: "2", name: "Dynamic (80/20)" },
-    { id: "3", name: "All Weather" },
-    { id: "4", name: "Permanent" },
-  ]);
+  const [activeMainView, setActiveMainView] = useState<"simulator" | "dashboard">("simulator");
+  const [configsLoading, setConfigsLoading] = useState(false);
+  const [savedConfigs, setSavedConfigs] = useState<any[]>([]);
+  const [portfolioNames, setPortfolioNames] = useLocalStorage<{ id: string; name: string }[]>(
+    "aa_portfolioNames_v7",
+    typeof window !== "undefined" && window.innerWidth >= 1024
+      ? [
+        { id: "1", name: "Balanced (60/40)" },
+        { id: "2", name: "All-Weather (Dalio)" },
+        { id: "3", name: "Warren Buffett" },
+        { id: "4", name: "Permanent Portfolio" },
+      ]
+    : [
+        { id: "1", name: "Balanced (60/40)" },
+        { id: "2", name: "All-Weather (Dalio)" },
+      ]
+  );
 
   const [portfolioAssets, setPortfolioAssets] = useLocalStorage<
     { symbol: string; weights: string[] }[]
-  >("aa_portfolioAssets_v4", [
-    { symbol: "VTI", weights: ["60", "80", "30", "25"] },
-    { symbol: "BND", weights: ["40", "20", "40", "25"] },
-    { symbol: "GLD", weights: ["0", "0", "15", "25"] },
-    { symbol: "SHY", weights: ["0", "0", "15", "25"] },
-    { symbol: "VNQ", weights: ["0", "0", "0", "0"] },
-  ]);
+  >("aa_portfolioAssets_v7", typeof window !== "undefined" && window.innerWidth >= 1024
+    ? [
+        { symbol: "VTI", weights: ["60", "30", "90", "25"] },
+        { symbol: "BND", weights: ["40", "0", "10", "0"] },
+        { symbol: "TLT", weights: ["0", "40", "0", "25"] },
+        { symbol: "IEF", weights: ["0", "15", "0", "25"] },
+        { symbol: "GLD", weights: ["0", "7.5", "0", "25"] },
+        { symbol: "PDBC", weights: ["0", "7.5", "0", "0"] },
+      ]
+    : [
+        { symbol: "VTI", weights: ["60", "30"] },
+        { symbol: "BND", weights: ["40", "0"] },
+        { symbol: "TLT", weights: ["0", "40"] },
+        { symbol: "IEF", weights: ["0", "15"] },
+        { symbol: "GLD", weights: ["0", "7.5"] },
+        { symbol: "PDBC", weights: ["0", "7.5"] },
+      ]
+  );
 
   // Defined Asset Classes for the dropdown
   const ASSET_CLASSES = [
@@ -244,6 +268,32 @@ export function AssetAllocations({
     },
   ];
 
+  const applyPredefinedPortfolio = (preset: any) => {
+    if (portfolioNames.length >= 6) return;
+    const newId = `p${Date.now()}`;
+    let currentAssets = [...portfolioAssets];
+    currentAssets = currentAssets.map((a) => ({
+      ...a,
+      weights: [...a.weights, "0"],
+    }));
+    preset.assets.forEach((asset: any) => {
+      const existingIdx = currentAssets.findIndex(
+        (a) => a.symbol === asset.symbol,
+      );
+      if (existingIdx === -1) {
+        const newWeights = portfolioNames.map(() => "0");
+        newWeights.push(asset.weight.toString());
+        currentAssets.push({ symbol: asset.symbol, weights: newWeights });
+      } else {
+        currentAssets[existingIdx].weights[
+          currentAssets[existingIdx].weights.length - 1
+        ] = asset.weight.toString();
+      }
+    });
+    setPortfolioNames([...portfolioNames, { id: newId, name: preset.name }]);
+    setPortfolioAssets(currentAssets);
+  };
+
   const portfolios = portfolioNames.map((pn, i) => ({
     id: pn.id,
     name: pn.name,
@@ -258,12 +308,6 @@ export function AssetAllocations({
       })),
   }));
 
-  const [savedConfigs, setSavedConfigs] = useState<
-    { id: string; name: string; data: any }[]
-  >([]);
-  const [saveName, setSaveName] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoadingConfigs, setIsLoadingConfigs] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -277,69 +321,347 @@ export function AssetAllocations({
 
   const loadSavedConfigs = async () => {
     if (!user) return;
-    setIsLoadingConfigs(true);
+    setConfigsLoading(true);
     try {
-      const q = query(collection(db, "users", user.uid, "backtests"));
+      const q = query(collection(db, `users/${user.uid}/backtests`));
       const querySnapshot = await getDocs(q);
       const configs: any[] = [];
-      querySnapshot.forEach((doc) => {
-        configs.push({ id: doc.id, name: doc.data().name, data: doc.data() });
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        if (data.pageId === "asset-allocation" || data.pageId === "asset_alloc") {
+          configs.push({ id: docSnap.id, ...data });
+        }
       });
-      setSavedConfigs(configs.sort((a, b) => a.name.localeCompare(b.name)));
+      configs.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      setSavedConfigs(configs);
     } catch (e) {
-      handleFirestoreError(
-        e,
-        OperationType.LIST,
-        `users/${user?.uid}/backtests`,
-      );
+      console.error("Failed to load backtests for dashboard:", e);
     } finally {
-      setIsLoadingConfigs(false);
+      setConfigsLoading(false);
     }
   };
 
-  const handleSaveConfig = async () => {
-    if (!user || !saveName.trim()) return;
-    setIsSaving(true);
-    const docId = `config-${Date.now()}`;
-    const path = `users/${user.uid}/backtests/${docId}`;
-    try {
-      await setDoc(doc(db, "users", user.uid, "backtests", docId), {
-        name: saveName.trim(),
-        userId: user.uid,
-        startYear,
-        startMonth,
-        endYear,
-        endMonth,
-        initialAmount,
-        cashflowAmount,
-        cashflowFrequency,
-        rebalancing,
-        reinvestDividends,
-        dividendTaxRate,
-        capitalGainsTaxRate,
-        inflationAdjusted,
-        portfolios,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-      setSaveName("");
-      await loadSavedConfigs();
-    } catch (e) {
-      handleFirestoreError(e, OperationType.CREATE, path);
-    } finally {
-      setIsSaving(false);
+  useEffect(() => {
+    if (activeMainView === "dashboard" && user) {
+      loadSavedConfigs();
     }
-  };
+  }, [activeMainView, user]);
 
-  const handleDeleteConfig = async (id: string) => {
-    if (!user) return;
-    const path = `users/${user.uid}/backtests/${id}`;
+  const deleteConfig = async (id: string) => {
+    alert("Delete clicked for: " + id);
+    if (!user) {
+      alert("No user!");
+      return;
+    }
+    
+    // Explicit confirmation
+    if (!window.confirm("Are you sure you want to permanently delete this saved strategy? This action cannot be undone.")) {
+      return;
+    }
+
     try {
+      // Optimistic UI update
+      setSavedConfigs(prev => prev.filter(c => c.id !== id));
+      
       await deleteDoc(doc(db, "users", user.uid, "backtests", id));
-      await loadSavedConfigs();
+      
+      // Reload just in case
+      loadSavedConfigs();
     } catch (e) {
-      handleFirestoreError(e, OperationType.DELETE, path);
+      console.error("Failed to delete config:", e);
+      alert("Failed to delete the strategy. Please try again: " + e);
+      // Reload to revert optimistic update if failed
+      loadSavedConfigs();
     }
+  };
+
+  const loadConfigIntoSimulator = (config: any) => {
+    handleCloudLoad(config);
+    setActiveMainView("simulator");
+  };
+
+  const renderSavedScenarios = () => {
+    if (!user) {
+      return (
+        <div className="bg-surface border border-border rounded-[2rem] p-12 text-center max-w-2xl mx-auto my-12 shadow-sm flex flex-col items-center gap-6 animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+            <Database size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900">
+            Activate Saved Scenarios
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            To save your asset allocation strategies, compare them side-by-side with innovative charts, and benefit from intelligent allocation analysis, log in or create a free account.
+          </p>
+          <button
+            onClick={() => {
+              window.location.href = "/auth";
+            }}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-md shadow-blue-500/10"
+          >
+            Log In / Sign Up
+          </button>
+        </div>
+      );
+    }
+
+    if (configsLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+          <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+          <p className="text-xs font-bold uppercase tracking-widest text-text-3">
+            Loading your saved strategies...
+          </p>
+        </div>
+      );
+    }
+
+    const configsWithResults = savedConfigs.filter(c => c.resultsSummary && c.resultsSummary.length > 0);
+
+    const totalCount = savedConfigs.length;
+    let bestCagr = "N/A";
+    let bestCagrName = "";
+    let bestSharpe = "N/A";
+    let bestSharpeName = "";
+
+    let maxCagrVal = -999;
+    let maxSharpeVal = -999;
+
+    configsWithResults.forEach(c => {
+      c.resultsSummary.forEach((r: any) => {
+        if (r.cagr > maxCagrVal) {
+          maxCagrVal = r.cagr;
+          bestCagr = `${r.cagr.toFixed(2)}%`;
+          bestCagrName = `${c.name} (${r.name})`;
+        }
+        if (r.sharpe > maxSharpeVal) {
+          maxSharpeVal = r.sharpe;
+          bestSharpe = r.sharpe.toFixed(2);
+          bestSharpeName = `${c.name} (${r.name})`;
+        }
+      });
+    });
+
+    const hasChartData = configsWithResults.length > 0;
+    const chartLabels = configsWithResults.map(c => c.name || "Unnamed");
+    const chartCagrData = configsWithResults.map(c => c.resultsSummary[0]?.cagr || 0);
+    const chartDrawdownData = configsWithResults.map(c => Math.abs(c.resultsSummary[0]?.maxDrawdown || 0));
+
+    const comparisonChartData = {
+      labels: chartLabels,
+      datasets: [
+        {
+          label: "CAGR (Return %)",
+          data: chartCagrData,
+          backgroundColor: "rgba(16, 185, 129, 0.8)",
+          borderColor: "rgb(16, 185, 129)",
+          borderWidth: 1,
+          borderRadius: 8,
+        },
+        {
+          label: "Max Drawdown (%)",
+          data: chartDrawdownData,
+          backgroundColor: "rgba(239, 68, 68, 0.8)",
+          borderColor: "rgb(239, 68, 68)",
+          borderWidth: 1,
+          borderRadius: 8,
+        }
+      ]
+    };
+
+    const chartOptions = {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top" as const,
+          labels: { font: { weight: "bold" as const, size: 11 } }
+        },
+        title: {
+          display: true,
+          text: "Strategy Performance Comparison",
+          font: { size: 13, weight: "bold" as const }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: (value: any) => `${value}%` }
+        }
+      }
+    };
+
+    const recommendations: any[] = [];
+    
+    // Simple recommendations logic
+    if (configsWithResults.length > 0) {
+      recommendations.push({
+        type: "tip",
+        title: "Portfolio Diversification",
+        text: "Compare your CAGR across different allocations. If one portfolio has significantly lower drawdown with similar CAGR, it might be more efficient for long-term growth."
+      });
+    }
+
+    return (
+      <div className="space-y-8 animate-fade-in font-sans">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <p className="text-[13px] font-semibold text-slate-700">
+              Active workspace for <span className="font-bold text-slate-900">{user.email}</span>
+            </p>
+          </div>
+          <button
+            onClick={loadSavedConfigs}
+            className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-lg transition-all shadow-sm"
+          >
+            Refresh
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
+              Saved Strategies
+            </p>
+            <div className="mt-4">
+              <p className="text-3xl font-extrabold text-slate-900">{totalCount}</p>
+              <p className="text-[11px] text-slate-500 font-medium mt-1">Strategies saved</p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-500">
+              Best Historical CAGR
+            </p>
+            <div className="mt-4">
+              <p className="text-3xl font-extrabold text-emerald-600">{bestCagr}</p>
+              <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestCagrName}>
+                {bestCagrName || "No report generated"}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">
+              Optimal Sharpe Ratio
+            </p>
+            <div className="mt-4">
+              <p className="text-3xl font-extrabold text-indigo-600">{bestSharpe}</p>
+              <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestSharpeName}>
+                {bestSharpeName || "No report generated"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm lg:col-span-8 flex flex-col justify-center min-h-[380px]">
+            {hasChartData ? (
+              <div className="w-full h-full">
+                <Bar data={comparisonChartData} options={chartOptions} />
+              </div>
+            ) : (
+              <div className="text-center py-12 flex flex-col items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                  <BarChart3 size={24} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">No comparative report available</p>
+                  <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                    Run an analysis in the simulator, then save it to display compared metrics.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm lg:col-span-4 flex flex-col gap-6">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <Activity size={16} className="text-blue-500" />
+                AI Insights
+              </h3>
+            </div>
+            <div className="space-y-4 overflow-y-auto max-h-[300px] pr-1">
+              {recommendations.map((rec, i) => (
+                <div key={i} className={cn(
+                  "p-4 rounded-2xl border text-xs leading-relaxed flex flex-col gap-1.5",
+                  rec.type === "warning" ? "bg-amber-50/50 border-amber-200 text-amber-900" :
+                  rec.type === "tip" ? "bg-emerald-50/50 border-emerald-200 text-emerald-900" :
+                  "bg-slate-50 border-slate-200 text-slate-700"
+                )}>
+                  <p className="font-extrabold flex items-center gap-1.5">
+                    {rec.type === "warning" && "⚠️"}
+                    {rec.type === "tip" && "💡"}
+                    {rec.title}
+                  </p>
+                  <p className="font-medium text-[11px] opacity-90">{rec.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-slate-100">
+            <h3 className="text-sm font-bold text-slate-900">Your Saved Allocations</h3>
+            <p className="text-xs text-slate-500 mt-1">Click load to import the strategy instantly into the simulator</p>
+          </div>
+          <div className="overflow-x-auto">
+            {savedConfigs.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 text-xs font-semibold">
+                No saved strategies. Create an allocation and save it!
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 text-slate-400 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-100">
+                    <th className="px-6 py-4">Name</th>
+                    <th className="px-6 py-4">Assets</th>
+                    <th className="px-6 py-4">Key Metrics</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {savedConfigs.map((config) => {
+                    const hasMetrics = config.resultsSummary && config.resultsSummary.length > 0;
+                    const primaryMetrics = hasMetrics ? config.resultsSummary[0] : null;
+                    return (
+                      <tr key={config.id} className="hover:bg-slate-50/30 transition-colors">
+                        <td className="px-6 py-4 font-bold text-slate-900">{config.name}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-1 max-w-[280px]">
+                            {config.portNames?.slice(0, 2).map((n: string, i: number) => (
+                              <span key={i} className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-bold text-[10px]">
+                                {n}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          {primaryMetrics ? (
+                            <div className="flex gap-4">
+                              <div><span className="text-[10px] font-bold text-slate-400 block uppercase">CAGR</span><span className="font-bold text-emerald-600">{primaryMetrics.cagr?.toFixed(2)}%</span></div>
+                              <div><span className="text-[10px] font-bold text-slate-400 block uppercase">Sharpe</span><span className="font-bold text-slate-700">{primaryMetrics.sharpe?.toFixed(2)}</span></div>
+                            </div>
+                          ) : <span className="text-slate-400 font-medium italic">No metrics</span>}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="inline-flex items-center gap-2">
+                            <button onClick={() => loadConfigIntoSimulator(config)} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 text-[10px] font-bold uppercase rounded-lg transition-all">Load</button>
+                            <button onClick={(e) => { e.stopPropagation(); deleteConfig(config.id); }} className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg transition-colors"><Trash2 size={14} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const loadConfigData = (data: any) => {
@@ -399,10 +721,8 @@ export function AssetAllocations({
     setIsRunning(true);
 
     try {
-      const { runBacktest: engineRunBacktest } = await import("../../engine");
-
       const colors = ["#2c6cad", "#1a467a", "#d97757", "#10b981"];
-      const enginePortfolios = [];
+      const enginePortfolios: any[] = [];
 
       for (let pIdx = 0; pIdx < portfolios.length; pIdx++) {
         const p = portfolios[pIdx];
@@ -562,6 +882,27 @@ export function AssetAllocations({
     }
   };
 
+  const handleCloudLoad = (data: any) => {
+    if (data.startYear) setStartYear(data.startYear);
+    if (data.startMonth) setStartMonth(data.startMonth);
+    if (data.endYear) setEndYear(data.endYear);
+    if (data.endMonth) setEndMonth(data.endMonth);
+    if (data.initialAmount !== undefined) setInitialAmount(data.initialAmount);
+    if (data.broker) setBroker(data.broker);
+    if (data.customFee !== undefined) setCustomFee(data.customFee);
+    if (data.cashflowAmount !== undefined) setCashflowAmount(data.cashflowAmount);
+    if (data.cashflowFrequency) setCashflowFrequency(data.cashflowFrequency);
+    if (data.inflationAdjusted !== undefined) setInflationAdjusted(data.inflationAdjusted);
+    if (data.benchmarkTicker) setBenchmarkTicker(data.benchmarkTicker);
+    if (data.rebalancing) setRebalancing(data.rebalancing);
+    if (data.rebalanceThreshold !== undefined) setRebalanceThreshold(data.rebalanceThreshold);
+    if (data.reinvestDividends !== undefined) setReinvestDividends(data.reinvestDividends);
+    if (data.dividendTaxRate !== undefined) setDividendTaxRate(data.dividendTaxRate);
+    if (data.capitalGainsTaxRate !== undefined) setCapitalGainsTaxRate(data.capitalGainsTaxRate);
+    if (data.portfolioNames) setPortfolioNames(data.portfolioNames);
+    if (data.portfolioAssets) setPortfolioAssets(data.portfolioAssets);
+  };
+
   const addPortfolio = () => {
     if (portfolioNames.length >= 6) return;
     const newId = Date.now().toString();
@@ -591,6 +932,7 @@ export function AssetAllocations({
   };
 
   const addAssetRow = () => {
+    
     setPortfolioAssets([
       ...portfolioAssets,
       { symbol: "", weights: portfolioNames.map(() => "") },
@@ -620,68 +962,55 @@ export function AssetAllocations({
   return (
     <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
       <div className="space-y-8 animate-fade-up w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-24">
-        {results && (
-          <div className="flex justify-end gap-3 mb-4">
-            <button
-              onClick={() =>
-                results.forEach((r) =>
-                  downloadCSV(
-                    r.dates.map((d, idx) => ({
-                      Date: d,
-                      Balance: r.balances[idx].toFixed(2),
-                      Drawdown: r.drawdowns[idx].toFixed(2) + "%",
-                    })),
-                    `portfolio_${r.name.replace(/\s+/g, "_")}_monthly`,
-                  ),
-                )
-              }
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-2.5 rounded-[1.5rem] font-bold text-base transition-all"
-            >
-              <FileDown size={16} />
-              CSV
-            </button>
+        <div className="flex flex-col gap-8">
+          <div className="mb-8">
+            <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
+              <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
+                Asset Allocations
+              </h1>
+            </div>
+            <p className="text-base text-text-2 font-medium leading-relaxed w-full max-w-[1308px]">
+              {"Analyze and compare up to 6 different asset allocations simultaneously. Our simulator uses monthly adjusted data for splits and dividends to provide the most accurate historical representation possible."}
+            </p>
           </div>
-        )}
-        <div className="mb-16 mt-4">
-          <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
-            <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
-              {"Asset Allocations"}
-            </h1>
-          </div>
-          <p className="text-base text-text-2 font-medium leading-relaxed w-full max-w-[1308px]">
-            {
-              "Build and compare the performance of different portfolio allocations. Evaluate the impact of diversification and identify the optimal distribution based on risk and historical returns. The analysis will automatically begin at the year of common data availability for the assets."
-            }
-          </p>
-        </div>
-        <MobileZoomWrapper scaleMobile={0.5}>
-        {/* PARAMETERS HEADER - HORIZONTAL (Matched to Backtesting) */}
-        <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8">
-          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-            <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
-              <Settings size={14} className="text-pv-blue" />
-              {"Strategy Parameters"}
-            </h2>
-            <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
-              <button
-                onClick={handleSaveConfig}
-                disabled={isSaving || !saveName}
-                className="py-2 px-4 bg-surface-2 border border-border text-text rounded-[1.5rem] text-base font-semibold hover:text-pv-blue transition-all disabled:opacity-30"
-              >
-                {isSaving ? (
-                  "Saving..."
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Save size={12} /> Save Config
-                  </span>
-                )}
-              </button>
 
-              <input
-                placeholder={t("mc.portfolio_name") + " (ex: 60/40 Split)"}
-                value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
-                className="bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-base font-bold outline-none flex-1 md:w-48 focus:border-pv-blue"
+          <div className="mb-6">
+            <ViewToggle 
+              activeView={activeMainView} 
+              onViewChange={(view) => setActiveMainView(view)} 
+              simulatorLabel="Simulator"
+              dashboardLabel="Saved Scenarios"
+            />
+          </div>
+
+          {activeMainView === "dashboard" ? renderSavedScenarios() : (
+            <div className="simulator-view space-y-8">
+              <MobileZoomWrapper scaleMobile={0.5}>
+              {/* PARAMETERS HEADER - HORIZONTAL (Matched to Backtesting) */}
+              <div className="py-6 mb-6 flex flex-col gap-8 border-t border-border/60">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                  <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
+                    <Settings size={14} className="text-pv-blue" />
+                    {"Strategy Parameters"}
+                  </h2>
+            <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
+              <CloudSaveLoad
+                pageId="asset-allocations"
+                currentData={{
+                  startYear,
+                  startMonth,
+                  endYear,
+                  endMonth,
+                  initialAmount,
+                  cashflowAmount,
+                  cashflowFrequency,
+                  rebalancing,
+                  portfolioNames,
+                  portfolioAssets,
+                  resultsSummary: results ? results.map(r => ({ name: r.name, cagr: r.cagr, sharpe: r.sharpe })) : []
+                }}
+                onLoad={handleCloudLoad}
+                onListUpdate={loadSavedConfigs}
               />
             </div>
           </div>
@@ -701,17 +1030,17 @@ export function AssetAllocations({
                     className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
                   >
                     <option value={1}>01 - Jan</option>
-                    <option value={2}>02 - Fév</option>
+                    <option value={2}>02 - Feb</option>
                     <option value={3}>03 - Mar</option>
-                    <option value={4}>04 - Avr</option>
-                    <option value={5}>05 - Mai</option>
+                    <option value={4}>04 - Apr</option>
+                    <option value={5}>05 - May</option>
                     <option value={6}>06 - Jun</option>
                     <option value={7}>07 - Jul</option>
-                    <option value={8}>08 - Aoû</option>
+                    <option value={8}>08 - Aug</option>
                     <option value={9}>09 - Sep</option>
                     <option value={10}>10 - Oct</option>
                     <option value={11}>11 - Nov</option>
-                    <option value={12}>12 - Déc</option>
+                    <option value={12}>12 - Dec</option>
                   </select>
                   <select
                     value={startYear}
@@ -738,17 +1067,17 @@ export function AssetAllocations({
                     className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
                   >
                     <option value={1}>01 - Jan</option>
-                    <option value={2}>02 - Fév</option>
+                    <option value={2}>02 - Feb</option>
                     <option value={3}>03 - Mar</option>
-                    <option value={4}>04 - Avr</option>
-                    <option value={5}>05 - Mai</option>
+                    <option value={4}>04 - Apr</option>
+                    <option value={5}>05 - May</option>
                     <option value={6}>06 - Jun</option>
                     <option value={7}>07 - Jul</option>
-                    <option value={8}>08 - Aoû</option>
+                    <option value={8}>08 - Aug</option>
                     <option value={9}>09 - Sep</option>
                     <option value={10}>10 - Oct</option>
                     <option value={11}>11 - Nov</option>
-                    <option value={12}>12 - Déc</option>
+                    <option value={12}>12 - Dec</option>
                   </select>
                   <select
                     value={endYear}
@@ -839,8 +1168,8 @@ export function AssetAllocations({
                   onChange={(e) => setBroker(e.target.value)}
                   className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                 >
-                  <option value="free">Sans Frais (0€)</option>
-                  <option value="custom">Autre / Personnalisé</option>
+                  <option value="free">No Fees (0€)</option>
+                  <option value="custom">Other / Custom</option>
                 </select>
                 {broker === "custom" && (
                   <div className="pt-2">
@@ -904,7 +1233,7 @@ export function AssetAllocations({
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 p-3 bg-surface-2 rounded-[1.5rem] border border-border">
+              <div className="flex flex-col gap-2 p-2">
                 <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                   <input
                     type="checkbox"
@@ -939,6 +1268,27 @@ export function AssetAllocations({
             </div>
           </div>
 
+          {/* Predefined Portfolios */}
+          <div className="pt-6 border-t border-border mt-8 w-full col-span-full">
+            <div className="flex flex-col gap-2 mb-6">
+              <h3 className="text-base font-semibold text-text flex items-center gap-2">
+                <Activity size={14} className="text-pv-blue" /> Suggested Allocations
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {lazyPortfolios.slice(0, 2).map((preset, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => applyPredefinedPortfolio(preset)}
+                    disabled={portfolioNames.length >= 6}
+                    className="text-base bg-surface-2 border border-border px-3 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-colors disabled:opacity-50"
+                  >
+                    + {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Portfolios Sections (Independent Cards matching Backtesting) */}
           <div className="pt-6 border-t border-border space-y-6">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
@@ -960,7 +1310,7 @@ export function AssetAllocations({
               </button>
             </div>
 
-            <div className="w-full max-w-full mx-auto overflow-x-auto bg-surface rounded-[2rem] border border-border mt-4 shadow-sm">
+            <div className="w-full max-w-full mx-auto overflow-x-auto mt-4">
               <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[800px]">
                 <thead>
                   <tr className="border-b border-border bg-surface-2">
@@ -971,7 +1321,7 @@ export function AssetAllocations({
                     {portfolioNames.map((pn, i) => (
                       <th
                         key={pn.id}
-                        className={`p-3 text-base font-semibold min-w-[140px] text-center group ${i >= 2 ? "hidden lg:table-cell" : ""}`}
+                        className={`p-3 text-base font-semibold min-w-[140px] text-center group `}
                       >
                         <div className="flex items-center justify-center gap-2">
                           <input
@@ -1033,7 +1383,7 @@ export function AssetAllocations({
                               onChange={(e) =>
                                 updateAssetSymbol(aIdx, e.target.value)
                               }
-                              className="bg-white text-lg lg:text-base p-1 lg:p-2 border border-border rounded-xl outline-none focus:border-blue-500 transition-colors w-full box-border font-extrabold text-text"
+                              className="bg-white text-sm p-1 lg:p-1.5 border border-border rounded-xl outline-none focus:border-blue-500 transition-colors w-full box-border font-bold text-text"
                             >
                               <option value="" disabled>
                                 Select Asset Class
@@ -1052,7 +1402,7 @@ export function AssetAllocations({
                         </div>
                       </td>
                       {portfolioNames.map((pn, i) => (
-                        <td key={pn.id} className={`p-1 lg:p-3 ${i >= 2 ? "hidden lg:table-cell" : ""}`}>
+                        <td key={pn.id} className={`p-1 lg:p-3 `}>
                           <div className="flex items-center shadow-sm max-w-[120px] mx-auto">
                             <input
                               type="number"
@@ -1061,9 +1411,9 @@ export function AssetAllocations({
                                 updateAssetWeight(aIdx, i, e.target.value)
                               }
                               placeholder=""
-                              className="bg-white text-lg lg:text-base p-1 lg:p-2 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border text-text font-extrabold"
+                              className="bg-white text-sm p-1 lg:p-1.5 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border text-text font-bold"
                             />
-                            <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-2 lg:py-2 text-[10px] lg:text-base text-text shrink-0 select-none">
+                            <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-1.5 lg:py-1.5 text-[10px] lg:text-xs text-text shrink-0 select-none">
                               %
                             </div>
                           </div>
@@ -1118,7 +1468,21 @@ export function AssetAllocations({
                 {error}
               </div>
             )}
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-between pt-4 items-center">
+              <CloudSaveLoad 
+                pageId="asset-allocation" 
+                currentData={{
+                  startYear, startMonth, endYear, endMonth, initialAmount, broker, customFee,
+                  cashflowAmount, cashflowFrequency, inflationAdjusted, benchmarkTicker,
+                  rebalancing, rebalanceThreshold, reinvestDividends, dividendTaxRate, capitalGainsTaxRate,
+                  portfolioNames, portfolioAssets,
+                  portNames: portfolioNames.map(p => p.name),
+                  allocRows: portfolioAssets.map(a => ({ symbol: a.symbol, allocations: a.weights.map(w => Number(w) || 0) })),
+                  resultsSummary: results ? results.map(r => ({ name: r.name, cagr: r.metrics.cagr, sharpe: r.metrics.sharpe, maxDrawdown: r.metrics.maxDrawdown })) : []
+                }} 
+                onLoad={handleCloudLoad}
+                onListUpdate={loadSavedConfigs}
+              />
               <button
                 onClick={runBacktest}
                 disabled={isRunning}
@@ -1138,27 +1502,23 @@ export function AssetAllocations({
             </div>
           </div>
         </div>
-        </MobileZoomWrapper>
-      </div>
+      </MobileZoomWrapper>
+          <div id="bt-results-anchor" className="h-4"></div>
+          {(!results || results.length === 0) && (
+            <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8">
+              <div className="h-full min-h-[500px] border border-border/30 rounded-[2rem] relative overflow-hidden bg-surface-2/20">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
+              </div>
+            </div>
+          )}
 
-      <div id="bt-results-anchor" className="h-4"></div>
-
-      {(!results || results.length === 0) && (
-        <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8">
-          <div className="h-full min-h-[500px] border border-border/30 rounded-[2rem] relative overflow-hidden bg-surface-2/20">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
-          </div>
-        </div>
-      )}
-
-      {/* Results Section */}
-      {results && results.length > 0 && (
-        <MobileZoomWrapper scaleMobile={0.5}>
-        <div
-          id="report-content"
-          className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
-        >
+          {results && results.length > 0 &&
+            <MobileZoomWrapper scaleMobile={0.5}>
+              <div
+                id="report-content"
+                className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
+              >
           <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 text-base text-text font-sans">
             {/* Header info */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-border pb-12">
@@ -1923,7 +2283,7 @@ export function AssetAllocations({
 
             {/* Tabbed Detailed Analysis Container */}
             <div className="bg-surface border border-border rounded-3xl p-8 space-y-6 text-left">
-              <div className="flex border-b border-border overflow-x-auto no-scrollbar gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem]">
+              <div className="flex border-b border-border flex-wrap gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem]">
                 {results.map((r, idx) => (
                   <button
                     key={r.id}
@@ -1949,7 +2309,7 @@ export function AssetAllocations({
                     <div className="flex-1 w-full xl:w-2/3 overflow-x-auto">
                       <div className="flex items-center justify-between mb-6">
                         <h3 className="text-base font-semibold flex items-center gap-2 text-text">
-                          <Activity size={14} /> Heatmap Mensuelle
+                          <Activity size={14} /> Monthly Heatmap
                         </h3>
                       </div>
                       <ReturnsHeatmap
@@ -1974,32 +2334,15 @@ export function AssetAllocations({
             </div>
 
             <PortfolioAnalysisExplication results={results} />
-
-            <div className="mt-8 mb-4 text-center text-[10px] text-black">
-              Ce site est gratuit et sans publicité. Si vous appréciez nos outils d'analyse et de backtesting, vous pouvez soutenir notre travail par une donation.{" "}
-              <a 
-                href="/donate" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (onNavigate) {
-                    onNavigate("donate");
-                  } else {
-                    window.location.href = "/donate";
-                  }
-                }}
-                className="inline-block ml-1 px-1.5 py-0.5 border border-blue-500 text-blue-600 rounded text-[9px] hover:bg-blue-50 font-semibold"
-              >
-                Faire un don
-              </a>
-            </div>
+            <Disclaimer />
           </div>
         </div>
         </MobileZoomWrapper>
+          }
+        </div>
       )}
-
-      <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-12 pt-6 text-center text-[11px] text-text-4 border-t border-border/40 mt-8 font-sans">
-        Avertissement : Les performances passées ne préjugent pas des performances futures. Les outils et analyses de Quantrih se basent exclusivement sur des données historiques du passé. L'investissement comporte des risques de perte en capital.
-      </div>
     </div>
+  </div>
+</div>
   );
 }

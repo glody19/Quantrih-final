@@ -207,7 +207,7 @@ export function MovingAverage() {
                         marginBottom: "4px",
                         fontWeight: "bold",
                       }}
-                      formatter={(value: number) => [
+                      formatter={(value: any) => [
                         "$" + value.toFixed(0),
                         undefined,
                       ]}

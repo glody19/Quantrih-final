@@ -63,7 +63,7 @@ export function ReturnsHeatmap({ monthlyReturns }: ReturnsHeatmapProps) {
  let ytd = 1;
  let hasData = false;
  row.forEach(val => {
- if (val !== null) {
+ if (val != null) {
  ytd *= (1 + (val/100));
  hasData = true;
  }
@@ -79,14 +79,14 @@ export function ReturnsHeatmap({ monthlyReturns }: ReturnsHeatmapProps) {
  className="p-2 border-b border-border font-mono transition-colors"
  style={{ backgroundColor: getColor(val) }}
  >
- {val !== null ? <span className={(val && Math.abs(val) > 4) ? "text-white" : "text-text"}>{val > 0 ? '+' : ''}{val.toFixed(1)}%</span> : '-'}
+ {val != null ? <span className={(val && Math.abs(val) > 4) ? "text-white" : "text-text"}>{val > 0 ? '+' : ''}{val.toFixed(1)}%</span> : '-'}
  </td>
  ))}
  <td 
  className="p-2 border-b border-border font-mono font-bold"
  style={{ backgroundColor: getColor(ytdPercent) }}
  >
- {ytdPercent !== null ? <span className={(ytdPercent && Math.abs(ytdPercent) > 10) ? "text-white" : "text-text"}>{ytdPercent > 0 ? '+' : ''}{ytdPercent.toFixed(1)}%</span> : '-'}
+ {ytdPercent != null ? <span className={(ytdPercent && Math.abs(ytdPercent) > 10) ? "text-white" : "text-text"}>{ytdPercent > 0 ? '+' : ''}{ytdPercent.toFixed(1)}%</span> : '-'}
  </td>
  </tr>
  );

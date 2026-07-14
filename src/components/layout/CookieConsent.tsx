@@ -32,39 +32,27 @@ export function CookieConsent() {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-[450px] bg-[#0f172a] border border-slate-700/60 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-2xl z-[100] overflow-hidden"
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="fixed bottom-4 left-4 z-[150] bg-[#0c1222]/95 backdrop-blur-md border border-slate-800 shadow-2xl rounded-xl overflow-hidden max-w-[280px]"
         >
-          <div className="p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg">
-                  <Cookie size={20} />
-                </div>
-                <h3 className="text-white font-semibold text-lg">Cookies & Privacy</h3>
-              </div>
-              <button 
-                onClick={handleDecline}
-                className="text-slate-500 hover:text-slate-300 transition-colors"
-              >
-                <X size={20} />
-              </button>
+          <div className="p-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Cookie size={14} className="text-blue-400 shrink-0" />
+              <p className="text-slate-300 text-[10px] leading-tight">
+                We use cookies to improve your experience.
+              </p>
             </div>
             
-            <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              We use cookies to improve your backtesting experience, analyze platform usage, and save your preferences. No financial data is tracked.
-            </p>
-            
-            <div className="flex items-center gap-3">
+            <div className="flex gap-1 shrink-0">
               <button 
                 onClick={handleAccept}
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 px-4 rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.2)] hover:shadow-[0_0_25px_rgba(37,99,235,0.4)]"
+                className="py-1 px-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-[10px] font-bold uppercase transition-colors"
               >
-                Accept All
+                Accept
               </button>
               <button 
                 onClick={handleDecline}
-                className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-medium py-2.5 px-4 rounded-xl transition-colors"
+                className="py-1 px-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-bold uppercase transition-colors border border-slate-700"
               >
                 Decline
               </button>

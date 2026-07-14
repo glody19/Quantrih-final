@@ -379,9 +379,9 @@ export const PLATFORMS = [
     rating: 4.5,
     fees: 'Low',
     features: ['Multi-currency', 'Crypto', 'Stocks'],
-    pros: ['Application très simple à utiliser', 'Idéal pour le voyage', 'Offre intégrée investissement & banque'],
-    cons: ['Sélection d\'actions limitée', 'Frais majorés les week-ends pour certaines devises'],
-    bestFor: 'Investisseurs débutants cherchant une solution tout-en-un simple.'
+    pros: ['Extremely simple app to use', 'Ideal for travel', 'Integrated investment & banking offer'],
+    cons: ['Limited stock selection', 'Surcharged fees on weekends for certain currencies'],
+    bestFor: 'Beginner investors looking for a simple all-in-one solution.'
   },
   {
     id: 'n26',
@@ -391,9 +391,9 @@ export const PLATFORMS = [
     rating: 4.4,
     fees: 'Low',
     features: ['Banking', 'Crypto', 'Savings'],
-    pros: ['Excellente expérience utilisateur', 'Fonctionnalités bancaires solides', 'Achat de crypto via Bitpanda'],
-    cons: ['Moins de fonctionnalités d\'investissement avancées'],
-    bestFor: 'Utilisateurs souhaitant une banque moderne avec une exposition crypto basique.'
+    pros: ['Excellent user experience', 'Solid banking features', 'Crypto purchase via Bitpanda integration'],
+    cons: ['Fewer advanced investment features compared to brokers'],
+    bestFor: 'Users wanting a modern bank with basic crypto exposure.'
   },
   {
     id: 'credit_agricole',
@@ -402,10 +402,10 @@ export const PLATFORMS = [
     logo: 'https://logo.clearbit.com/credit-agricole.fr',
     rating: 3.8,
     fees: 'High',
-    features: ['PEA', 'Branches Physiques', 'Services Complets'],
-    pros: ['Conseillers physiques', 'Institution très solide', 'Gamme complète de services bancaires'],
-    cons: ['Frais de courtage et droits de garde très élevés', 'Interface parfois vieillissante'],
-    bestFor: 'Investisseurs privilégiant la sécurité et le contact humain aux frais bas.'
+    features: ['PEA', 'Physical Branches', 'Full Services'],
+    pros: ['Physical advisors', 'Very solid institution', 'Full range of banking services'],
+    cons: ['Very high brokerage fees and custody fees', 'Interface can sometimes feel dated'],
+    bestFor: 'Investors prioritizing security and human contact over low fees.'
   },
   {
     id: 'bnp_paribas',
@@ -414,9 +414,9 @@ export const PLATFORMS = [
     logo: 'https://logo.clearbit.com/mabanque.bnpparibas',
     rating: 3.9,
     fees: 'High',
-    features: ['PEA', 'Assurance Vie', 'Bonds'],
-    pros: ['Large réseau mondial', 'Accès à des fonds internes et d\'excellentes assurances vie'],
-    cons: ['Structure tarifaire souvent complexe', 'Frais nettement supérieurs aux néo-courtiers'],
-    bestFor: 'Clients patrimoniaux recherchant un accompagnement traditionnel structuré.'
+    features: ['PEA', 'Life Insurance', 'Bonds'],
+    pros: ['Large global network', 'Access to internal funds and excellent life insurance'],
+    cons: ['Often complex fee structure', 'Fees significantly higher than neo-brokers'],
+    bestFor: 'Wealthy clients seeking structured traditional support.'
   }
 ];

@@ -2,9 +2,11 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   onAuthStateChanged, 
   User,
-  getIdTokenResult
+  getIdTokenResult,
+  signOut
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db, loginWithGoogle } from '../firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -30,25 +32,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
 
   const login = async () => {
-    // This calls the Google login defined in firebase.ts
-    const { loginWithGoogle } = await import('../firebase');
     await loginWithGoogle();
   };
 
   const logout = async () => {
-    const { signOut } = await import('firebase/auth');
-    const { auth } = await import('../firebase');
     await signOut(auth);
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      if (user) {
-        // You could check for custom claims here if using them, 
-        // but typically for this env we stick to simple auth check 
-        // or a dedicated doc in Firestore for admins.
-        setIsAdmin(false); 
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        try {
+          const adminDocRef = doc(db, 'admins', currentUser.uid);
+          const adminDocSnap = await getDoc(adminDocRef);
+          setIsAdmin(adminDocSnap.exists());
+        } catch (err) {
+          console.error("Error checking admin status:", err);
+          setIsAdmin(false);
+        }
       } else {
         setIsAdmin(false);
       }

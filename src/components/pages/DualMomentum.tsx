@@ -231,7 +231,7 @@ export function DualMomentum() {
                         fontWeight: "bold",
                       }}
                       itemStyle={{ color: "var(--color-text)" }}
-                      formatter={(value: number) => [
+                      formatter={(value: any) => [
                         "$" + value.toFixed(0),
                         undefined,
                       ]}

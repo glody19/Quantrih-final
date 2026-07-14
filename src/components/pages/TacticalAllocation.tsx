@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { cn } from "../../lib/utils";
 import { InfoTooltip } from "../ui/InfoTooltip";
-import { Play, Settings, Activity, Database } from "lucide-react";
+import { Play, Settings, Activity, Database, Trash2, Save, FileDown } from "lucide-react";
 import { TickerInput } from "../ui/TickerInput";
 import {
   Chart as ChartJS,
@@ -25,7 +25,15 @@ import { EfficientFrontier } from "../ui/EfficientFrontier";
 import { PortfolioAnalysisExplication } from "./PortfolioAnalysisExplication";
 import { runBacktest as engineRunBacktest } from "../../engine";
 import { downloadCSV } from "../../utils/export";
+import { ViewToggle } from "../ui/ViewToggle";
+import { Disclaimer } from "../ui/Disclaimer";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
+import { ASSET_DATA } from "../../constants";
+import { CloudSaveLoad } from "../ui/CloudSaveLoad";
+import { collection, query, getDocs, orderBy, doc, deleteDoc } from "firebase/firestore";
+import { db, auth } from "../../firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useSearchParams } from "react-router-dom";
 
 ChartJS.register(
   CategoryScale,
@@ -61,8 +69,14 @@ function TooltipLabel({
 
 export function TacticalAllocation() {
   const { t, language } = useTranslation();
+  const [user] = useAuthState(auth);
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useLocalStorage("ta_activeTab", "seasonal");
   const [saveName, setSaveName] = useState("");
+  const [activeMainView, setActiveMainView] = useState<"simulator" | "dashboard">("simulator");
+  const [configsLoading, setConfigsLoading] = useState(false);
+  const [savedConfigs, setSavedConfigs] = useState<any[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [results, setResults] = useState<any[] | null>(null);
   const [activeResIdx, setActiveResIdx] = useState(0);
@@ -162,6 +176,145 @@ export function TacticalAllocation() {
     { id: "mom_adaptive", label: "Momentum - Adaptive Allocation" },
   ];
 
+  const handleCloudLoad = (data: any) => {
+    if (!data) return;
+    if (data.activeTab) setActiveTab(data.activeTab);
+    if (data.startYear) setStartYear(data.startYear);
+    if (data.endYear) setEndYear(data.endYear);
+    if (data.initialAmount) setInitialAmount(data.initialAmount);
+    if (data.broker) setBroker(data.broker);
+    if (data.customFee) setCustomFee(data.customFee);
+    
+    if (data.activeTab === "ma_portfolio" && data.maPortfolioAssets) {
+      setMaPortfolioAssets(data.maPortfolioAssets);
+    }
+    if (data.activeTab === "mom_adaptive" && data.adaptivePortfolioAssets) {
+      setAdaptivePortfolioAssets(data.adaptivePortfolioAssets);
+    }
+    
+    setActiveMainView("simulator");
+    setTimeout(() => {
+      handleRunBacktest();
+    }, 100);
+  };
+
+  const handleSaveConfig = async () => {
+    // This is handled by CloudSaveLoad but we might want a shortcut
+  };
+
+  const loadSavedConfigs = async () => {
+    if (!user) return;
+    setConfigsLoading(true);
+    try {
+      const q = query(
+        collection(db, "users", user.uid, "backtests"),
+        orderBy("createdAt", "desc")
+      );
+      const snap = await getDocs(q);
+      const configs = snap.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((c: any) => c.pageId === "tactical-allocation");
+      setSavedConfigs(configs);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setConfigsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeMainView === "dashboard") {
+      loadSavedConfigs();
+    }
+  }, [activeMainView, user]);
+
+  const deleteConfig = async (id: string) => {
+    if (!user) return;
+    if (!window.confirm("Are you sure you want to permanently delete this saved strategy? This action cannot be undone.")) return;
+    try {
+      await deleteDoc(doc(db, "users", user.uid, "backtests", id));
+      loadSavedConfigs();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to delete strategy.");
+    }
+  };
+
+  const renderSavedScenarios = () => {
+    if (!user) {
+      return (
+        <div className="bg-surface border border-border p-12 rounded-[2rem] text-center max-w-2xl mx-auto my-12 shadow-sm flex flex-col items-center gap-6 animate-fade-in">
+          <div className="w-16 h-16 rounded-2xl bg-pv-blue/10 flex items-center justify-center text-pv-blue">
+            <Database size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-text">Activate Saved Scenarios</h2>
+          <p className="text-sm text-text-2 leading-relaxed">Log in to save your tactical strategies and access them from anywhere.</p>
+        </div>
+      );
+    }
+
+    if (configsLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <div className="w-8 h-8 border-4 border-pv-blue/30 border-t-pv-blue rounded-full animate-spin" />
+          <p className="text-text-3 font-medium animate-pulse">Loading your strategies...</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div className="bg-surface border border-border rounded-[2rem] overflow-hidden shadow-sm">
+          <div className="px-6 py-4 border-b border-border bg-surface-2 flex items-center justify-between">
+            <h3 className="font-bold text-text flex items-center gap-2">
+              <Database size={16} className="text-pv-blue" />
+              Saved Strategies
+            </h3>
+            <span className="text-xs font-bold bg-pv-blue/10 text-pv-blue px-2 py-1 rounded-full">
+              {savedConfigs.length} Total
+            </span>
+          </div>
+          <div className="divide-y divide-border">
+            {savedConfigs.length === 0 ? (
+              <div className="p-12 text-center text-text-4">
+                No saved strategies yet. Save one in the Simulator.
+              </div>
+            ) : (
+              savedConfigs.map((config) => (
+                <div key={config.id} className="p-4 hover:bg-surface-2 transition-colors flex items-center justify-between group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-surface-3 flex items-center justify-center border border-border">
+                      <Activity size={18} className="text-pv-blue" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-text">{config.name}</h4>
+                      <div className="flex items-center gap-3 text-xs text-text-4 font-medium mt-1">
+                        <span>{new Date(config.createdAt?.seconds * 1000).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleCloudLoad(config.data)}
+                      className="px-4 py-2 bg-pv-blue text-white rounded-xl text-sm font-bold transition-all"
+                    >
+                      Load
+                    </button>
+                    <button
+                      onClick={() => deleteConfig(config.id)}
+                      className="p-2 text-text-4 hover:text-red-500 rounded-xl transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
   const handleRunBacktest = async () => {
     setIsRunning(true);
     try {
@@ -379,56 +532,68 @@ export function TacticalAllocation() {
   return (
     <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
       <div className="space-y-8 animate-fade-up w-full max-w-[1400px] mx-auto px-4 md:px-8 pb-24">
-        {/* TITLE HEADER */}
-        <div className="mb-16">
-          <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
-            <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
-              {t("ta.tit")}
-            </h1>
-          </div>
-          <p className="text-base text-text-2 font-medium leading-relaxed w-full max-w-[2000px]">
-            {
-              "Tactical allocation involves actively adjusting a portfolio's composition to capitalize on short or medium-term market anomalies while maintaining an overarching strategy. Explore how different dynamic strategies can optimize returns. The backtest begins at the year of common data availability for the assets."
-            }
-          </p>
-        </div>
-        <div className="flex overflow-x-auto no-scrollbar gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem] border border-border/60">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "px-6 py-3 text-base font-semibold whitespace-nowrap transition-all rounded-[1.5rem] cursor-pointer",
-                activeTab === tab.id
-                  ? "bg-pv-blue text-white shadow-md font-extrabold"
-                  : "text-text hover:text-text hover:bg-surface-3",
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        <MobileZoomWrapper scaleMobile={0.5}>
-        <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8">
-          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-            <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
-              <Settings size={14} className="text-pv-blue" />
-              {"Strategy Parameters"}
-            </h2>
-            <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
-              <label className="hidden md:inline-block text-base font-semibold text-text ">
-                {t("mc.portfolio_name")}
-              </label>
-              <input
-                type="text"
-                placeholder={t("mc.portfolio_name") || "Portfolio Name"}
-                value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
-                className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[200px]"
-              />
+        <div className="flex flex-col gap-8">
+          <div className="mb-8">
+            <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
+              <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
+                Tactical Allocation
+              </h1>
             </div>
+            <p className="text-base text-text-2 font-medium leading-relaxed w-full max-w-[1400px]">
+              {
+                "Tactical allocation involves actively adjusting a portfolio's composition to capitalize on short or medium-term market anomalies while maintaining an overarching strategy. Explore how different dynamic strategies can optimize returns. The backtest begins at the year of common data availability for the assets."
+              }
+            </p>
           </div>
+
+          <div className="mb-6">
+            <ViewToggle 
+              activeView={activeMainView} 
+              onViewChange={(view) => setActiveMainView(view)} 
+              simulatorLabel="Simulator"
+              dashboardLabel="Saved Scenarios"
+            />
+          </div>
+
+          {activeMainView === "dashboard" ? renderSavedScenarios() : (
+            <div className="simulator-view space-y-8">
+              <div className="flex flex-wrap gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem] border border-border/60">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "px-6 py-3 text-base font-semibold whitespace-nowrap transition-all rounded-[1.5rem] cursor-pointer",
+                      activeTab === tab.id
+                        ? "bg-pv-blue text-white shadow-md font-extrabold"
+                        : "text-text hover:text-text hover:bg-surface-3",
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <MobileZoomWrapper scaleMobile={0.5}>
+              <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                  <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
+                    <Settings size={14} className="text-pv-blue" />
+                    {"Strategy Parameters"}
+                  </h2>
+                  <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
+                    <label className="hidden md:inline-block text-base font-semibold text-text ">
+                      {t("mc.portfolio_name")}
+                    </label>
+                    <input
+                      type="text"
+                      placeholder={t("mc.portfolio_name") || "Portfolio Name"}
+                      value={saveName}
+                      onChange={(e) => setSaveName(e.target.value)}
+                      className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[200px]"
+                    />
+                  </div>
+                </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Common parameters */}
@@ -510,8 +675,8 @@ export function TacticalAllocation() {
                 onChange={(e) => setBroker(e.target.value)}
                 className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
               >
-                <option value="free">Sans Frais (0€)</option>
-                <option value="custom">Autre / Personnalisé</option>
+                <option value="free">No Fee (0€)</option>
+                <option value="custom">Other / Custom</option>
               </select>
               {broker === "custom" && (
                 <div className="pt-2">
@@ -683,10 +848,10 @@ export function TacticalAllocation() {
                   <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[600px]">
                     <thead>
                       <tr className="border-b border-border bg-surface-2 text-text">
-                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[120px]">
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[140px] lg:w-[220px]">
                           Asset
                         </th>
-                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[140px]">
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[140px] lg:w-[180px]">
                           {t("pb.alloc")}
                         </th>
                         <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[60px]"></th>
@@ -698,33 +863,44 @@ export function TacticalAllocation() {
                           key={index}
                           className="border-b border-border last:border-0 hover:bg-surface-2"
                         >
-                          <td className="py-1 px-1 lg:py-2 lg:px-4">
-                            <TickerInput
-                              value={asset.symbol}
-                              onChange={(val) =>
-                                updateMaPortfolioAsset(index, "symbol", val)
-                              }
-                              placeholder="e.g. SPY"
-                              className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-xl outline-none focus:border-pv-blue transition-colors w-full box-border font-mono font-extrabold"
-                            />
-                          </td>
-                          <td className="py-1 px-1 lg:py-2 lg:px-4">
-                            <div className="flex w-full box-border group">
-                              <input
-                                type="number"
-                                step="1"
-                                value={asset.alloc}
-                                onChange={(e) =>
-                                  updateMaPortfolioAsset(
-                                    index,
-                                    "alloc",
-                                    e.target.value,
-                                  )
+                          <td className="py-2 px-1 lg:py-3 lg:px-4">
+                            <div className="flex flex-col gap-1.5">
+                              <TickerInput
+                                value={asset.symbol}
+                                onChange={(val) =>
+                                  updateMaPortfolioAsset(index, "symbol", val)
                                 }
-                                className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-l-md outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-extrabold"
+                                placeholder="e.g. SPY"
+                                className="bg-surface text-lg lg:text-base p-2 border border-border rounded-xl outline-none focus:border-pv-blue transition-all w-full box-border font-mono font-extrabold shadow-sm"
                               />
-                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-2 lg:py-2 text-[10px] lg:text-base text-text shrink-0 select-none flex items-center justify-center">
-                                %
+                              <span className="text-[10px] text-text-3 truncate px-1 font-medium italic">
+                                {ASSET_DATA[asset.symbol.toUpperCase()]?.label || ""}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-2 px-1 lg:py-3 lg:px-4">
+                            <div className="relative group overflow-hidden rounded-xl border border-border bg-surface transition-all hover:border-pv-blue/40 shadow-sm">
+                              <div 
+                                className="absolute inset-y-0 left-0 bg-pv-blue/5 transition-all duration-700 ease-out" 
+                                style={{ width: `${Math.min(100, Math.max(0, parseFloat(asset.alloc) || 0))}%` }}
+                              />
+                              <div className="flex relative z-10">
+                                <input
+                                  type="number"
+                                  step="1"
+                                  value={asset.alloc}
+                                  onChange={(e) =>
+                                    updateMaPortfolioAsset(
+                                      index,
+                                      "alloc",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="bg-transparent text-lg lg:text-base p-2 outline-none w-full box-border text-text font-extrabold text-right pr-1"
+                                />
+                                <div className="px-2 py-2 text-xs lg:text-base text-text-3 font-bold select-none flex items-center justify-center">
+                                  %
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -737,9 +913,9 @@ export function TacticalAllocation() {
                                   ),
                                 )
                               }
-                              className="text-text hover:text-red transition-colors p-1 rounded-xl hover:bg-surface-3"
+                              className="text-text-4 hover:text-red transition-all p-2 rounded-full hover:bg-red/10 group/del"
                             >
-                              ×
+                              <Trash2 size={16} className="opacity-40 group-hover/del:opacity-100 transition-opacity" />
                             </button>
                           </td>
                         </tr>
@@ -749,12 +925,13 @@ export function TacticalAllocation() {
                 </div>
                 <div className="p-4 bg-surface-2 border-t border-border border-dashed font-sans">
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      
                       setMaPortfolioAssets([
                         ...maPortfolioAssets,
                         { symbol: "", alloc: "" },
                       ])
-                    }
+                    }}
                     className="text-base font-bold text-pv-blue hover:underline"
                   >
                     + Add more assets
@@ -903,10 +1080,10 @@ export function TacticalAllocation() {
                   <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[600px]">
                     <thead>
                       <tr className="border-b border-border bg-surface-2 text-text">
-                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[120px]">
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[140px] lg:w-[220px]">
                           Asset
                         </th>
-                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[140px]">
+                        <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[140px] lg:w-[180px]">
                           {t("pb.alloc")}
                         </th>
                         <th className="font-semibold py-3 px-2 lg:px-4 text-base w-[60px]"></th>
@@ -918,33 +1095,44 @@ export function TacticalAllocation() {
                           key={index}
                           className="border-b border-border last:border-0 hover:bg-surface-2"
                         >
-                          <td className="py-1 px-1 lg:py-2 lg:px-4">
-                            <TickerInput
-                              value={asset.symbol}
-                              onChange={(val) =>
-                                updateAdaptiveAsset(index, "symbol", val)
-                              }
-                              placeholder="e.g. SPY"
-                              className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-xl outline-none focus:border-pv-blue transition-colors w-full box-border font-mono font-extrabold"
-                            />
-                          </td>
-                          <td className="py-1 px-1 lg:py-2 lg:px-4">
-                            <div className="flex w-full box-border group">
-                              <input
-                                type="number"
-                                step="1"
-                                value={asset.alloc}
-                                onChange={(e) =>
-                                  updateAdaptiveAsset(
-                                    index,
-                                    "alloc",
-                                    e.target.value,
-                                  )
+                          <td className="py-2 px-1 lg:py-3 lg:px-4">
+                            <div className="flex flex-col gap-1.5">
+                              <TickerInput
+                                value={asset.symbol}
+                                onChange={(val) =>
+                                  updateAdaptiveAsset(index, "symbol", val)
                                 }
-                                className="bg-surface text-lg lg:text-base p-1 lg:p-2 border border-border rounded-l-md outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-extrabold"
+                                placeholder="e.g. SPY"
+                                className="bg-surface text-lg lg:text-base p-2 border border-border rounded-xl outline-none focus:border-pv-blue transition-all w-full box-border font-mono font-extrabold shadow-sm"
                               />
-                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-2 lg:py-2 text-[10px] lg:text-base text-text shrink-0 select-none flex items-center justify-center">
-                                %
+                              <span className="text-[10px] text-text-3 truncate px-1 font-medium italic">
+                                {ASSET_DATA[asset.symbol.toUpperCase()]?.label || ""}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-2 px-1 lg:py-3 lg:px-4">
+                            <div className="relative group overflow-hidden rounded-xl border border-border bg-surface transition-all hover:border-pv-blue/40 shadow-sm">
+                              <div 
+                                className="absolute inset-y-0 left-0 bg-pv-blue/5 transition-all duration-700 ease-out" 
+                                style={{ width: `${Math.min(100, Math.max(0, parseFloat(asset.alloc) || 0))}%` }}
+                              />
+                              <div className="flex relative z-10">
+                                <input
+                                  type="number"
+                                  step="1"
+                                  value={asset.alloc}
+                                  onChange={(e) =>
+                                    updateAdaptiveAsset(
+                                      index,
+                                      "alloc",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="bg-transparent text-lg lg:text-base p-2 outline-none w-full box-border text-text font-extrabold text-right pr-1"
+                                />
+                                <div className="px-2 py-2 text-xs lg:text-base text-text-3 font-bold select-none flex items-center justify-center">
+                                  %
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -957,9 +1145,9 @@ export function TacticalAllocation() {
                                   ),
                                 )
                               }
-                              className="text-text hover:text-red transition-colors p-1 rounded-xl hover:bg-surface-3"
+                              className="text-text-4 hover:text-red transition-all p-2 rounded-full hover:bg-red/10 group/del"
                             >
-                              ×
+                              <Trash2 size={16} className="opacity-40 group-hover/del:opacity-100 transition-opacity" />
                             </button>
                           </td>
                         </tr>
@@ -969,12 +1157,13 @@ export function TacticalAllocation() {
                 </div>
                 <div className="p-4 bg-surface-2 border-t border-border border-dashed font-sans">
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      
                       setAdaptivePortfolioAssets([
                         ...adaptivePortfolioAssets,
                         { symbol: "", alloc: "" },
                       ])
-                    }
+                    }}
                     className="text-base font-bold text-pv-blue hover:underline"
                   >
                     + Add more assets
@@ -1295,7 +1484,23 @@ export function TacticalAllocation() {
             </>
           )}
 
-          <div className="pt-4 flex justify-end">
+          <div className="pt-4 flex items-center justify-end gap-3">
+            <CloudSaveLoad
+              pageId="tactical-allocation"
+              currentData={{
+                activeTab,
+                startYear,
+                endYear,
+                initialAmount,
+                broker,
+                customFee,
+                maPortfolioAssets,
+                adaptivePortfolioAssets,
+                resultsSummary: results ? results.map(r => ({ name: r.name, cagr: r.cagr, sharpe: r.sharpe })) : []
+              }}
+              onLoad={handleCloudLoad}
+              onListUpdate={loadSavedConfigs}
+            />
             <button
               onClick={handleRunBacktest}
               disabled={isRunning}
@@ -1469,13 +1674,13 @@ export function TacticalAllocation() {
                           </td>
                           <td className="px-4 py-4 text-center text-text tabular-nums text-base">
                             $
-                            {r.initialAmount.toLocaleString("fr-FR", {
+                            {r.initialAmount.toLocaleString("en-US", {
                               maximumFractionDigits: 0,
                             })}
                           </td>
                           <td className="px-4 py-4 text-center font-medium text-text tabular-nums text-base">
                             $
-                            {r.endBalance.toLocaleString("fr-FR", {
+                            {r.endBalance.toLocaleString("en-US", {
                               maximumFractionDigits: 0,
                             })}
                           </td>
@@ -1621,7 +1826,7 @@ export function TacticalAllocation() {
                                 let label = context.dataset.label || "";
                                 if (label) label += ": ";
                                 if (context.parsed.y !== null) {
-                                  label += new Intl.NumberFormat("fr-FR", {
+                                  label += new Intl.NumberFormat("en-US", {
                                     style: "currency",
                                     currency: "USD",
                                     maximumFractionDigits: 0,
@@ -1645,7 +1850,7 @@ export function TacticalAllocation() {
                           y: {
                             ticks: {
                               callback: (v) =>
-                                "$" + Number(v).toLocaleString("fr-FR"),
+                                "$" + Number(v).toLocaleString("en-US"),
                               font: { family: "sans-serif", size: 10 },
                               color: "#64748b",
                             },
@@ -2090,7 +2295,7 @@ export function TacticalAllocation() {
 
               {/* Tabbed Detailed Analysis Container */}
               <div className="bg-surface border border-border rounded-3xl p-8 space-y-6 text-left">
-                <div className="flex border-b border-border overflow-x-auto no-scrollbar gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem]">
+                <div className="flex border-b border-border flex-wrap gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem]">
                   {results.map((r, idx) => (
                     <button
                       key={r.id}
@@ -2113,10 +2318,10 @@ export function TacticalAllocation() {
                     className="space-y-12"
                   >
                     <div className="flex flex-col xl:flex-row gap-12 items-start">
-                      <div className="flex-1 w-full xl:w-2/3 overflow-x-auto">
+                      <div className="flex-1 w-full xl:w-2/3 overflow-x-auto ">
                         <div className="flex items-center justify-between mb-6">
                           <h3 className="text-base font-semibold flex items-center gap-2 text-text">
-                            <Activity size={14} /> Heatmap Mensuelle
+                            <Activity size={14} /> Monthly Heatmap
                           </h3>
                         </div>
                         <ReturnsHeatmap
@@ -2141,25 +2346,15 @@ export function TacticalAllocation() {
               </div>
 
               <PortfolioAnalysisExplication results={results} />
-
-              <div className="mt-8 mb-4 text-center text-[10px] text-black">
-                Ce site est gratuit et sans publicité. Si vous appréciez nos outils d'analyse et de backtesting, vous pouvez soutenir notre travail par une donation.{" "}
-                <a 
-                  href="/donate" 
-                  className="inline-block ml-1 px-1.5 py-0.5 border border-blue-500 text-blue-600 rounded text-[9px] hover:bg-blue-50 font-semibold"
-                >
-                  Faire un don
-                </a>
-              </div>
+              <Disclaimer />
             </div>
           </div>
         )}
-        </MobileZoomWrapper>
-
-        <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-12 pt-6 text-center text-[11px] text-text-4 border-t border-border/40 mt-8 font-sans">
-          Avertissement : Les performances passées ne préjugent pas des performances futures. Les outils et analyses de Quantrih se basent exclusivement sur des données historiques du passé. L'investissement comporte des risques de perte en capital.
-        </div>
+      </MobileZoomWrapper>
       </div>
-    </div>
+    )}
+  </div>
+</div>
+</div>
   );
 }

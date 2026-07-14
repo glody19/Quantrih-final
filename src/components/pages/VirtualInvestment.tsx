@@ -46,7 +46,7 @@ function BlinkingPriceText({ price, className, formattedText }: { price: number,
 
  return (
  <span className={cn("transition-colors duration-100 px-1 rounded", blink, className)}>
- {formattedText || price.toFixed(2)}
+ {formattedText || price != null ? price.toFixed(2) : "0.00"}
  </span>
  );
 }
@@ -287,7 +287,7 @@ export function VirtualInvestment() {
  <div key={t.id} className="text-sm px-2 py-1.5 flex justify-between items-center rounded hover:bg-[#2a2e39]/50">
  <span className="text-white">{t.ticker}</span>
  <span className={t.action === 'BUY' ? "text-emerald-500" : "text-rose-500"}>{t.action} {t.qty}</span>
- <span className="text-text">@{t.price.toFixed(2)}</span>
+ <span className="text-text">@{t.price != null ? t.price.toFixed(2) : "0.00"}</span>
  </div>
  ))}
  {trades.length === 0 && <div className="text-center p-4 text-sm text-[#555]">No trades today</div>}

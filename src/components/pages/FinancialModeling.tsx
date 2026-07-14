@@ -15,16 +15,19 @@ import { InfoTooltip } from '../ui/InfoTooltip';
 import { ASSET_DATA } from '../../constants';
 import { EtfScreener } from './EtfScreener';
 import { useTranslation } from '../../contexts/LanguageContext';
+import { MobileZoomWrapper } from '../ui/MobileZoomWrapper';
 
 import { topETFs } from './etfData';
-import { assetClasses, majorIndices } from './assetClassesData';
+import { assetClasses, majorIndices, megatrends } from './assetClassesData';
 import { lazyPortfolios } from './lazyPortfoliosData';
 
 const MARQUEE_SYMBOLS = [
- "SPCX", "TSLA", "BTC-USD", "ETH-USD", "NVDA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", 
- "^GSPC", "^DJI", "^IXIC", "^RUT", "BRK-B", "LLY", "AVGO",
+ "GOOGL", "AMZN", "META", "TSLA", "AAPL", "NVDA", "MSFT", "IBKR", "SPCX",
+ "BTC-USD", "ETH-USD", "^GSPC", "^DJI", "^IXIC", "^RUT", "BRK-B", "LLY", "AVGO",
  "JPM", "V", "WMT", "UNH", "MA", "PG", "JNJ", "HD", "ORCL", "COST", "BAC", "CVX",
- "NVO", "ASML", "LVMUY", "SHEL", "AZN", "SAP", "HSBC"
+ "NVO", "ASML", "SAP",
+ "MC.PA", "OR.PA", "TTE.PA", "SAN.PA", "AIR.PA", "SU.PA", "BNP.PA", "RMS.PA", "AI.PA", "CS.PA",
+ "SHEL.L", "AZN.L", "HSBA.L", "ULVR.L", "BP.L", "GSK.L", "BATS.L", "DGE.L", "RIO.L", "RELX.L"
 ];
 
 const PRESTIGE_NEWS = [
@@ -79,94 +82,143 @@ const PRESTIGE_NEWS = [
 ];
 
 function TickerItem({ item, tickerPrices, formatCryptoPrice, onClick }: { item: any, tickerPrices: any, formatCryptoPrice: (p: number) => string, onClick?: () => void }) {
- const q = tickerPrices[item.id] || item;
- const isUp = (q.changesPercentage ?? q.change) >= 0;
- const changeVal = q.changesPercentage ?? q.change;
- const currentPrice = q.price;
- const [blink, setBlink] = useState('');
- const prev = useRef(currentPrice);
+  const q = tickerPrices[item.id] || item;
+  const currentPrice = q.price;
 
- useEffect(() => {
- let timeoutId: NodeJS.Timeout;
- if (currentPrice > prev.current && currentPrice !== 0) {
- setBlink('');
- // Small timeout needed to restart animation properly if triggered repeatedly
- timeoutId = setTimeout(() => {
- setBlink('flash-green-strong');
- }, 10);
- } else if (currentPrice < prev.current && currentPrice !== 0) {
- setBlink('');
- timeoutId = setTimeout(() => {
- setBlink('flash-red-strong');
- }, 10);
- }
- prev.current = currentPrice;
- return () => clearTimeout(timeoutId);
- }, [currentPrice]);
-
- return (
- <div 
- onClick={onClick}
- className="flex items-center gap-3 px-6 h-full transition-colors cursor-pointer bg-white hover:bg-surface-2"
- >
- <span className="text-sm font-medium text-text">{item.symbol}</span>
- <span className={cn("text-sm font-mono font-bold transition-all inline-block px-1", blink ? blink : "text-black")}>
- {item.id.includes('usdt') ? formatCryptoPrice(currentPrice) : currentPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
- </span>
- <div className={cn("flex flex-col items-end transition-colors", isUp ? "text-emerald-600" : "text-rose-600")}>
- <span className="text-sm font-semibold leading-none">
- {isUp ? '▲' : '▼'} {Math.abs(changeVal || 0).toFixed(2)}%
- </span>
- </div>
- </div>
- );
+  return (
+    <div 
+      onClick={onClick}
+      className="flex items-center gap-3 px-6 h-full transition-colors cursor-pointer bg-white hover:bg-surface-2"
+    >
+      <span className="text-sm font-medium text-text">{item.symbol}</span>
+      <span className="text-sm font-mono font-bold">
+        <BlinkingPriceText 
+          price={currentPrice} 
+          formattedText={item.id.includes('usdt') ? formatCryptoPrice(currentPrice) : currentPrice.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 
+        />
+      </span>
+    </div>
+  );
 }
 
 function PriceCell({ price, animate }: { price: number, animate?: boolean }) {
- const [blink, setBlink] = useState('');
- const prevPrice = useRef(price);
+  const [blink, setBlink] = useState('');
+  const prevPrice = useRef(price);
 
- useEffect(() => {
- if (!animate) return;
- if (price > prevPrice.current) {
- setBlink('');
- setTimeout(() => setBlink('flash-green'), 10);
- } else if (price < prevPrice.current) {
- setBlink('');
- setTimeout(() => setBlink('flash-red'), 10);
- }
- prevPrice.current = price;
- }, [price, animate]);
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (!animate) return;
+    if (price > prevPrice.current && prevPrice.current !== 0) {
+      setBlink('');
+      timeoutId = setTimeout(() => setBlink('flash-green-strong'), 10);
+    } else if (price < prevPrice.current && prevPrice.current !== 0) {
+      setBlink('');
+      timeoutId = setTimeout(() => setBlink('flash-red-strong'), 10);
+    }
+    prevPrice.current = price;
+    return () => clearTimeout(timeoutId);
+  }, [price, animate]);
 
- return (
- <td className="px-2 py-1.5 text-right font-mono font-medium text-text">
- <span className={cn("inline-block transition-colors", blink)}>
- ${price != null ? price.toFixed(2) : "0.00"}
- </span>
- </td>
- );
+  return (
+    <td className="px-2 py-1.5 text-right font-mono font-medium text-text">
+      <span className={cn("inline-block border border-border/80 px-2 py-0.5 rounded-[6px] bg-slate-50/60 font-mono font-bold text-sm shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-all duration-500", blink)}>
+        ${price != null ? price.toFixed(2) : "0.00"}
+      </span>
+    </td>
+  );
 }
 
 function BlinkingPriceText({ price, className, formattedText }: { price: number, className?: string, formattedText?: string }) {
- const [blink, setBlink] = useState('');
- const prevPrice = useRef(price);
+  const [blink, setBlink] = useState('');
+  const prevPrice = useRef(price);
 
- useEffect(() => {
- if (price > prevPrice.current) {
- setBlink('');
- setTimeout(() => setBlink('flash-green-strong bg-emerald-500/10'), 10);
- } else if (price < prevPrice.current) {
- setBlink('');
- setTimeout(() => setBlink('flash-red-strong bg-rose-500/10'), 10);
- }
- prevPrice.current = price;
- }, [price]);
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (price !== prevPrice.current && prevPrice.current !== 0) {
+      const isUp = price > prevPrice.current;
+      setBlink('');
+      timeoutId = setTimeout(() => {
+        setBlink(isUp ? 'text-emerald-500' : 'text-rose-500');
+        setTimeout(() => setBlink(''), 1000);
+      }, 10);
+    }
+    prevPrice.current = price;
+    return () => clearTimeout(timeoutId);
+  }, [price]);
 
- return (
- <span className={cn("inline-block transition-colors rounded px-0.5", blink, className)}>
- {formattedText || (price != null ? price.toFixed(2) : "0.00")}
- </span>
- );
+  const text = formattedText || (price != null ? price.toFixed(2) : "0.00");
+  const mainPart = text.slice(0, -3);
+  const lastPart = text.slice(-3);
+
+  return (
+    <span className={cn("inline-block font-mono font-bold text-sm transition-all", className)}>
+      <span>{mainPart}</span>
+      <span className={cn("transition-colors duration-500", blink)}>{lastPart}</span>
+    </span>
+  );
+}
+
+function MarqueeItem({ symbol, data, onClick, isCrypto }: { symbol: string, data: any, onClick: () => void, isCrypto?: boolean }) {
+  const [flash, setFlash] = useState<'up' | 'down' | null>(null);
+  const prevPrice = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (data && typeof data.price === 'number') {
+      if (prevPrice.current !== null && Math.abs(data.price - prevPrice.current) > 0.0001) {
+        setFlash(data.price > prevPrice.current ? 'up' : 'down');
+        const timer = setTimeout(() => setFlash(null), 1000);
+        prevPrice.current = data.price;
+        return () => clearTimeout(timer);
+      }
+      prevPrice.current = data.price;
+    }
+  }, [data?.price]);
+
+  const price = data?.price;
+  const change = data?.changesPercentage || data?.change || 0;
+  const isUp = change >= 0;
+
+  return (
+    <div 
+      className={cn(
+        "flex items-center h-full gap-4 px-8 border-r border-slate-800/50 whitespace-nowrap group hover:bg-white/5 transition-colors cursor-pointer",
+        flash === 'up' ? 'flash-green' : flash === 'down' ? 'flash-red' : ''
+      )} 
+      onClick={onClick}
+    >
+      <span className={cn(
+        "font-bold text-xs tracking-tight transition-colors duration-300", 
+        isCrypto ? "text-blue-400" : "text-slate-400 group-hover:text-white"
+      )}>
+        {symbol}
+      </span>
+      
+      {price != null ? (
+        <div className="flex items-center gap-3">
+          <span className={cn(
+            "font-mono text-xs font-bold transition-colors duration-500",
+            flash === 'up' ? 'text-green-400' : flash === 'down' ? 'text-red-400' : 'text-white'
+          )}>
+            ${price < 1 ? price.toFixed(4) : price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+          
+          <div className={cn(
+            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all duration-500 border",
+            isUp 
+              ? 'bg-green-500/10 text-green-400 border-green-500/20' 
+              : 'bg-red-500/10 text-red-400 border-red-500/20',
+            flash === 'up' && 'bg-green-500/30 scale-105 shadow-[0_0_10px_rgba(34,197,94,0.3)]',
+            flash === 'down' && 'bg-red-500/30 scale-105 shadow-[0_0_10px_rgba(239,68,68,0.3)]'
+          )}>
+            {isUp ? <TrendingUp size={10} className="stroke-[3]" /> : <Activity size={10} className="rotate-180 stroke-[3]" />}
+            <span>{Math.abs(change).toFixed(2)}%</span>
+          </div>
+        </div>
+      ) : (
+        <span className="text-slate-600 text-[10px] animate-pulse">Loading...</span>
+      )}
+    </div>
+  );
 }
 
 const assetManagementNews = [
@@ -283,18 +335,72 @@ export function FinancialModeling() {
  const [cryptoLiveEnabled, setCryptoLiveEnabled] = useState(true);
 
  const [selectedTradingViewSymbol, setSelectedTradingViewSymbol] = useState<string | null>(null);
- const isUSMarketOpen = () => {
- const now = new Date();
- const day = now.getUTCDay();
- const time = now.getUTCHours() * 100 + now.getUTCMinutes();
- if (day === 0 || day === 6) return false;
- // Approximating 9:30 AM to 4:00 PM Eastern Time in UTC (ignoring DST complexities) 
- // Usually 13:30 or 14:30 to 20:00 or 21:00. Let's use 13:30 to 21:00 as a broad window.
- return time >= 1330 && time <= 2100;
- };
- const [marqueeMode, setMarqueeMode] = useState<'stocks' | 'crypto'>(isUSMarketOpen() ? 'stocks' : 'crypto');
+ const isWeekend = () => {
+    const d = new Date();
+    const dayOptions = { timeZone: "America/New_York", weekday: "short" } as const;
+    const dayString = new Intl.DateTimeFormat("en-US", dayOptions).format(d);
+    return dayString === "Sat" || dayString === "Sun";
+};
 
- const [watchlist, setWatchlist] = useState<string[]>(['AAPL', 'NVDA', 'GOOG', 'META', 'TSLA', 'SPCX', 'MSFT', 'AMZN']);
+const isUSMarketOpen = () => {
+    const d = new Date();
+    const dayOptions = { timeZone: "America/New_York", weekday: "short" } as const;
+    const dayString = new Intl.DateTimeFormat("en-US", dayOptions).format(d);
+    if (dayString === "Sat" || dayString === "Sun") return false;
+
+    const timeOptions = { timeZone: "America/New_York", hour: "numeric", minute: "numeric", hour12: false } as const;
+    const timeString = new Intl.DateTimeFormat("en-US", timeOptions).format(d);
+    const [hours, minutes] = timeString.split(":").map(Number);
+    const time = hours * 100 + minutes;
+    
+    // Check holidays
+    const dateOptions = { timeZone: "America/New_York", month: "2-digit", day: "2-digit" } as const;
+    const md = new Intl.DateTimeFormat("en-US", dateOptions).format(d).replace("/", "-");
+    const holidays = [
+        "01-01", "01-15", "01-20", "02-19", "02-17", "03-29", "04-18",
+        "05-27", "05-26", "06-19", "07-04", "09-02", "09-01", "11-28",
+        "11-27", "12-25"
+    ];
+    if (holidays.includes(md)) return false;
+
+    return time >= 930 && time <= 1600;
+};
+
+const isEuropeanMarketOpen = () => {
+    const d = new Date();
+    const dayOptions = { timeZone: "Europe/London", weekday: "short" } as const;
+    const dayString = new Intl.DateTimeFormat("en-US", dayOptions).format(d);
+    if (dayString === "Sat" || dayString === "Sun") return false;
+
+    const timeOptions = { timeZone: "Europe/London", hour: "numeric", minute: "numeric", hour12: false } as const;
+    const timeString = new Intl.DateTimeFormat("en-US", timeOptions).format(d);
+    const [hours, minutes] = timeString.split(":").map(Number);
+    const time = hours * 100 + minutes;
+
+    return time >= 800 && time <= 1630;
+};
+  const [marqueeMode, setMarqueeMode] = useState<'stocks' | 'crypto'>(isUSMarketOpen() ? 'stocks' : 'crypto');
+
+ const [watchlist, setWatchlist] = useState<string[]>(['AAPL', 'NVDA', 'GOOG', 'META', 'TSLA', 'SPCX', 'MSFT', 'AMZN', 'MC.PA', 'OR.PA', 'BNP.PA', 'SAN.PA', 'AIR.PA', 'VOW3.DE', 'BP.L', 'HSBA.L', 'SHEL.L', 'AZN.L', 'GSK.L']);
+
+ const visibleWatchlist = useMemo(() => {
+    const isUSOpen = isUSMarketOpen();
+    const isEUOpen = isEuropeanMarketOpen();
+    return watchlist.filter(sym => {
+      const isCryptoSym = sym.includes('-USD') || sym.includes('USDT') || sym.toLowerCase().includes('btc') || sym.toLowerCase().includes('eth') || sym.toLowerCase().includes('sol');
+      if (isCryptoSym) return true;
+      
+      const isEUStock = sym.includes('.PA') || sym.includes('.L') || sym.includes('.DE');
+      if (isEUStock) return isEUOpen;
+      
+      // Default to US stock
+      return isUSOpen;
+    });
+  }, [watchlist]);
+
+  const visibleMarqueeSymbols = useMemo(() => {
+    return MARQUEE_SYMBOLS;
+  }, []);
  const watchlistColors = ['#ef4444', '#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#0ea5e9', '#14b8a6', '#f43f5e', '#84cc16'];
  const getWatchlistColor = (index: number) => {
  return watchlistColors[index % watchlistColors.length];
@@ -306,7 +412,7 @@ export function FinancialModeling() {
  useEffect(() => {
  setMarketNewsLoading(true);
  fetch('/api/market-news?q=finance')
- .then(r => r.json())
+  .then(r => { const ct = r.headers.get("content-type"); if (r.ok && ct && ct.includes("application/json")) return r.json(); return []; })
  .then(d => {
  if (Array.isArray(d)) {
  setMarketNews(d);
@@ -335,76 +441,101 @@ export function FinancialModeling() {
  firstTradeDateMilliseconds?: any
  }>>({});
 
+ const persistentPrices = useRef<Record<string, any>>({});
+ 
  useEffect(() => {
- // Fetch initial MARQUEE_SYMBOLS so marquee is populated instantly
- fetch(`/api/stock/bulk-quotes?symbols=${MARQUEE_SYMBOLS.join(',')}`)
- .then(r => r.json())
- .then(data => {
- if (Array.isArray(data)) {
- const initialPrices: Record<string, any> = {};
- data.forEach(item => {
- initialPrices[item.symbol] = {
- price: item.regularMarketPrice || item.regularMarketPreviousClose,
- change: item.regularMarketChange,
- changesPercentage: item.regularMarketChangePercent,
- marketCap: item.marketCap
- };
- });
- setTickerPrices(prev => ({
- ...initialPrices,
- ...prev
- }));
- }
- })
- .catch(console.error);
- }, []);
+  if (visibleMarqueeSymbols.length === 0) return;
+  const abortController = new AbortController();
+  
+  const fetchMarquee = () => {
+    fetch(`/api/stock/bulk-quotes?symbols=${visibleMarqueeSymbols.join(',')}`, {
+      signal: abortController.signal
+    })
+    .then(r => { const ct = r.headers.get("content-type"); if (r.ok && ct && ct.includes("application/json")) return r.json(); return []; })
+    .then(data => {
+      if (Array.isArray(data)) {
+        const initialPrices: Record<string, any> = {};
+        data.forEach(item => {
+          initialPrices[item.symbol] = {
+            price: item.regularMarketPrice || item.regularMarketPreviousClose,
+            change: item.regularMarketChange,
+            changesPercentage: item.regularMarketChangePercent,
+            marketCap: item.marketCap
+          };
+        });
+        setTickerPrices(prev => {
+          let hasChanges = false;
+          const next = { ...prev };
+          Object.keys(initialPrices).forEach(sym => {
+            if (!next[sym] || next[sym].price !== initialPrices[sym].price) {
+              next[sym] = initialPrices[sym];
+              hasChanges = true;
+            }
+          });
+          return hasChanges ? next : prev;
+        });
+      }
+    })
+    .catch(e => {
+      if (e.name !== 'AbortError') console.error("Marquee fetch error:", e);
+    });
+  };
+
+  fetchMarquee();
+  const intervalId = setInterval(fetchMarquee, 20000);
+
+  return () => {
+    clearInterval(intervalId);
+    abortController.abort();
+  };
+ }, [visibleMarqueeSymbols]);
 
  useEffect(() => {
- if (watchlist.length === 0) return;
- fetch(`/api/stock/bulk-quotes?symbols=${watchlist.join(',')}`)
- .then(r => {
- const contentType = r.headers.get("content-type");
- if (r.ok && contentType && contentType.includes("application/json")) {
- return r.json();
- }
- return [];
- })
- .then(d => {
- const quotesMap: Record<string, any> = {};
- if (Array.isArray(d)) {
- d.forEach(q => {
- if (q && q.symbol) quotesMap[q.symbol] = q;
- });
- } else if (d && d.symbol) {
- quotesMap[d.symbol] = d; 
- }
- setWatchlistQuotes(quotesMap);
- });
- }, [watchlist]);
+  if (visibleWatchlist.length === 0) return;
+  fetch(`/api/stock/bulk-quotes?symbols=${visibleWatchlist.join(',')}`)
+  .then(r => {
+  const contentType = r.headers.get("content-type");
+  if (r.ok && contentType && contentType.includes("application/json")) {
+  return r.json();
+  }
+  return [];
+  })
+  .then(d => {
+  const quotesMap: Record<string, any> = {};
+  if (Array.isArray(d)) {
+  d.forEach(q => {
+  if (q && q.symbol) quotesMap[q.symbol] = q;
+  });
+  } else if (d && d.symbol) {
+  quotesMap[d.symbol] = d; 
+  }
+  setWatchlistQuotes(quotesMap);
+  });
+ }, [visibleWatchlist]);
 
  useEffect(() => {
- watchlist.forEach(sym => {
- if (!watchlistProfiles[sym]) {
- fetch(`/api/stock/quote/${sym}`)
- .then(r => {
- const contentType = r.headers.get("content-type");
- if (r.ok && contentType && contentType.includes("application/json")) {
- return r.json();
- }
- return null;
- })
- .then(data => {
- if (data && data.profile) {
- setWatchlistProfiles(prev => ({
- ...prev,
- [sym]: data.profile
- }));
- }
- })
- .catch(() => {});
- }
- });
- }, [watchlist]);
+  visibleWatchlist.forEach(sym => {
+  if (!watchlistProfiles[sym]) {
+  fetch(`/api/stock/quote/${sym}`)
+  .then(r => {
+  const contentType = r.headers.get("content-type");
+  if (r.ok && contentType && contentType.includes("application/json")) {
+  return r.json();
+  }
+  return null;
+  })
+  .then(data => {
+  if (data && data.profile) {
+  setWatchlistProfiles(prev => ({
+  ...prev,
+  [sym]: data.profile
+  }));
+  }
+  })
+  .catch(() => {});
+  }
+  });
+ }, [visibleWatchlist]);
 
  const {
  symbol: activeSymbol,
@@ -459,65 +590,60 @@ export function FinancialModeling() {
  }, [activeSymbol, tickerPrices]);
 
  // Establish persistent Real-time WebSocket connection to backend
+ const wsRef = useRef<WebSocket | null>(null);
+
  useEffect(() => {
- const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
- const wsUrl = `${protocol}//${window.location.host}/api/ws`;
- let ws: WebSocket;
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const wsUrl = `${protocol}//${window.location.host}/api/ws`;
+  let reconnectTimeout: NodeJS.Timeout;
 
- const connect = () => {
- ws = new WebSocket(wsUrl);
+  const connect = () => {
+   if (wsRef.current?.readyState === WebSocket.OPEN) return;
+   const ws = new WebSocket(wsUrl);
+   wsRef.current = ws;
+   ws.onopen = () => {
+    const allSymbols = Array.from(new Set([activeSymbol, ...visibleWatchlist, ...visibleMarqueeSymbols].filter(Boolean)));
+    if (ws.readyState === WebSocket.OPEN) {
+     ws.send(JSON.stringify({ type: "subscribe", symbols: allSymbols }));
+    }
+   };
+   ws.onmessage = (event) => {
+    try {
+     const payload = JSON.parse(event.data);
+     if (payload.type === "price-update" && Array.isArray(payload.data)) {
+      setTickerPrices(prev => {
+       let hasChanges = false;
+       const next = { ...prev };
+       payload.data.forEach((item: any) => {
+        if (!item || !item.symbol) return;
+        const sym = item.symbol.toUpperCase();
+        const existing = next[sym];
+        const newPrice = item.price || item.regularMarketPrice || item.regularMarketPreviousClose;
+        if (typeof newPrice === "number" && (!existing || existing.price !== newPrice)) {
+         hasChanges = true;
+         next[sym] = { ...existing, ...item, price: newPrice, symbol: sym };
+        }
+       });
+       return hasChanges ? next : prev;
+      });
+     }
+    } catch (e) {}
+   };
+   ws.onclose = () => { reconnectTimeout = setTimeout(connect, 5000); };
+  };
+  connect();
+  return () => {
+   if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); }
+   clearTimeout(reconnectTimeout);
+  };
+ }, []);
 
- ws.onopen = () => {
- console.log("WebSocket connected to live ticker feed");
- const allSymbols = Array.from(new Set([
- activeSymbol,
- ...watchlist,
- ...MARQUEE_SYMBOLS
- ].filter(Boolean)));
- 
- ws.send(JSON.stringify({
- type: 'subscribe',
- symbols: allSymbols
- }));
- };
-
- ws.onmessage = (event) => {
- try {
- const payload = JSON.parse(event.data);
- if (payload.type === 'price-update' && Array.isArray(payload.data)) {
- setTickerPrices(prev => {
- let hasChanges = false;
- const next = { ...prev };
- payload.data.forEach((item: any) => {
- const existing = next[item.symbol];
- const newPrice = item.price || item.regularMarketPrice || item.regularMarketPreviousClose;
- if (!existing || existing.price !== newPrice) {
- hasChanges = true;
- next[item.symbol] = { ...existing, ...item, price: newPrice };
- }
- });
- return hasChanges ? next : prev;
- });
- }
- } catch (e) {
- console.error("Error parsing WebSocket packet", e);
- }
- };
-
- ws.onclose = () => {
- console.log("WebSocket closed. Attempting auto-reconnect...");
- setTimeout(() => {
- connect();
- }, 5000);
- };
- };
-
- connect();
-
- return () => {
- if (ws) ws.close();
- };
- }, [activeSymbol, watchlist]);
+ useEffect(() => {
+  if (wsRef.current?.readyState === WebSocket.OPEN) {
+   const allSymbols = Array.from(new Set([activeSymbol, ...visibleWatchlist, ...visibleMarqueeSymbols].filter(Boolean)));
+   wsRef.current.send(JSON.stringify({ type: "subscribe", symbols: allSymbols }));
+  }
+ }, [activeSymbol, visibleWatchlist, visibleMarqueeSymbols]);
 
  // Trigger chart fetch when period or watchlist changes
  useEffect(() => {
@@ -526,14 +652,14 @@ export function FinancialModeling() {
  }
  
  const fetchWatchlist = async () => {
- if (watchlist.length === 0) {
+ if (visibleWatchlist.length === 0) {
  setWatchlistData([]);
  return;
  }
  setWatchlistLoading(true);
  try {
  const comparisonInterval = chartPeriod.range === '5d' ? '1d' : chartPeriod.interval;
- const promises = watchlist.map(sym => 
+ const promises = visibleWatchlist.map(sym => 
  fetch(`/api/stock/history/${sym}?range=${chartPeriod.range}&interval=${comparisonInterval}`).then(r => {
  const contentType = r.headers.get("content-type");
  if (r.ok && contentType && contentType.includes("application/json")) {
@@ -545,7 +671,7 @@ export function FinancialModeling() {
  const results = await Promise.allSettled(promises);
  
  const newMultiData: any[] = [];
- watchlist.forEach((sym, idx) => {
+ visibleWatchlist.forEach((sym, idx) => {
  const res = results[idx];
  if (res.status === 'fulfilled' && Array.isArray(res.value)) {
  newMultiData.push({
@@ -560,7 +686,7 @@ export function FinancialModeling() {
  setWatchlistLoading(false);
  };
  fetchWatchlist();
- }, [activeSymbol, chartPeriod, fetchChartHistory, watchlist]);
+ }, [activeSymbol, chartPeriod, fetchChartHistory, visibleWatchlist]);
 
  useEffect(() => {
  const params = new URLSearchParams(window.location.search);
@@ -693,10 +819,8 @@ export function FinancialModeling() {
  { id: "adausdt", name: "Cardano", symbol: "ADA", price: 0, change: 0, prevPrice: 0 },
  { id: "dogeusdt", name: "Dogecoin", symbol: "DOGE", price: 0, change: 0, prevPrice: 0 },
  { id: "avaxusdt", name: "Avalanche", symbol: "AVAX", price: 0, change: 0, prevPrice: 0 },
- { id: "shibusdt", name: "Shiba Inu", symbol: "SHIB", price: 0, change: 0, prevPrice: 0 },
  { id: "dotusdt", name: "Polkadot", symbol: "DOT", price: 0, change: 0, prevPrice: 0 },
  { id: "linkusdt", name: "Chainlink", symbol: "LINK", price: 0, change: 0, prevPrice: 0 },
- { id: "maticusdt", name: "Polygon", symbol: "MATIC", price: 0, change: 0, prevPrice: 0 },
  { id: "ltcusdt", name: "Litecoin", symbol: "LTC", price: 0, change: 0, prevPrice: 0 },
  { id: "uniusdt", name: "Uniswap", symbol: "UNI", price: 0, change: 0, prevPrice: 0 },
  { id: "atomusdt", name: "Cosmos", symbol: "ATOM", price: 0, change: 0, prevPrice: 0 },
@@ -710,13 +834,15 @@ export function FinancialModeling() {
  ]);
 
  const [markets, setMarkets] = useState([
- { id: "AAPL", name: "Apple", symbol: "AAPL", price: 0, change: 0, prevPrice: 0 },
- { id: "MSFT", name: "Microsoft", symbol: "MSFT", price: 0, change: 0, prevPrice: 0 },
- { id: "NVDA", name: "NVIDIA", symbol: "NVDA", price: 0, change: 0, prevPrice: 0 },
  { id: "GOOGL", name: "Alphabet", symbol: "GOOGL", price: 0, change: 0, prevPrice: 0 },
  { id: "AMZN", name: "Amazon", symbol: "AMZN", price: 0, change: 0, prevPrice: 0 },
  { id: "META", name: "Meta", symbol: "META", price: 0, change: 0, prevPrice: 0 },
  { id: "TSLA", name: "Tesla", symbol: "TSLA", price: 0, change: 0, prevPrice: 0 },
+ { id: "AAPL", name: "Apple", symbol: "AAPL", price: 0, change: 0, prevPrice: 0 },
+ { id: "NVDA", name: "NVIDIA", symbol: "NVDA", price: 0, change: 0, prevPrice: 0 },
+ { id: "MSFT", name: "Microsoft", symbol: "MSFT", price: 0, change: 0, prevPrice: 0 },
+ { id: "IBKR", name: "Interactive Brokers", symbol: "IBKR", price: 0, change: 0, prevPrice: 0 },
+ { id: "SPCX", name: "SpaceX (ETF)", symbol: "SPCX", price: 0, change: 0, prevPrice: 0 },
  { id: "BRK.B", name: "Berkshire", symbol: "BRK.B", price: 0, change: 0, prevPrice: 0 },
  { id: "LLY", name: "Eli Lilly", symbol: "LLY", price: 0, change: 0, prevPrice: 0 },
  { id: "AVGO", name: "Broadcom", symbol: "AVGO", price: 0, change: 0, prevPrice: 0 },
@@ -729,6 +855,27 @@ export function FinancialModeling() {
  { id: "HSBC", name: "HSBC", symbol: "HSBC", price: 0, change: 0, prevPrice: 0 },
  { id: "JPM", name: "JPMorgan", symbol: "JPM", price: 0, change: 0, prevPrice: 0 }
  ]);
+
+ useEffect(() => {
+ Object.entries(tickerPrices).forEach(([sym, data]) => {
+ if (data && data.price) {
+ persistentPrices.current[sym] = data;
+ }
+ });
+ }, [tickerPrices]);
+
+ useEffect(() => {
+ markets.forEach(m => {
+ if (m.price && !persistentPrices.current[m.id]) {
+ persistentPrices.current[m.id] = { price: m.price, change: m.change, changesPercentage: 0 };
+ }
+ });
+ cryptos.forEach(c => {
+ if (c.price && !persistentPrices.current[c.id]) {
+ persistentPrices.current[c.id] = { price: c.price, change: c.change, changesPercentage: 0 };
+ }
+ });
+ }, [markets, cryptos]);
 
  const [bandType, setBandType] = useState<'crypto' | 'markets'>(isMarketClosedVal ? 'crypto' : 'markets');
  const [isExporting, setIsExporting] = useState(false);
@@ -760,7 +907,7 @@ export function FinancialModeling() {
  return result;
  }, [hoveredTime, parsedWatchlistData]);
 
- const movers = watchlist.map((sym, index) => {
+ const movers = visibleWatchlist.map((sym, index) => {
  const q = watchlistQuotes[sym] || {};
  const wsData = tickerPrices[sym];
  const historySeries = watchlistData.find(d => d.symbol === sym);
@@ -828,115 +975,231 @@ export function FinancialModeling() {
  };
 
  useEffect(() => {
- // 1. Real-time Crypto Data (Binance WebSocket) scoped per stock
- const wsConnections: WebSocket[] = [];
- const cryptoSymbols = [
- "btcusdt", "ethusdt", "solusdt", "bnbusdt", "xrpusdt", 
- "adausdt", "dogeusdt", "avaxusdt", "shibusdt", "dotusdt", 
- "linkusdt", "maticusdt", "ltcusdt", "uniusdt", "atomusdt", 
- "trxusdt", "xlmusdt", "nearusdt", "bchusdt", "hbarusdt", 
- "aptusdt", "icpusdt"
- ];
- 
- cryptoSymbols.forEach(symbol => {
- const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@ticker`);
- ws.onmessage = (event) => {
- const data = JSON.parse(event.data);
- 
- // Feed into tickerPrices for Marquee fast updates
- const symbolMap: Record<string, string> = {
- 'btcusdt': 'BTC-USD',
- 'ethusdt': 'ETH-USD'
- };
- const mappedSym = symbolMap[data.s.toLowerCase()];
- if (mappedSym) {
- setTickerPrices(prev => ({
- ...prev,
- [mappedSym]: {
- ...(prev[mappedSym] || { change: 0, changesPercentage: 0, price: 0 }),
- price: parseFloat(data.c),
- changesPercentage: parseFloat(data.P)
- }
- }));
- }
+  // 1. Real-time Crypto Data (Binance WebSocket) using single multiplexed stream
+  const cryptoSymbols = [
+   "btcusdt", "ethusdt", "solusdt", "bnbusdt", "xrpusdt", 
+   "adausdt", "dogeusdt", "avaxusdt", "dotusdt", 
+   "linkusdt", "ltcusdt", "uniusdt", "atomusdt", 
+   "trxusdt", "xlmusdt", "nearusdt", "bchusdt", "hbarusdt", 
+   "aptusdt", "icpusdt"
+  ];
+  
+  const fetchInitialCryptos = async () => {
+    try {
+      const formattedSymbols = cryptoSymbols.map(s => `"${s.toUpperCase()}"`).join(',');
+      const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=[${formattedSymbols}]`);
+      if (!res.ok) throw new Error('Binance fetch failed');
+      const arr = await res.json();
+      if (Array.isArray(arr)) {
+        setCryptos(prev => {
+          return prev.map(c => {
+            const found = arr.find(item => item.symbol.toLowerCase() === c.id);
+            if (found) {
+              return {
+                ...c,
+                price: parseFloat(found.lastPrice),
+                change: parseFloat(found.priceChangePercent)
+              };
+            }
+            return c;
+          });
+        });
+        
+        const symbolMap = {
+          'btcusdt': 'BTC-USD',
+          'ethusdt': 'ETH-USD'
+        };
+        setTickerPrices(prev => {
+          const next = { ...prev };
+          let changed = false;
+          arr.forEach(item => {
+            const id = item.symbol.toLowerCase();
+            const mappedSym = symbolMap[id];
+            if (mappedSym) {
+              next[mappedSym] = {
+                price: parseFloat(item.lastPrice),
+                changesPercentage: parseFloat(item.priceChangePercent),
+                change: parseFloat(item.priceChange)
+              };
+              changed = true;
+            }
+          });
+          return changed ? next : prev;
+        });
+      }
+    } catch (err) {
+      console.warn("Error fetching initial cryptos", err);
+    }
+  };
+  
+  fetchInitialCryptos();
+  
+  const cryptoUpdates = new Map();
+  
+  const flushInterval = setInterval(() => {
+   if (cryptoUpdates.size === 0) return;
+   
+   const symbolMap = {
+    'btcusdt': 'BTC-USD',
+    'ethusdt': 'ETH-USD'
+   };
+   
+   let hasTickerUpdates = false;
+   const newTickerPrices = {};
+   
+   setCryptos(prev => {
+    let changed = false;
+    const next = prev.map(c => {
+     const update = cryptoUpdates.get(c.id);
+     if (update && update.c) {
+      const newPrice = parseFloat(update.c);
+      if (newPrice !== c.price) {
+       changed = true;
+       return {
+        ...c,
+        prevPrice: c.price,
+        price: newPrice,
+        change: parseFloat(update.P)
+       };
+      }
+     }
+     return c;
+    });
+    return changed ? next : prev;
+   });
+   
+   cryptoUpdates.forEach((update, id) => {
+    const mappedSym = symbolMap[id];
+    if (mappedSym) {
+     hasTickerUpdates = true;
+     newTickerPrices[mappedSym] = {
+      price: parseFloat(update.c),
+      changesPercentage: parseFloat(update.P)
+     };
+    }
+   });
+   
+   if (hasTickerUpdates) {
+    setTickerPrices(prev => {
+     const next = { ...prev } as any;
+     let changed = false;
+     Object.entries(newTickerPrices).forEach(([sym, data]: [string, any]) => {
+      const existing = next[sym];
+      if (!existing || existing.price !== data.price) {
+       next[sym] = { ...(existing || { change: 0, changesPercentage: 0 }), ...data };
+       changed = true;
+      }
+     });
+     return changed ? next : prev;
+    });
+   }
+   
+   cryptoUpdates.clear();
+  }, 1000);
 
- setCryptos(prev => prev.map(c => {
- if (c.id === data.s.toLowerCase()) {
- const newPrice = parseFloat(data.c);
- if (newPrice !== c.price) { // Only update if price actually changed
- return {
- ...c,
- prevPrice: c.price,
- price: newPrice,
- change: parseFloat(data.P)
- };
- }
- }
- return c;
- }));
- };
- wsConnections.push(ws);
- });
-
- // 2. Market Indices Polling (since we don't have a reliable free WS for everything)
- const abortController = new AbortController();
+  const ws = new WebSocket(`wss://stream.binance.com:9443/ws/!ticker@arr`);
+  ws.onmessage = (event) => {
+   const dataArr = JSON.parse(event.data);
+   if (Array.isArray(dataArr)) {
+    dataArr.forEach(data => {
+     const id = data.s.toLowerCase();
+     if (cryptoSymbols.includes(id)) {
+      cryptoUpdates.set(id, data);
+     }
+    });
+   }
+  };
+  ws.onerror = (e) => {
+   console.warn("Binance WS error", e);
+  };
+  
+  return () => {
+   clearInterval(flushInterval);
+   ws.close();
+  };
+ }, []);
+ useEffect(() => {
+  // 2. Market Indices Polling (since we don't have a reliable free WS for everything)
+  const abortController = new AbortController();
+  
+  const fetchMarkets = async () => {
+  try {
+  const symbols = 'AAPL,MSFT,NVDA,GOOGL,AMZN,META,TSLA,BRK-B,LLY,AVGO,NVO,ASML,LVMUY,SHEL,AZN,SAP,HSBC,JPM';
+  const res = await fetch(`/api/stock/bulk-quotes?symbols=${symbols}`, { 
+  signal: abortController.signal,
+  headers: { 'Cache-Control': 'no-cache' }
+  });
+  
+  if (!res.ok) return;
+  
+  const contentType = res.headers.get("content-type");
+  if(contentType && contentType.includes("application/json")) {
+  const data = await res.json();
+  if(Array.isArray(data)) {
+  setMarkets(prev => prev.map(m => {
+  const mappedId = m.id.replace('.', '-');
+  const quote = data.find((q: any) => q.symbol === mappedId || q.symbol === m.id);
+  if (quote) {
+  return {
+  ...m,
+  prevPrice: m.price,
+  price: quote.price || quote.regularMarketPrice || m.price,
+  change: quote.changesPercentage || quote.regularMarketChangePercent || m.change
+  };
+  }
+  return m;
+  }));
+  }
+  }
+  } catch (e: any) {
+  if (e.name !== 'AbortError' && process.env.NODE_ENV === 'development') {
+  console.warn("Market fetch error - silenced for production:", e.message);
+  }
+  }
+  };
+  
+  fetchMarkets();
+  const marketInterval = setInterval(fetchMarkets, 15000);
  
- const fetchMarkets = async () => {
- try {
- const symbols = 'AAPL,MSFT,NVDA,GOOGL,AMZN,META,TSLA,BRK-B,LLY,AVGO,NVO,ASML,LVMUY,SHEL,AZN,SAP,HSBC,JPM';
- const res = await fetch(`/api/stock/bulk-quotes?symbols=${symbols}`, { 
- signal: abortController.signal,
- headers: { 'Cache-Control': 'no-cache' }
- });
- 
- if (!res.ok) return;
- 
- const contentType = res.headers.get("content-type");
- if(contentType && contentType.includes("application/json")) {
- const data = await res.json();
- if(Array.isArray(data)) {
- setMarkets(prev => prev.map(m => {
- const mappedId = m.id.replace('.', '-');
- const quote = data.find((q: any) => q.symbol === mappedId || q.symbol === m.id);
- if (quote) {
- return {
- ...m,
- prevPrice: m.price,
- price: quote.price || quote.regularMarketPrice || m.price,
- change: quote.changesPercentage || quote.regularMarketChangePercent || m.change
- };
- }
- return m;
- }));
- }
- }
- } catch (e: any) {
- if (e.name !== 'AbortError' && process.env.NODE_ENV === 'development') {
- console.warn("Market fetch error - silenced for production:", e.message);
- }
- }
- };
- 
- fetchMarkets();
- const marketInterval = setInterval(fetchMarkets, 10000);
-
- return () => {
- wsConnections.forEach(ws => ws.close());
- clearInterval(marketInterval);
- abortController.abort();
- };
+  return () => {
+  clearInterval(marketInterval);
+  abortController.abort();
+  };
  }, []);
 
  const formatCryptoPrice = (price: number | undefined | null) => {
- if (!price || price === 0) return "Loading...";
+ if (!price || price === 0) return "";
  return price < 10 ? price.toFixed(3) : price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
  };
 
  return (
- <div className="w-full flex-1 flex flex-col min-h-0 bg-bg">
+  <MobileZoomWrapper scaleMobile={0.3}>
+   <style>{`
+     @media (max-width: 640px) {
+       /* Enlarge font-sizes for legible reading at 30% scale on mobile */
+       .text-xs { font-size: 1.05rem !important; line-height: 1.4 !important; }
+       .text-sm { font-size: 1.25rem !important; line-height: 1.4 !important; }
+       .text-base { font-size: 1.45rem !important; line-height: 1.4 !important; }
+       .text-lg { font-size: 1.75rem !important; line-height: 1.3 !important; }
+       .text-xl { font-size: 2.15rem !important; line-height: 1.2 !important; }
+       .text-2xl { font-size: 2.55rem !important; line-height: 1.2 !important; }
+       .text-3xl { font-size: 3.15rem !important; line-height: 1.1 !important; }
+       .text-[13px] { font-size: 1.2rem !important; line-height: 1.4 !important; }
+       .text-[11px] { font-size: 1.05rem !important; }
+       
+       button, input, select, textarea {
+         font-size: 1.25rem !important;
+       }
+       
+       /* Adjust heights/padding of compact elements so text doesn't overflow */
+       .h-9 { height: 2.8rem !important; }
+       .px-4 { padding-left: 1.2rem !important; padding-right: 1.2rem !important; }
+     }
+   `}</style>
+   <div className="w-full flex-1 flex flex-col min-h-0 bg-bg">
  {/* Premium Top Navigation Tabs */}
  <div className="w-full bg-surface border-b border-border sticky top-0 z-40 shrink-0">
- <div className="max-w-[1800px] mx-auto px-6 md:px-12 py-3 flex gap-3 overflow-x-auto no-scrollbar items-center">
+ <div className="max-w-[1720px] mx-auto px-6 md:px-12 py-3 flex gap-3 overflow-x-auto no-scrollbar items-center">
  <button 
  onClick={() => setMarketPageUrl('stocks')} 
  className={cn("px-4 h-9 flex items-center gap-1.5 text-[13px] font-medium transition-all rounded-xl shrink-0 border", 
@@ -965,7 +1228,7 @@ export function FinancialModeling() {
  {marketPageUrl === 'stocks' && (
  <div className="flex-1 min-h-0 overflow-auto">
   {/* ULTRA COMPACT SEARCH BAR */}
-  <div className="w-full px-4 md:px-8 mt-4 mb-6 max-w-[1800px] flex justify-start">
+  <div className="w-full px-4 md:px-8 mt-4 mb-6 max-w-[1720px] mx-auto flex justify-start">
     <div className="relative z-50 w-full max-w-[280px] group transition-all duration-300">
       <div className="absolute inset-0 rounded-full bg-gradient-to-r from-sky-400/20 via-blue-500/5 to-transparent blur-sm opacity-30 transition-opacity duration-300 group-focus-within:opacity-50"></div>
       <div className="relative flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-border/60 dark:border-white/10 rounded-full shadow-sm p-0.5 transition-all duration-300 focus-within:shadow focus-within:border-sky-400/40 hover:border-sky-400/20">
@@ -1002,7 +1265,7 @@ export function FinancialModeling() {
   </div>
 
   {selectedLazyPortfolio ? (
- <div className="w-full px-8 pb-24 pt-8">
+ <div className="w-full max-w-[1720px] mx-auto px-8 pb-24 pt-8">
 
   
  <button 
@@ -1028,7 +1291,7 @@ export function FinancialModeling() {
  <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
  <div className="text-sm font-semibold text-text mb-1">30Y Annualized Return</div>
  <div className="text-5xl font-semibold text-emerald-600 relative z-10">
- {selectedLazyPortfolio.y30.toFixed(2)}<span className="text-2xl text-emerald-600/50 ml-1">%</span>
+ {selectedLazyPortfolio.y30 != null ? selectedLazyPortfolio.y30.toFixed(2) : "-"}<span className="text-2xl text-emerald-600/50 ml-1">%</span>
  </div>
  <div className="mt-3 flex items-center gap-1.5 text-sm font-bold text-text">
  <TrendingUp size={14} className="text-emerald-500" /> Based on historical data
@@ -1097,19 +1360,19 @@ export function FinancialModeling() {
  <tbody className="divide-y divide-border/40 text-[13px] font-medium">
  <tr className="bg-white hover:bg-surface-2 transition-colors">
  <td className="py-3.5 px-6 text-text">1 Year Trailing</td>
- <td className="py-3.5 px-6 text-right font-bold text-text">{selectedLazyPortfolio.y1.toFixed(2)}%</td>
+ <td className="py-3.5 px-6 text-right font-bold text-text">{selectedLazyPortfolio.y1 != null ? selectedLazyPortfolio.y1.toFixed(2) : "-"}%</td>
  </tr>
  <tr className="bg-surface-2/30 hover:bg-surface-2/80 transition-colors">
  <td className="py-3.5 px-6 text-text">5 Years (Mid-Term)</td>
- <td className="py-3.5 px-6 text-right font-bold text-text">{selectedLazyPortfolio.y5.toFixed(2)}%</td>
+ <td className="py-3.5 px-6 text-right font-bold text-text">{selectedLazyPortfolio.y5 != null ? selectedLazyPortfolio.y5.toFixed(2) : "-"}%</td>
  </tr>
  <tr className="bg-white hover:bg-surface-2 transition-colors">
  <td className="py-3.5 px-6 text-text">10 Years (Core)</td>
- <td className="py-3.5 px-6 text-right font-bold text-text">{selectedLazyPortfolio.y10.toFixed(2)}%</td>
+ <td className="py-3.5 px-6 text-right font-bold text-text">{selectedLazyPortfolio.y10 != null ? selectedLazyPortfolio.y10.toFixed(2) : "-"}%</td>
  </tr>
  <tr className="bg-emerald-50/30 hover:bg-emerald-50/50 transition-colors border-t border-emerald-100/50">
  <td className="py-4 px-6 font-bold text-emerald-800">30 Years (Long Term Conviction)</td>
- <td className="py-4 px-6 text-right font-semibold text-emerald-600 text-sm">{selectedLazyPortfolio.y30.toFixed(2)}%</td>
+ <td className="py-4 px-6 text-right font-semibold text-emerald-600 text-sm">{selectedLazyPortfolio.y30 != null ? selectedLazyPortfolio.y30.toFixed(2) : "-"}%</td>
  </tr>
  </tbody>
  </table>
@@ -1137,7 +1400,7 @@ export function FinancialModeling() {
  </div>
  </div>
  ) : (
- <div className="w-full px-8 pb-24 pt-8">
+ <div className="w-full max-w-[1720px] mx-auto px-8 pb-24 pt-8">
 
  {error && (
  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-[1.5rem] mb-8">
@@ -1528,7 +1791,7 @@ export function FinancialModeling() {
 
  <div className="flex justify-start">
  <div className="text-sm text-text font-mono font-medium relative group">
- {watchlist.length} actif(s) en comparaison • Cliquez sur une ligne pour cibler l'analyse globale
+ {visibleWatchlist.length} actif(s) en comparaison • Cliquez sur une ligne pour cibler l'analyse globale
  </div>
  </div>
 
@@ -1598,7 +1861,7 @@ export function FinancialModeling() {
  let hoveredChange = m.periodChangePct;
  let hoveredChangeVal = currentPrice - basePrice;
 
- if (hoveredTime && activeDataPoints[m.ticker] !== undefined) {
+ if (hoveredTime && activeDataPoints && activeDataPoints[m.ticker] !== undefined) {
  const hPrice = activeDataPoints[m.ticker];
  hoveredChange = ((hPrice - basePrice) / basePrice) * 100;
  hoveredChangeVal = hPrice - basePrice;
@@ -1736,7 +1999,7 @@ export function FinancialModeling() {
  <div className="flex-1 overflow-y-auto px-4 py-2 relative z-10 custom-scrollbar">
  {marketNewsLoading ? (
  <div className="absolute inset-0 flex items-center justify-center text-text font-mono text-sm font-bold animate-pulse">
- LOADING...
+  
  </div>
  ) : (
  <div className="space-y-0">
@@ -1772,61 +2035,68 @@ export function FinancialModeling() {
  </div>
 
  {/* TABLES SECTION: ASSET CLASSES & ETFs */}
- <div className="mt-16 mb-24 px-4 sm:px-8 w-full flex flex-col xl:flex-row gap-8 lg:gap-12 items-start">
+ <div className="mt-16 mb-8 px-4 sm:px-8 xl:px-12 w-full max-w-[1720px] mx-auto flex flex-col xl:flex-row gap-12 items-start justify-between">
  
  {/* ASSET CLASSES COLUMN (LEFT) */}
- <div className="w-full xl:w-1/2 flex flex-col gap-8">
+ <div className="w-full xl:w-[58%] flex flex-col gap-12 shrink-0">
  
  {/* ASSET CLASSES TABLE */}
  <div className="w-full">
- <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/80 pb-4 gap-4">
- <div>
- <h3 className="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
- <BarChart2 size={20} className="text-pv-blue" />
- Asset classes
+ <div className="mb-6 flex flex-col border-b border-border/80 pb-4 gap-2">
+ <div className="flex items-center gap-2">
+ <BarChart2 size={24} className="text-pv-blue" />
+ <h3 className="text-2xl font-bold text-text tracking-tight uppercase">
+ ASSET CLASSES - USD CURRENCY
  </h3>
  </div>
+ <p className="text-sm font-semibold text-pv-blue tracking-wide uppercase mt-1">
+ Return - Risk - Drawdown
+ </p>
  </div>
  
- <div className="flex flex-col gap-2 mb-4 text-sm text-text leading-relaxed">
- <p>
- Metrics as of 31 May 2026. Columns are sortable by 30Y return. Returns over 1 year are annualized.
- <span className="text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded ml-2 border border-rose-100">Highlighted</span> indicate returns lower than US Inflation.
+ <div className="flex flex-col gap-3 mb-6 text-sm text-text leading-relaxed bg-[#f8f9fa] p-4 rounded-[1.5rem] border border-border/60">
+ <p className="font-bold text-text flex items-center gap-2">
+ <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+ Last Update as of 30 June 2026
  </p>
  </div>
 
  <div className="w-full bg-white rounded-[2rem] border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
  <div className="overflow-x-auto">
  <table className="w-full text-left border-none relative">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-sm font-semibold text-text ">
+ <thead className="bg-[#f8f9fa] border-b border-border/80 text-[11px] font-bold text-text uppercase tracking-wider">
  <tr>
- <th className="py-2 px-3 text-left whitespace-nowrap">Ticker</th>
- <th className="py-2 px-3 text-left w-1/3 text-text">Asset ▾</th>
- <th className="py-2 px-2 text-right whitespace-nowrap hidden sm:table-cell">1M</th>
- <th className="py-2 px-2 text-right whitespace-nowrap hidden sm:table-cell">6M</th>
- <th className="py-2 px-2 text-right whitespace-nowrap">1Y</th>
- <th className="py-2 px-2 text-right whitespace-nowrap">3Y</th>
- <th className="py-2 px-2 text-right whitespace-nowrap">5Y</th>
- <th className="py-2 px-2 text-right whitespace-nowrap hidden lg:table-cell">10Y</th>
- <th className="py-2 px-2 text-right whitespace-nowrap">30Y</th>
+ <th className="py-2.5 px-2.5 text-left whitespace-nowrap">Ticker</th>
+ <th className="py-2.5 px-2.5 text-left whitespace-nowrap min-w-[140px]">USD • ETF</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">1M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">3M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">6M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">1Y</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">3Y</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">5Y</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">10Y</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">20Y</th>
+ <th className="py-2.5 px-2.5 text-right whitespace-nowrap">30Y▾</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-border/40 text-sm">
+ <tbody className="divide-y divide-border/40 text-[12.5px]">
  {assetClasses.map((item, idx) => {
  const checkInf = (val: number, target: number) => val < target;
  return (
  <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
- <td className="py-2 px-3 font-bold text-text bg-white/50 transition-colors flex items-center gap-2">
+ <td className="py-2 px-2.5 font-bold text-text bg-white/50 transition-colors flex items-center gap-1.5">
  {item.ticker}
  </td>
- <td className="py-2 px-3 font-medium text-text truncate max-w-[150px]" title={item.asset}>{item.asset}</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap hidden sm:table-cell", item.m1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m1.toFixed(2)}%</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap hidden sm:table-cell", item.m6 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m6.toFixed(2)}%</td>
- <td className={cn("py-4 px-4 text-right font-medium whitespace-nowrap", checkInf(item.y1, 3.69) ? "text-rose-700 bg-rose-50/50" : (item.y1 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y1.toFixed(2)}%</td>
- <td className={cn("py-4 px-4 text-right font-medium whitespace-nowrap", checkInf(item.y3, 3.10) ? "text-rose-700 bg-rose-50/50" : (item.y3 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y3.toFixed(2)}%</td>
- <td className={cn("py-4 px-4 text-right font-medium whitespace-nowrap", checkInf(item.y5, 4.37) ? "text-rose-700 bg-rose-50/50" : (item.y5 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y5.toFixed(2)}%</td>
- <td className={cn("py-4 px-4 text-right font-medium whitespace-nowrap hidden lg:table-cell", checkInf(item.y10, 3.33) ? "text-rose-700 bg-rose-50/50" : (item.y10 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y10.toFixed(2)}%</td>
- <td className={cn("py-4 px-4 text-right font-bold whitespace-nowrap", checkInf(item.y30, 2.55) ? "text-rose-700 bg-rose-50/50" : (item.y30 >= 0 ? "text-emerald-700" : "text-rose-700"))}>{item.y30.toFixed(2)}%</td>
+ <td className="py-2 px-2.5 font-semibold text-text whitespace-nowrap" title={item.asset}>{item.asset}</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.m1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m1 >= 0 ? "+" : ""}{item.m1 != null ? item.m1.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.m3 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m3 >= 0 ? "+" : ""}{item.m3 != null ? item.m3.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.m6 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m6 >= 0 ? "+" : ""}{item.m6 != null ? item.m6.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-semibold whitespace-nowrap", checkInf(item.y1, 3.69) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y1 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y1 != null ? item.y1.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-semibold whitespace-nowrap", checkInf(item.y3, 3.10) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y3 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y3 != null ? item.y3.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-semibold whitespace-nowrap", checkInf(item.y5, 4.37) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y5 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y5 != null ? item.y5.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-semibold whitespace-nowrap", checkInf(item.y10, 3.33) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y10 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y10 != null ? item.y10.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-semibold whitespace-nowrap", checkInf(item.y20, 2.90) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y20 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y20 != null ? item.y20.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-2.5 text-right font-bold whitespace-nowrap bg-emerald-50/10", checkInf(item.y30, 2.55) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y30 >= 0 ? "text-emerald-700" : "text-rose-700"))}>{item.y30 != null ? item.y30.toFixed(2) : "-"}%</td>
  </tr>
  )
  })}
@@ -1835,53 +2105,48 @@ export function FinancialModeling() {
  </div>
  </div>
  </div>
-
+ 
  {/* INDICES TABLE */}
- <div className="w-full mt-6">
- <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/80 pb-4 gap-4">
- <div>
+ <div className="w-full">
+ <div className="mb-6 flex flex-col border-b border-border/80 pb-4">
  <h3 className="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
  <BarChart2 size={20} className="text-pv-blue" />
  Major Global Indices
  </h3>
- </div>
- </div>
- 
- <div className="flex flex-col gap-2 mb-4 text-sm text-text leading-relaxed">
- <p>
+ <p className="text-sm text-text/60 mt-1">
  Track the most referenced equity benchmark indices reflecting global macroeconomic stability and corporate health. Performance figures are native to local currencies.
  </p>
  </div>
-
+ 
  <div className="w-full bg-white rounded-[2rem] border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
  <div className="overflow-x-auto">
  <table className="w-full text-left border-none relative">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-sm font-semibold text-text ">
+ <thead className="bg-[#f8f9fa] border-b border-border/80 text-[11px] font-bold text-text uppercase tracking-wider">
  <tr>
- <th className="py-2 px-3 text-left whitespace-nowrap">Ticker</th>
- <th className="py-2 px-3 text-left w-1/3 text-text">Index ▾</th>
- <th className="py-2 px-2 text-right whitespace-nowrap hidden sm:table-cell">1M</th>
- <th className="py-2 px-2 text-right whitespace-nowrap hidden sm:table-cell">6M</th>
- <th className="py-2 px-2 text-right whitespace-nowrap">1Y</th>
- <th className="py-2 px-2 text-right whitespace-nowrap">3Y</th>
- <th className="py-2 px-2 text-right whitespace-nowrap">5Y</th>
- <th className="py-2 px-2 text-right whitespace-nowrap hidden lg:table-cell">10Y</th>
+ <th className="py-2.5 px-2.5 text-left whitespace-nowrap">Ticker</th>
+ <th className="py-2.5 px-2.5 text-left whitespace-nowrap min-w-[140px]">Index ▾</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">1M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">6M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">1Y</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">3Y</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">5Y</th>
+ <th className="py-2.5 px-2.5 text-right whitespace-nowrap">10Y</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-border/40 text-sm">
+ <tbody className="divide-y divide-border/40 text-[12.5px]">
  {majorIndices.map((item, idx) => {
  return (
  <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
- <td className="py-2 px-3 font-bold text-text bg-white/50 transition-colors flex items-center gap-2">
+ <td className="py-2 px-2.5 font-bold text-text bg-white/50 transition-colors flex items-center gap-1.5">
  {item.ticker}
  </td>
- <td className="py-2 px-3 font-medium text-text truncate max-w-[150px]" title={item.asset}>{item.asset}</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap hidden sm:table-cell", item.m1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m1.toFixed(2)}%</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap hidden sm:table-cell", item.m6 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m6.toFixed(2)}%</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap", item.y1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y1.toFixed(2)}%</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap", item.y3 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y3.toFixed(2)}%</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap", item.y5 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y5.toFixed(2)}%</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap hidden lg:table-cell", item.y10 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y10.toFixed(2)}%</td>
+ <td className="py-2 px-2.5 font-medium text-text whitespace-nowrap" title={item.asset}>{item.asset}</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.m1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m1 >= 0 ? "+" : ""}{item.m1 != null ? item.m1.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.m6 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m6 >= 0 ? "+" : ""}{item.m6 != null ? item.m6.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.y1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y1 != null ? item.y1.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.y3 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y3 != null ? item.y3.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.y5 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y5 != null ? item.y5.toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-2.5 text-right font-medium whitespace-nowrap", item.y10 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y10 != null ? item.y10.toFixed(2) : "-"}%</td>
  </tr>
  )
  })}
@@ -1891,131 +2156,130 @@ export function FinancialModeling() {
  </div>
  </div>
 
- {/* LAZY PORTFOLIOS TABLE */}
- <div className="w-full mt-10">
- <div className="mb-4 flex flex-col items-start border-b border-border/60 pb-4">
- <p className="text-[13px] font-medium text-text max-w-4xl leading-[1.6]">
- A <strong className="text-text font-bold">Lazy Portfolio</strong> is a diversified collection of assets designed to perform consistently across various market conditions while requiring minimal maintenance. Composed primarily of low-cost ETFs or index funds, these strategies rely on a passive "buy-and-hold" approach, allowing investors to achieve steady, long-term growth without the need for active market timing, stock picking, or complex rebalancing.
+ {/* MEGATRENDS TABLE */}
+ <div className="w-full">
+ <div className="mb-6 flex flex-col border-b border-border/80 pb-4 gap-2">
+ <div className="flex items-center gap-2">
+ <BarChart2 size={24} className="text-[#635BFF]" />
+ <h3 className="text-2xl font-bold text-text tracking-tight uppercase">
+ MEGATRENDS - USD CURRENCY
+ </h3>
+ </div>
+ <p className="text-sm font-semibold text-pv-blue tracking-wide uppercase mt-1">
+ Return - Risk - Drawdown
  </p>
  </div>
- 
- <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-4">
- <div>
- <h4 className="text-xl font-bold text-text flex items-center gap-2">
- Lazy Portfolios
- </h4>
- <div className="text-sm font-bold text-text mt-1 flex items-center gap-2">
- <span>Consolidated returns as of 31 May 2026</span>
- </div>
- </div>
- </div>
 
- <div className="w-full bg-white rounded-[1.5rem] border border-border shadow-sm overflow-hidden transform transition-all duration-300 relative">
- <div className="overflow-x-auto relative z-10">
- <table className="w-full text-left border-none relative">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-sm font-semibold text-text leading-none">
- <tr>
- <th className="py-2.5 px-3 text-left whitespace-nowrap">Portfolio</th>
- <th className="py-2.5 px-2 text-center whitespace-nowrap border-l border-border" colSpan={3}>Allocation</th>
- <th className="py-2.5 px-2 text-center whitespace-nowrap border-l border-border" colSpan={4}>Annualized Returns</th>
- </tr>
- <tr className="bg-white border-b border-border text-sm text-text">
- <th className="py-1.5 px-3 text-left">Author & Strategy</th>
- <th className="py-1.5 px-1.5 text-center border-l border-border">STOCKS</th>
- <th className="py-1.5 px-1.5 text-center">BONDS</th>
- <th className="py-1.5 px-1.5 text-center">COMM</th>
- <th className="py-1.5 px-1.5 text-right border-l border-border">1Y</th>
- <th className="py-1.5 px-1.5 text-right">5Y</th>
- <th className="py-1.5 px-1.5 text-right">10Y</th>
- <th className="py-1.5 px-1.5 text-right">30Y▾</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-100 text-sm">
- {lazyPortfolios.map((item, idx) => {
- return (
- <tr key={idx} className="hover:bg-blue-50/50 transition-colors group">
- <td className="py-2 px-3 max-w-[240px]">
- <div className="flex flex-col">
- <div className="font-bold text-text text-sm truncate transition-colors leading-tight">{item.name}</div>
- <div className="text-sm text-text font-bold truncate leading-tight mt-0.5">{item.author}</div>
- </div>
- </td>
- <td className="py-2 px-1 text-center border-l border-slate-50">
- <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded bg-blue-50/80 text-blue-700 font-bold text-sm">{item.stocks}</span>
- </td>
- <td className="py-2 px-1 text-center">
- <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded bg-surface-2 text-text font-bold text-sm">{item.bonds}</span>
- </td>
- <td className="py-2 px-1 text-center">
- <span className="inline-flex items-center justify-center min-w-[24px] px-1 py-0.5 rounded bg-amber-50 text-amber-700 font-bold text-sm">{item.comm}</span>
- </td>
- <td className="py-2 px-2 text-right border-l border-slate-50 font-bold text-text">{item.y1.toFixed(2)}</td>
- <td className="py-2 px-2 text-right font-bold text-text">{item.y5.toFixed(2)}</td>
- <td className="py-2 px-2 text-right font-bold text-text">{item.y10.toFixed(2)}</td>
- <td className="py-2 px-2 text-right font-semibold text-emerald-600 bg-emerald-50/20">{item.y30.toFixed(2)}</td>
- </tr>
- )
- })}
- </tbody>
- </table>
- </div>
- 
- <div className="p-4 bg-surface-2 border-t border-border">
- <p className="text-sm font-medium text-text leading-relaxed">
- The metrics refer to investments in USD and are calculated on the hypothesis of:<br/>
- • a yearly rebalancing of the portfolios (at the beginning of the year)<br/>
- • the reinvestment of dividends
+ <div className="flex flex-col gap-2 mb-6 text-sm text-text leading-relaxed bg-[#f8f9fa] p-4 rounded-[1.5rem] border border-border/60">
+ <div className="flex flex-wrap items-center justify-between gap-3">
+ <p className="font-bold text-text flex items-center gap-2">
+ <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+ Last Update as of 30 June 2026
  </p>
+ <div className="text-xs font-semibold text-[#635BFF] flex items-center gap-1.5">
+ <span>Filters:</span>
+ <span className="bg-[#635BFF]/10 text-[#635BFF] px-2.5 py-0.5 rounded-md">Return (%) - Jun 30, 2026</span>
  </div>
- 
  </div>
  </div>
 
- </div>
-
- {/* ETFs COLUMN (RIGHT) */}
- <div className="w-full xl:w-1/2 flex flex-col gap-8">
- 
- {/* BEST ETFs TABLE */}
-		<div className="w-full">
-			<div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/80 pb-4 gap-4">
-				<div>
-					<h3 className="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
-						<BarChart2 size={20} className="text-pv-blue" />
-						BEST 100 ETF RETURNS - LAST 12 MONTHS
-					</h3>
-				</div>
-			</div>
-
-			<div className="flex flex-col gap-2 mb-4 text-sm text-text leading-relaxed">
-				<p>
-					Top performing global ETFs over the trailing 12 months, sorted by highest 1-Year return. Track leading thematic indexes. Last Update: 30 June 2026.
-				</p>
-			</div>
  <div className="w-full bg-white rounded-[2rem] border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
  <div className="overflow-x-auto">
  <table className="w-full text-left border-none relative">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-sm font-semibold text-text ">
+ <thead className="bg-[#f8f9fa] border-b border-border/80 text-[11px] font-bold text-text uppercase tracking-wider">
  <tr>
- <th className="py-2 px-3 text-left whitespace-nowrap">Ticker</th>
- <th className="py-2 px-3 text-left w-full min-w-[200px]">ETF</th>
- <th className="py-2 px-2 text-right whitespace-nowrap hidden sm:table-cell">1M</th>
- <th className="py-2 px-2 text-right whitespace-nowrap hidden sm:table-cell">3M</th>
- <th className="py-2 px-2 text-right whitespace-nowrap hidden sm:table-cell">6M</th>
- <th className="py-2 px-2 text-right whitespace-nowrap text-text">1Y ▾</th>
+ <th className="py-2.5 px-2.5 text-left whitespace-nowrap">Ticker</th>
+ <th className="py-2.5 px-2.5 text-left whitespace-nowrap min-w-[140px]">USD • ETF</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">1M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">3M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">6M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">1Y▾</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">3Y</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">5Y</th>
+ <th className="py-2.5 px-2.5 text-right whitespace-nowrap">10Y</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-border/40 text-sm">
+ <tbody className="divide-y divide-border/40 text-[12.5px]">
+ {megatrends.map((item, idx) => {
+ return (
+ <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
+ <td className="py-2 px-2.5 font-bold text-text bg-white/50 transition-colors">
+ {item.ticker}
+ </td>
+ <td className="py-2 px-2.5 font-semibold text-text whitespace-nowrap" title={item.asset}>
+ {item.asset}
+ </td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.m1 >= 0 ? "text-emerald-600" : "text-rose-600")}>
+ {item.m1 >= 0 ? "+" : ""}{item.m1 != null ? item.m1.toFixed(2) : "-"}%
+ </td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.m3 >= 0 ? "text-emerald-600" : "text-rose-600")}>
+ {item.m3 >= 0 ? "+" : ""}{item.m3 != null ? item.m3.toFixed(2) : "-"}%
+ </td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.m6 >= 0 ? "text-emerald-600" : "text-rose-600")}>
+ {item.m6 >= 0 ? "+" : ""}{item.m6 != null ? item.m6.toFixed(2) : "-"}%
+ </td>
+ <td className={cn("py-2 px-1.5 text-right font-bold whitespace-nowrap bg-emerald-50/10", item.y1 >= 0 ? "text-emerald-600" : "text-rose-600")}>
+ {item.y1 >= 0 ? "+" : ""}{item.y1 != null ? item.y1.toFixed(2) : "-"}%
+ </td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.y3 >= 0 ? "text-[#635BFF]" : "text-rose-600")}>
+ {item.y3 != null ? `${item.y3 >= 0 ? "+" : ""}${item.y3 != null ? item.y3.toFixed(2) : "-"}%` : "-"}
+ </td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", item.y5 >= 0 ? "text-[#635BFF]" : "text-rose-600")}>
+ {item.y5 != null ? `${item.y5 >= 0 ? "+" : ""}${item.y5 != null ? item.y5.toFixed(2) : "-"}%` : "-"}
+ </td>
+ <td className="py-2 px-2.5 text-right font-medium whitespace-nowrap text-text/80">
+ {item.y10 != null ? `${item.y10 >= 0 ? "+" : ""}${item.y10 != null ? item.y10.toFixed(2) : "-"}%` : "-"}
+ </td>
+ </tr>
+ );
+ })}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ 
+ </div>
+ 
+ {/* ETFs COLUMN (RIGHT) */}
+ <div className="w-full xl:w-[38%] flex flex-col gap-8 shrink-0">
+ 
+ {/* BEST ETFs TABLE */}
+ <div className="w-full">
+ <div className="mb-6 flex flex-col border-b border-border/80 pb-4">
+ <h3 className="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
+ <BarChart2 size={20} className="text-pv-blue" />
+ BEST 100 ETF RETURNS - LAST 12 MONTHS
+ </h3>
+ <p className="text-sm text-text/60 mt-1">
+ Top performing global ETFs over the trailing 12 months, sorted by highest 1-Year return. Track leading thematic indexes. Last Update: 30 June 2026.
+ </p>
+ </div>
+ 
+ <div className="w-full bg-white rounded-[2rem] border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+ <div className="overflow-x-auto">
+ <table className="w-full text-left border-none relative">
+ <thead className="bg-[#f8f9fa] border-b border-border/80 text-[11px] font-bold text-text uppercase tracking-wider">
+ <tr>
+ <th className="py-2.5 px-2.5 text-left whitespace-nowrap">Ticker</th>
+ <th className="py-2.5 px-2.5 text-left w-full min-w-[150px]">ETF</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">1M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">3M</th>
+ <th className="py-2.5 px-1.5 text-right whitespace-nowrap">6M</th>
+ <th className="py-2.5 px-2.5 text-right whitespace-nowrap text-text">1Y ▾</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-border/40 text-[12.5px]">
  {topETFs.map((etf, idx) => (
  <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
- <td className="py-2 px-3 font-bold text-text bg-white/50 transition-colors flex items-center gap-2">
+ <td className="py-2 px-2.5 font-bold text-text bg-white/50 transition-colors flex items-center gap-1.5">
  {etf.symbol}
  </td>
- <td className="py-2 px-3 font-medium text-text max-w-[200px] truncate" title={etf.name}>{etf.name}</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap hidden sm:table-cell", parseFloat(etf.m1) >= 0 ? "text-emerald-600" : "text-rose-600")}>{etf.m1}%</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap hidden sm:table-cell", parseFloat(etf.m3) >= 0 ? "text-emerald-600" : "text-rose-600")}>{etf.m3}%</td>
- <td className={cn("py-2 px-2 text-right font-medium whitespace-nowrap hidden sm:table-cell", parseFloat(etf.m6) >= 0 ? "text-emerald-600" : "text-rose-600")}>{etf.m6}%</td>
- <td className={cn("py-2 px-2 text-right font-bold whitespace-nowrap", parseFloat(etf.y1) >= 0 ? "text-emerald-700" : "text-rose-700")}>{etf.y1}%</td>
+ <td className="py-2 px-2.5 font-medium text-text max-w-[220px] truncate" title={etf.name}>{etf.name}</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", parseFloat(etf.m1) >= 0 ? "text-emerald-600" : "text-rose-600")}>{parseFloat(etf.m1) >= 0 ? "+" : ""}{etf.m1 != null ? parseFloat(etf.m1).toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", parseFloat(etf.m3) >= 0 ? "text-emerald-600" : "text-rose-600")}>{parseFloat(etf.m3) >= 0 ? "+" : ""}{etf.m3 != null ? parseFloat(etf.m3).toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-1.5 text-right font-medium whitespace-nowrap", parseFloat(etf.m6) >= 0 ? "text-emerald-600" : "text-rose-600")}>{parseFloat(etf.m6) >= 0 ? "+" : ""}{etf.m6 != null ? parseFloat(etf.m6).toFixed(2) : "-"}%</td>
+ <td className={cn("py-2 px-2.5 text-right font-bold whitespace-nowrap bg-emerald-50/10", parseFloat(etf.y1) >= 0 ? "text-emerald-700" : "text-rose-700")}>{etf.y1 != null ? parseFloat(etf.y1).toFixed(2) : "-"}%</td>
  </tr>
  ))}
  </tbody>
@@ -2023,9 +2287,83 @@ export function FinancialModeling() {
  </div>
  </div>
  </div>
-
+ 
  </div>
  
+ </div>
+
+ {/* LAZY PORTFOLIOS SECTION */}
+ <div className="mt-16 mb-24 px-4 sm:px-8 xl:px-12 w-full max-w-[1720px] mx-auto">
+   <div className="mb-6 flex flex-col items-start border-b border-border/60 pb-4">
+     <h4 className="text-2xl font-bold text-text flex items-center gap-2 mb-2">
+       Lazy Portfolios
+     </h4>
+     <p className="text-[14px] font-medium text-text max-w-5xl leading-[1.6]">
+       A <strong className="text-text font-bold">Lazy Portfolio</strong> is a diversified collection of assets designed to perform consistently across various market conditions while requiring minimal maintenance. Composed primarily of low-cost ETFs or index funds, these strategies rely on a passive "buy-and-hold" approach, allowing investors to achieve steady, long-term growth without the need for active market timing, stock picking, or complex rebalancing.
+     </p>
+     <div className="text-xs font-bold text-text/60 mt-2 flex items-center gap-2">
+       <span>Consolidated returns as of 30 June 2026</span>
+     </div>
+   </div>
+
+   <div className="w-full bg-white rounded-[1.5rem] border border-border shadow-sm overflow-hidden transform transition-all duration-300 relative">
+     <div className="overflow-x-auto relative z-10">
+       <table className="w-full text-left border-none relative">
+         <thead className="bg-[#f8f9fa] border-b border-border/80 text-sm font-semibold text-text leading-none">
+           <tr>
+             <th className="py-3 px-4 text-left whitespace-nowrap">Portfolio</th>
+             <th className="py-3 px-4 text-center whitespace-nowrap border-l border-border" colSpan={3}>Allocation</th>
+             <th className="py-3 px-4 text-center whitespace-nowrap border-l border-border" colSpan={4}>Annualized Returns</th>
+           </tr>
+           <tr className="bg-white border-b border-border text-xs text-text/80 uppercase tracking-wider">
+             <th className="py-2 px-4 text-left font-semibold">Author & Strategy</th>
+             <th className="py-2 px-3 text-center border-l border-border font-semibold">STOCKS</th>
+             <th className="py-2 px-3 text-center font-semibold">BONDS</th>
+             <th className="py-2 px-3 text-center font-semibold">COMM</th>
+             <th className="py-2 px-4 text-right border-l border-border font-semibold">1Y</th>
+             <th className="py-2 px-4 text-right font-semibold">5Y</th>
+             <th className="py-2 px-4 text-right font-semibold">10Y</th>
+             <th className="py-2 px-4 text-right font-semibold">30Y▾</th>
+           </tr>
+         </thead>
+         <tbody className="divide-y divide-slate-100 text-sm">
+           {lazyPortfolios.map((item, idx) => {
+             return (
+               <tr key={idx} className="hover:bg-blue-50/50 transition-colors group">
+                 <td className="py-3.5 px-4 min-w-[260px] md:min-w-[340px]">
+                   <div className="flex flex-col">
+                     <div className="font-bold text-text text-sm transition-colors leading-tight">{item.name}</div>
+                     <div className="text-xs text-text/60 font-medium leading-tight mt-1">{item.author}</div>
+                   </div>
+                 </td>
+                 <td className="py-3.5 px-3 text-center border-l border-slate-50">
+                   <span className="inline-flex items-center justify-center min-w-[32px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold text-xs">{item.stocks}%</span>
+                 </td>
+                 <td className="py-3.5 px-3 text-center">
+                   <span className="inline-flex items-center justify-center min-w-[32px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold text-xs">{item.bonds}%</span>
+                 </td>
+                 <td className="py-3.5 px-3 text-center">
+                   <span className="inline-flex items-center justify-center min-w-[32px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold text-xs">{item.comm}%</span>
+                 </td>
+                 <td className="py-3.5 px-4 text-right border-l border-slate-50 font-bold text-text">{item.y1 != null ? item.y1.toFixed(2) : "-"}%</td>
+                 <td className="py-3.5 px-4 text-right font-bold text-text">{item.y5 != null ? item.y5.toFixed(2) : "-"}%</td>
+                 <td className="py-3.5 px-4 text-right font-bold text-text">{item.y10 != null ? item.y10.toFixed(2) : "-"}%</td>
+                 <td className="py-3.5 px-4 text-right font-bold text-emerald-600 bg-emerald-50/10">{item.y30 != null ? item.y30.toFixed(2) : "-"}%</td>
+               </tr>
+             )
+           })}
+         </tbody>
+       </table>
+     </div>
+     
+     <div className="p-4 bg-surface-2 border-t border-border">
+       <p className="text-sm font-medium text-text leading-relaxed">
+         The metrics refer to investments in USD and are calculated on the hypothesis of:<br/>
+         • a yearly rebalancing of the portfolios (at the beginning of the year)<br/>
+         • the reinvestment of dividends
+       </p>
+     </div>
+   </div>
  </div>
 
 
@@ -2057,62 +2395,54 @@ export function FinancialModeling() {
  )}
 
  {/* Live Marquee Ticker */}
- <div className="fixed bottom-0 left-0 w-full bg-white flex items-stretch overflow-hidden z-[100] border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.05)] h-12">
- <div className="flex items-center px-4 bg-white border-r border-border/40 z-10 shadow-[4px_0_10px_rgba(0,0,0,0.02)] shrink-0 gap-2">
- {!([0, 6].includes(new Date().getDay())) && (
+ <div className="fixed bottom-0 left-0 w-full bg-[#0a0a0a] flex items-stretch overflow-hidden z-[100] border-t border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] h-12">
+ <div className="flex items-center px-4 bg-[#0a0a0a] border-r border-slate-800 z-10 shadow-[4px_0_10px_rgba(0,0,0,0.2)] shrink-0 gap-2">
  <button 
  onClick={() => setMarqueeMode('stocks')}
- className={cn("text-sm font-medium px-3 py-1.5 rounded-xl transition-all", marqueeMode === 'stocks' ? "bg-pv-blue text-white" : "text-text hover:bg-surface-2")}
+ className={cn("text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5", marqueeMode === 'stocks' ? "bg-slate-800 text-yellow-500 border border-slate-700" : "text-slate-400 hover:text-white hover:bg-slate-800")}
  >
- Global
+ <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", marqueeMode === 'stocks' ? "bg-yellow-500" : "bg-slate-600")} /> Global
  </button>
- )} 
  <button 
  onClick={() => setMarqueeMode('crypto')}
- className={cn("text-sm font-medium px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5", marqueeMode === 'crypto' ? "bg-emerald-500 text-white" : "text-text hover:bg-surface-2")}
+ className={cn("text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5", marqueeMode === 'crypto' ? "bg-slate-800 text-emerald-500 border border-slate-700" : "text-slate-400 hover:text-white hover:bg-slate-800")}
  >
- <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", marqueeMode === 'crypto' ? "bg-white" : "bg-emerald-500")} /> Live Crypto
+ <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", marqueeMode === 'crypto' ? "bg-emerald-500" : "bg-slate-600")} /> Crypto
  </button>
  </div>
  <div className="flex flex-1 overflow-hidden relative">
- <div className="flex w-[200%] animate-marquee" style={{ animationDuration: marqueeMode === 'crypto' ? '10s' : '15s' }}>
- {marqueeMode === 'stocks' ? (
- [...MARQUEE_SYMBOLS, ...MARQUEE_SYMBOLS].map((sym, idx) => {
- const data = tickerPrices[sym];
- return (
- <div key={`stock-${sym}-${idx}`} className="flex items-center h-full gap-3 px-6 border-r border-border/40 whitespace-nowrap group hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => fetchStockData(sym)}>
- <span className="font-bold text-sm text-text">{sym}</span>
- {data ? (
- <>
- <span className="font-mono text-sm font-bold"><BlinkingPriceText price={data.price} formattedText={`$${formatCryptoPrice(data.price)}`} /></span>
- <span className={cn("text-sm font-bold flex items-center bg-transparent px-0", (data.changesPercentage || 0) >= 0 ? "text-green" : "text-pv-red")}>
- {(data.changesPercentage || 0) > 0 ? "+" : ""}{(data.changesPercentage || 0).toFixed(2)}%
- </span>
- </>
- ) : (
- <span className="font-mono text-sm text-text w-16 text-center animate-pulse">...</span>
- )}
- </div>
- );
- })
- ) : (
- [...cryptos, ...cryptos].slice(0, 30).map((c, idx) => {
- const isUp = c.change >= 0;
- return (
- <div key={`crypto-${c.id}-${idx}`} className="flex items-center h-full gap-3 px-6 border-r border-border/40 whitespace-nowrap group hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => setSelectedTradingViewSymbol(c.symbol)}>
- <span className="font-bold text-sm text-text">{c.symbol}</span>
- <span className="font-mono text-sm font-bold"><BlinkingPriceText price={c.price} formattedText={`$${c.price < 10 ? c.price.toFixed(4) : c.price.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} /></span>
- <span className={cn("text-sm font-bold flex items-center bg-transparent px-0", isUp ? "text-green" : "text-pv-red")}>
- {isUp ? "+" : ""}{c.change.toFixed(2)}%
- </span>
- </div>
- );
- })
- )}
+ <div className="flex w-max animate-marquee" style={{ animationDuration: marqueeMode === 'crypto' ? '35s' : '70s' }}>
+  {marqueeMode === 'stocks' ? (
+  [...visibleMarqueeSymbols, ...visibleMarqueeSymbols].map((sym, idx) => {
+  const liveData = tickerPrices[sym] || tickerPrices[sym.toUpperCase()] || tickerPrices[sym.toLowerCase()];
+  const data = (liveData && typeof liveData.price === "number") ? liveData : persistentPrices.current[sym];
+  return (
+    <MarqueeItem 
+      key={`stock-${sym}-${idx}`}
+      symbol={sym} 
+      data={data} 
+      onClick={() => fetchStockData(sym)} 
+    />
+  );
+  })
+  ) : (
+  [...cryptos.slice(0, 30), ...cryptos.slice(0, 30)].map((c, idx) => {
+  return (
+    <MarqueeItem 
+      key={`crypto-${c.id}-${idx}`}
+      symbol={c.symbol} 
+      data={c} 
+      onClick={() => setSelectedTradingViewSymbol(c.symbol)} 
+      isCrypto 
+    />
+  );
+  })
+  )}
  </div>
  </div>
  </div>
 
  </div>
+  </MobileZoomWrapper>
  );
 }

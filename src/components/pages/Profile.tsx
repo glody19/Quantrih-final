@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { auth, db } from '../../firebase';
+import { auth, db, serverTimestamp } from '../../firebase';
 import { 
   signOut, 
   updateEmail, 
   updatePassword, 
   reauthenticateWithCredential, 
   EmailAuthProvider,
-  deleteUser
+  deleteUser,
+  updateProfile
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { 
   ArrowLeft, 
   User, 
@@ -24,7 +25,8 @@ import {
   AlertTriangle,
   ChevronDown,
   Search,
-  Download
+  Download,
+  Camera
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { countries, Country } from '../../data/countries';
@@ -39,6 +41,8 @@ export function Profile({ onBack }: { onBack: () => void }) {
   const [residenceCountry, setResidenceCountry] = useState('');
   const [accountType, setAccountType] = useState('Individual'); // 'Individual' | 'Corporate'
   const [company, setCompany] = useState('');
+  const [photoURLState, setPhotoURLState] = useState(user?.photoURL || '');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Security credentials change states
   const [newPassword, setNewPassword] = useState('');
@@ -87,6 +91,7 @@ export function Profile({ onBack }: { onBack: () => void }) {
           if (data.residenceCountry) setResidenceCountry(data.residenceCountry);
           if (data.accountType) setAccountType(data.accountType);
           if (data.company) setCompany(data.company);
+          if (data.photoURL) setPhotoURLState(data.photoURL);
         } else {
           // If Firestore document doesn't exist yet, try parsing the auth displayName
           if (user.displayName) {
@@ -171,6 +176,60 @@ export function Profile({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Accept up to 50MB images and accept all image types
+    if (file.size > 50 * 1024 * 1024) {
+      setMessage({ text: 'Image is too large. Please select an image under 50MB.', type: 'error' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        // Let's use 512 for beautiful resolution
+        const MAX_WIDTH = 512;
+        const MAX_HEIGHT = 512;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          setPhotoURLState(dataUrl);
+        }
+      };
+      img.onerror = () => {
+        // Fallback to just using raw dataUrl if canvas draw fails or for other formats
+        setPhotoURLState(event.target?.result as string);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setMessage({ text: 'Failed to read image file.', type: 'error' });
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Perform Firestore write and safe Auth field updates
   const executeProfileUpdate = async () => {
     if (!user) return;
@@ -188,9 +247,20 @@ export function Profile({ onBack }: { onBack: () => void }) {
         setConfirmPassword('');
       }
 
-      // 3. Update Firestore Document
-      const userRef = doc(db, `users/${user.uid}`);
       const fullDisplayName = `${firstName} ${lastName}`.trim() || email.split('@')[0];
+
+      // 3. Update Auth Profile (Display Name & Photo)
+      // Firebase Auth photoURL limit is 2048 characters.
+      // If photoURLState is longer, we store it in Firestore instead of Auth (where there's no limit)
+      const authPhoto = photoURLState && photoURLState.length <= 2048 ? photoURLState : '';
+
+      await updateProfile(user, {
+        displayName: fullDisplayName,
+        photoURL: authPhoto
+      });
+
+      // 4. Update Firestore Document
+      const userRef = doc(db, `users/${user.uid}`);
       
       await setDoc(userRef, {
         firstName,
@@ -200,7 +270,8 @@ export function Profile({ onBack }: { onBack: () => void }) {
         accountType,
         company,
         email: email,
-        updatedAt: new Date(),
+        photoURL: photoURLState,
+        updatedAt: serverTimestamp(),
       }, { merge: true });
 
       setMessage({ text: 'Your account settings have been updated successfully.', type: 'success' });
@@ -219,9 +290,9 @@ export function Profile({ onBack }: { onBack: () => void }) {
 
   // Download profile image helper
   const downloadProfileImage = async () => {
-    if (!user?.photoURL) return;
+    if (!photoURLState) return;
     try {
-      let url = user.photoURL;
+      let url = photoURLState;
       if (!url.startsWith('data:')) {
         const response = await fetch(url);
         const blob = await response.blob();
@@ -233,12 +304,12 @@ export function Profile({ onBack }: { onBack: () => void }) {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      if (!user.photoURL.startsWith('data:')) {
+      if (!photoURLState.startsWith('data:')) {
         window.URL.revokeObjectURL(url);
       }
     } catch (err) {
       console.error("Failed to download image:", err);
-      window.open(user.photoURL, '_blank');
+      window.open(photoURLState, '_blank');
     }
   };
 
@@ -265,13 +336,28 @@ export function Profile({ onBack }: { onBack: () => void }) {
     if (!user) return;
     setLoading(true);
     try {
-      // 1. Delete Firestore User Document
+      // 1. Delete Firestore Subcollections (backtests)
+      const backtestsRef = collection(db, `users/${user.uid}/backtests`);
+      const backtestsSnap = await getDocs(backtestsRef);
+      const deletePromises = backtestsSnap.docs.map(docSnap => deleteDoc(docSnap.ref));
+      await Promise.all(deletePromises);
+
+      // 2. Delete Firestore User Document
       await deleteDoc(doc(db, `users/${user.uid}`));
       
-      // 2. Delete Auth User
-      await deleteUser(user);
+      // 3. Force Sign Out before deleting user to ensure session is cleared
+      // and avoid "on reste connecté" issue
+      const currentUser = auth.currentUser;
       
-      // 3. Navigate back
+      // 4. Delete Auth User
+      if (currentUser) {
+        await deleteUser(currentUser);
+      }
+      
+      // 5. Final sign out just in case
+      await signOut(auth);
+
+      // 6. Navigate back to home
       onBack();
     } catch (err: any) {
       console.error("Account deletion error:", err);
@@ -314,26 +400,66 @@ export function Profile({ onBack }: { onBack: () => void }) {
         transition={{ duration: 0.4 }}
         className="w-full max-w-xl relative z-10 flex flex-col items-center mt-12 md:mt-6 mb-12"
       >
-        {/* Avatar badge */}
-        <div 
-          onClick={downloadProfileImage}
-          className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-md border-4 border-white mb-6 relative z-20 overflow-hidden cursor-pointer group"
-          title="Click to download profile image"
-        >
-          {user.photoURL ? (
-            <>
-              <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-              {/* Hover overlay with download option */}
-              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <Download className="w-5 h-5 text-white mb-0.5" />
-                <span className="text-[9px] font-bold text-white uppercase tracking-wider">Download</span>
+        {/* Avatar badge with floating action buttons */}
+        <div className="relative mb-6 z-20 group">
+          <div 
+            className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-md border-4 border-white overflow-hidden relative"
+          >
+            {photoURLState ? (
+              <img src={photoURLState} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full rounded-full bg-[#635BFF]/10 flex items-center justify-center text-[#635BFF] font-bold text-3xl uppercase">
+                {firstName.charAt(0) || email.charAt(0) || "?"}
               </div>
-            </>
-          ) : (
-            <div className="w-full h-full rounded-full bg-[#635BFF]/10 flex items-center justify-center text-[#635BFF] font-bold text-3xl uppercase">
-              {firstName.charAt(0) || email.charAt(0) || "?"}
-            </div>
+            )}
+          </div>
+
+          {/* Floating Edit/Upload Camera Badge */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#635BFF] hover:bg-[#4B45D6] text-white rounded-full flex items-center justify-center shadow-md border-2 border-white transition-all hover:scale-110 cursor-pointer animate-fade-in"
+            title="Upload profile picture"
+          >
+            <Camera className="w-4 h-4" />
+          </button>
+
+          {/* Floating Delete Badge (only shown if a photo exists) */}
+          {photoURLState && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Do you want to delete your profile picture?")) {
+                  setPhotoURLState("");
+                }
+              }}
+              className="absolute -top-1 -right-1 w-8 h-8 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-md border-2 border-white transition-all hover:scale-110 cursor-pointer animate-fade-in"
+              title="Delete profile picture"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
           )}
+
+          {/* Floating Download Badge (only shown if a photo exists) */}
+          {photoURLState && (
+            <button
+              type="button"
+              onClick={downloadProfileImage}
+              className="absolute -bottom-1 -left-1 w-8 h-8 bg-white hover:bg-slate-50 text-slate-500 rounded-full flex items-center justify-center shadow-md border-2 border-white border-slate-100 transition-all hover:scale-110 cursor-pointer animate-fade-in"
+              title="Download profile picture"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Hidden File Input */}
+          <input 
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            className="hidden"
+          />
         </div>
 
         {/* Settings Container */}
@@ -345,11 +471,13 @@ export function Profile({ onBack }: { onBack: () => void }) {
             </div>
 
             {message && (
-              <div className={`p-4 mb-6 rounded-2xl text-sm font-semibold text-center border ${
+              <div className={`p-4 mb-6 rounded-2xl text-sm font-semibold text-center border flex items-center justify-center gap-2 ${
                 message.type === 'success' 
                   ? 'bg-green-50 text-green-700 border-green-100' 
                   : 'bg-red-50 text-red-700 border-red-100'
               }`}>
+                {message.type === 'success' && <CheckCircle className="w-5 h-5" />}
+                {message.type !== 'success' && <AlertTriangle className="w-5 h-5" />}
                 {message.text}
               </div>
             )}
@@ -571,9 +699,17 @@ export function Profile({ onBack }: { onBack: () => void }) {
                 </button>
               </div>
 
+              {/* Saved Backtests Section */}
+              <div className="pt-6 border-t border-slate-100">
+                <h3 className="text-xs font-bold text-slate-900 mb-4 uppercase tracking-wider">Saved Backtests</h3>
+                <div className="space-y-2">
+                  {/* Saved backtests list would be populated here */}
+                  <p className="text-[11px] text-slate-400">No saved backtests yet.</p>
+                </div>
+              </div>
+
               {/* Danger Zone: "proposer aussi de supprimé son compte" */}
               <div className="pt-6 border-t border-slate-100">
-                <h3 className="text-[10px] font-extrabold text-slate-900 uppercase tracking-wider mb-1">Danger Zone</h3>
                 <p className="text-[10px] text-slate-400 mb-3">Deleting your account is permanent and will completely erase all of your profile data.</p>
                 
                 <button

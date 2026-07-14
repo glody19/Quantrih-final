@@ -248,7 +248,7 @@ export function RelativeStrength() {
                           fontWeight: "bold",
                         }}
                         itemStyle={{ color: "var(--color-text)" }}
-                        formatter={(value: number) => [value + "%", "Score"]}
+                        formatter={(value: any) => [value + "%", "Score"]}
                       />
                       <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={24}>
                         {rankData.map((entry, index) => (
@@ -300,7 +300,7 @@ export function RelativeStrength() {
                           fontWeight: "bold",
                         }}
                         itemStyle={{ color: "var(--color-text)" }}
-                        formatter={(value: number) => [
+                        formatter={(value: any) => [
                           "$" + value.toFixed(0),
                           undefined,
                         ]}

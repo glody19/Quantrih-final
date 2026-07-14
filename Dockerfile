@@ -43,4 +43,4 @@ ENV PORT=3000
 EXPOSE 3000
 
 # Start compiled server
-CMD ["node", "dist/server.cjs"]
+CMD ["node", "/app/dist/server.cjs"]

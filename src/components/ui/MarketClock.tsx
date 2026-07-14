@@ -10,9 +10,18 @@ const CLOCK_CITIES = [
 
 const getClockStatus = (tz: string, oH: number, oM: number, cH: number, cM: number) => {
   const now = new Date();
+  
+  // Check day of week first
+  const dayOptions = { timeZone: tz, weekday: "short" } as const;
+  const dayString = new Intl.DateTimeFormat("en-US", dayOptions).format(now);
+  if (dayString === "Sat" || dayString === "Sun") {
+    return "closed";
+  }
+
   const options = { timeZone: tz, hour: "numeric", minute: "numeric", hour12: false } as const;
   const timeString = new Intl.DateTimeFormat("en-US", options).format(now);
   const [hour, minute] = timeString.split(":").map(Number);
+
   if (hour > oH || (hour === oH && minute >= oM)) {
     if (hour < cH || (hour === cH && minute < cM)) {
       return "open";
@@ -37,13 +46,15 @@ export function MarketClock() {
       });
       setTimes(nt);
     };
+
     const timer = setInterval(tick, 60000);
     tick();
+
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <div className="flex items-center gap-4 text-[12px] font-mono">
+    <div className="flex items-center gap-2.5 text-[10px] lg:text-[11.5px] font-mono">
       {CLOCK_CITIES.map((c) => {
         const status = getClockStatus(c.tz, c.open[0], c.open[1], c.close[0], c.close[1]);
         return (
