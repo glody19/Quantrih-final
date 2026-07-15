@@ -100,7 +100,7 @@ async function startServer() {
   }
 
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
   console.log("NODE_ENV:", process.env.NODE_ENV);
   app.set("trust proxy", 1);
 

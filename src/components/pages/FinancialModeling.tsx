@@ -1152,7 +1152,7 @@ const isEuropeanMarketOpen = () => {
   }
   }
   } catch (e: any) {
-  if (e.name !== 'AbortError' && process.env.NODE_ENV === 'development') {
+  if (e.name !== 'AbortError' && import.meta.env.DEV) {
   console.warn("Market fetch error - silenced for production:", e.message);
   }
   }
