@@ -4,13 +4,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import {defineConfig, loadEnv} from 'vite';
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), cloudflare()],
     build: {
       outDir: 'dist',
       emptyOutDir: true,
