@@ -16,27 +16,12 @@
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://quantrih.com/tactical-allocation</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
     <loc>https://quantrih.com/montecarlo</loc>
     <priority>0.8</priority>
     <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://quantrih.com/moving-average</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://quantrih.com/dual-momentum</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://quantrih.com/relative-strength</loc>
+    <loc>https://quantrih.com/tactical-allocation</loc>
     <priority>0.8</priority>
     <changefreq>weekly</changefreq>
   </url>
@@ -63,11 +48,6 @@
   <url>
     <loc>https://quantrih.com/about</loc>
     <priority>0.6</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://quantrih.com/donate</loc>
-    <priority>0.5</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>

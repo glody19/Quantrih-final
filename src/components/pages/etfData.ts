@@ -1,5 +1,5 @@
 export const topETFs = [
-  { symbol: "DBMG.L", name: "iMGP DBi Managed Futures Fund R", m1: "+1.12", m3: "+1.17", m6: "+11.10", y1: "+12848.83" },
+  { symbol: "DBMG.L", name: "iMGP DBi Managed Futures Fund R", m1: "+1.12", m3: "+1.17", m6: "+11.10", y1: "+12.85" },
   { symbol: "EWY", name: "iShares MSCI South Korea ETF", m1: "-1.91", m3: "+64.13", m6: "+107.67", y1: "+187.59" },
   { symbol: "EWT", name: "iShares MSCI Taiwan ETF", m1: "+5.67", m3: "+53.14", m6: "+70.96", y1: "" },
   { symbol: "SLV", name: "iShares Silver Trust", m1: "+2.51", m3: "-19.60", m6: "+33.43", y1: "+127.77" },

@@ -7,7 +7,7 @@ export interface SimulationOptions {
   simulations: number;
   initialBalance: number;
   cashflow: number;
-  cashflowType?: 'none' | 'fixed' | 'percentage';
+  cashflowType?: 'none' | 'fixed' | 'percentage' | 'contribute';
   cashflowFreq?: 'annual' | 'monthly';
   spendingRule?: 'none' | 'rolling_avg' | 'geometric';
   sequenceOfReturnsYears?: number;
@@ -142,11 +142,16 @@ export function runSimulation(
       let mcf = 0;
       if (options.cashflowType !== 'none' && options.cashflowFreq === 'monthly') {
          if (options.cashflowType === 'percentage') {
-             mcf += (balance * (options.cashflow / 100)) / 12;
-             balance += mcf;
+             mcf = (balance * (options.cashflow / 100)) / 12;
+             balance -= mcf;
          } else {
-             mcf += options.cashflow;
-             balance += (options.inflationModel === 'fixed' ? mcf * currentInflationAgg : mcf);
+             mcf = options.cashflow;
+             const adjMcf = options.inflationModel === 'fixed' ? mcf * currentInflationAgg : mcf;
+             if (options.cashflowType === 'contribute') {
+                 balance += adjMcf;
+             } else {
+                 balance -= adjMcf;
+             }
          }
       }
 
@@ -166,7 +171,12 @@ export function runSimulation(
                      acf = options.cashflow;
                  }
              }
-             balance += (options.inflationModel === 'fixed' && options.cashflowType !== 'percentage' ? acf * currentInflationAgg : acf);
+             const adjAcf = (options.inflationModel === 'fixed' && options.cashflowType !== 'percentage') ? acf * currentInflationAgg : acf;
+             if (options.cashflowType === 'contribute') {
+                 balance += adjAcf;
+             } else {
+                 balance -= adjAcf;
+             }
          }
          path.push(balance > 0 ? balance : 0);
       }

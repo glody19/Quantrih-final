@@ -16,11 +16,12 @@ import {
 import { Line, Doughnut, Bar, Pie } from "react-chartjs-2";
 import { EliteDonut } from "../ui/EliteDonut";
 import { cn } from "../../lib/utils";
+import { PageHeader } from "../ui/PageHeader";
+import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { lazyPortfolios } from "./lazyPortfoliosData";
 import { ViewToggle } from "../ui/ViewToggle";
 import { Disclaimer } from "../ui/Disclaimer";
-import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { calculateRollingReturns } from "../../engine/metrics";
 import { runMonteCarlo } from "../../engine/monte-carlo";
 import { downloadCSV } from "../../utils/export";
@@ -32,6 +33,8 @@ import { EfficientFrontier } from "../ui/EfficientFrontier";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
 import { InfoTooltip } from "../ui/InfoTooltip";
+import { PresetPortfoliosSelector } from "../ui/PresetPortfoliosSelector";
+import { CustomSelect } from "../ui/CustomSelect";
 import { ASSET_DATA } from "../../constants";
 import { useAuth } from "../../contexts/AuthContext";
 import { db } from "../../firebase";
@@ -171,6 +174,7 @@ export function PortfolioBacktesting({
   const [activeMainView, setActiveMainView] = useState<"simulator" | "dashboard">("simulator");
   const [savedConfigs, setSavedConfigs] = useState<any[]>([]);
   const [configsLoading, setConfigsLoading] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const loadSavedConfigs = async () => {
     if (!user) return;
@@ -202,51 +206,27 @@ export function PortfolioBacktesting({
 
   const deleteConfig = async (id: string) => {
     if (!user) return;
-    if (!window.confirm("Are you sure you want to permanently delete this saved strategy? This action cannot be undone.")) return;
     try {
       await deleteDoc(doc(db, "users", user.uid, "backtests", id));
       loadSavedConfigs();
     } catch (e) {
       console.error("Failed to delete config:", e);
-      alert("Failed to delete the strategy. Please try again.");
     }
   };
   const [portfolioNames, setPortfolioNames] = useState<
     { id: string; name: string }[]
-  >(() => {
-    const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
-    return isDesktop
-      ? [
-          { id: "1", name: "Balanced (60/40)" },
-          { id: "2", name: "All-Weather (Dalio)" },
-          { id: "3", name: "Warren Buffett" },
-          { id: "4", name: "Permanent Portfolio" },
-        ]
-      : [
-          { id: "1", name: "Balanced (60/40)" },
-          { id: "2", name: "All-Weather (Dalio)" },
-        ];
-  });
-  const [portfolioAssets, setPortfolioAssets] = useState<{ symbol: string; weights: string[] }[]>(() => {
-    const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
-    return isDesktop
-      ? [
-          { symbol: "VTI", weights: ["60", "30", "90", "25"] },
-          { symbol: "BND", weights: ["40", "0", "10", "0"] },
-          { symbol: "TLT", weights: ["0", "40", "0", "25"] },
-          { symbol: "IEF", weights: ["0", "15", "0", "25"] },
-          { symbol: "GLD", weights: ["0", "7.5", "0", "25"] },
-          { symbol: "PDBC", weights: ["0", "7.5", "0", "0"] },
-        ]
-      : [
-          { symbol: "VTI", weights: ["60", "30"] },
-          { symbol: "BND", weights: ["40", "0"] },
-          { symbol: "TLT", weights: ["0", "40"] },
-          { symbol: "IEF", weights: ["0", "15"] },
-          { symbol: "GLD", weights: ["0", "7.5"] },
-          { symbol: "PDBC", weights: ["0", "7.5"] },
-        ];
-  });
+  >(() => [
+    { id: "1", name: "Portfolio 1" },
+    { id: "2", name: "Portfolio 2" },
+    { id: "3", name: "Portfolio 3" },
+  ]);
+  const [portfolioAssets, setPortfolioAssets] = useState<{ symbol: string; weights: string[] }[]>(() => [
+    { symbol: "VTI", weights: ["60", "30", "100"] },
+    { symbol: "BND", weights: ["40", "0", "0"] },
+    { symbol: "TLT", weights: ["0", "40", "0"] },
+    { symbol: "IEF", weights: ["0", "15", "0"] },
+    { symbol: "GLD", weights: ["0", "15", "0"] },
+  ]);
 
   const portfolios = portfolioNames.map((pn, i) => ({
     id: pn.id,
@@ -371,7 +351,7 @@ export function PortfolioBacktesting({
     const newId = Date.now().toString();
     setPortfolioNames([
       ...portfolioNames,
-      { id: newId, name: `Portfolio ${portfolioNames.length + 1}` },
+      { id: newId, name: `${t("pb.portfolio")} ${portfolioNames.length + 1}` },
     ]);
     setPortfolioAssets(
       portfolioAssets.map((a) => ({ ...a, weights: [...a.weights, ""] })),
@@ -740,20 +720,14 @@ export function PortfolioBacktesting({
           <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
             <Database size={32} />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">
-            Activate your Cloud Dashboard
-          </h2>
-          <p className="text-sm text-slate-600 leading-relaxed">
-            To save your backtesting strategies to the Cloud, compare them side-by-side with innovative charts, and benefit from intelligent allocation analysis, log in or create a free account.
-          </p>
+          <h2 className="text-xl font-bold text-slate-900">{t("aa.act_saved_scen")}</h2>
+          <p className="text-sm text-slate-600 leading-relaxed">{t("aa.act_saved_scen_desc")}</p>
           <button
             onClick={() => {
               window.location.href = "/auth";
             }}
             className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-md shadow-blue-500/10"
-          >
-            Log In / Sign Up
-          </button>
+          >{t("header.login")}</button>
         </div>
       );
     }
@@ -762,14 +736,26 @@ export function PortfolioBacktesting({
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-xs font-bold uppercase tracking-widest text-text-3">
-            Loading your Cloud strategies...
-          </p>
+          <p className="text-xs font-bold uppercase tracking-widest text-text-3">{t("aa.load_saved")}</p>
         </div>
       );
     }
 
     const configsWithResults = savedConfigs.filter(c => c.resultsSummary && c.resultsSummary.length > 0);
+
+    // Custom Date Formatter
+    const formatDate = (timestamp: any) => {
+      if (!timestamp) return "N/A";
+      const date = new Date(Number(timestamp));
+      if (isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
 
     const totalCount = savedConfigs.length;
     let bestCagr = "N/A";
@@ -796,7 +782,7 @@ export function PortfolioBacktesting({
     });
 
     const hasChartData = configsWithResults.length > 0;
-    const chartLabels = configsWithResults.map(c => c.name || "Sans nom");
+    const chartLabels = configsWithResults.map(c => c.name || "Unnamed");
     const chartCagrData = configsWithResults.map(c => c.resultsSummary[0]?.cagr || 0);
     const chartDrawdownData = configsWithResults.map(c => Math.abs(c.resultsSummary[0]?.maxDrawdown || 0));
 
@@ -870,8 +856,8 @@ export function PortfolioBacktesting({
     if (highEquityWarning) {
       recommendations.push({
         type: "warning",
-        title: "Diversification actions optimale conseillée",
-        text: "Certaines de vos stratégies sauvegardées ont une forte concentration en actions sans contrepoids d'obligations (BND/TLT) ou d'or (GLD). Pour atténuer la volatilité lors des crises, allouer 10% à 20% à des obligations d'État à long terme réduit le drawdown maximum d'environ 30% tout en préservant le CAGR à long terme."
+        title: "Optimal stock diversification advised",
+        text: "Some of your saved strategies have a high concentration in stocks without a counterbalance of bonds (BND/TLT) or gold (GLD). To mitigate volatility during crises, allocating 10% to 20% to long-term government bonds reduces the maximum drawdown by approximately 30% while preserving long-term CAGR."
       });
     }
 
@@ -917,9 +903,7 @@ export function PortfolioBacktesting({
       <div className="space-y-8 animate-fade-in font-sans">
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <p className="text-[13px] font-semibold text-slate-700">
-              Active Cloud dashboard for <span className="font-bold text-slate-900">{user.email}</span>
+            <p className="text-[13px] font-semibold text-slate-700">{t("aa.conn_work")} <span className="font-bold text-slate-900">{user?.email}</span>
             </p>
           </div>
           <button
@@ -932,21 +916,15 @@ export function PortfolioBacktesting({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
-              Cloud Saved Strategies
-            </p>
+            <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">{t("aa.conf_cloud")}</p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-slate-900">{totalCount}</p>
-              <p className="text-[11px] text-slate-500 font-medium mt-1">
-                Synced to Firestore
-              </p>
+              <p className="text-[11px] text-slate-500 font-medium mt-1">{t("aa.conf_cloud")}</p>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-500">
-              Best Historical CAGR
-            </p>
+            <p className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-500">{t("dashboard.best_cagr")}</p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-emerald-600">{bestCagr}</p>
               <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestCagrName}>
@@ -956,9 +934,7 @@ export function PortfolioBacktesting({
           </div>
 
           <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">
-              Optimal Sharpe Ratio
-            </p>
+            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">{t("dashboard.best_sharpe")}</p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-indigo-600">{bestSharpe}</p>
               <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestSharpeName}>
@@ -980,10 +956,8 @@ export function PortfolioBacktesting({
                   <BarChart3 size={24} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">No comparative report available</p>
-                  <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-                    Run a backtest in the simulator, then click "Save to Cloud" to save the simulation and display the compared analysis.
-                  </p>
+                  <p className="text-sm font-bold text-slate-900">{t("aa.no_comp")}</p>
+                  <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">{t("aa.no_comp_desc")}</p>
                 </div>
               </div>
             )}
@@ -992,12 +966,8 @@ export function PortfolioBacktesting({
           <div className="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm lg:col-span-4 flex flex-col gap-6">
             <div className="border-b border-slate-100 pb-3">
               <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                <Activity size={16} className="text-blue-500" />
-                AI Allocation Tips
-              </h3>
-              <p className="text-[10px] text-slate-500 font-medium mt-1">
-                Predictive analyses based on your risk profile
-              </p>
+                <Activity size={16} className="text-blue-500" />{t("dashboard.ai_analysis")}</h3>
+              <p className="text-[10px] text-slate-500 font-medium mt-1">{t("dashboard.matrix_desc")}</p>
             </div>
 
             <div className="space-y-4 overflow-y-auto max-h-[300px] pr-1">
@@ -1021,27 +991,111 @@ export function PortfolioBacktesting({
           </div>
         </div>
 
+        {/* COMPARED HIGHLIGHTS BENTO CARDS */}
+        {configsWithResults.length > 1 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+            {/* CARD 1: PERFORMANCE ANALYTICS */}
+            <div className="p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 rounded-[2rem] shadow-sm">
+              <div className="bg-[#050508] text-white rounded-[1.8rem]  p-6 relative overflow-hidden h-full">
+                {/* Double frame contour inset */}
+                <div className="absolute inset-2 border border-white/[0.04] rounded-[1.5rem] pointer-events-none" />
+                <h4 className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4 flex items-center gap-1.5 relative z-10">{t("aa.adv_comp")}</h4>
+                <div className="space-y-4 relative z-10 text-xs">
+                  {(() => {
+                    let highestCagr = -999;
+                    let highestCagrName = "";
+                    let lowestMdd = 999;
+                    let lowestMddName = "";
+                    
+                    configsWithResults.forEach(c => {
+                      const cagr = c.resultsSummary?.[0]?.cagr || 0;
+                      const mdd = Math.abs(c.resultsSummary?.[0]?.maxDrawdown || 0);
+                      if (cagr > highestCagr) {
+                        highestCagr = cagr;
+                        highestCagrName = c.name;
+                      }
+                      if (mdd < lowestMdd) {
+                        lowestMdd = mdd;
+                        lowestMddName = c.name;
+                      }
+                    });
+
+                    return (
+                      <>
+                        <div className="p-3.5 bg-white/5  rounded-2xl">
+                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_ret")}</span>
+                          <p className="text-sm font-medium text-slate-200">
+                            <span className="text-emerald-400 font-extrabold">{highestCagrName}</span> {t("aa.leads_ret")} <span className="text-emerald-400 font-extrabold">{highestCagr.toFixed(2)}%</span>.
+                          </p>
+                        </div>
+                        <div className="p-3.5 bg-white/5  rounded-2xl">
+                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.risk_prot")}</span>
+                          <p className="text-sm font-medium text-slate-200">
+                            <span className="text-blue-400 font-extrabold">{lowestMddName}</span> {t("aa.resil_dd")} <span className="text-blue-400 font-extrabold">-{lowestMdd.toFixed(2)}%</span>.
+                          </p>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 2: STOCHASTIC COMPARATIVE SCORE */}
+            <div className="p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 rounded-[2rem] shadow-sm">
+              <div className="bg-[#050508] text-white rounded-[1.8rem]  p-6 relative overflow-hidden h-full">
+                <div className="absolute inset-2 border border-white/[0.04] rounded-[1.5rem] pointer-events-none" />
+                <h4 className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-4 flex items-center gap-1.5 relative z-10">{t("aa.sharpe_alloc")}</h4>
+                <div className="space-y-4 relative z-10 text-xs">
+                  {(() => {
+                    let highestSharpe = -999;
+                    let highestSharpeName = "";
+                    configsWithResults.forEach(c => {
+                      const sharpe = c.resultsSummary?.[0]?.sharpe || 0;
+                      if (sharpe > highestSharpe) {
+                        highestSharpe = sharpe;
+                        highestSharpeName = c.name;
+                      }
+                    });
+
+                    return (
+                      <>
+                        <div className="p-3.5 bg-white/5  rounded-2xl">
+                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_eff")}</span>
+                          <p className="text-sm font-medium text-slate-200">
+                            {t("aa.eff_port")} <span className="text-indigo-400 font-extrabold">{highestSharpeName}</span> {t("aa.with_sharpe")} <span className="text-indigo-400 font-extrabold">{highestSharpe.toFixed(2)}</span>.
+                          </p>
+                        </div>
+                        <p className="text-[10px] text-slate-400 italic leading-relaxed px-1 mt-2">{t("aa.sharpe_note")}</p>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
           <div className="p-6 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-slate-900">Your Saved Strategies</h3>
-            <p className="text-xs text-slate-500 mt-1">Click load to import the strategy instantly into the simulator</p>
+            <h3 className="text-sm font-bold text-slate-900">{t("aa.act_cloud")}</h3>
+            <p className="text-xs text-slate-500 mt-1">{t("aa.act_cloud_desc")}</p>
           </div>
 
           <div className="overflow-x-auto">
             {savedConfigs.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 text-xs font-semibold">
-                No saved strategies. Create a portfolio in the simulator and save it!
-              </div>
+              <div className="p-12 text-center text-slate-400 text-xs font-semibold">{t("aa.no_saved")}</div>
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/50 text-slate-400 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-100">
-                    <th className="px-6 py-4">Strategy Name</th>
-                    <th className="px-6 py-4">Analysis Period</th>
-                    <th className="px-6 py-4">Initial Capital</th>
-                    <th className="px-6 py-4">Asset Allocation</th>
-                    <th className="px-6 py-4">Key Metrics</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-6 py-4">{t("aa.strat_name")}</th>
+                    <th className="px-6 py-4">{t("pb.simSpan")}</th>
+                    <th className="px-6 py-4">{t("pb.capital")}</th>
+                    <th className="px-6 py-4">{t("aa.port_assets")}</th>
+                    <th className="px-6 py-4">{t("aa.key_met")}</th>
+                    <th className="px-6 py-4 text-right">{t("pb.save")} on</th>
+                    <th className="px-6 py-4 text-right">{t("aa.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -1090,24 +1144,49 @@ export function PortfolioBacktesting({
                               </div>
                             </div>
                           ) : (
-                            <span className="text-slate-400 font-medium italic">Report not generated</span>
+                            <span className="text-slate-400 font-medium italic">{t("aa.not_calc")}</span>
                           )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-[9px] uppercase tracking-wider text-slate-400 font-extrabold">{t("aa.saved_on")}</span>
+                            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/50 rounded-lg px-2.5 py-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.01)] w-fit">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="font-mono text-[11px] font-bold text-slate-700 tracking-tight">
+                                {formatDate(config.updatedAt || config.createdAt)}
+                              </span>
+                            </div>
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="inline-flex items-center gap-2">
                             <button
                               onClick={() => loadConfigIntoSimulator(config)}
                               className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 text-[10px] font-bold uppercase rounded-lg transition-all"
-                            >
-                              Load
-                            </button>
-                            <button
-                              onClick={() => deleteConfig(config.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 size={14} />
-                            </button>
+                            >{t("aa.load")}</button>
+                            {deleteConfirmId === config.id ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteConfig(config.id);
+                                  setDeleteConfirmId(null);
+                                }}
+                                className="px-2 py-1 text-[10px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
+                                title="Confirm deletion"
+                              >{t("aa.confirm")}</button>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteConfirmId(config.id);
+                                  setTimeout(() => setDeleteConfirmId(prev => prev === config.id ? null : prev), 3000);
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1123,56 +1202,48 @@ export function PortfolioBacktesting({
   };
 
   return (
-    <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
-      <div className="space-y-8 animate-fade-up w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-24">
+    <MobileZoomWrapper scaleMobile={0.4}>
+      <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
+      <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24">
         <div className="flex flex-col gap-8">
           {/* TITLE HEADER */}
-          <div className="mb-8">
-            <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
-              <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
-                Portfolio Backtesting
-              </h1>
-            </div>
-            <p className="text-base text-text-2 font-medium leading-relaxed w-full max-w-[1308px]">
-              {
-                "Discover how your investment strategies would have performed in the past. Backtesting evaluates the robustness of a portfolio by applying your allocation rules to actual historical data. Important note: the analysis will automatically begin at the most recent year where all selected assets share common available data."
-              }
-            </p>
-          </div>
+          <PageHeader
+            title={t("pb.title")}
+            badge={t("pb.badge")}
+            description={t("pb.description")}
+            actions={
+              <ViewToggle 
+                activeView={activeMainView} 
+                onViewChange={(view) => setActiveMainView(view)} 
+                simulatorLabel={t("common.simulator")}
+                dashboardLabel={t("dashboard.saved_scenarios")}
+              />
+            }
+          />
 
-          <div className="mb-6">
-            <ViewToggle 
-              activeView={activeMainView} 
-              onViewChange={(view) => setActiveMainView(view)} 
-              simulatorLabel="Simulator"
-              dashboardLabel="Saved Scenarios"
-            />
-          </div>
-
-          {activeMainView === "dashboard" ? renderSavedScenarios() : <>
-          <MobileZoomWrapper scaleMobile={0.5}>
-          {/* PARAMETERS HEADER */}
-          <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8">
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-              <h2 className="text-base font-semibold text-text flex items-center gap-2">
-                <Settings size={14} className="text-pv-blue" />
-                {"Strategy Parameters"}
-              </h2>
-              <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
-                <label className="hidden md:inline-block text-base font-semibold text-text ">
-                  {t("mc.portfolio_name")}
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. My Backtest"
-                  className="bg-surface border border-border text-text placeholder-slate-600 rounded-[1.5rem] px-4 py-2 text-base font-bold outline-none focus:border-pv-blue w-full md:w-48 text-text"
-                />
+          {activeMainView === "dashboard" ? (
+            renderSavedScenarios()
+          ) : (
+            <>
+            <div className="bg-surface border border-border p-6 md:p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8 text-left">
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                <h2 className="text-base font-semibold text-text flex items-center gap-2">
+                  <Settings size={14} className="text-pv-blue" />
+                  {"Strategy Parameters"}
+                </h2>
+                <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
+                  <label className="hidden md:inline-block text-base font-semibold text-text ">
+                    {t("mc.portfolio_name")}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. My Backtest"
+                    className="bg-surface-2 border border-border text-text placeholder-slate-600 rounded-[1.5rem] px-4 py-2 text-base font-bold outline-none focus:border-pv-blue w-full md:w-48 text-text"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {/* Column 1: General Info */}
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <div className="space-y-1.5">
                   <TooltipLabel
                     label={t("pb.capital")}
@@ -1184,7 +1255,7 @@ export function PortfolioBacktesting({
                     type="number"
                     value={initialAmount}
                     onChange={(e) => setInitialAmount(Number(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors font-bold"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -1194,48 +1265,44 @@ export function PortfolioBacktesting({
                       "Frequency of rebalancing to initial target weights."
                     }
                   />
-                  <select
+                  <CustomSelect
                     value={rebalancing}
-                    onChange={(e) => setRebalancing(e.target.value)}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                    onChange={(e: any) => setRebalancing(e.target.value)}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                   >
-                    <option value="none">None</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="quarterly">Quarterly</option>
-                    <option value="annual">Annually</option>
-                  </select>
+                    <option value="none">{t("aa.none")}</option>
+                    <option value="monthly">{t("aa.monthly")}</option>
+                    <option value="quarterly">{t("aa.quarterly")}</option>
+                    <option value="annual">{t("aa.annually")}</option>
+                  </CustomSelect>
                 </div>
                 <div className="space-y-1.5">
                   <TooltipLabel
                     label={"Rebalancing Bands"}
                     tooltip={"Threshold trigger bands."}
                   />
-                  <select
+                  <CustomSelect
                     value={rebalancingBands}
-                    onChange={(e) => setRebalancingBands(e.target.value)}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                    onChange={(e: any) => setRebalancingBands(e.target.value)}
                     disabled={rebalancing === "none"}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                   >
-                    <option value="none">None</option>
+                    <option value="none">{t("aa.none")}</option>
                     <option value="absolute_5">5% Absolute</option>
                     <option value="absolute_10">10% Absolute</option>
                     <option value="relative_25">25% Relative</option>
-                  </select>
+                  </CustomSelect>
                 </div>
-              </div>
-
-              {/* Column 2: Date Range */}
-              <div className="space-y-4">
                 <div className="space-y-1.5">
                   <TooltipLabel
-                    label={"Start Date"}
-                    tooltip={"Start date of the backtest (Month & Year)."}
+                    label={t("pb.since")}
+                    tooltip={t("aa.tt.start")}
                   />
                   <div className="grid grid-cols-2 gap-2">
-                    <select
+                    <CustomSelect
                       value={startMonthInput}
-                      onChange={(e) => setStartMonthInput(e.target.value)}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                      onChange={(e: any) => setStartMonthInput(e.target.value)}
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                     >
                       <option value="01">01 - Jan</option>
                       <option value="02">02 - Feb</option>
@@ -1249,11 +1316,11 @@ export function PortfolioBacktesting({
                       <option value="10">10 - Oct</option>
                       <option value="11">11 - Nov</option>
                       <option value="12">12 - Dec</option>
-                    </select>
-                    <select
+                    </CustomSelect>
+                    <CustomSelect
                       value={startYearInput}
-                      onChange={(e) => setStartYearInput(e.target.value)}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                      onChange={(e: any) => setStartYearInput(e.target.value)}
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                     >
                       <option value="oldest">Max</option>
                       <option value="1990">1990</option>
@@ -1266,19 +1333,19 @@ export function PortfolioBacktesting({
                       <option value="2015">2015</option>
                       <option value="2020">2020</option>
                       <option value="2024">2024</option>
-                    </select>
+                    </CustomSelect>
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <TooltipLabel
-                    label={"End Date"}
-                    tooltip={"End date of the backtest (Month & Year)."}
+                    label={t("pb.to")}
+                    tooltip={t("aa.tt.end")}
                   />
                   <div className="grid grid-cols-2 gap-2">
-                    <select
+                    <CustomSelect
                       value={endMonthInput}
-                      onChange={(e) => setEndMonthInput(e.target.value)}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                      onChange={(e: any) => setEndMonthInput(e.target.value)}
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                     >
                       <option value="01">01 - Jan</option>
                       <option value="02">02 - Feb</option>
@@ -1292,11 +1359,11 @@ export function PortfolioBacktesting({
                       <option value="10">10 - Oct</option>
                       <option value="11">11 - Nov</option>
                       <option value="12">12 - Dec</option>
-                    </select>
-                    <select
+                    </CustomSelect>
+                    <CustomSelect
                       value={endYearInput}
-                      onChange={(e) => setEndYearInput(e.target.value)}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                      onChange={(e: any) => setEndYearInput(e.target.value)}
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                     >
                       <option value={new Date().getFullYear().toString()}>
                         {new Date().getFullYear()} (YTD)
@@ -1310,30 +1377,26 @@ export function PortfolioBacktesting({
                       <option value="2010">2010</option>
                       <option value="2005">2005</option>
                       <option value="2000">2000</option>
-                    </select>
+                    </CustomSelect>
                   </div>
                 </div>
-              </div>
-
-              {/* Column 3: Cashflows */}
-              <div className="space-y-4">
                 <div className="space-y-1.5">
                   <TooltipLabel
                     label="Cashflows"
                     tooltip={"Periodic contributions or withdrawals."}
                   />
-                  <select
+                  <CustomSelect
                     value={cashflowType}
-                    onChange={(e) => setCashflowType(e.target.value)}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                    onChange={(e: any) => setCashflowType(e.target.value)}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                   >
-                    <option value="none">None</option>
+                    <option value="none">{t("aa.none")}</option>
                     <option value="contribute">Contribute</option>
                     <option value="withdraw">Withdraw</option>
-                  </select>
+                  </CustomSelect>
                 </div>
                 {cashflowType !== "none" && (
-                  <div className="space-y-1.5 pt-2">
+                  <div className="space-y-1.5">
                     <TooltipLabel label="Amount & Freq" tooltip="" />
                     <div className="grid grid-cols-2 gap-2">
                       <input
@@ -1342,16 +1405,16 @@ export function PortfolioBacktesting({
                         onChange={(e) =>
                           setCashflowAmount(Number(e.target.value))
                         }
-                        className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors shadow-inner"
+                        className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2 text-base font-mono outline-none focus:border-pv-blue transition-colors font-bold"
                       />
-                      <select
+                      <CustomSelect
                         value={cashflowFreq}
-                        onChange={(e) => setCashflowFreq(e.target.value)}
-                        className="w-full bg-surface border border-border text-text rounded-[1.5rem] px-2 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                        onChange={(e: any) => setCashflowFreq(e.target.value)}
+                        className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2 text-sm font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                       >
-                        <option value="monthly">Monthly</option>
-                        <option value="annually">Annually</option>
-                      </select>
+                        <option value="monthly">{t("aa.monthly")}</option>
+                        <option value="annually">{t("aa.annually")}</option>
+                      </CustomSelect>
                     </div>
                     <label className="flex items-center gap-2 mt-2 cursor-pointer">
                       <input
@@ -1360,46 +1423,40 @@ export function PortfolioBacktesting({
                         onChange={(e) => setInflationAdjusted(e.target.checked)}
                         className="w-3.5 h-3.5 accent-pv-blue"
                       />
-                      <span className="text-[10px] text-text-3 font-medium">
-                        Inflation Adjusted
-                      </span>
+                      <span className="text-xs text-text-3 font-medium">{t("aa.adj_inf")}</span>
                     </label>
                   </div>
                 )}
-              </div>
-
-              {/* Column 4: Currency & Fees */}
-              <div className="space-y-4">
                 <div className="space-y-1.5">
                   <TooltipLabel
                     label={t("pb.currency")}
                     tooltip={"Primary currency used for calculations."}
                   />
-                  <select
+                  <CustomSelect
                     value={baseCurrency}
-                    onChange={(e) => handleCurrencyChange(e.target.value)}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                    onChange={(e: any) => handleCurrencyChange(e.target.value)}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                   >
                     <option value="EUR">EUR (€)</option>
                     <option value="USD">USD ($)</option>
-                  </select>
+                  </CustomSelect>
                 </div>
-                <div className="space-y-1.5 pt-2">
+                <div className="space-y-1.5">
                   <TooltipLabel
                     label={t("pb.broker")}
                     tooltip={"Simulated broker pricing."}
                   />
-                  <select
+                  <CustomSelect
                     value={broker}
-                    onChange={(e) => setBroker(e.target.value)}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                    onChange={(e: any) => setBroker(e.target.value)}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                   >
-                    <option value="free">No Fees (0€)</option>
-                    <option value="custom">Other / Custom</option>
-                  </select>
+                    <option value="free">{t("aa.nofee")}</option>
+                    <option value="custom">{t("aa.custom")}</option>
+                  </CustomSelect>
                   {broker === "custom" && (
-                    <div className="pt-2">
-                      <label className="text-base font-bold text-text mb-1 block">
+                    <div className="pt-1">
+                      <label className="text-xs font-bold text-text mb-1 block">
                         {t("pb.customFee")}
                       </label>
                       <input
@@ -1407,30 +1464,26 @@ export function PortfolioBacktesting({
                         step="0.1"
                         value={customFee}
                         onChange={(e) => setCustomFee(Number(e.target.value))}
-                        className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors shadow-inner"
+                        className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2 text-base font-mono outline-none focus:border-pv-blue transition-colors font-bold"
                       />
                     </div>
                   )}
                 </div>
-              </div>
-
-              {/* Column 3: Dividends & Benchmarks */}
-              <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-base font-semibold text-text tracking-tighter">
+                  <label className="text-xs font-bold text-text uppercase tracking-wider block">
                     {t("pb.div")}
                   </label>
-                  <select
+                  <CustomSelect
                     value={dividendHandling}
-                    onChange={(e) => setDividendHandling(e.target.value)}
-                    className="w-full bg-surface border border-border text-text placeholder-slate-600 rounded-2xl px-3 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                    onChange={(e: any) => setDividendHandling(e.target.value)}
+                    className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-3 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                   >
                     <option value="reinvest">Reinvest All</option>
                     <option value="distribute">Distribute (Cash)</option>
-                  </select>
+                  </CustomSelect>
                 </div>
-                <div className="space-y-2 pt-1 border-t border-border">
-                  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2 w-full pt-1">
                     <input
                       type="checkbox"
                       id="benchToggle"
@@ -1440,7 +1493,7 @@ export function PortfolioBacktesting({
                     />
                     <label
                       htmlFor="benchToggle"
-                      className="text-base font-semibold text-text cursor-pointer"
+                      className="text-xs font-bold text-text cursor-pointer uppercase tracking-wider"
                     >
                       Compare Benchmark
                     </label>
@@ -1449,17 +1502,13 @@ export function PortfolioBacktesting({
                     <TickerInput
                       value={benchmarkSymbol}
                       onChange={setBenchmarkSymbol}
-                      className="w-full bg-surface border border-border text-text placeholder-slate-600 rounded-2xl px-3 py-2 text-base font-mono outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-3 py-2 text-sm font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                       placeholder="e.g. SPY"
                     />
                   )}
                 </div>
-              </div>
-
-              {/* Column 4: European Taxes & Slippage */}
-              <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-base font-semibold text-text tracking-tighter">
+                  <label className="text-xs font-bold text-text uppercase tracking-wider block">
                     Slippage (%)
                   </label>
                   <input
@@ -1467,11 +1516,11 @@ export function PortfolioBacktesting({
                     step="0.01"
                     value={slippage}
                     onChange={(e) => setSlippage(Number(e.target.value))}
-                    className="w-full bg-surface border border-border text-text placeholder-slate-600 rounded-2xl px-3 py-2 text-base font-mono outline-none focus:border-pv-blue transition-colors"
+                    className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                   />
                 </div>
-                <div className="space-y-2 pt-1.5 border-t border-border">
-                  <div className="flex items-start gap-2">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 pt-1">
                     <input
                       type="checkbox"
                       id="euTaxes"
@@ -1481,31 +1530,31 @@ export function PortfolioBacktesting({
                     />
                     <label
                       htmlFor="euTaxes"
-                      className="text-base font-semibold text-text cursor-pointer leading-tight"
+                      className="text-xs font-bold text-text cursor-pointer leading-tight uppercase tracking-wider"
                     >
                       Apply European Taxes
-                      <span className="block text-text font-normal text-base normal-case tracking-normal mt-1">
+                      <span className="block text-text-3 font-normal text-xs normal-case tracking-normal mt-1">
                         Simulate BE TOB & 30% div drag
                       </span>
                     </label>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Predefined Portfolios */}
-            <div className="pt-6 border-t border-border mt-8 w-full col-span-full">
-              <div className="flex flex-col gap-2 mb-6">
-                <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                  <Activity size={14} className="text-pv-blue" /> Suggested Allocations
+            {/* Simple Clean Suggested Model Portfolios Pill Bar */}
+            <div className="pt-4 border-t border-border mt-4 w-full">
+              <div className="flex flex-col gap-2.5">
+                <h3 className="text-sm font-semibold text-text flex items-center gap-2">
+                  <Activity size={14} className="text-pv-blue" />
+                  {t("aa.sugg") || "Suggested Model Portfolios"}
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {lazyPortfolios.slice(0, 2).map((preset, idx) => (
+                  {lazyPortfolios.map((preset, idx) => (
                     <button
                       key={idx}
                       onClick={() => applyPredefinedPortfolio(preset)}
                       disabled={portfolioNames.length >= 6}
-                      className="text-base bg-surface-2 border border-border px-3 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-colors disabled:opacity-50"
+                      className="text-xs bg-surface-2 border border-border px-3.5 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-all transform hover:scale-105 disabled:opacity-50 font-semibold shadow-sm cursor-pointer"
                     >
                       + {preset.name}
                     </button>
@@ -1539,14 +1588,12 @@ export function PortfolioBacktesting({
                 <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[800px]">
                   <thead>
                     <tr className="border-b border-border bg-surface-2">
-                      <th className="p-3 text-base font-semibold text-text w-24 whitespace-nowrap">
-                        Portfolio Assets
-                      </th>
-                      <th className="p-3 w-64"></th>
+                      <th className="py-2.5 px-2.5 text-xs lg:text-sm font-semibold text-text w-auto whitespace-nowrap">{t("aa.port_assets") || "Assets"}</th>
+                      <th className="py-2.5 px-2.5 min-w-[320px] lg:min-w-[400px] w-80 lg:w-96 border-r border-border font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Ticker & Name</th>
                       {portfolioNames.map((pn, i) => (
                         <th
                           key={pn.id}
-                          className="p-3 text-base font-semibold min-w-[140px] text-center group"
+                          className="p-3.5 text-base font-semibold min-w-[140px] text-center group"
                         >
                           <div className="flex items-center justify-center gap-2">
                             <input
@@ -1561,10 +1608,10 @@ export function PortfolioBacktesting({
                             {portfolioNames.length > 1 && (
                               <button
                                 onClick={() => removePortfolio(i)}
-                                className="text-text hover:text-red transition-colors"
+                                className="text-text-4 hover:text-red transition-colors p-0.5"
                                 title="Remove Portfolio"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3 h-3" />
                               </button>
                             )}
                           </div>
@@ -1576,63 +1623,66 @@ export function PortfolioBacktesting({
                     {portfolioAssets.map((asset, aIdx) => (
                       <tr
                         key={aIdx}
-                        className="border-b border-border last:border-0 hover:bg-surface-2"
+                        className="border-b border-border last:border-0 hover:bg-surface-2/60 transition-colors"
                       >
-                        <td className="p-1 lg:p-3 text-base lg:text-base text-text font-medium whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            Asset {aIdx + 1}
+                        <td className="py-2 pl-2.5 pr-1 text-xs lg:text-sm text-text font-semibold whitespace-nowrap w-auto">
+                          <div className="flex items-center gap-1">
+                            <span>Asset {aIdx + 1}</span>
                             {portfolioAssets.length > 1 && (
                               <button
                                 onClick={() => removeAssetRow(aIdx)}
-                                className="text-text-4 hover:text-red transition-colors"
+                                className="text-text-4 hover:text-red transition-colors p-0.5 rounded hover:bg-red/10"
                                 title="Remove Asset"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-3 h-3" />
                               </button>
                             )}
                           </div>
                           {aIdx === portfolioAssets.length - 1 && (
                             <button
                               onClick={addAsset}
-                              className="text-pv-blue hover:underline ml-2 text-[10px] lg:text-base break-keep whitespace-nowrap block mt-1"
+                              className="text-pv-blue hover:underline text-[11px] font-semibold break-keep whitespace-nowrap block mt-1"
                             >
-                              {"(Add More)"}
+                              + {t("aa.add_more") || "Add More"}
                             </button>
                           )}
                         </td>
-                        <td className="p-1 lg:p-3 min-w-[100px] lg:min-w-[200px]">
-                          <div className="flex flex-col gap-1">
-                            <div className="relative flex items-center ">
+                        <td className="py-2 pl-1 pr-2.5 border-r border-border min-w-[320px] lg:min-w-[420px]">
+                          <div className="flex items-center gap-2 w-full">
+                            <div className="relative flex items-center shadow-sm w-40 bg-surface-2 border border-border rounded-[1.5rem] px-3 py-1.5 shrink-0">
                               <TickerInput
                                 value={asset.symbol}
                                 onChange={(val) => updateAssetSymbol(aIdx, val)}
                                 placeholder="Ticker"
-                                className="bg-surface text-sm p-1 lg:p-1.5 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border font-mono font-bold"
+                                className="bg-transparent text-xs border-0 outline-none focus:ring-0 w-full box-border font-mono font-bold"
                               />
-                              <div className="hidden md:flex bg-surface-2 border border-l-0 border-border rounded-r-md px-3 py-2 items-center justify-center">
-                                <Search className="w-4 h-4 text-text" />
-                              </div>
+                              <Search className="w-3.5 h-3.5 text-text-3 shrink-0 ml-1" />
                             </div>
-                            {ASSET_DATA[asset.symbol]?.label && (
-                              <span className="text-[10px] lg:text-base text-text font-medium truncate max-w-[250px]">
-                                {ASSET_DATA[asset.symbol].label}
+                            {ASSET_DATA[asset.symbol.toUpperCase()]?.label ? (
+                              <span className="text-xs text-pv-blue font-semibold truncate flex-1 leading-tight" title={ASSET_DATA[asset.symbol.toUpperCase()].label}>
+                                {ASSET_DATA[asset.symbol.toUpperCase()].label}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-text-3/60 font-normal italic truncate flex-1">
+                                --
                               </span>
                             )}
                           </div>
                         </td>
                         {portfolioNames.map((pn, i) => (
-                          <td key={pn.id} className={`p-1 lg:p-3 `}>
-                            <div className="flex items-center max-w-[120px] mx-auto">
+                          <td key={pn.id} className="p-2 lg:p-3">
+                            <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
                               <input
                                 type="number"
+                                step="any"
                                 value={asset.weights[i] || ""}
                                 onChange={(e) =>
                                   updateAssetWeight(aIdx, i, e.target.value)
                                 }
-                                placeholder=""
-                                className="bg-surface text-sm p-1 lg:p-1.5 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border text-text font-bold"
+                                placeholder="0"
+                                className="bg-surface text-sm p-2 lg:p-2.5 border border-border rounded-l-xl outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-bold text-center"
                               />
-                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-1.5 lg:py-1.5 text-[10px] lg:text-xs text-text shrink-0 select-none">
+                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold text-text-2 shrink-0 select-none">
                                 %
                               </div>
                             </div>
@@ -1642,36 +1692,41 @@ export function PortfolioBacktesting({
                     ))}
 
                     {/* Totals Row */}
-                    <tr className="bg-surface-2">
-                      <td className="p-3 text-base font-bold text-text">
+                    <tr className="bg-surface-2 font-bold">
+                      <td className="p-3.5 text-sm lg:text-base font-bold text-text">
                         {"Total"}
                       </td>
-                      <td className="p-3 border-r border-border"></td>
+                      <td className="p-3.5 border-r border-border"></td>
                       {portfolioNames.map((pn, i) => {
                         const totalWeight = portfolioAssets.reduce(
                           (sum, a) => sum + Number(a.weights[i] || 0),
                           0,
                         );
-                        const isOk = totalWeight === 100;
+                        const isOk = Math.abs(totalWeight - 100) < 0.001;
+                        const isOver = totalWeight > 100;
                         return (
-                          <td key={"total-" + i} className="p-3">
-                            <div className="flex items-center max-w-[120px] mx-auto">
+                          <td key={"total-" + i} className="p-3.5">
+                            <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
                               <div
                                 className={cn(
-                                  "text-base p-2 border border-border rounded-l-md w-full box-border text-text outline-none",
+                                  "text-sm p-2 lg:p-2.5 border border-border rounded-l-xl w-full box-border text-center font-bold outline-none transition-colors",
                                   isOk
-                                    ? "bg-sky-500/10 border-sky-500 font-bold text-sky-500"
-                                    : "bg-surface",
+                                    ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                                    : isOver
+                                    ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
+                                    : "bg-surface text-text",
                                 )}
                               >
-                                {totalWeight}
+                                {Math.round(totalWeight * 100) / 100}
                               </div>
                               <div
                                 className={cn(
-                                  "border border-l-0 border-border rounded-r-md px-3 py-2 text-base text-text shrink-0",
+                                  "border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold shrink-0 transition-colors",
                                   isOk
-                                    ? "bg-sky-500/10 border-sky-500 font-bold text-sky-500"
-                                    : "bg-surface-2",
+                                    ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                                    : isOver
+                                    ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
+                                    : "bg-surface-2 text-text-2",
                                 )}
                               >
                                 %
@@ -1741,7 +1796,6 @@ export function PortfolioBacktesting({
               </button>
             </div>
           </div>
-          </MobileZoomWrapper>
 
           {/* RESULTS */}
           <div className="space-y-8">
@@ -1751,7 +1805,6 @@ export function PortfolioBacktesting({
                 <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
               </div>
             ) : (
-              <MobileZoomWrapper scaleMobile={0.5}>
               <div
                 id="report-content"
                 className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
@@ -1795,7 +1848,7 @@ export function PortfolioBacktesting({
                         }}
                         className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
                       >
-                        {"Edit Configuration"}
+                        {t("pb.editConfig")}
                       </button>
                       <button
                         onClick={() => {
@@ -1829,7 +1882,7 @@ export function PortfolioBacktesting({
                         <thead>
                           <tr className="bg-surface-2 border-b border-border">
                             <th className="px-6 py-4 text-left font-semibold text-text">
-                              {"Portfolio"}
+                              {t("pb.portfolio")}
                             </th>
                             <th className="px-4 py-4 text-center font-medium text-text">
                               {t("pb.alloc")}
@@ -1843,11 +1896,11 @@ export function PortfolioBacktesting({
                                 r.totalContributions !== r.initialAmount,
                             ) && (
                               <th className="px-4 py-4 text-center font-medium text-text uppercase tracking-wider text-[10px]">
-                                {"Contributions"}
+                                {t("pb.contributions")}
                               </th>
                             )}
                             <th className="px-4 py-4 text-center font-medium text-text">
-                              {"Final"}
+                              {t("pb.finalT")}
                             </th>
                             <th className="px-4 py-4 text-center font-medium text-text">
                               CAGR
@@ -1884,7 +1937,7 @@ export function PortfolioBacktesting({
                               </th>
                             )}
                             <th className="px-4 py-4 text-center font-medium text-text">
-                              {"Best / Worst"}
+                              {t("pb.bestWorst")}
                             </th>
                           </tr>
                         </thead>
@@ -2054,9 +2107,7 @@ export function PortfolioBacktesting({
                   <div className="bg-surface border border-border rounded-3xl mb-8 text-left shadow-sm">
                     <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-surface-2">
                       <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-pv-blue animate-pulse"></span>
-                        Cumulative Wealth Growth
-                      </h3>
+                        <span className="w-2.5 h-2.5 rounded-full bg-pv-blue animate-pulse"></span>{t("aa.chart.wealth")}</h3>
                     </div>
                     <div className="p-8">
                       <div className="h-[400px]">
@@ -2158,9 +2209,7 @@ export function PortfolioBacktesting({
                     <div className="bg-surface border border-border rounded-3xl shadow-sm">
                       <div className="px-8 py-6 border-b border-border bg-surface-2">
                         <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                          Annual Returns Comparison
-                        </h3>
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>{t("aa.chart.annual")}</h3>
                       </div>
                       <div className="p-8">
                         <div className="h-[500px]">
@@ -2254,9 +2303,7 @@ export function PortfolioBacktesting({
                     <div className="bg-surface border border-border rounded-3xl shadow-sm">
                       <div className="px-8 py-6 border-b border-border bg-surface-2">
                         <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-                          Portfolio Drawdowns
-                        </h3>
+                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>{t("aa.chart.drawdowns")}</h3>
                       </div>
                       <div className="p-8">
                         <div className="h-[500px]">
@@ -2351,31 +2398,26 @@ export function PortfolioBacktesting({
                   {/* Trailing Returns Table */}
                   <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 text-left">
                     <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-                      <h3 className="text-base font-semibold text-text tracking-tight">
-                        Trailing Returns
-                      </h3>
+                      <h3 className="text-base font-semibold text-text tracking-tight">{t("aa.chart.trailing")}</h3>
                     </div>
                     <div className="overflow-x-auto p-6">
                       <table className="w-full text-base border-collapse font-sans">
                         <thead>
                           <tr className="border-b border-border">
                             <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              Portfolio
+                              {t("pb.portfolio")}
                             </th>
                             <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {"1 Year"}
+                              {t("aa.1yr")}
                             </th>
                             <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {"3 Years (Ann.)"}
+                              {t("aa.5yr")}
                             </th>
                             <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {"5 Years (Ann.)"}
+                              {t("aa.10yr")}
                             </th>
                             <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {"10 Years (Ann.)"}
-                            </th>
-                            <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {"Full Period"}
+                              {t("aa.full_period")}
                             </th>
                           </tr>
                         </thead>
@@ -2408,10 +2450,6 @@ export function PortfolioBacktesting({
                                   %
                                 </td>
                                 <td className="text-right py-4 px-4 whitespace-nowrap font-medium tabular-nums">
-                                  {calcPeriod(3)?.toFixed(2) || "N/A"}
-                                  {calcPeriod(3) ? "%" : ""}
-                                </td>
-                                <td className="text-right py-4 px-4 whitespace-nowrap font-medium tabular-nums">
                                   {calcPeriod(5)?.toFixed(2) || "N/A"}
                                   {calcPeriod(5) ? "%" : ""}
                                 </td>
@@ -2433,16 +2471,14 @@ export function PortfolioBacktesting({
                   {/* Annual Returns Table */}
                   <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 text-left">
                     <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-                      <h3 className="text-base font-semibold text-text tracking-tight">
-                        Annual Returns Detail
-                      </h3>
+                      <h3 className="text-base font-semibold text-text tracking-tight">{t("aa.table.annual")}</h3>
                     </div>
                     <div className="overflow-x-auto p-6">
                       <table className="w-full text-base border-collapse font-sans">
                         <thead>
                           <tr className="border-b border-border">
                             <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {"Year"}
+                              {t("heat.year")}
                             </th>
                             {results.map((r, i) => (
                               <th
@@ -2494,20 +2530,14 @@ export function PortfolioBacktesting({
                   {/* Historical Stress Scenarios Table */}
                   <div className="bg-surface border border-border rounded-3xl shadow-md mb-12 border-2 border-border text-left">
                     <div className="px-10 py-8 border-b border-border flex items-center justify-between bg-surface-2">
-                      <h3 className="text-base font-semibold text-text ">
-                        Market Stress Audits
-                      </h3>
+                      <h3 className="text-base font-semibold text-text ">{t("aa.table.stress")}</h3>
                     </div>
                     <div className="overflow-x-auto p-10">
                       <table className="w-full text-base border-collapse">
                         <thead>
                           <tr className="border-b-2 border-border">
-                            <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">
-                              Stress Period
-                            </th>
-                            <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">
-                              Timeline
-                            </th>
+                            <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">{t("aa.table.stress_period")}</th>
+                            <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">{t("aa.table.timeline")}</th>
                             {results.map((r, i) => (
                               <th
                                 key={i}
@@ -2520,26 +2550,10 @@ export function PortfolioBacktesting({
                         </thead>
                         <tbody>
                           {[
-                            {
-                              name: "Dotcom Tech Crash",
-                              start: 2000,
-                              end: 2002,
-                            },
-                            {
-                              name: "Global Financial Crisis",
-                              start: 2008,
-                              end: 2008,
-                            },
-                            {
-                              name: "COVID-19 Pandemic Shock",
-                              start: 2020,
-                              end: 2020,
-                            },
-                            {
-                              name: "Inflation Spike & Global Tightening",
-                              start: 2022,
-                              end: 2022,
-                            },
+                            { name: t("stress.dotcom"), start: 2000, end: 2002 },
+                            { name: t("stress.gfc"), start: 2008, end: 2008 },
+                            { name: t("stress.covid"), start: 2020, end: 2020 },
+                            { name: t("stress.inflation"), start: 2022, end: 2022 },
                           ].map((event, ei) => (
                             <tr
                               key={ei}
@@ -2565,7 +2579,7 @@ export function PortfolioBacktesting({
                                       key={i}
                                       className="py-6 px-6 text-right text-text font-bold italic text-base font-mono"
                                     >
-                                      OUTSIDE SCOPE
+                                      {t("pb.outsideScope")}
                                     </td>
                                   );
                                 let prod = 1;
@@ -2616,8 +2630,7 @@ export function PortfolioBacktesting({
                           <div className="flex-1 w-full xl:w-2/3 overflow-x-auto">
                             <div className="flex items-center justify-between mb-6">
                               <h3 className="text-base font-semibold flex items-center gap-2 text-text">
-                                <Activity size={14} /> Monthly Heatmap
-                              </h3>
+                                <Activity size={14} />{t("aa.chart.heatmap")}</h3>
                             </div>
                             <ReturnsHeatmap
                               monthlyReturns={
@@ -2627,13 +2640,12 @@ export function PortfolioBacktesting({
                           </div>
                           <div className="w-full xl:w-1/3 shrink-0">
                             <h3 className="text-base font-semibold mb-6 flex items-center gap-2 text-text">
-                              <Activity size={14} /> Asset Allocation
-                            </h3>
+                              <Activity size={14} />{t("aa.port_assets")}</h3>
                             <div className="bg-surface rounded-[2rem] p-8 shadow-xl border border-border">
                               <EliteDonut
                                 assets={results[activeResIdx].assets || []}
                                 allocations={results[activeResIdx].alloc || {}}
-                                title="Asset Allocation Details"
+                                title={t("pb.assetAllocDetails")}
                               />
                             </div>
                           </div>
@@ -2642,17 +2654,18 @@ export function PortfolioBacktesting({
                     )}
                   </div>
 
+
                   <PortfolioAnalysisExplication results={results} />
                   <Disclaimer />
                 </div>
               </div>
-            </MobileZoomWrapper>
+          )}
+          </div>
+          </>
           )}
         </div>
-      </>
-      }
+      </div>
     </div>
-  </div>
-</div>
+    </MobileZoomWrapper>
   );
 }

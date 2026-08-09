@@ -1,395 +1,529 @@
 import React from 'react';
-import { useTranslation } from '../../contexts/LanguageContext';
-import { cn } from '../../lib/utils';
-import { InfoTooltip } from '../ui/InfoTooltip';
+import { cn } from "../../lib/utils";
+import { InfoTooltip } from "../ui/InfoTooltip";
+import { useTranslation } from "../../contexts/LanguageContext";
+
+interface MetricsResult {
+  name: string;
+  cagr: number;
+  sharpe: number;
+  sortino: number;
+  stdev: number;
+  maxDrawdown: number;
+  historicalVaR: number;
+  cVaR: number;
+  posCount: number;
+  mrCount: number;
+  posPercent: number;
+  gainLossRatio: number;
+  skewness: number;
+  kurtosis: number;
+}
 
 interface PortfolioAnalysisExplicationProps {
- results: any[];
+  advancedResults?: MetricsResult[];
+  results?: any[];
 }
 
-export function PortfolioAnalysisExplication({ results }: PortfolioAnalysisExplicationProps) {
- const { t, language } = useTranslation();
+const SECTION_I18N: Record<string, Record<string, string>> = {
+  sec1_title: {
+    en: "1. Compound Performance & Terminal Wealth",
+    fr: "1. Performance Composée & Richesse Finale",
+    nl: "1. Samengestelde Prestatie & Eindvermogen",
+    de: "1. Zinseszins-Performance & Endvermögen",
+    es: "1. Rendimiento Compuesto y Riqueza Final",
+  },
+  sec1_desc: {
+    en: "Pure capital compounding capability across market cycles.",
+    fr: "Capacité pure de capitalisation du capital à travers les cycles de marché.",
+    nl: "Puur vermogen tot vermogensopbouw door marktcycli heen.",
+    de: "Reine Kapitalwachstumskapazität über Marktzyklen hinweg.",
+    es: "Capacidad pura de capitalización de capital a través de ciclos de mercado.",
+  },
+  cagr: {
+    en: "Compound Annual Growth Rate (CAGR)",
+    fr: "Taux de Croissance Annuel Composé (CAGR)",
+    nl: "Geannualiseerde Groei (CAGR)",
+    de: "Jährliche Wachstumsrate (CAGR)",
+    es: "Tasa de Crecimiento Anual Compuesto (CAGR)",
+  },
+  cagr_tip: {
+    en: "The true annualized return of the strategy, factoring in compounding.",
+    fr: "Le vrai rendement annuel lissé de la stratégie, prenant en compte les intérêts composés.",
+    nl: "Het werkelijke geannualiseerde rendement van de strategie, rekening houdend met samengestelde rente.",
+    de: "Die tatsächliche jährliche Rendite der Strategie unter Berücksichtigung des Zinseszinses.",
+    es: "El rendimiento anualizado real de la estrategia, teniendo en cuenta el interés compuesto.",
+  },
+  sec2_title: {
+    en: "2. Total Volatility & Downside Stress",
+    fr: "2. Volatilité Totale & Stress à la Baisse",
+    nl: "2. Totale Volatiliteit & Neerwaartse Stress",
+    de: "2. Gesamtvolatilität & Abwärtsstress",
+    es: "2. Volatilidad Total y Estrés a la Baja",
+  },
+  sec2_desc: {
+    en: "Oscillation amplitude and maximum drawdowns endured.",
+    fr: "Amplitude d'oscillation et baisses maximales historiques subies.",
+    nl: "Schommelingsamplitude en maximale geleden dalingen.",
+    de: "Schwankungsbreite und historische maximale Verluste.",
+    es: "Amplitud de oscilación y caídas máximas sufridas.",
+  },
+  stdev: {
+    en: "Annualized Standard Deviation",
+    fr: "Écart-Type Annualisé (Volatilité)",
+    nl: "Geannualiseerde Standaarddeviatie",
+    de: "Annualisierte Standardabweichung",
+    es: "Desviación Estándar Anualizada",
+  },
+  stdev_tip: {
+    en: "Measures the dispersion of returns around the mean. Higher means more volatile swings.",
+    fr: "Mesure la dispersion des rendements autour de la moyenne. Plus élevé signifie des variations plus violentes.",
+    nl: "Meet de spreiding van de rendementen rond het gemiddelde. Hoger betekent meer volatiliteit.",
+    de: "Misst die Streuung der Renditen um den Mittelwert. Höher bedeutet stärkere Schwankungen.",
+    es: "Mide la dispersión de los rendimientos alrededor de la media. Mayor significa más volatilidad.",
+  },
+  mdd: {
+    en: "Maximum Drawdown (Peak to Trough)",
+    fr: "Perte Maximale Historique (Max Drawdown)",
+    nl: "Maximale Drawdown (Piek naar Dal)",
+    de: "Maximaler Drawdown (Höchst- bis Tiefststand)",
+    es: "Caída Máxima (Pico a Valle)",
+  },
+  mdd_tip: {
+    en: "The worst loss experienced from a peak before recovering a new high.",
+    fr: "La pire baisse subie depuis un sommet avant de retrouver un nouveau plus haut.",
+    nl: "Het ergste verlies ervaren vanaf een piek voordat een nieuw record werd bereikt.",
+    de: "Der größte Verlust von einem Höchststand bis zum Erreichen eines neuen Hochs.",
+    es: "La peor pérdida sufrida desde un pico antes de recuperar un nuevo máximo.",
+  },
+  sec3_title: {
+    en: "3. Risk-Adjusted Efficiency (Ratios)",
+    fr: "3. Efficience Ajustée du Risque (Ratios)",
+    nl: "3. Risicogecorrigeerde Efficiëntie (Ratios)",
+    de: "3. Risikoadjustierte Effizienz (Ratios)",
+    es: "3. Eficiencia Ajustada al Riesgo (Ratios)",
+  },
+  sec3_desc: {
+    en: "Reward per unit of risk taken.",
+    fr: "Rendement généré par unité de risque prise.",
+    nl: "Rendement per genomen risico-eenheid.",
+    de: "Rendite pro eingegangener Risikoeinheit.",
+    es: "Rendimiento por unidad de riesgo asumida.",
+  },
+  sharpe: {
+    en: "Sharpe Ratio (Total Risk)",
+    fr: "Ratio de Sharpe (Risque Global)",
+    nl: "Sharpe Ratio (Totaal Risico)",
+    de: "Sharpe-Ratio (Gesamtrisiko)",
+    es: "Ratio de Sharpe (Riesgo Total)",
+  },
+  sharpe_tip: {
+    en: "Excess return relative to risk-free rate divided by total volatility.",
+    fr: "Rendement excédentaire par rapport au taux sans risque divisé par la volatilité totale.",
+    nl: "Rendement boven de risicovrije rente gedeeld door de totale volatiliteit.",
+    de: "Überschussrendite gegenüber dem risikofreien Zins geteilt durch die Gesamtvolatilität.",
+    es: "Exceso de rendimiento en relación con la tasa libre de riesgo dividido por la volatilidad total.",
+  },
+  sortino: {
+    en: "Sortino Ratio (Downside Risk Only)",
+    fr: "Ratio de Sortino (Risque de Baisse Seul)",
+    nl: "Sortino Ratio (Alleen Neerwaarts Risico)",
+    de: "Sortino-Ratio (Nur Abwärtsrisiko)",
+    es: "Ratio de Sortino (Solo Riesgo a la Baja)",
+  },
+  sortino_tip: {
+    en: "Excess return divided only by downside volatility. Ignores positive upside volatility.",
+    fr: "Rendement excédentaire divisé uniquement par la volatilité baissière. Ignore la volatilité haussière.",
+    nl: "Extra rendement alleen gedeeld door neerwaartse volatiliteit. Negeert positieve opwaartse volatiliteit.",
+    de: "Überschussrendite nur geteilt durch die Abwärtsvolatilität. Ignoriert positive Aufwärtsvolatilität.",
+    es: "Exceso de rendimiento dividido solo por la volatilidad a la baja. Ignora la volatilidad positiva a la alza.",
+  },
+  sec4_title: {
+    en: "4. Extreme Monthly Risk (VaR & CVaR)",
+    fr: "4. Risque Mensuel Extrême (VaR & CVaR)",
+    nl: "4. Extreem Maandelijks Risico (VaR & CVaR)",
+    de: "4. Extremes Monatliches Risiko (VaR & CVaR)",
+    es: "4. Riesgo Mensual Extremo (VaR y CVaR)",
+  },
+  sec4_desc: {
+    en: "Exposure to the worst possible months: Value at Risk and Expected Shortfall.",
+    fr: "Exposition aux pires mois possibles : Value at Risk et Expected Shortfall.",
+    nl: "Blootstelling aan de slechtst mogelijke maanden: Value at Risk en Expected Shortfall.",
+    de: "Exposition gegenüber den schlechtesten Monaten: Value at Risk und Expected Shortfall.",
+    es: "Exposición a los peores meses posibles: Value at Risk y Expected Shortfall.",
+  },
+  sec5_title: {
+    en: "5. Monthly Win Rate & Statistical Skewness",
+    fr: "5. Taux de Réussite Mensuel & Asymétrie",
+    nl: "5. Maandelijks Winstpercentage & Asymmetrie",
+    de: "5. Monatliche Gewinnrate & Schiefe",
+    es: "5. Tasa de Ganancia Mensual y Asimetría Estadistica",
+  },
+  sec5_desc: {
+    en: "Temporal distribution of performance and tail risks.",
+    fr: "Distribution temporelle de la performance et risques de queue.",
+    nl: "Temporele verdeling van prestaties en staartrisico's.",
+    de: "Zeitliche Verteilung der Performance und Tail-Risiken.",
+    es: "Distribución temporal del rendimiento y riesgos de cola.",
+  },
+  winrate: {
+    en: "Positive Months (Win Rate)",
+    fr: "Mois Positifs (Taux de Réussite)",
+    nl: "Positieve Maanden (Winstpercentage)",
+    de: "Positive Monate (Gewinnrate)",
+    es: "Meses Positivos (Tasa de Ganancia)",
+  },
+  gainloss: {
+    en: "Gain/Loss Ratio",
+    fr: "Ratio Gain/Perte",
+    nl: "Winst/Verlies Ratio",
+    de: "Gewinn/Verlust-Verhältnis",
+    es: "Ratio Ganancia/Pérdida",
+  },
+  skewness: {
+    en: "Skewness (Asymmetry)",
+    fr: "Skewness (Asymétrie)",
+    nl: "Skewness (Asymmetrie)",
+    de: "Schiefe (Skewness)",
+    es: "Sesgo (Skewness)",
+  },
+  kurtosis: {
+    en: "Excess Kurtosis (Fat Tails)",
+    fr: "Excess Kurtosis (Queues Épaisses)",
+    nl: "Excess Kurtosis (Extreme Waarden)",
+    de: "Kurtosis (Extremwerte)",
+    es: "Exceso de Curtosis (Colas Anchas)",
+  },
+  metric: {
+    en: "Metric",
+    fr: "Métrique",
+    nl: "Metriek",
+    de: "Metrik",
+    es: "Métrica",
+  },
+  var: {
+    en: "Historical VaR (5%)",
+    fr: "VaR Historique (5%)",
+    nl: "Historische VaR (5%)",
+    de: "Historischer VaR (5%)",
+    es: "VaR Histórico (5%)",
+  },
+  cvar: {
+    en: "Conditional VaR (5%) (CVaR)",
+    fr: "VaR Conditionnelle (5%) (CVaR)",
+    nl: "Voorwaardelijke VaR (5%) (CVaR)",
+    de: "Bedingter VaR (5%) (CVaR)",
+    es: "VaR Condicional (5%) (CVaR)",
+  }
+};
 
- if (!results || results.length === 0) return null;
+export function PortfolioAnalysisExplication({ advancedResults, results }: PortfolioAnalysisExplicationProps) {
+  const { language } = useTranslation();
+  const langKey = (["en", "fr", "nl", "de", "es"].includes(language) ? language : "en") as keyof typeof SECTION_I18N["sec1_title"];
 
- const isMulti = results.length > 1;
+  const getText = (key: string) => {
+    return SECTION_I18N[key]?.[langKey] || SECTION_I18N[key]?.["en"] || key;
+  };
 
- const advancedResults = results.map(r => {
- const mr = r.monthlyReturns?.map((m: any) => m.value) || [];
- const avgMonthly = mr.length > 0 ? mr.reduce((a: number, b: number) => a + b, 0) / mr.length : 0;
- 
- const sortedReturns = [...mr].sort((a, b) => a - b);
- const var5Idx = Math.floor(sortedReturns.length * 0.05);
- const historicalVaR = sortedReturns[Math.max(0, var5Idx)] || 0;
- 
- const stdevMonthly = r.stdev / Math.sqrt(12);
- const analyticalVaR = avgMonthly - 1.645 * stdevMonthly;
- 
- const varReturns = sortedReturns.slice(0, Math.max(1, var5Idx));
- const cVaR = varReturns.length > 0 ? (varReturns.reduce((a, b) => a + b, 0) / varReturns.length) : 0;
+  const baseResults = advancedResults || results || [];
 
- const posCount = mr.filter((m: number) => m > 0).length;
- const posPercent = mr.length > 0 ? (posCount / mr.length) * 100 : 0;
- 
- const gains = mr.filter((m: number) => m > 0);
- const avgGain = gains.length > 0 ? gains.reduce((a: number, b: number) => a + b, 0) / gains.length : 0;
- const losses = mr.filter((m: number) => m < 0);
- const avgLoss = losses.length > 0 ? losses.reduce((a: number, b: number) => a + b, 0) / losses.length : 0;
- const gainLossRatio = avgLoss !== 0 ? Math.abs(avgGain / avgLoss) : 0;
+  if (!baseResults || baseResults.length === 0) return null;
 
- const skewness = mr.length > 0 && stdevMonthly > 0 ? mr.reduce((a: number, b: number) => a + Math.pow((b - avgMonthly) / stdevMonthly, 3), 0) / mr.length : 0;
- const kurtosis = mr.length > 0 && stdevMonthly > 0 ? (mr.reduce((a: number, b: number) => a + Math.pow((b - avgMonthly) / stdevMonthly, 4), 0) / mr.length) - 3 : 0;
- const downsideDev = mr.length > 0 ? Math.sqrt(mr.reduce((acc: number, curr: number) => curr < 0 ? acc + Math.pow(curr, 2) : acc, 0) / mr.length) * Math.sqrt(12) : 0;
+  const activeResults = baseResults.map(r => {
+    if (r.historicalVaR !== undefined) return r;
+    
+    let historicalVaR = 0, cVaR = 0, posCount = 0, mrCount = 0, posPercent = 0, gainLossRatio = 0, skewness = 0, kurtosis = 0;
+    
+    if (r.monthlyReturns && Array.isArray(r.monthlyReturns)) {
+      const mrVals = r.monthlyReturns.map((m: any) => m.value || 0).sort((a: number, b: number) => a - b);
+      mrCount = mrVals.length;
+      if (mrCount > 0) {
+        const idx5 = Math.floor(mrCount * 0.05);
+        historicalVaR = mrVals[idx5] || 0;
+        cVaR = mrVals.slice(0, idx5 + 1).reduce((sum: number, v: number) => sum + v, 0) / (idx5 + 1) || 0;
+        
+        posCount = mrVals.filter((v: number) => v > 0).length;
+        posPercent = (posCount / mrCount) * 100;
+        
+        const avgGain = posCount > 0 ? mrVals.filter((v: number) => v > 0).reduce((sum: number, v: number) => sum + v, 0) / posCount : 0;
+        const negCount = mrCount - posCount;
+        const avgLoss = negCount > 0 ? mrVals.filter((v: number) => v < 0).reduce((sum: number, v: number) => sum + v, 0) / negCount : 0;
+        gainLossRatio = avgLoss !== 0 ? Math.abs(avgGain / avgLoss) : 0;
+        
+        const avgMr = mrVals.reduce((sum: number, v: number) => sum + v, 0) / mrCount;
+        const varMr = mrVals.reduce((sum: number, v: number) => sum + Math.pow(v - avgMr, 2), 0) / mrCount;
+        const stdMr = Math.sqrt(varMr);
+        
+        if (stdMr !== 0) {
+          skewness = (mrVals.reduce((sum: number, v: number) => sum + Math.pow(v - avgMr, 3), 0) / mrCount) / Math.pow(stdMr, 3);
+          kurtosis = (mrVals.reduce((sum: number, v: number) => sum + Math.pow(v - avgMr, 4), 0) / mrCount) / Math.pow(stdMr, 4) - 3;
+        }
+      }
+    }
+    
+    return {
+      ...r,
+      historicalVaR,
+      cVaR,
+      posCount,
+      mrCount,
+      posPercent,
+      gainLossRatio,
+      skewness,
+      kurtosis
+    };
+  });
 
- return {
- ...r,
- avgMonthly,
- historicalVaR,
- analyticalVaR,
- cVaR,
- posCount,
- posPercent,
- gainLossRatio,
- skewness,
- kurtosis,
- downsideDev,
- mrCount: mr.length
- };
- });
+  const formatPercent = (val: number) => {
+    if (val === undefined || val === null || isNaN(val)) return "N/A";
+    return `${val.toFixed(2)}%`;
+  };
 
- const getWinner = (metric: string, index: number, invert: boolean = false) => {
- if (!isMulti) return false;
- let vals = advancedResults.map(r => Number(r[metric]) || 0);
- let bestVal = invert ? Math.min(...vals) : Math.max(...vals);
- return Math.abs(Number(advancedResults[index][metric]) - bestVal) < 0.0001;
- };
+  const formatNum = (val: number) => {
+    if (val === undefined || val === null || isNaN(val)) return "N/A";
+    return val.toFixed(2);
+  };
 
- const getWinnerNegative = (metric: string, index: number) => {
- if (!isMulti) return false;
- let vals = advancedResults.map(r => r[metric] > 0 ? -r[metric] : r[metric]);
- let bestVal = Math.max(...vals);
- let myVal = advancedResults[index][metric] > 0 ? -advancedResults[index][metric] : advancedResults[index][metric];
- return Math.abs(myVal - bestVal) < 0.0001;
- };
+  const getWinner = (metricKey: keyof MetricsResult, idx: number, lowerIsBetter = false) => {
+    if (activeResults.length <= 1) return false;
+    const values = activeResults.map(r => Number(r[metricKey]) || 0);
+    const target = lowerIsBetter ? Math.min(...values) : Math.max(...values);
+    return Number(activeResults[idx][metricKey]) === target;
+  };
 
- const formatPercent = (n: number) => isNaN(Number(n)) ? '0.00%' : Number(n).toFixed(2) + '%';
- const formatNum = (n: number) => isNaN(Number(n)) ? '0.00' : Number(n).toFixed(2);
+  const getWinnerNegative = (metricKey: keyof MetricsResult, idx: number) => {
+    if (activeResults.length <= 1) return false;
+    const values = activeResults.map(r => Number(r[metricKey]) || 0);
+    const target = Math.max(...values);
+    return Number(activeResults[idx][metricKey]) === target;
+  };
 
- return (
- <div className="space-y-12 animate-fade-in font-sans pb-16">
- 
- <div className="grid grid-cols-1 gap-12 mx-auto">
- 
- {/* 1. RENDEMENTS */}
- <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
- <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">1. Returns</h3>
- <p className="text-xs font-medium text-text mt-1 leading-relaxed">
- The absolute profitability of your investments. The Compound Annual Growth Rate (CAGR) is the most important metric because it accounts for the "snowball effect" of compound interest over time.
- </p>
- </div>
- <div className="p-8 overflow-x-auto">
- <table className="w-full text-sm">
- <thead>
- <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
- 
- {advancedResults.map((r, i) => (
- <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
- ))}
- </tr>
- </thead>
- <tbody>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Arithmetic Mean (monthly)
- <InfoTooltip content={language === "fr" ? <>Rendement moyen mensuel simple. Ne prend pas en compte l'intérêt composé.</> : <>Simple average monthly return. Does not account for compounding.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums", Number(r.avgMonthly) >= 0 ? "text-green" : "text-red", getWinner('avgMonthly', i)  ? "font-bold" : "font-medium")}>{Number(r.avgMonthly) > 0 ? "+" : ""}{formatPercent(r.avgMonthly)}</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Arithmetic Mean (annualized)
- <InfoTooltip content={language === "fr" ? <>Rendement moyen annuel simple (moyenne mensuelle x 12).</> : <>Simple average annual return (monthly average x 12).</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums", Number(r.avgMonthly * 12) >= 0 ? "text-green" : "text-red", getWinner('avgMonthly', i)  ? "font-bold" : "font-medium")}>{Number(r.avgMonthly * 12) > 0 ? "+" : ""}{formatPercent(r.avgMonthly * 12)}</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Geometric Mean (annualized)
- <InfoTooltip content={language === "fr" ? <><span className="font-bold">CAGR</span> : The true compound annual average return experienced by your portfolio.</> : <><span className="font-bold">CAGR</span> : The true compound annual growth rate experienced by your portfolio.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums", Number(r.cagr) >= 0 ? "text-green" : "text-red", getWinner('cagr', i)  ? "font-semibold" : "font-medium")}>{Number(r.cagr) > 0 ? "+" : ""}{formatPercent(r.cagr)}</td>)}
- </tr>
- </tbody>
- </table>
- {isMulti && (
- <div className="mt-8 space-y-3">
- <p className="text-sm text-text leading-relaxed">
- <span className="font-bold text-text">Profitability Analysis:</span> The decisive parameter here is the CAGR (Geometric Mean). Unlike the simple average (Arithmetic Mean) which tends to positively exaggerate performance, the CAGR reflects exactly the real growth of the money invested year after year.
- </p>
- <p className="text-sm text-text leading-relaxed">
- The portfolio <span className="text-text font-semibold">{advancedResults.reduce((prev, curr) => prev.cagr > curr.cagr ? prev : curr).name}</span> demonstrates the best structural wealth creation capability here with a CAGR of <span className="font-mono bg-surface-3 px-1.5 py-0.5 rounded text-text">{formatPercent(Math.max(...advancedResults.map(r=>Number(r.cagr))))}</span>. This indicates a more efficient exposure to market risk premiums over the observed period.
- </p>
- </div>
- )}
- </div>
- </section>
+  return (
+    <div className="w-full space-y-10 mt-12 font-sans">
+      <div className="space-y-8">
+        {/* 1. PERFORMANCE COMPOSÉE */}
+        <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
+          <div className="bg-surface-2 px-8 py-6 border-b border-border">
+            <h3 className="text-lg font-semibold text-text tracking-tight">{getText("sec1_title")}</h3>
+            <p className="text-xs font-medium text-text mt-1 leading-relaxed">{getText("sec1_desc")}</p>
+          </div>
+          <div className="p-8 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-text">
+                  <th className="text-left font-semibold pb-3 w-1/4">{getText("metric")}</th>
+                  {activeResults.map((r, i) => (
+                    <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">
+                    <div className="flex items-center gap-1">
+                      {getText("cagr")}
+                      <InfoTooltip content={getText("cagr_tip")} />
+                    </div>
+                  </td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums", Number(r.cagr) >= 0 ? "text-emerald-600 font-bold" : "text-rose-600 font-bold")}>
+                      {Number(r.cagr) > 0 ? "+" : ""}{formatPercent(r.cagr)}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
- {/* 2. RISQUE / VOLATILITÉ */}
- <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
- <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">2. Risk & Volatility</h3>
- <p className="text-xs font-medium text-text mt-1 leading-relaxed">
- Measures the amplitude of variations in your capital. High volatility can lead to higher returns but drastically increases the psychological difficulty of holding positions during crises.
- </p>
- </div>
- <div className="p-8 overflow-x-auto">
- <table className="w-full text-sm">
- <thead>
- <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
- 
- {advancedResults.map((r, i) => (
- <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
- ))}
- </tr>
- </thead>
- <tbody>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Standard Deviation
- <InfoTooltip content={language === "fr" ? <>Volatilité globale du portefeuille. Plus ce chiffre est bas, plus la courbe de croissance est lisse.</> : <>Total portfolio volatility. A lower number indicates a smoother growth curve.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums", Number(r.stdev) >= 0 ? "text-green" : "text-red", getWinner('stdev', i, true)  ? "font-bold" : "font-medium")}>{formatPercent(r.stdev)}</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Downside Deviation
- <InfoTooltip content={language === "fr" ? <>Isole uniquement la volatilité des rendements négatifs. Un bon portefeuille limite ce chiffre.</> : <>Isolates the volatility of negative returns only. A good portfolio limits this number.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums", Number(r.downsideDev) >= 0 ? "text-green" : "text-red", getWinner('downsideDev', i, true)  ? "font-bold" : "font-medium")}>{formatPercent(r.downsideDev)}</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Maximum Drawdown
- <InfoTooltip content={language === "fr" ? <>La plus grande chute de capital historique (du plus haut sommet au plus bas creux).</> : <>The largest historical capital drop (from peak to trough).</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums", Number(r.maxDrawdown) >= 0 ? "text-green" : "text-red", getWinnerNegative('maxDrawdown', i)  ? "font-semibold" : "font-medium")}>{Number(r.maxDrawdown) > 0 ? "+" : ""}{formatPercent(r.maxDrawdown)}</td>)}
- </tr>
- </tbody>
- </table>
- {isMulti && (
- <div className="mt-8 space-y-3">
- <p className="text-sm text-text leading-relaxed">
- <span className="font-bold text-text">Vulnerability Analysis:</span> The Maximum Drawdown is by far the most concrete risk indicator. It simulates what you would have experienced at the worst time (2000, 2008, or 2020 crisis). 
- </p>
- <p className="text-sm text-text leading-relaxed">
- The model <span className="text-text font-semibold">{advancedResults.reduce((prev, curr) => Math.abs(prev.maxDrawdown) < Math.abs(curr.maxDrawdown) ? prev : curr).name}</span> presents the most resilient profile with the most contained maximum drop (<span className="font-mono bg-surface-3 px-1.5 py-0.5 rounded text-text">{formatPercent(Math.max(...advancedResults.map(r=>Number(r.maxDrawdown))))}</span>). A lower Drawdown guarantees a faster return to breakeven (recovery time) and prevents panic selling. It is better to sacrifice a little yield if the gain in resilience is very important.
- </p>
- </div>
- )}
- </div>
- </section>
+        {/* 2. VOLATILITÉ & DRAWDOWNS */}
+        <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
+          <div className="bg-surface-2 px-8 py-6 border-b border-border">
+            <h3 className="text-lg font-semibold text-text tracking-tight">{getText("sec2_title")}</h3>
+            <p className="text-xs font-medium text-text mt-1 leading-relaxed">{getText("sec2_desc")}</p>
+          </div>
+          <div className="p-8 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-text">
+                  <th className="text-left font-semibold pb-3 w-1/4">{getText("metric")}</th>
+                  {activeResults.map((r, i) => (
+                    <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">
+                    <div className="flex items-center gap-1">
+                      {getText("stdev")}
+                      <InfoTooltip content={getText("stdev_tip")} />
+                    </div>
+                  </td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums text-text", getWinner('stdev', i, true) ? "font-bold text-emerald-600" : "font-medium")}>
+                      {formatPercent(r.stdev)}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">
+                    <div className="flex items-center gap-1">
+                      {getText("mdd")}
+                      <InfoTooltip content={getText("mdd_tip")} />
+                    </div>
+                  </td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums text-rose-600", getWinner('maxDrawdown', i, true) ? "font-bold" : "font-medium")}>
+                      {formatPercent(r.maxDrawdown)}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
- {/* 3. RAPPORT RISQUE RENDEMENT */}
- <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
- <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">3. Risk-Adjusted Returns</h3>
- <p className="text-xs font-medium text-text mt-1 leading-relaxed">
- Evaluates the pure efficiency of the portfolio: has each unit of risk (stress) taken been sufficiently rewarded with return?
- </p>
- </div>
- <div className="p-8 overflow-x-auto">
- <table className="w-full text-sm">
- <thead>
- <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
- 
- {advancedResults.map((r, i) => (
- <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
- ))}
- </tr>
- </thead>
- <tbody>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Sharpe Ratio
- <InfoTooltip content={language === "fr" ? <>Rendement excédentaire généré par niveau de risque "total". Généralement &gt; 1 est excellent.</> : <>Excess return generated per unit of "total" risk. Generally, &gt; 1 is excellent.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums text-text", getWinner("sharpe", i) ? "font-bold" : "font-medium")}>{Number(r.sharpe) > 0 ? "+" : ""}{formatNum(r.sharpe)}</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Sortino Ratio
- <InfoTooltip content={language === "fr" ? <>Pénalise seulement les volatilités à la baisse (ne sanctionne pas les fortes hausses inattendues). Plus précis que Sharpe.</> : <>Penalizes only downside volatility (does not penalize unexpected large gains). More precise than Sharpe.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums text-text", getWinner("sortino", i) ? "font-semibold" : "font-medium")}>{Number(r.sortino) > 0 ? "+" : ""}{formatNum(r.sortino)}</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Calmar Ratio
- <InfoTooltip content={language === "fr" ? <>CAGR divisé par le Max Drawdown. Détermine votre gain annuel par rapport à votre pire chute théorique.</> : <>CAGR divided by Max Drawdown. Determines your annual gain relative to your worst theoretical drop.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => {
- const calmar = r.maxDrawdown !== 0 ? Math.abs(r.cagr / r.maxDrawdown) : 0;
- const isWinner = isMulti && advancedResults.every(o => (o.maxDrawdown !== 0 ? Math.abs(o.cagr/o.maxDrawdown) : 0) <= calmar + 0.0001);
- return <td key={i} className={cn("text-right tabular-nums", isWinner ? "font-bold text-text" : "font-medium text-text")}>{formatNum(calmar)}</td>
- })}
- </tr>
- </tbody>
- </table>
- {isMulti && (
- <div className="mt-8 space-y-3">
- <p className="text-sm text-text leading-relaxed">
- <span className="font-bold text-text">Efficiency Analysis:</span> Professionals agree on preferring the Sortino ratio over the Sharpe ratio for long portfolio management, because upside volatility (though mathematically captured as risk in Sharpe) is actually desired by the investor.
- </p>
- <p className="text-sm text-text leading-relaxed">
- The allocation <span className="text-text font-semibold">{advancedResults.reduce((prev, curr) => prev.sortino > curr.sortino ? prev : curr).name}</span> is structurally the most optimal with a dominant Sortino Ratio of <span className="font-mono bg-surface-3 px-1.5 py-0.5 rounded text-text">{formatNum(Math.max(...advancedResults.map(r=>Number(r.sortino))))}</span>. It very generously compensates the investor for each drop of downside volatility endured. If a portfolio forces you to take much more risk for very little extra return, its ratios will collapse.
- </p>
- </div>
- )}
- </div>
- </section>
+        {/* 3. RATIOS */}
+        <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
+          <div className="bg-surface-2 px-8 py-6 border-b border-border">
+            <h3 className="text-lg font-semibold text-text tracking-tight">{getText("sec3_title")}</h3>
+            <p className="text-xs font-medium text-text mt-1 leading-relaxed">{getText("sec3_desc")}</p>
+          </div>
+          <div className="p-8 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-text">
+                  <th className="text-left font-semibold pb-3 w-1/4">{getText("metric")}</th>
+                  {activeResults.map((r, i) => (
+                    <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">
+                    <div className="flex items-center gap-1">
+                      {getText("sharpe")}
+                      <InfoTooltip content={getText("sharpe_tip")} />
+                    </div>
+                  </td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums text-text", getWinner('sharpe', i) ? "font-bold text-emerald-600" : "font-medium")}>
+                      {formatNum(r.sharpe)}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">
+                    <div className="flex items-center gap-1">
+                      {getText("sortino")}
+                      <InfoTooltip content={getText("sortino_tip")} />
+                    </div>
+                  </td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums text-text", getWinner('sortino', i) ? "font-bold text-emerald-600" : "font-medium")}>
+                      {formatNum(r.sortino)}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
- {/* 4. PERTE EXTRÊME (VaR) */}
- <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
- <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">4. Extreme Monthly Risk (VaR & CVaR)</h3>
- <p className="text-xs font-medium text-text mt-1 leading-relaxed">
- Exposure to the worst possible months: Value at Risk and Expected Shortfall model extreme systemic risk (tail distributions).
- </p>
- </div>
- <div className="p-8 overflow-x-auto">
- <table className="w-full text-sm">
- <thead>
- <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
- 
- {advancedResults.map((r, i) => (
- <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
- ))}
- </tr>
- </thead>
- <tbody>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Historical VaR (5%)
- <InfoTooltip content={language === "fr" ? <>Pire perte mensuelle potentielle avec un niveau de confiance à 95%. "Sur 100 mois, les pires 5 mois seront en dessous de ce seuil".</> : <>Worst potential monthly loss with a 95% confidence level. "Out of 100 months, the worst 5 months will fall below this threshold".</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums", Number(r.historicalVaR) >= 0 ? "text-green" : "text-red", getWinnerNegative('historicalVaR', i)  ? "font-bold" : "font-medium")}>{Number(r.historicalVaR) > 0 ? "+" : ""}{formatPercent(r.historicalVaR)}</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Conditional VaR (5%) (CVaR)
- <InfoTooltip content={language === "fr" ? <><span className="font-bold underline">Expected Shortfall</span> : La moyenne absolue des 5% de pires mois. Exprime "quand les choses vont vraiment mal, à quoi s'attendre en moyenne".</> : <><span className="font-bold underline">Expected Shortfall</span> : The absolute average of the worst 5% of months. Expresses "when things go really wrong, what to expect on average".</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums", Number(r.cVaR) >= 0 ? "text-green" : "text-red", getWinnerNegative('cVaR', i)  ? "font-semibold" : "font-medium")}>{Number(r.cVaR) > 0 ? "+" : ""}{formatPercent(r.cVaR)}</td>)}
- </tr>
- </tbody>
- </table>
- {isMulti && (
- <div className="mt-8 space-y-3">
- <p className="text-sm text-text leading-relaxed">
- <span className="font-bold text-text">Extreme Events Analysis:</span> The Conditional VaR (CVaR) is particularly revealing for identifying mental "bankruptcy risk". In a month that would be in the Top 5% of the worst months in financial history, the CVaR identifies the average magnitude of capital destruction.
- </p>
- </div>
- )}
- </div>
- </section>
+        {/* 4. VAR & CVAR */}
+        <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
+          <div className="bg-surface-2 px-8 py-6 border-b border-border">
+            <h3 className="text-lg font-semibold text-text tracking-tight">{getText("sec4_title")}</h3>
+            <p className="text-xs font-medium text-text mt-1 leading-relaxed">{getText("sec4_desc")}</p>
+          </div>
+          <div className="p-8 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-text">
+                  <th className="text-left font-semibold pb-3 w-1/4">{getText("metric")}</th>
+                  {activeResults.map((r, i) => (
+                    <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">{getText("var")}</td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums", Number(r.historicalVaR) >= 0 ? "text-emerald-600" : "text-rose-600", getWinnerNegative('historicalVaR', i) ? "font-bold" : "font-medium")}>
+                      {Number(r.historicalVaR) > 0 ? "+" : ""}{formatPercent(r.historicalVaR)}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">{getText("cvar")}</td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums", Number(r.cVaR) >= 0 ? "text-emerald-600" : "text-rose-600", getWinnerNegative('cVaR', i) ? "font-semibold" : "font-medium")}>
+                      {Number(r.cVaR) > 0 ? "+" : ""}{formatPercent(r.cVaR)}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
- {/* 5. GESTION DES BAISSES */}
- <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
- <div className="bg-surface-2 px-8 py-6 border-b border-border">
- <h3 className="text-lg font-semibold text-text tracking-tight">5. Monthly Win Rate & Statistical Skewness</h3>
- <p className="text-xs font-medium text-text mt-1 leading-relaxed">
- Temporal distribution of performance: Win rate frequency of months in the green and statistical distribution around the mean.
- </p>
- </div>
- <div className="p-8 overflow-x-auto">
- <table className="w-full text-sm">
- <thead>
- <tr className="border-b border-border text-text">
- <th className="text-left font-semibold pb-3 w-1/4">Metric</th>
- 
- {advancedResults.map((r, i) => (
- <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
- ))}
- </tr>
- </thead>
- <tbody>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Positive Months (Win Rate)
- <InfoTooltip content={language === "fr" ? <>Probabilité qu'un mois donné clôture dans le vert. Indicateur clé du confort psychologique de l'investisseur.</> : <>Probability that a given month closes in the green. Key indicator of the investor's psychological comfort.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums text-text", getWinner('posPercent', i) ? "font-bold" : "font-medium")}>{r.posCount}/{r.mrCount} ({formatPercent(r.posPercent)})</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Gain/Loss Ratio
- <InfoTooltip content={language === "fr" ? <>Moyenne des pourcentages de gains absolus divisée par la moyenne des pourcentages de pertes absolues.</> : <>Average of absolute percentage gains divided by the average of absolute percentage losses.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums text-text", getWinner("gainLossRatio", i) ? "font-semibold" : "font-medium")}>{formatNum(r.gainLossRatio)}</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Skewness
- <InfoTooltip content={language === "fr" ? <>Un Skewness très négatif avertit d'une forte asymétrie vers les krachs rapides (queue gauche épaisse). Un skewness proche de 0 ou positif est préférable.</> : <>A highly negative Skewness warns of a strong asymmetry towards rapid crashes (fat left tail). A skewness near 0 or positive is preferable.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums text-text", getWinnerNegative("skewness", i) ? "font-bold" : "font-medium")}>{Number(r.skewness) > 0 ? "+" : ""}{formatNum(r.skewness)}</td>)}
- </tr>
- <tr className="border-b border-border hover:bg-surface-2">
- <td className="py-4 font-semibold text-text my-auto">
- <div className="flex items-center gap-1">
- Excess Kurtosis
- <InfoTooltip content={language === "fr" ? <>Indique l'aplatissement de la courbe. Plus de 3 (ou positif ici) indique de nombreuses "black swans" ou valeurs très extrêmes. Mieux vaut un niveau bas.</> : <>Indicates the flatness of the curve. Greater than 3 (or positive here) indicates many "black swans" or very extreme values. Better to have a low level.</>} />
- </div>
- </td>
- {advancedResults.map((r, i) => <td key={i} className={cn("text-right tabular-nums text-text", getWinner("kurtosis", i, true) ? "font-bold" : "font-medium")}>{formatNum(r.kurtosis)}</td>)}
- </tr>
- </tbody>
- </table>
- {isMulti && (
- <div className="mt-8 space-y-3">
- <p className="text-sm text-text leading-relaxed">
- <span className="font-bold text-text">Monthly Asymmetry Analysis:</span> The Gain/Loss ratio and the Win Rate give you a glimpse of the "path". The general stock market usually has negative skewness (takes the stairs up, elevator down). If your model successfully cancels this negative skewness or drastically improves the ratio of positive months, it indicates it contains strong de-correlators (like Gold, long "Safe Haven" bonds, or Trend Following strategies).
- </p>
- </div>
- )}
- </div>
- </section>
-
- </div>
- </div>
- );
+        {/* 5. MONTHLY WIN RATE & SKEWNESS */}
+        <section className="bg-surface border border-border rounded-3xl shadow-md overflow-hidden text-left">
+          <div className="bg-surface-2 px-8 py-6 border-b border-border">
+            <h3 className="text-lg font-semibold text-text tracking-tight">{getText("sec5_title")}</h3>
+            <p className="text-xs font-medium text-text mt-1 leading-relaxed">{getText("sec5_desc")}</p>
+          </div>
+          <div className="p-8 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-text">
+                  <th className="text-left font-semibold pb-3 w-1/4">{getText("metric")}</th>
+                  {activeResults.map((r, i) => (
+                    <th key={i} className="text-right font-bold text-text pb-3">{r.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">{getText("winrate")}</td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums text-text", getWinner('posPercent', i) ? "font-bold" : "font-medium")}>
+                      {r.posCount}/{r.mrCount} ({formatPercent(r.posPercent)})
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">{getText("gainloss")}</td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums text-text", getWinner("gainLossRatio", i) ? "font-semibold" : "font-medium")}>
+                      {formatNum(r.gainLossRatio)}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">{getText("skewness")}</td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums text-text", getWinnerNegative("skewness", i) ? "font-bold" : "font-medium")}>
+                      {Number(r.skewness) > 0 ? "+" : ""}{formatNum(r.skewness)}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-2">
+                  <td className="py-4 font-semibold text-text my-auto">{getText("kurtosis")}</td>
+                  {activeResults.map((r, i) => (
+                    <td key={i} className={cn("text-right tabular-nums text-text", getWinner("kurtosis", i, true) ? "font-bold" : "font-medium")}>
+                      {formatNum(r.kurtosis)}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
 }
-

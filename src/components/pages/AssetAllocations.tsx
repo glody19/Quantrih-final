@@ -19,8 +19,19 @@ import {
   Play,
   Search,
   PieChart,
+  Calendar,
+  CheckSquare,
+  Square,
+  Check,
+  RefreshCw,
+  Cpu,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { PageHeader } from "../ui/PageHeader";
+import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
+import { PresetPortfoliosSelector } from "../ui/PresetPortfoliosSelector";
+import { CustomSelect } from "../ui/CustomSelect";
 import { ASSET_DATA, YEARS } from "../../constants";
 import { computeMetrics, convertReturn } from "../../utils";
 import { Metrics, BacktestResult } from "../../types";
@@ -40,7 +51,6 @@ import { handleFirestoreError, OperationType } from "../../lib/firestoreUtils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { InfoTooltip } from "../ui/InfoTooltip";
 import { Disclaimer } from "../ui/Disclaimer";
-import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { ViewToggle } from "../ui/ViewToggle";
 import { lazyPortfolios } from "./lazyPortfoliosData";
 import { TickerInput } from "../ui/TickerInput";
@@ -167,41 +177,26 @@ export function AssetAllocations({
   const [activeMainView, setActiveMainView] = useState<"simulator" | "dashboard">("simulator");
   const [configsLoading, setConfigsLoading] = useState(false);
   const [savedConfigs, setSavedConfigs] = useState<any[]>([]);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [selectedCompareIds, setSelectedCompareIds] = useState<string[]>([]);
   const [portfolioNames, setPortfolioNames] = useLocalStorage<{ id: string; name: string }[]>(
-    "aa_portfolioNames_v7",
-    typeof window !== "undefined" && window.innerWidth >= 1024
-      ? [
-        { id: "1", name: "Balanced (60/40)" },
-        { id: "2", name: "All-Weather (Dalio)" },
-        { id: "3", name: "Warren Buffett" },
-        { id: "4", name: "Permanent Portfolio" },
-      ]
-    : [
-        { id: "1", name: "Balanced (60/40)" },
-        { id: "2", name: "All-Weather (Dalio)" },
-      ]
+    "aa_portfolioNames_v8",
+    [
+      { id: "1", name: "Portfolio 1" },
+      { id: "2", name: "Portfolio 2" },
+      { id: "3", name: "Portfolio 3" },
+    ]
   );
 
   const [portfolioAssets, setPortfolioAssets] = useLocalStorage<
     { symbol: string; weights: string[] }[]
-  >("aa_portfolioAssets_v7", typeof window !== "undefined" && window.innerWidth >= 1024
-    ? [
-        { symbol: "VTI", weights: ["60", "30", "90", "25"] },
-        { symbol: "BND", weights: ["40", "0", "10", "0"] },
-        { symbol: "TLT", weights: ["0", "40", "0", "25"] },
-        { symbol: "IEF", weights: ["0", "15", "0", "25"] },
-        { symbol: "GLD", weights: ["0", "7.5", "0", "25"] },
-        { symbol: "PDBC", weights: ["0", "7.5", "0", "0"] },
-      ]
-    : [
-        { symbol: "VTI", weights: ["60", "30"] },
-        { symbol: "BND", weights: ["40", "0"] },
-        { symbol: "TLT", weights: ["0", "40"] },
-        { symbol: "IEF", weights: ["0", "15"] },
-        { symbol: "GLD", weights: ["0", "7.5"] },
-        { symbol: "PDBC", weights: ["0", "7.5"] },
-      ]
-  );
+  >("aa_portfolioAssets_v8", [
+    { symbol: "VTI", weights: ["60", "30", "100"] },
+    { symbol: "BND", weights: ["40", "0", "0"] },
+    { symbol: "TLT", weights: ["0", "40", "0"] },
+    { symbol: "IEF", weights: ["0", "15", "0"] },
+    { symbol: "GLD", weights: ["0", "15", "0"] },
+  ]);
 
   // Defined Asset Classes for the dropdown
   const ASSET_CLASSES = [
@@ -264,6 +259,14 @@ export function AssetAllocations({
         { label: "REITs", symbol: "VNQ" },
         { label: "Gold", symbol: "GLD" },
         { label: "Commodities", symbol: "PDBC" },
+      ],
+    },
+    {
+      group: "Crypto",
+      options: [
+        { label: "Bitcoin", symbol: "BTC-USD" },
+        { label: "Ethereum", symbol: "ETH-USD" },
+        { label: "Solana", symbol: "SOL-USD" },
       ],
     },
   ];
@@ -348,14 +351,7 @@ export function AssetAllocations({
   }, [activeMainView, user]);
 
   const deleteConfig = async (id: string) => {
-    alert("Delete clicked for: " + id);
     if (!user) {
-      alert("No user!");
-      return;
-    }
-    
-    // Explicit confirmation
-    if (!window.confirm("Are you sure you want to permanently delete this saved strategy? This action cannot be undone.")) {
       return;
     }
 
@@ -369,7 +365,6 @@ export function AssetAllocations({
       loadSavedConfigs();
     } catch (e) {
       console.error("Failed to delete config:", e);
-      alert("Failed to delete the strategy. Please try again: " + e);
       // Reload to revert optimistic update if failed
       loadSavedConfigs();
     }
@@ -387,20 +382,14 @@ export function AssetAllocations({
           <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
             <Database size={32} />
           </div>
-          <h2 className="text-xl font-bold text-slate-900">
-            Activate Saved Scenarios
-          </h2>
-          <p className="text-sm text-slate-600 leading-relaxed">
-            To save your asset allocation strategies, compare them side-by-side with innovative charts, and benefit from intelligent allocation analysis, log in or create a free account.
-          </p>
+          <h2 className="text-xl font-bold text-slate-900">{t("aa.act_saved_scen")}</h2>
+          <p className="text-sm text-slate-600 leading-relaxed">{t("aa.act_saved_scen_desc")}</p>
           <button
             onClick={() => {
               window.location.href = "/auth";
             }}
             className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-md shadow-blue-500/10"
-          >
-            Log In / Sign Up
-          </button>
+          >{t("header.login")}</button>
         </div>
       );
     }
@@ -409,9 +398,7 @@ export function AssetAllocations({
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-xs font-bold uppercase tracking-widest text-text-3">
-            Loading your saved strategies...
-          </p>
+          <p className="text-xs font-bold uppercase tracking-widest text-text-3">{t("aa.load_saved")}</p>
         </div>
       );
     }
@@ -442,10 +429,15 @@ export function AssetAllocations({
       });
     });
 
-    const hasChartData = configsWithResults.length > 0;
-    const chartLabels = configsWithResults.map(c => c.name || "Unnamed");
-    const chartCagrData = configsWithResults.map(c => c.resultsSummary[0]?.cagr || 0);
-    const chartDrawdownData = configsWithResults.map(c => Math.abs(c.resultsSummary[0]?.maxDrawdown || 0));
+    // Handle filter for chart and side-by-side comparison matrix based on selectedCompareIds
+    const comparedConfigs = selectedCompareIds.length > 0
+      ? configsWithResults.filter(c => selectedCompareIds.includes(c.id))
+      : configsWithResults;
+
+    const hasChartData = comparedConfigs.length > 0;
+    const chartLabels = comparedConfigs.map(c => c.name || "Unnamed");
+    const chartCagrData = comparedConfigs.map(c => c.resultsSummary[0]?.cagr || 0);
+    const chartDrawdownData = comparedConfigs.map(c => Math.abs(c.resultsSummary[0]?.maxDrawdown || 0));
 
     const comparisonChartData = {
       labels: chartLabels,
@@ -453,203 +445,547 @@ export function AssetAllocations({
         {
           label: "CAGR (Return %)",
           data: chartCagrData,
-          backgroundColor: "rgba(16, 185, 129, 0.8)",
-          borderColor: "rgb(16, 185, 129)",
-          borderWidth: 1,
+          backgroundColor: "rgba(37, 99, 235, 0.8)",
+          borderColor: "rgb(37, 99, 235)",
+          borderWidth: 1.5,
           borderRadius: 8,
+          barThickness: 24,
         },
         {
           label: "Max Drawdown (%)",
           data: chartDrawdownData,
-          backgroundColor: "rgba(239, 68, 68, 0.8)",
+          backgroundColor: "rgba(239, 68, 68, 0.85)",
           borderColor: "rgb(239, 68, 68)",
-          borderWidth: 1,
+          borderWidth: 1.5,
           borderRadius: 8,
+          barThickness: 24,
         }
       ]
     };
 
     const chartOptions = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: "top" as const,
-          labels: { font: { weight: "bold" as const, size: 11 } }
+          labels: { font: { weight: "bold" as const, size: 10, family: "Inter" } }
         },
         title: {
           display: true,
-          text: "Strategy Performance Comparison",
-          font: { size: 13, weight: "bold" as const }
+          text: t("dashboard.comparison_chart"),
+          font: { size: 12, weight: "bold" as const, family: "Inter" },
+          padding: 16
         }
       },
       scales: {
         y: {
           beginAtZero: true,
-          ticks: { callback: (value: any) => `${value}%` }
+          grid: {
+            color: "rgba(241, 245, 249, 0.8)"
+          },
+          ticks: { font: { family: "JetBrains Mono", size: 10 }, callback: (value: any) => `${value}%` }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: { font: { family: "Inter", weight: "bold" as const, size: 10 } }
         }
       }
     };
 
     const recommendations: any[] = [];
-    
-    // Simple recommendations logic
-    if (configsWithResults.length > 0) {
+    if (comparedConfigs.length > 0) {
       recommendations.push({
         type: "tip",
-        title: "Portfolio Diversification",
-        text: "Compare your CAGR across different allocations. If one portfolio has significantly lower drawdown with similar CAGR, it might be more efficient for long-term growth."
+        title: "Efficient Frontier Optimization",
+        text: "Compare return (CAGR) against risk (Max Drawdown). If a scenario achieves a higher Sharpe ratio, it offers better efficiency for each unit of risk taken."
+      });
+      recommendations.push({
+        type: "tip",
+        title: "Recurring Asset Rebalancing",
+        text: "Automatic monthly contributions tend to smooth historical maximum drawdowns during periods of high market volatility."
       });
     }
 
+    // Custom Date Formatter
+    const formatDate = (timestamp: any) => {
+      if (!timestamp) return "N/A";
+      const date = new Date(Number(timestamp));
+      if (isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    // Calculate scaling limits for Excel data-bars
+    const maxCagrLimit = Math.max(...configsWithResults.map(c => c.resultsSummary[0]?.cagr || 1), 5);
+    const maxDrawdownLimit = Math.max(...configsWithResults.map(c => Math.abs(c.resultsSummary[0]?.maxDrawdown || 1)), 5);
+
     return (
-      <div className="space-y-8 animate-fade-in font-sans">
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="space-y-10 animate-fade-in font-sans">
+        {/* Workspace connection state bar */}
+        <div className="bg-slate-50/60 backdrop-blur-sm border border-slate-100 rounded-3xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <p className="text-[13px] font-semibold text-slate-700">
-              Active workspace for <span className="font-bold text-slate-900">{user.email}</span>
+            <p className="text-[13px] font-semibold text-slate-700">{t("aa.conn_work")} • <span className="font-bold text-slate-900">{user?.email}</span>
             </p>
           </div>
-          <button
-            onClick={loadSavedConfigs}
-            className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-lg transition-all shadow-sm"
-          >
-            Refresh
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={loadSavedConfigs}
+              className="flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-[11px] font-extrabold uppercase tracking-wider rounded-xl transition-all shadow-sm"
+            >
+              <RefreshCw size={12} className="text-slate-400 animate-spin-slow" />
+              Refresh
+            </button>
+          </div>
         </div>
 
+        {/* Dashboard Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">
-              Saved Strategies
+          <div className="bg-white border border-slate-200/80 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+              {t("dashboard.saved_scenarios")}
             </p>
             <div className="mt-4">
-              <p className="text-3xl font-extrabold text-slate-900">{totalCount}</p>
-              <p className="text-[11px] text-slate-500 font-medium mt-1">Strategies saved</p>
+              <p className="text-3xl font-extrabold text-slate-900 tracking-tight">{totalCount}</p>
+              <p className="text-[11px] text-slate-500 font-medium mt-1">{t("aa.conf_cloud")}</p>
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-500">
-              Best Historical CAGR
+          <div className="bg-white border border-slate-200/80 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-500">
+              {t("dashboard.best_cagr")}
             </p>
             <div className="mt-4">
-              <p className="text-3xl font-extrabold text-emerald-600">{bestCagr}</p>
-              <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestCagrName}>
+              <p className="text-3xl font-extrabold text-emerald-600 tracking-tight">{bestCagr}</p>
+              <p className="text-[11px] text-slate-500 font-medium truncate mt-1" title={bestCagrName}>
                 {bestCagrName || "No report generated"}
               </p>
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">
-              Optimal Sharpe Ratio
+          <div className="bg-white border border-slate-200/80 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-500">
+              {t("dashboard.best_sharpe")}
             </p>
             <div className="mt-4">
-              <p className="text-3xl font-extrabold text-indigo-600">{bestSharpe}</p>
-              <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestSharpeName}>
+              <p className="text-3xl font-extrabold text-indigo-600 tracking-tight">{bestSharpe}</p>
+              <p className="text-[11px] text-slate-500 font-medium truncate mt-1" title={bestSharpeName}>
                 {bestSharpeName || "No report generated"}
               </p>
             </div>
           </div>
         </div>
 
+        {/* Chart & AI Insights section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm lg:col-span-8 flex flex-col justify-center min-h-[380px]">
+          <div className="bg-white border border-slate-200/80 p-6 rounded-[2rem] shadow-sm lg:col-span-8 flex flex-col justify-between min-h-[380px]">
             {hasChartData ? (
-              <div className="w-full h-full">
+              <div className="w-full h-[320px]">
                 <Bar data={comparisonChartData} options={chartOptions} />
               </div>
             ) : (
-              <div className="text-center py-12 flex flex-col items-center gap-4">
+              <div className="text-center py-12 flex flex-col items-center gap-4 my-auto">
                 <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
                   <BarChart3 size={24} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">No comparative report available</p>
-                  <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-                    Run an analysis in the simulator, then save it to display compared metrics.
-                  </p>
+                  <p className="text-sm font-bold text-slate-900">{t("aa.no_comp")}</p>
+                  <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">{t("aa.no_comp_desc")}</p>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm lg:col-span-4 flex flex-col gap-6">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                <Activity size={16} className="text-blue-500" />
-                AI Insights
+          <div className="bg-white border border-slate-200/80 p-6 rounded-[2rem] shadow-sm lg:col-span-4 flex flex-col gap-6">
+            <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+              <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <Sparkles size={14} className="text-yellow-500" />
+                {t("dashboard.ai_analysis")}
               </h3>
             </div>
             <div className="space-y-4 overflow-y-auto max-h-[300px] pr-1">
               {recommendations.map((rec, i) => (
-                <div key={i} className={cn(
-                  "p-4 rounded-2xl border text-xs leading-relaxed flex flex-col gap-1.5",
-                  rec.type === "warning" ? "bg-amber-50/50 border-amber-200 text-amber-900" :
-                  rec.type === "tip" ? "bg-emerald-50/50 border-emerald-200 text-emerald-900" :
-                  "bg-slate-50 border-slate-200 text-slate-700"
-                )}>
-                  <p className="font-extrabold flex items-center gap-1.5">
-                    {rec.type === "warning" && "⚠️"}
-                    {rec.type === "tip" && "💡"}
-                    {rec.title}
+                <div key={i} className="p-4 rounded-2xl border text-xs leading-relaxed flex flex-col gap-1.5 bg-slate-50/50 border-slate-100 text-slate-700 hover:bg-slate-50 transition-all">
+                  <p className="font-extrabold flex items-center gap-1.5 text-slate-900">
+                    💡 {rec.title}
                   </p>
-                  <p className="font-medium text-[11px] opacity-90">{rec.text}</p>
+                  <p className="font-medium text-[11px] text-slate-500">{rec.text}</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-slate-900">Your Saved Allocations</h3>
-            <p className="text-xs text-slate-500 mt-1">Click load to import the strategy instantly into the simulator</p>
+        {/* ADVANCED EXCEL-INSPIRED COMPARISON MATRIX */}
+        {comparedConfigs.length > 1 && (
+          <div className="bg-white border border-slate-200/80 rounded-[2rem] shadow-sm overflow-hidden animate-fade-in">
+            <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                <BarChart3 size={16} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">{t("dashboard.matrix_title")}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{t("dashboard.matrix_desc")}</p>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[800px]">
+                <thead>
+                  <tr className="bg-slate-100/50 text-slate-500 font-bold uppercase text-[9px] tracking-wider border-b border-slate-200">
+                    <th className="px-6 py-3 bg-slate-100/20 w-[240px]">{t("dashboard.parameter_metric")}</th>
+                    {comparedConfigs.map(c => (
+                      <th key={c.id} className="px-6 py-3 font-extrabold text-blue-600 text-center border-l border-slate-100">
+                        {c.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {/* Performance Rating */}
+                  <tr className="hover:bg-slate-50/30">
+                    <td className="px-6 py-3 font-semibold text-slate-600 bg-slate-50/20">{t("dashboard.performance_score")}</td>
+                    {comparedConfigs.map(c => {
+                      const m = c.resultsSummary?.[0];
+                      const score = m ? (m.cagr / Math.max(Math.abs(m.maxDrawdown || 1), 1)) * 5 : 0;
+                      const stars = Math.min(Math.max(Math.round(score), 1), 5);
+                      return (
+                        <td key={c.id} className="px-6 py-3 text-center border-l border-slate-100 font-medium">
+                          <div className="flex justify-center gap-0.5 text-yellow-400 text-sm">
+                            {Array.from({ length: 5 }).map((_, idx) => (
+                              <span key={idx}>{idx < stars ? "★" : "☆"}</span>
+                            ))}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* CAGR Row with excel fill bars */}
+                  <tr className="hover:bg-slate-50/30">
+                    <td className="px-6 py-4 font-semibold text-slate-600 bg-slate-50/20">{t("dashboard.annual_return")}</td>
+                    {comparedConfigs.map(c => {
+                      const cagr = c.resultsSummary?.[0]?.cagr || 0;
+                      const pctWidth = `${Math.min(Math.max((cagr / maxCagrLimit) * 100, 8), 100)}%`;
+                      return (
+                        <td key={c.id} className="px-6 py-4 border-l border-slate-100 text-center">
+                          <div className="flex flex-col items-center gap-1.5 w-full">
+                            <span className="font-extrabold text-emerald-600 text-sm">{cagr.toFixed(2)}%</span>
+                            <div className="w-32 bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
+                              <div className="bg-emerald-500 h-full rounded-full transition-all" style={{ width: pctWidth }} />
+                            </div>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Sharpe Ratio with color scales */}
+                  <tr className="hover:bg-slate-50/30">
+                    <td className="px-6 py-4 font-semibold text-slate-600 bg-slate-50/20">{t("dashboard.sharpe_efficiency")}</td>
+                    {comparedConfigs.map(c => {
+                      const sharpe = c.resultsSummary?.[0]?.sharpe || 0;
+                      const isGood = sharpe >= 1.0;
+                      const isMedium = sharpe >= 0.5 && sharpe < 1.0;
+                      return (
+                        <td key={c.id} className="px-6 py-4 border-l border-slate-100 text-center">
+                          <span className={cn(
+                            "px-3 py-1 rounded-full font-bold text-xs shadow-sm",
+                            isGood ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                            isMedium ? "bg-amber-50 text-amber-700 border border-amber-200" :
+                            "bg-rose-50 text-rose-700 border border-rose-200"
+                          )}>
+                            {sharpe.toFixed(2)}
+                          </span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Max Drawdown with Red Fill bars */}
+                  <tr className="hover:bg-slate-50/30">
+                    <td className="px-6 py-4 font-semibold text-slate-600 bg-slate-50/20">{t("dashboard.max_drawdown")}</td>
+                    {comparedConfigs.map(c => {
+                      const mdd = Math.abs(c.resultsSummary?.[0]?.maxDrawdown || 0);
+                      const pctWidth = `${Math.min(Math.max((mdd / maxDrawdownLimit) * 100, 8), 100)}%`;
+                      return (
+                        <td key={c.id} className="px-6 py-4 border-l border-slate-100 text-center">
+                          <div className="flex flex-col items-center gap-1.5 w-full">
+                            <span className="font-extrabold text-red-600 text-sm">-{mdd.toFixed(2)}%</span>
+                            <div className="w-32 bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
+                              <div className="bg-red-500 h-full rounded-full transition-all" style={{ width: pctWidth }} />
+                            </div>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+
+                  {/* Portfolio assets weight allocation details */}
+                  <tr className="hover:bg-slate-50/30">
+                    <td className="px-6 py-4 font-semibold text-slate-600 bg-slate-50/20">{t("dashboard.asset_allocation")}</td>
+                    {comparedConfigs.map(c => (
+                      <td key={c.id} className="px-6 py-4 border-l border-slate-100">
+                        <div className="flex flex-wrap gap-1 justify-center max-w-[200px] mx-auto">
+                          {c.portfolioAssets?.filter((a: any) => a.weights && a.weights.some((w: any) => Number(w) > 0)).slice(0, 4).map((a: any, i: number) => (
+                            <span key={i} className="px-2 py-0.5 rounded bg-slate-50 border border-slate-100 text-slate-600 font-bold text-[9px]">
+                              {a.symbol}: {a.weights[0]}%
+                            </span>
+                          ))}
+                          {c.portfolioAssets?.length > 4 && <span className="text-[9px] font-bold text-slate-400">...</span>}
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Periods and contribution */}
+                  <tr className="hover:bg-slate-50/30">
+                    <td className="px-6 py-3 font-semibold text-slate-600 bg-slate-50/20">{t("dashboard.period_contribution")}</td>
+                    {comparedConfigs.map(c => (
+                      <td key={c.id} className="px-6 py-3 border-l border-slate-100 text-center text-[10px] text-slate-600 font-medium">
+                        <div>{c.startYear} - {c.endYear}</div>
+                        {c.cashflowAmount > 0 && <div className="text-emerald-600 font-bold">+{c.cashflowAmount}$ ({c.cashflowFrequency})</div>}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Rebalancing */}
+                  <tr className="hover:bg-slate-50/30">
+                    <td className="px-6 py-3 font-semibold text-slate-600 bg-slate-50/20">{t("dashboard.rebalancing")}</td>
+                    {comparedConfigs.map(c => (
+                      <td key={c.id} className="px-6 py-3 border-l border-slate-100 text-center uppercase tracking-wide font-bold text-[9px] text-slate-500">
+                        {c.rebalancing || "Annual"}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* COMPARED HIGHLIGHTS BENTO CARDS */}
+        {comparedConfigs.length > 1 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+            {/* CARD 1: PERFORMANCE ANALYTICS */}
+            <div className="p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 rounded-[2rem] shadow-sm">
+              <div className="bg-[#050508] text-white rounded-[1.8rem]  p-6 relative overflow-hidden h-full">
+                {/* Double frame contour inset */}
+                <div className="absolute inset-2 border border-white/[0.04] rounded-[1.5rem] pointer-events-none" />
+                <h4 className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-4 flex items-center gap-1.5 relative z-10">{t("aa.adv_comp")}</h4>
+                <div className="space-y-4 relative z-10 text-xs">
+                  {(() => {
+                    // Find highest and lowest CAGR
+                    let highestCagr = -999;
+                    let highestCagrName = "";
+                    let lowestMdd = 999;
+                    let lowestMddName = "";
+                    
+                    comparedConfigs.forEach(c => {
+                      const cagr = c.resultsSummary?.[0]?.cagr || 0;
+                      const mdd = Math.abs(c.resultsSummary?.[0]?.maxDrawdown || 0);
+                      if (cagr > highestCagr) {
+                        highestCagr = cagr;
+                        highestCagrName = c.name;
+                      }
+                      if (mdd < lowestMdd) {
+                        lowestMdd = mdd;
+                        lowestMddName = c.name;
+                      }
+                    });
+
+                    return (
+                      <>
+                        <div className="p-3.5 bg-white/5  rounded-2xl">
+                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_ret")}</span>
+                          <p className="text-sm font-medium text-slate-200">
+                            <span className="text-emerald-400 font-extrabold">{highestCagrName}</span> {t("aa.leads_ret")} <span className="text-emerald-400 font-extrabold">{highestCagr.toFixed(2)}%</span>.
+                          </p>
+                        </div>
+                        <div className="p-3.5 bg-white/5  rounded-2xl">
+                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.risk_prot")}</span>
+                          <p className="text-sm font-medium text-slate-200">
+                            <span className="text-blue-400 font-extrabold">{lowestMddName}</span> {t("aa.resil_dd")} <span className="text-blue-400 font-extrabold">-{lowestMdd.toFixed(2)}%</span>.
+                          </p>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 2: STOCHASTIC COMPARATIVE SCORE */}
+            <div className="p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 rounded-[2rem] shadow-sm">
+              <div className="bg-[#050508] text-white rounded-[1.8rem]  p-6 relative overflow-hidden h-full">
+                <div className="absolute inset-2 border border-white/[0.04] rounded-[1.5rem] pointer-events-none" />
+                <h4 className="text-xs font-bold uppercase tracking-widest text-purple-400 mb-4 flex items-center gap-1.5 relative z-10">{t("aa.sharpe_alloc")}</h4>
+                <div className="space-y-4 relative z-10 text-xs">
+                  {(() => {
+                    let highestSharpe = -999;
+                    let highestSharpeName = "";
+                    comparedConfigs.forEach(c => {
+                      const sharpe = c.resultsSummary?.[0]?.sharpe || 0;
+                      if (sharpe > highestSharpe) {
+                        highestSharpe = sharpe;
+                        highestSharpeName = c.name;
+                      }
+                    });
+
+                    return (
+                      <>
+                        <div className="p-3.5 bg-white/5  rounded-2xl">
+                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_eff")}</span>
+                          <p className="text-sm font-medium text-slate-200">
+                            {t("aa.eff_port")} <span className="text-purple-400 font-extrabold">{highestSharpeName}</span> {t("aa.with_sharpe")} <span className="text-purple-400 font-extrabold">{highestSharpe.toFixed(2)}</span>.
+                          </p>
+                        </div>
+                        <p className="text-[10px] text-slate-400 italic leading-relaxed px-1 mt-2">{t("aa.sharpe_note")}</p>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Saved configurations table list with interactive checkboxes */}
+        <div className="bg-white border border-slate-200/80 rounded-[2rem] shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">{t("aa.act_cloud")}</h3>
+              <p className="text-xs text-slate-500 mt-1">{t("aa.act_cloud_desc")}</p>
+            </div>
+            {selectedCompareIds.length > 0 && (
+              <button
+                onClick={() => setSelectedCompareIds([])}
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg transition-colors"
+              >
+                Reset Selection ({selectedCompareIds.length})
+              </button>
+            )}
           </div>
           <div className="overflow-x-auto">
             {savedConfigs.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 text-xs font-semibold">
-                No saved strategies. Create an allocation and save it!
-              </div>
+              <div className="p-12 text-center text-slate-400 text-xs font-semibold">{t("aa.no_saved")}</div>
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/50 text-slate-400 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-100">
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Assets</th>
-                    <th className="px-6 py-4">Key Metrics</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-6 py-4 w-[60px] text-center">{t("aa.compare")}</th>
+                    <th className="px-6 py-4">{t("aa.strat_name")}</th>
+                    <th className="px-6 py-4">{t("aa.const_assets")}</th>
+                    <th className="px-6 py-4">{t("aa.key_met")}</th>
+                    <th className="px-6 py-4 text-right">{t("aa.date_saved")}</th>
+                    <th className="px-6 py-4 text-right w-[140px]">{t("aa.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
                   {savedConfigs.map((config) => {
                     const hasMetrics = config.resultsSummary && config.resultsSummary.length > 0;
                     const primaryMetrics = hasMetrics ? config.resultsSummary[0] : null;
+                    const isChecked = selectedCompareIds.includes(config.id);
+
                     return (
-                      <tr key={config.id} className="hover:bg-slate-50/30 transition-colors">
-                        <td className="px-6 py-4 font-bold text-slate-900">{config.name}</td>
+                      <tr key={config.id} className={cn(
+                        "hover:bg-slate-50/40 transition-colors",
+                        isChecked ? "bg-blue-50/10" : ""
+                      )}>
+                        <td className="px-6 py-4 text-center">
+                          <button
+                            onClick={() => {
+                              setSelectedCompareIds(prev =>
+                                isChecked ? prev.filter(id => id !== config.id) : [...prev, config.id]
+                              );
+                            }}
+                            className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                          >
+                            {isChecked ? (
+                              <CheckSquare size={18} className="text-blue-600 animate-scale-in" />
+                            ) : (
+                              <Square size={18} className="text-slate-300" />
+                            )}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-extrabold text-slate-900 text-sm">{config.name}</div>
+                          <div className="text-[10px] text-slate-400 font-semibold mt-0.5 uppercase tracking-wider">Page: {config.pageId || "Allocation"}</div>
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-1 max-w-[280px]">
-                            {config.portNames?.slice(0, 2).map((n: string, i: number) => (
-                              <span key={i} className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-bold text-[10px]">
-                                {n}
+                            {config.portfolioAssets?.filter((a: any) => a.weights && a.weights.some((w: any) => Number(w) > 0)).slice(0, 3).map((a: any, i: number) => (
+                              <span key={i} className="px-2 py-0.5 rounded bg-slate-50 border border-slate-100 text-slate-600 font-bold text-[10px]">
+                                {a.symbol} ({a.weights[0]}%)
                               </span>
                             ))}
+                            {config.portfolioAssets?.length > 3 && (
+                              <span className="text-[10px] font-bold text-slate-400 px-1">+ {config.portfolioAssets.length - 3}</span>
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           {primaryMetrics ? (
                             <div className="flex gap-4">
-                              <div><span className="text-[10px] font-bold text-slate-400 block uppercase">CAGR</span><span className="font-bold text-emerald-600">{primaryMetrics.cagr?.toFixed(2)}%</span></div>
-                              <div><span className="text-[10px] font-bold text-slate-400 block uppercase">Sharpe</span><span className="font-bold text-slate-700">{primaryMetrics.sharpe?.toFixed(2)}</span></div>
+                              <div>
+                                <span className="text-[9px] font-extrabold text-slate-400 block uppercase">CAGR</span>
+                                <span className="font-bold text-emerald-600">{primaryMetrics.cagr?.toFixed(2)}%</span>
+                              </div>
+                              <div>
+                                <span className="text-[9px] font-extrabold text-slate-400 block uppercase">SHARPE</span>
+                                <span className="font-bold text-slate-700">{primaryMetrics.sharpe?.toFixed(2)}</span>
+                              </div>
                             </div>
-                          ) : <span className="text-slate-400 font-medium italic">No metrics</span>}
+                          ) : (
+                            <span className="text-slate-400 font-semibold italic text-[10px]">{t("aa.not_calc")}</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-[9px] uppercase tracking-wider text-slate-400 font-extrabold">{t("aa.saved_on")}</span>
+                            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/50 rounded-lg px-2.5 py-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.01)] w-fit">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="font-mono text-[11px] font-bold text-slate-700 tracking-tight">
+                                {formatDate(config.updatedAt || config.createdAt)}
+                              </span>
+                            </div>
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="inline-flex items-center gap-2">
-                            <button onClick={() => loadConfigIntoSimulator(config)} className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 text-[10px] font-bold uppercase rounded-lg transition-all">Load</button>
-                            <button onClick={(e) => { e.stopPropagation(); deleteConfig(config.id); }} className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg transition-colors"><Trash2 size={14} /></button>
+                            <button
+                              onClick={() => loadConfigIntoSimulator(config)}
+                              className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-sm text-[10px] font-extrabold uppercase tracking-wide rounded-lg transition-all"
+                            >{t("aa.load")}</button>
+                            {deleteConfirmId === config.id ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteConfig(config.id);
+                                  setDeleteConfirmId(null);
+                                }}
+                                className="px-2 py-1 text-[10px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
+                                title="Confirm deletion"
+                              >{t("aa.confirm")}</button>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteConfirmId(config.id);
+                                  setTimeout(() => setDeleteConfirmId(prev => prev === config.id ? null : prev), 3000);
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -908,7 +1244,7 @@ export function AssetAllocations({
     const newId = Date.now().toString();
     setPortfolioNames([
       ...portfolioNames,
-      { id: newId, name: `Portfolio ${portfolioNames.length + 1}` },
+      { id: newId, name: `${t("pb.portfolio")} ${portfolioNames.length + 1}` },
     ]);
     setPortfolioAssets(
       portfolioAssets.map((a) => ({ ...a, weights: [...a.weights, ""] })),
@@ -960,74 +1296,46 @@ export function AssetAllocations({
   };
 
   return (
-    <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
-      <div className="space-y-8 animate-fade-up w-full max-w-[1308px] mx-auto px-4 md:px-8 pb-24">
+    <MobileZoomWrapper scaleMobile={0.4}>
+      <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
+      <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24">
         <div className="flex flex-col gap-8">
-          <div className="mb-8">
-            <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
-              <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
-                Asset Allocations
-              </h1>
-            </div>
-            <p className="text-base text-text-2 font-medium leading-relaxed w-full max-w-[1308px]">
-              {"Analyze and compare up to 6 different asset allocations simultaneously. Our simulator uses monthly adjusted data for splits and dividends to provide the most accurate historical representation possible."}
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <ViewToggle 
-              activeView={activeMainView} 
-              onViewChange={(view) => setActiveMainView(view)} 
-              simulatorLabel="Simulator"
-              dashboardLabel="Saved Scenarios"
-            />
-          </div>
+          <PageHeader
+            title={t("aa.page_title")}
+            badge={t("aa.badge")}
+            description={t("aa.description")}
+            actions={
+              <ViewToggle 
+                activeView={activeMainView} 
+                onViewChange={(view) => setActiveMainView(view)} 
+                simulatorLabel={t("common.simulator")}
+                dashboardLabel={t("dashboard.saved_scenarios")}
+              />
+            }
+          />
 
           {activeMainView === "dashboard" ? renderSavedScenarios() : (
             <div className="simulator-view space-y-8">
-              <MobileZoomWrapper scaleMobile={0.5}>
               {/* PARAMETERS HEADER - HORIZONTAL (Matched to Backtesting) */}
-              <div className="py-6 mb-6 flex flex-col gap-8 border-t border-border/60">
+              <div className="bg-surface border border-border p-6 md:p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8 text-left">
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                   <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
                     <Settings size={14} className="text-pv-blue" />
                     {"Strategy Parameters"}
                   </h2>
-            <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
-              <CloudSaveLoad
-                pageId="asset-allocations"
-                currentData={{
-                  startYear,
-                  startMonth,
-                  endYear,
-                  endMonth,
-                  initialAmount,
-                  cashflowAmount,
-                  cashflowFrequency,
-                  rebalancing,
-                  portfolioNames,
-                  portfolioAssets,
-                  resultsSummary: results ? results.map(r => ({ name: r.name, cagr: r.cagr, sharpe: r.sharpe })) : []
-                }}
-                onLoad={handleCloudLoad}
-                onListUpdate={loadSavedConfigs}
-              />
-            </div>
-          </div>
+                </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Column 1: Timeline */}
-            <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-1.5">
                 <TooltipLabel
-                  label="Start Date"
-                  tooltip="Start date for return analysis (Month & Year)."
+                  label={t("pb.since")}
+                  tooltip={t("aa.tt.start")}
                 />
                 <div className="grid grid-cols-2 gap-2">
-                  <select
+                  <CustomSelect
                     value={startMonth}
-                    onChange={(e) => setStartMonth(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
+                    onChange={(e: any) => setStartMonth(parseInt(e.target.value))}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-sm font-bold cursor-pointer"
                   >
                     <option value={1}>01 - Jan</option>
                     <option value={2}>02 - Feb</option>
@@ -1041,30 +1349,30 @@ export function AssetAllocations({
                     <option value={10}>10 - Oct</option>
                     <option value={11}>11 - Nov</option>
                     <option value={12}>12 - Dec</option>
-                  </select>
-                  <select
+                  </CustomSelect>
+                  <CustomSelect
                     value={startYear}
-                    onChange={(e) => setStartYear(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
+                    onChange={(e: any) => setStartYear(parseInt(e.target.value))}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-sm font-bold cursor-pointer"
                   >
                     {YEARS.map((y) => (
                       <option key={y} value={y}>
                         {y}
                       </option>
                     ))}
-                  </select>
+                  </CustomSelect>
                 </div>
               </div>
               <div className="space-y-1.5">
                 <TooltipLabel
-                  label="End Date"
-                  tooltip="End date for return analysis (Month & Year)."
+                  label={t("pb.to")}
+                  tooltip={t("aa.tt.end")}
                 />
                 <div className="grid grid-cols-2 gap-2">
-                  <select
+                  <CustomSelect
                     value={endMonth}
-                    onChange={(e) => setEndMonth(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
+                    onChange={(e: any) => setEndMonth(parseInt(e.target.value))}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-sm font-bold cursor-pointer"
                   >
                     <option value={1}>01 - Jan</option>
                     <option value={2}>02 - Feb</option>
@@ -1078,40 +1386,36 @@ export function AssetAllocations({
                     <option value={10}>10 - Oct</option>
                     <option value={11}>11 - Nov</option>
                     <option value={12}>12 - Dec</option>
-                  </select>
-                  <select
+                  </CustomSelect>
+                  <CustomSelect
                     value={endYear}
-                    onChange={(e) => setEndYear(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-base font-bold"
+                    onChange={(e: any) => setEndYear(parseInt(e.target.value))}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-sm font-bold cursor-pointer"
                   >
                     {YEARS.map((y) => (
                       <option key={y} value={y}>
                         {y}
                       </option>
                     ))}
-                  </select>
+                  </CustomSelect>
                 </div>
               </div>
               <div className="space-y-1.5">
                 <TooltipLabel
-                  label={`Capital (${baseCcy})`}
-                  tooltip="Initial investment amount."
+                  label={t("pb.capital")}
+                  tooltip={t("aa.tt.cap")}
                 />
                 <input
                   type="number"
                   value={initialAmount}
                   onChange={(e) => setInitialAmount(parseFloat(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono"
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                 />
               </div>
-            </div>
-
-            {/* Column 2: Recurring */}
-            <div className="space-y-4">
               <div className="space-y-1.5">
                 <TooltipLabel
-                  label="Contribution"
-                  tooltip="Recurring deposit amount."
+                  label={t("dashboard.period_contribution").split(" ")[0]}
+                  tooltip={t("aa.tt.cont")}
                 />
                 <input
                   type="number"
@@ -1119,61 +1423,56 @@ export function AssetAllocations({
                   onChange={(e) =>
                     setCashflowAmount(parseFloat(e.target.value))
                   }
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono"
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                 />
               </div>
               <div className="space-y-1.5">
                 <TooltipLabel
-                  label="Frequency"
-                  tooltip="How often deposits are made."
+                  label={t("lazy.frequency").split(" ")[0]}
+                  tooltip={t("aa.tt.freq")}
                 />
-                <select
+                <CustomSelect
                   value={cashflowFrequency}
-                  onChange={(e) => setCashflowFrequency(e.target.value as any)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold"
+                  onChange={(e: any) => setCashflowFrequency(e.target.value as any)}
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                 >
-                  <option value="none">None</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="annually">Annually</option>
-                </select>
+                  <option value="none">{t("aa.none")}</option>
+                  <option value="monthly">{t("aa.monthly")}</option>
+                  <option value="annually">{t("aa.annually")}</option>
+                </CustomSelect>
               </div>
-            </div>
-
-            {/* Column 3: Rebalance & Benchmark */}
-            <div className="space-y-4">
               <div className="space-y-1.5">
                 <TooltipLabel
-                  label="Rebalancing"
-                  tooltip="Frequency of target weight adjustments."
+                  label={t("pb.reb")}
+                  tooltip={t("aa.tt.rebal")}
                 />
-                <select
+                <CustomSelect
                   value={rebalancing}
-                  onChange={(e) => setRebalancing(e.target.value)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold"
+                  onChange={(e: any) => setRebalancing(e.target.value)}
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                 >
-                  <option value="annually">Annual</option>
-                  <option value="quarterly">Quarterly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="none">None</option>
-                </select>
+                  <option value="annually">{t("aa.annual")}</option>
+                  <option value="quarterly">{t("aa.quarterly")}</option>
+                  <option value="monthly">{t("aa.monthly")}</option>
+                  <option value="none">{t("aa.none")}</option>
+                </CustomSelect>
               </div>
-
-              <div className="space-y-1.5 pt-2">
+              <div className="space-y-1.5">
                 <TooltipLabel
                   label={t("pb.broker")}
-                  tooltip="Simulated broker pricing."
+                  tooltip={t("aa.tt.broker")}
                 />
-                <select
+                <CustomSelect
                   value={broker}
-                  onChange={(e) => setBroker(e.target.value)}
-                  className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                  onChange={(e: any) => setBroker(e.target.value)}
+                  className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                 >
-                  <option value="free">No Fees (0€)</option>
-                  <option value="custom">Other / Custom</option>
-                </select>
+                  <option value="free">{t("aa.nofee")}</option>
+                  <option value="custom">{t("aa.custom")}</option>
+                </CustomSelect>
                 {broker === "custom" && (
-                  <div className="pt-2">
-                    <label className="text-base font-bold text-text mb-1 block">
+                  <div className="pt-1">
+                    <label className="text-xs font-bold text-text mb-1 block">
                       {t("pb.customFee")}
                     </label>
                     <input
@@ -1181,106 +1480,99 @@ export function AssetAllocations({
                       step="0.1"
                       value={customFee}
                       onChange={(e) => setCustomFee(Number(e.target.value))}
-                      className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors shadow-inner"
+                      className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                     />
                   </div>
                 )}
               </div>
               <div className="space-y-1.5">
                 <TooltipLabel
-                  label="Benchmark"
-                  tooltip="Symbol to compare performance against."
+                  label={t("pb.bench")}
+                  tooltip={t("aa.tt.bench")}
                 />
                 <TickerInput
                   value={benchmarkTicker}
                   onChange={setBenchmarkTicker}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold transition-colors"
+                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-base font-mono font-bold transition-colors outline-none focus:border-pv-blue"
                   placeholder="e.g. SPY"
                 />
               </div>
-            </div>
-
-            {/* Column 4: Tax & Logic */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <TooltipLabel
-                    label="Div Tax %"
-                    tooltip="Taxation on received dividends."
-                  />
-                  <input
-                    type="number"
-                    value={dividendTaxRate}
-                    onChange={(e) =>
-                      setDividendTaxRate(parseFloat(e.target.value))
-                    }
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-base font-mono"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <TooltipLabel
-                    label="CapG Tax %"
-                    tooltip="Taxation on capital gains at exit."
-                  />
-                  <input
-                    type="number"
-                    value={capitalGainsTaxRate}
-                    onChange={(e) =>
-                      setCapitalGainsTaxRate(parseFloat(e.target.value))
-                    }
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2.5 text-base font-mono"
-                  />
+              <div className="space-y-1.5">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <TooltipLabel
+                      label="Div Tax %"
+                      tooltip={t("aa.tt.div")}
+                    />
+                    <input
+                      type="number"
+                      value={dividendTaxRate}
+                      onChange={(e) =>
+                        setDividendTaxRate(parseFloat(e.target.value))
+                      }
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <TooltipLabel
+                      label="CapG Tax %"
+                      tooltip={t("aa.tt.capg")}
+                    />
+                    <input
+                      type="number"
+                      value={capitalGainsTaxRate}
+                      onChange={(e) =>
+                        setCapitalGainsTaxRate(parseFloat(e.target.value))
+                      }
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold"
+                    />
+                  </div>
                 </div>
               </div>
-
-              <div className="flex flex-col gap-2 p-2">
-                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <div className="space-y-2 flex flex-col justify-end">
+                <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="inf"
                     checked={inflationAdjusted}
                     onChange={(e) => setInflationAdjusted(e.target.checked)}
-                    className="w-3 h-3 accent-pv-blue"
+                    className="w-4 h-4 accent-pv-blue rounded cursor-pointer"
                   />
                   <label
                     htmlFor="inf"
-                    className="text-base font-semibold text-text cursor-pointer"
-                  >
-                    Adj. Inflation
-                  </label>
+                    className="text-xs font-bold text-text cursor-pointer uppercase tracking-wider"
+                  >{t("aa.adj_inf")}</label>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="reiv"
                     checked={reinvestDividends}
                     onChange={(e) => setReinvestDividends(e.target.checked)}
-                    className="w-3 h-3 accent-pv-blue"
+                    className="w-4 h-4 accent-pv-blue rounded cursor-pointer"
                   />
                   <label
                     htmlFor="reiv"
-                    className="text-base font-semibold text-text cursor-pointer"
-                  >
-                    Reinvest Divs
-                  </label>
+                    className="text-xs font-bold text-text cursor-pointer uppercase tracking-wider"
+                  >{t("aa.reinv_div")}</label>
                 </div>
               </div>
-            </div>
           </div>
 
-          {/* Predefined Portfolios */}
-          <div className="pt-6 border-t border-border mt-8 w-full col-span-full">
-            <div className="flex flex-col gap-2 mb-6">
-              <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                <Activity size={14} className="text-pv-blue" /> Suggested Allocations
+          {/* Simple Clean Suggested Model Portfolios Pill Bar */}
+          <div className="pt-4 border-t border-border mt-4 w-full">
+            <div className="flex flex-col gap-2.5">
+              <h3 className="text-sm font-semibold text-text flex items-center gap-2">
+                <Activity size={14} className="text-pv-blue" />
+                {t("aa.sugg") || "Suggested Portfolios"}
               </h3>
               <div className="flex flex-wrap gap-2">
-                {lazyPortfolios.slice(0, 2).map((preset, idx) => (
+                {lazyPortfolios.map((preset, idx) => (
                   <button
                     key={idx}
                     onClick={() => applyPredefinedPortfolio(preset)}
                     disabled={portfolioNames.length >= 6}
-                    className="text-base bg-surface-2 border border-border px-3 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-colors disabled:opacity-50"
+                    className="text-xs bg-surface-2 border border-border px-3.5 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-all transform hover:scale-105 disabled:opacity-50 font-semibold shadow-sm cursor-pointer"
                   >
                     + {preset.name}
                   </button>
@@ -1297,31 +1589,28 @@ export function AssetAllocations({
                   <Database size={14} className="text-pv-blue" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                    Portfolio Assets
-                  </h3>
+                  <h3 className="text-base font-semibold text-text flex items-center gap-2">{t("aa.port_assets")}</h3>
                 </div>
               </div>
               <button
                 onClick={addPortfolio}
-                className="text-base bg-pv-blue/10 text-pv-blue px-3 py-1.5 border border-pv-blue/20 rounded font-bold hover:bg-pv-blue/20 transition-colors"
+                disabled={portfolioNames.length >= 6}
+                className="text-base bg-gradient-to-r from-sky-500/10 to-blue-500/10 text-sky-500 px-4 py-2 border border-sky-500/30 rounded-2xl font-bold hover:from-sky-500/20 hover:to-blue-500/20 transition-all shadow-sm flex items-center justify-center gap-1.5 overflow-hidden relative disabled:opacity-50"
               >
                 {t("pb.add")}
               </button>
             </div>
 
-            <div className="w-full max-w-full mx-auto overflow-x-auto mt-4">
+            <div className="w-full max-w-full mx-auto overflow-x-auto bg-surface rounded-[2rem] border border-border mt-4 shadow-sm">
               <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[800px]">
                 <thead>
                   <tr className="border-b border-border bg-surface-2">
-                    <th className="p-3 text-base font-semibold text-text w-24 whitespace-nowrap">
-                      Asset Class
-                    </th>
-                    <th className="p-3 w-64 border-r border-border"></th>
+                    <th className="py-2.5 px-2.5 text-xs lg:text-sm font-semibold text-text w-auto whitespace-nowrap">{t("aa.asset_class") || "Assets"}</th>
+                    <th className="py-2.5 px-2.5 min-w-[320px] lg:min-w-[400px] w-80 lg:w-96 border-r border-border font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Asset & Name</th>
                     {portfolioNames.map((pn, i) => (
                       <th
                         key={pn.id}
-                        className={`p-3 text-base font-semibold min-w-[140px] text-center group `}
+                        className="p-3.5 text-base font-semibold min-w-[140px] text-center group"
                       >
                         <div className="flex items-center justify-center gap-2">
                           <input
@@ -1336,10 +1625,10 @@ export function AssetAllocations({
                           {portfolioNames.length > 1 && (
                             <button
                               onClick={() => removePortfolio(i)}
-                              className="text-text hover:text-red transition-colors"
+                              className="text-text-4 hover:text-red transition-colors p-0.5"
                               title="Remove Portfolio"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3 h-3" />
                             </button>
                           )}
                         </div>
@@ -1351,69 +1640,77 @@ export function AssetAllocations({
                   {portfolioAssets.map((asset, aIdx) => (
                     <tr
                       key={aIdx}
-                      className="border-b border-surface-2 last:border-0 hover:bg-surface-2"
+                      className="border-b border-border last:border-0 hover:bg-surface-2/60 transition-colors"
                     >
-                      <td className="p-1 lg:p-3 text-base lg:text-base text-text font-medium whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          Asset {aIdx + 1}
+                      <td className="py-2 pl-2.5 pr-1 text-xs lg:text-sm text-text font-semibold whitespace-nowrap w-auto">
+                        <div className="flex items-center gap-1">
+                          <span>Asset {aIdx + 1}</span>
                           {portfolioAssets.length > 1 && (
                             <button
                               onClick={() => removeAssetRow(aIdx)}
-                              className="text-text-4 hover:text-red transition-colors"
+                              className="text-text-4 hover:text-red transition-colors p-0.5 rounded hover:bg-red/10"
                               title="Remove Asset"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3 h-3" />
                             </button>
                           )}
                         </div>
                         {aIdx === portfolioAssets.length - 1 && (
                           <button
                             onClick={addAssetRow}
-                            className="text-blue-600 hover:underline ml-2 text-[10px] lg:text-base break-keep whitespace-nowrap block mt-1"
-                          >
-                            (Add More)
-                          </button>
+                            className="text-pv-blue hover:underline text-[11px] font-semibold break-keep whitespace-nowrap block mt-1"
+                          >+ {t("aa.add_more")}</button>
                         )}
                       </td>
-                      <td className="p-1 lg:p-3 border-r border-surface-2 min-w-[100px] lg:min-w-[200px]">
-                        <div className="flex flex-col gap-1">
-                          <div className="relative flex items-center shadow-sm">
-                            <select
+                      <td className="py-2 pl-1 pr-2.5 border-r border-border min-w-[320px] lg:min-w-[420px]">
+                        <div className="flex items-center gap-2 w-full">
+                          <div className="relative flex items-center shadow-sm w-40 shrink-0">
+                            <CustomSelect
                               value={asset.symbol}
-                              onChange={(e) =>
+                              onChange={(e: any) =>
                                 updateAssetSymbol(aIdx, e.target.value)
                               }
-                              className="bg-white text-sm p-1 lg:p-1.5 border border-border rounded-xl outline-none focus:border-blue-500 transition-colors w-full box-border font-bold text-text"
+                              className="bg-surface-2 text-xs px-3 py-2 border border-border rounded-[1.5rem] outline-none focus:border-pv-blue transition-colors w-full box-border font-semibold text-text cursor-pointer truncate"
                             >
-                              <option value="" disabled>
-                                Select Asset Class
-                              </option>
+                              <option value="" disabled>{t("aa.sel_asset")}</option>
                               {ASSET_CLASSES.map((group) => (
                                 <optgroup key={group.group} label={group.group}>
                                   {group.options.map((opt) => (
                                     <option key={opt.symbol} value={opt.symbol}>
-                                      {opt.label}
+                                      {opt.symbol} - {opt.label}
                                     </option>
                                   ))}
                                 </optgroup>
                               ))}
-                            </select>
+                            </CustomSelect>
                           </div>
+                          {asset.symbol ? (
+                            <span className="text-xs text-pv-blue font-semibold truncate flex-1 leading-tight" title={ASSET_DATA[asset.symbol.toUpperCase()]?.label || ASSET_CLASSES.flatMap((g) => g.options).find((o) => o.symbol === asset.symbol)?.label || ""}>
+                              {ASSET_DATA[asset.symbol.toUpperCase()]?.label ||
+                                ASSET_CLASSES.flatMap((g) => g.options).find((o) => o.symbol === asset.symbol)?.label ||
+                                ""}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-text-3/60 font-normal italic truncate flex-1">
+                              --
+                            </span>
+                          )}
                         </div>
                       </td>
                       {portfolioNames.map((pn, i) => (
-                        <td key={pn.id} className={`p-1 lg:p-3 `}>
-                          <div className="flex items-center shadow-sm max-w-[120px] mx-auto">
+                        <td key={pn.id} className="p-2 lg:p-3">
+                          <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
                             <input
                               type="number"
+                              step="any"
                               value={asset.weights[i] || ""}
                               onChange={(e) =>
                                 updateAssetWeight(aIdx, i, e.target.value)
                               }
-                              placeholder=""
-                              className="bg-white text-sm p-1 lg:p-1.5 border border-border rounded-l-md outline-none focus:border-blue-500 transition-colors w-full box-border text-text font-bold"
+                              placeholder="0"
+                              className="bg-surface text-sm p-2 lg:p-2.5 border border-border rounded-l-xl outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-bold text-center"
                             />
-                            <div className="bg-surface-2 border border-l-0 border-border rounded-r-md px-1 py-1 lg:px-1.5 lg:py-1.5 text-[10px] lg:text-xs text-text shrink-0 select-none">
+                            <div className="bg-surface-2 border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold text-text-2 shrink-0 select-none">
                               %
                             </div>
                           </div>
@@ -1423,34 +1720,39 @@ export function AssetAllocations({
                   ))}
 
                   {/* Totals Row */}
-                  <tr className="bg-surface-2">
-                    <td className="p-3 text-base font-bold text-text">Total</td>
-                    <td className="p-3 border-r border-surface-2"></td>
+                  <tr className="bg-surface-2 font-bold">
+                    <td className="p-3.5 text-sm lg:text-base font-bold text-text">{t("aa.totals")}</td>
+                    <td className="p-3.5 border-r border-border"></td>
                     {portfolioNames.map((pn, i) => {
                       const totalWeight = portfolioAssets.reduce(
                         (sum, a) => sum + Number(a.weights[i] || 0),
                         0,
                       );
-                      const isOk = totalWeight === 100;
+                      const isOk = Math.abs(totalWeight - 100) < 0.001;
+                      const isOver = totalWeight > 100;
                       return (
-                        <td key={"total-" + i} className="p-3">
-                          <div className="flex items-center shadow-sm max-w-[120px] mx-auto">
+                        <td key={"total-" + i} className="p-3.5">
+                          <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
                             <div
                               className={cn(
-                                "text-base p-2 border border-border rounded-l-md w-full box-border text-text outline-none",
+                                "text-sm p-2 lg:p-2.5 border border-border rounded-l-xl w-full box-border text-center font-bold outline-none transition-colors",
                                 isOk
-                                  ? "bg-[#dff0d8] border-[#d6e9c6]"
-                                  : "bg-white",
+                                  ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                                  : isOver
+                                  ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
+                                  : "bg-surface text-text",
                               )}
                             >
-                              {totalWeight}
+                              {Math.round(totalWeight * 100) / 100}
                             </div>
                             <div
                               className={cn(
-                                "border border-l-0 border-border rounded-r-md px-3 py-2 text-base text-text shrink-0",
+                                "border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold shrink-0 transition-colors",
                                 isOk
-                                  ? "bg-[#dff0d8] border-[#d6e9c6]"
-                                  : "bg-surface-2",
+                                  ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                                  : isOver
+                                  ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
+                                  : "bg-surface-2 text-text-2",
                               )}
                             >
                               %
@@ -1502,7 +1804,6 @@ export function AssetAllocations({
             </div>
           </div>
         </div>
-      </MobileZoomWrapper>
           <div id="bt-results-anchor" className="h-4"></div>
           {(!results || results.length === 0) && (
             <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8">
@@ -1514,7 +1815,6 @@ export function AssetAllocations({
           )}
 
           {results && results.length > 0 &&
-            <MobileZoomWrapper scaleMobile={0.5}>
               <div
                 id="report-content"
                 className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
@@ -1548,7 +1848,7 @@ export function AssetAllocations({
                   }}
                   className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
                 >
-                  Modifier la configuration
+                  {t("pb.editConfig")}
                 </button>
                 <button
                   onClick={() => {
@@ -1581,18 +1881,10 @@ export function AssetAllocations({
                 <table className="w-full text-base font-sans border-collapse">
                   <thead>
                     <tr className="bg-surface-2 border-b border-border">
-                      <th className="px-6 py-4 text-left font-semibold text-text">
-                        Portfolio
-                      </th>
-                      <th className="px-4 py-4 text-center font-medium text-text">
-                        Allocation
-                      </th>
-                      <th className="px-4 py-4 text-center font-medium text-text">
-                        Initial
-                      </th>
-                      <th className="px-4 py-4 text-center font-medium text-text">
-                        Final
-                      </th>
+                      <th className="px-6 py-4 text-left font-semibold text-text">{t("pb.portfolio")}</th>
+                      <th className="px-4 py-4 text-center font-medium text-text">{t("pb.alloc")}</th>
+                      <th className="px-4 py-4 text-center font-medium text-text">{t("pb.initialT")}</th>
+                      <th className="px-4 py-4 text-center font-medium text-text">{t("pb.finalT")}</th>
                       <th className="px-4 py-4 text-center font-medium text-text">
                         CAGR
                       </th>
@@ -1618,9 +1910,7 @@ export function AssetAllocations({
                           Beta
                         </th>
                       )}
-                      <th className="px-4 py-4 text-center font-medium text-text">
-                        Best / Worst
-                      </th>
+                      <th className="px-4 py-4 text-center font-medium text-text">{t("pb.bestWorst")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -1640,7 +1930,7 @@ export function AssetAllocations({
                                 {r.name}
                               </div>
                               <div className="text-base text-text-4">
-                                Depuis {r.startYear}
+                                {t("pb.since")} {r.startYear}
                               </div>
                             </div>
                           </div>
@@ -1753,9 +2043,7 @@ export function AssetAllocations({
             <div className="bg-surface border border-border rounded-3xl mb-8 overflow-hidden text-left shadow-sm">
               <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-surface-2">
                 <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-pv-blue animate-pulse"></span>
-                  Cumulative Wealth Growth
-                </h3>
+                  <span className="w-2.5 h-2.5 rounded-full bg-pv-blue animate-pulse"></span>{t("aa.chart.wealth")}</h3>
               </div>
               <div className="p-8">
                 <div className="h-[400px]">
@@ -1857,9 +2145,7 @@ export function AssetAllocations({
               <div className="bg-surface border border-border rounded-3xl overflow-hidden shadow-sm">
                 <div className="px-8 py-6 border-b border-border bg-surface-2">
                   <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    Annual Returns Comparison
-                  </h3>
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>{t("aa.chart.annual")}</h3>
                 </div>
                 <div className="p-8">
                   <div className="h-[500px]">
@@ -1952,9 +2238,7 @@ export function AssetAllocations({
               <div className="bg-surface border border-border rounded-3xl overflow-hidden shadow-sm">
                 <div className="px-8 py-6 border-b border-border bg-surface-2">
                   <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-                    Portfolio Drawdowns
-                  </h3>
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>{t("aa.chart.drawdowns")}</h3>
                 </div>
                 <div className="p-8">
                   <div className="h-[500px]">
@@ -2048,31 +2332,26 @@ export function AssetAllocations({
             {/* Trailing Returns Table */}
             <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 overflow-hidden text-left">
               <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-                <h3 className="text-base font-semibold text-text tracking-tight">
-                  Trailing Returns
-                </h3>
+                <h3 className="text-base font-semibold text-text tracking-tight">{t("aa.chart.trailing")}</h3>
               </div>
               <div className="overflow-x-auto p-6">
                 <table className="w-full text-base border-collapse font-sans">
                   <thead>
                     <tr className="border-b border-border">
                       <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                        Portfolio
+                        {t("pb.portfolio")}
                       </th>
                       <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                        1 Year
+                        {t("aa.1yr")}
                       </th>
                       <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                        3 Years (Ann.)
+                        {t("aa.5yr")}
                       </th>
                       <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                        5 Years (Ann.)
+                        {t("aa.10yr")}
                       </th>
                       <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                        10 Years (Ann.)
-                      </th>
-                      <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                        Full Period
+                        {t("aa.full_period")}
                       </th>
                     </tr>
                   </thead>
@@ -2105,10 +2384,6 @@ export function AssetAllocations({
                             %
                           </td>
                           <td className="text-right py-4 px-4 whitespace-nowrap font-medium tabular-nums">
-                            {calcPeriod(3)?.toFixed(2) || "N/A"}
-                            {calcPeriod(3) ? "%" : ""}
-                          </td>
-                          <td className="text-right py-4 px-4 whitespace-nowrap font-medium tabular-nums">
                             {calcPeriod(5)?.toFixed(2) || "N/A"}
                             {calcPeriod(5) ? "%" : ""}
                           </td>
@@ -2130,16 +2405,14 @@ export function AssetAllocations({
             {/* Annual Returns Table */}
             <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 overflow-hidden text-left">
               <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-                <h3 className="text-base font-semibold text-text tracking-tight">
-                  Annual Returns Detail
-                </h3>
+                <h3 className="text-base font-semibold text-text tracking-tight">{t("aa.table.annual")}</h3>
               </div>
               <div className="overflow-x-auto p-6">
                 <table className="w-full text-base border-collapse font-sans">
                   <thead>
                     <tr className="border-b border-border">
                       <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                        Year
+                        {t("heat.year")}
                       </th>
                       {results.map((r, i) => (
                         <th
@@ -2191,20 +2464,14 @@ export function AssetAllocations({
             {/* Historical Stress Scenarios Table */}
             <div className="bg-surface border border-border rounded-3xl shadow-md mb-12 overflow-hidden border-2 border-border text-left">
               <div className="px-10 py-8 border-b border-border flex items-center justify-between bg-surface-2">
-                <h3 className="text-base font-semibold text-text ">
-                  Market Stress Audits
-                </h3>
+                <h3 className="text-base font-semibold text-text ">{t("aa.table.stress")}</h3>
               </div>
               <div className="overflow-x-auto p-10">
                 <table className="w-full text-base border-collapse">
                   <thead>
                     <tr className="border-b-2 border-border">
-                      <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">
-                        Stress Period
-                      </th>
-                      <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">
-                        Timeline
-                      </th>
+                      <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">{t("aa.table.stress_period")}</th>
+                      <th className="text-left font-semibold text-text py-5 px-6 text-base whitespace-nowrap">{t("aa.table.timeline")}</th>
                       {results.map((r, i) => (
                         <th
                           key={i}
@@ -2217,22 +2484,10 @@ export function AssetAllocations({
                   </thead>
                   <tbody>
                     {[
-                      { name: "Dotcom Tech Crash", start: 2000, end: 2002 },
-                      {
-                        name: "Global Financial Crisis",
-                        start: 2008,
-                        end: 2008,
-                      },
-                      {
-                        name: "COVID-19 Pandemic Shock",
-                        start: 2020,
-                        end: 2020,
-                      },
-                      {
-                        name: "Inflation Spike & Global Tightening",
-                        start: 2022,
-                        end: 2022,
-                      },
+                      { name: t("stress.dotcom"), start: 2000, end: 2002 },
+                      { name: t("stress.gfc"), start: 2008, end: 2008 },
+                      { name: t("stress.covid"), start: 2020, end: 2020 },
+                      { name: t("stress.inflation"), start: 2022, end: 2022 },
                     ].map((event, ei) => (
                       <tr
                         key={ei}
@@ -2258,7 +2513,7 @@ export function AssetAllocations({
                                 key={i}
                                 className="py-6 px-6 text-right text-text font-bold italic text-base font-mono"
                               >
-                                OUTSIDE SCOPE
+                                {t("pb.outsideScope")}
                               </td>
                             );
                           let prod = 1;
@@ -2309,8 +2564,7 @@ export function AssetAllocations({
                     <div className="flex-1 w-full xl:w-2/3 overflow-x-auto">
                       <div className="flex items-center justify-between mb-6">
                         <h3 className="text-base font-semibold flex items-center gap-2 text-text">
-                          <Activity size={14} /> Monthly Heatmap
-                        </h3>
+                          <Activity size={14} />{t("aa.chart.heatmap")}</h3>
                       </div>
                       <ReturnsHeatmap
                         monthlyReturns={results[activeResIdx].monthlyReturns}
@@ -2318,13 +2572,13 @@ export function AssetAllocations({
                     </div>
                     <div className="w-full xl:w-1/3 shrink-0">
                       <h3 className="text-base font-semibold mb-6 flex items-center gap-2 text-text">
-                        <Activity size={14} /> Asset Allocation
+                        <Activity size={14} /> {t("pb.assetAllocDetails")}
                       </h3>
                       <div className="bg-surface rounded-[2rem] p-8 shadow-xl border border-border">
                         <EliteDonut
                           assets={results[activeResIdx].assets || []}
                           allocations={results[activeResIdx].alloc || {}}
-                          title="Asset Allocation Details"
+                          title={t("pb.assetAllocDetails")}
                         />
                       </div>
                     </div>
@@ -2337,12 +2591,12 @@ export function AssetAllocations({
             <Disclaimer />
           </div>
         </div>
-        </MobileZoomWrapper>
           }
         </div>
       )}
     </div>
   </div>
 </div>
+    </MobileZoomWrapper>
   );
 }

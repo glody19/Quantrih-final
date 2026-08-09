@@ -2,6 +2,7 @@ import express from "express";
 import DOMPurify from "isomorphic-dompurify";
 import { createServer as createViteServer } from "vite";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import yahooFinance from "yahoo-finance2";
 import helmet from "helmet";
@@ -100,7 +101,7 @@ async function startServer() {
   }
 
   const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = 3000;
   console.log("NODE_ENV:", process.env.NODE_ENV);
   app.set("trust proxy", 1);
 
@@ -1470,22 +1471,27 @@ ${pages.map(p => `  <url>
     res.send(xml);
   });
 
-  if (process.env.NODE_ENV !== "production") {
+  // Static assets serving logic
+  if (process.env.NODE_ENV === "production" || fs.existsSync(path.join(process.cwd(), "dist"))) {
+    const buildPath = path.join(process.cwd(), "dist");
+    console.log(`Serving static assets from: ${buildPath}`);
+    app.use(express.static(buildPath));
+    app.get("*", (req, res, next) => {
+      // Don't capture API routes
+      if (req.path.startsWith('/api/')) return next();
+      res.sendFile(path.join(buildPath, "index.html"));
+    });
+  } else {
+    console.log("Vite development mode active");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
-  } else {
-    const buildPath = path.join(process.cwd(), "build");
-    
-  app.get("*", (req, res) => {
-      res.sendFile(path.join(buildPath, "index.html"));
-    });
   }
 
   const server = app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
   });
 
   // --- Unified Live WebSocket Streaming Engine ---
@@ -1696,18 +1702,12 @@ ${pages.map(p => `  <url>
     }
   };
 
-  // === STATIC ASSETS & SPA FALLBACK (Production only) ===
-  if (process.env.NODE_ENV === "production") {
-    const buildPath = path.join(process.cwd(), "dist");
-    app.use(express.static(buildPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(buildPath, "index.html"));
-    });
-  }
-
   // Polling loop (fallback and indices/crypto)
   // Use an 8-second interval for better real-time feel
   setInterval(broadcastPrices, 8000);
 }
 
-startServer();
+startServer().catch(err => {
+  console.error("CRITICAL SERVER STARTUP ERROR:", err);
+  process.exit(1);
+});

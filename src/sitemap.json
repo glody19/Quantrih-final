@@ -3,6 +3,7 @@
     { "name": "Home", "path": "/" },
     { "name": "Authentication", "path": "/auth" },
     { "name": "Profile", "path": "/profile" },
+    { "name": "Investor Profile", "path": "/investor-profile" },
     { "name": "Asset Allocation", "path": "/asset-allocation" },
     { "name": "Portfolio", "path": "/portfolio" },
     { "name": "Portfolio Backtesting", "path": "/portfolio-backtest" },

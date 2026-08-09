@@ -21,39 +21,11 @@ export function runMonteCarlo(
 ): MonteCarloResult {
   const { simulations, months, initialBalance } = options;
   const finalBalances: number[] = [];
-  const trajectories: number[][] = [];
-
-  for (let s = 0; s < simulations; s++) {
-    let balance = initialBalance;
-    const trajectory: number[] = [balance];
-    
-    for (let m = 0; m < months; m++) {
-      // Pick a random month's return from history
-      const randomReturn = historicalReturns[Math.floor(Math.random() * historicalReturns.length)];
-      balance *= (1 + randomReturn);
-      trajectory.push(balance);
-    }
-    
-    finalBalances.push(balance);
-    trajectorie: trajectory; // We only keep a few for plotting or use distribution
-    // For performance, we'll only calculate percentiles of trajectory at each step
-  }
-
-  // Calculate percentiles at each step
+  
   const pathLength = months + 1;
   const p10: number[] = [];
   const p50: number[] = [];
   const p90: number[] = [];
-
-  // This is computationally expensive if we store all trajectories.
-  // Instead, let's just do it for final balance first, or a reduced set of paths.
-  
-  // Revised approach for trajectory percentiles:
-  const stepValues: number[][] = Array(pathLength).fill(0).map(() => []);
-  
-  // Re-run or store? Let's re-run a smaller set for paths if needed, 
-  // but for the sake of accuracy we should store if possible.
-  // Simulations=5000, months=120 = 600,000 numbers. Fine.
   
   const allPaths: number[][] = [];
   for (let s = 0; s < simulations; s++) {
@@ -65,6 +37,7 @@ export function runMonteCarlo(
       path.push(balance);
     }
     allPaths.push(path);
+    finalBalances.push(balance);
   }
 
   for (let t = 0; t < pathLength; t++) {

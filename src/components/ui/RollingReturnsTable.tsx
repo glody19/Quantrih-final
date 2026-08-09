@@ -1,78 +1,118 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from '../../contexts/LanguageContext';
 
-interface RollingReturnsTableProps {
- results: any[];
+interface PortfolioResult {
+  name: string;
+  monthlyReturns: { date: string; value: number }[];
 }
 
-export function RollingReturnsTable({ results }: RollingReturnsTableProps) {
- const { t } = useTranslation();
- 
- const periods = [
- { key: 'rolling1Y', label: '1 Year' },
- { key: 'rolling3Y', label: '3 Years' },
- { key: 'rolling5Y', label: '5 Years' },
- { key: 'rolling10Y', label: '10 Years' },
- ];
+interface RollingReturnsTableProps {
+  portfolios: PortfolioResult[];
+}
 
- return (
- <div className="bg-surface border border-border rounded-[2rem] overflow-hidden shadow-sm text-left">
- <div className="px-8 py-6 border-b border-border bg-surface-2">
- <h3 className="text-sm font-semibold text-text">Rolling Returns Analysis</h3>
- </div>
- <div className="overflow-x-auto">
- <table className="w-full border-collapse">
- <thead>
- <tr className="text-xs font-semibold text-text border-b border-border text-left">
- <th className="px-8 py-5">Period</th>
- <th className="px-8 py-5">Metric</th>
- {results.map((r, i) => (
- <th key={i} className="px-8 py-5 text-right">{r.name}</th>
- ))}
- </tr>
- </thead>
- <tbody className="divide-y divide-border">
- {periods.map((period) => (
- <React.Fragment key={period.key}>
- <tr className="bg-surface">
- <td rowSpan={3} className="px-8 py-4 text-sm font-bold text-text tracking-tight align-top border-r border-border/50 w-32">{period.label}</td>
- <td className="px-8 py-3 text-xs font-semibold text-text ">Average</td>
- {results.map((r, i) => {
- const stats = r.metrics[period.key];
- return (
- <td key={i} className="px-8 py-3 text-right text-sm font-bold text-text italic">
- {stats ? `${(stats.average * 100).toFixed(2)}%` : '—'}
- </td>
- );
- })}
- </tr>
- <tr className="bg-surface">
- <td className="px-8 py-3 text-xs font-semibold text-text ">Best</td>
- {results.map((r, i) => {
- const stats = r.metrics[period.key];
- return (
- <td key={i} className="px-8 py-3 text-right text-sm font-medium text-green italic">
- {stats ? `${(stats.best * 100).toFixed(2)}%` : '—'}
- </td>
- );
- })}
- </tr>
- <tr className="bg-surface">
- <td className="px-8 py-3 text-xs font-semibold text-text border-b-0">Worst</td>
- {results.map((r, i) => {
- const stats = r.metrics[period.key];
- return (
- <td key={i} className="px-8 py-3 text-right text-sm font-medium text-red italic">
- {stats ? `${(stats.worst * 100).toFixed(2)}%` : '—'}
- </td>
- );
- })}
- </tr>
- </React.Fragment>
- ))}
- </tbody>
- </table>
- </div>
- </div>
- );
+export function RollingReturnsTable({ portfolios }: RollingReturnsTableProps) {
+  const { t } = useTranslation();
+
+  const periods = [
+    { label: t("aa.1yr"), months: 12 },
+    { label: t("aa.3yr"), months: 36 },
+    { label: t("aa.5yr"), months: 60 },
+    { label: t("aa.10yr"), months: 120 }
+  ];
+
+  const rollingData = useMemo(() => {
+    return portfolios.map(p => {
+      const statsByPeriod: Record<number, { avg: number; min: number; max: number } | null> = {};
+
+      periods.forEach(per => {
+        const m = per.months;
+        if (p.monthlyReturns.length < m) {
+          statsByPeriod[m] = null;
+          return;
+        }
+
+        const rollingCumReturns: number[] = [];
+        for (let i = 0; i <= p.monthlyReturns.length - m; i++) {
+          let cum = 1;
+          for (let j = 0; j < m; j++) {
+            cum *= (1 + (p.monthlyReturns[i + j].value / 100));
+          }
+          const annReturn = (Math.pow(cum, 12 / m) - 1) * 100;
+          rollingCumReturns.push(annReturn);
+        }
+
+        if (rollingCumReturns.length > 0) {
+          const sum = rollingCumReturns.reduce((a, b) => a + b, 0);
+          const avg = sum / rollingCumReturns.length;
+          const min = Math.min(...rollingCumReturns);
+          const max = Math.max(...rollingCumReturns);
+          statsByPeriod[m] = { avg, min, max };
+        } else {
+          statsByPeriod[m] = null;
+        }
+      });
+
+      return {
+        name: p.name,
+        statsByPeriod
+      };
+    });
+  }, [portfolios, t]);
+
+  if (!portfolios || portfolios.length === 0) return null;
+
+  return (
+    <div className="bg-surface rounded-2xl border border-border p-6 shadow-sm">
+      <h3 className="text-lg font-bold text-text mb-4 text-left">{t("rolling.title")}</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead>
+            <tr className="border-b border-border text-text-3 font-semibold">
+              <th className="py-3 px-4">{t("pb.portfolio")}</th>
+              <th className="py-3 px-4">{t("rolling.period")}</th>
+              <th className="py-3 px-4 text-right">{t("rolling.average")}</th>
+              <th className="py-3 px-4 text-right">{t("rolling.best")}</th>
+              <th className="py-3 px-4 text-right">{t("rolling.worst")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rollingData.map((p, pIdx) => (
+              <React.Fragment key={pIdx}>
+                {periods.map((per, perIdx) => {
+                  const stat = p.statsByPeriod[per.months];
+                  return (
+                    <tr 
+                      key={perIdx} 
+                      className={`border-b border-border/50 hover:bg-surface-2 transition-colors ${
+                        perIdx === periods.length - 1 ? 'border-b-2 border-border' : ''
+                      }`}
+                    >
+                      {perIdx === 0 && (
+                        <td 
+                          rowSpan={periods.length} 
+                          className="py-4 px-4 font-bold text-text align-top border-r border-border/50 bg-surface-2/30"
+                        >
+                          {p.name}
+                        </td>
+                      )}
+                      <td className="py-2.5 px-4 font-medium text-text">{per.label}</td>
+                      <td className="py-2.5 px-4 text-right font-mono font-semibold text-text">
+                        {stat ? `${stat.avg > 0 ? '+' : ''}${stat.avg.toFixed(2)}%` : '-'}
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-mono text-emerald-600 font-medium">
+                        {stat ? `${stat.max > 0 ? '+' : ''}${stat.max.toFixed(2)}%` : '-'}
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-mono text-rose-600 font-medium">
+                        {stat ? `${stat.min > 0 ? '+' : ''}${stat.min.toFixed(2)}%` : '-'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }

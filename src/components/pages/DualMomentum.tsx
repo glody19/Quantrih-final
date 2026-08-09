@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Disclaimer } from "../ui/Disclaimer";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import {
@@ -23,6 +24,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { PageHeader } from "../ui/PageHeader";
 import { InfoTooltip } from "../ui/InfoTooltip";
 import { TickerInput } from "../ui/TickerInput";
 
@@ -41,12 +43,13 @@ function TooltipLabel({
         {label}
       </label>
       <InfoTooltip content={<>{tooltip}</>} />
-    </div>
+      
+</div>
   );
 }
 
 export function DualMomentum() {
-  const { language } = useTranslation();
+  const { language, t } = useTranslation();
   const [hasRun, setHasRun] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [lookback, setLookback] = useLocalStorage("dm_lookback", 12);
@@ -70,14 +73,16 @@ export function DualMomentum() {
   });
 
   return (
-    <div className="space-y-8 animate-fade-up w-full max-w-[1400px] mx-auto px-4 md:px-8 pb-24 font-sans">
-      <div className="mb-16 mt-4">
-        <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
-          <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
-            {"Dual Momentum"}
-          </h1>
-        </div>
-      </div>
+    <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24 font-sans">
+      <div className="mt-4">
+        <PageHeader
+          title={t("dm.title")}
+          badge={t("dm.badge")}
+          icon={TrendingUp}
+          description={t("dm.description")}
+        />
+        
+</div>
 
       <div className="flex flex-col gap-8 items-start">
         <div className="w-full space-y-6">
@@ -89,7 +94,7 @@ export function DualMomentum() {
               </h2>
               <input
                   type="text"
-                  placeholder={'Portfolio Name'}
+                  placeholder={t("pb.portfolio")}
                   value={saveName}
                   onChange={(e) => setSaveName(e.target.value)}
                   className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[200px]"
@@ -100,7 +105,8 @@ export function DualMomentum() {
               >
                 <Play size={12} fill="currentColor" /> {'Run Model'}
               </button>
-            </div>
+              
+</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-1.5 text-left">
@@ -113,7 +119,8 @@ export function DualMomentum() {
                   onChange={setUsEquity}
                   className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
                 />
-              </div>
+                
+</div>
 
               <div className="space-y-1.5 text-left">
                 <TooltipLabel
@@ -125,7 +132,8 @@ export function DualMomentum() {
                   onChange={setIntlEquity}
                   className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
                 />
-              </div>
+                
+</div>
 
               <div className="space-y-1.5 text-left">
                 <TooltipLabel
@@ -137,7 +145,8 @@ export function DualMomentum() {
                   onChange={setBonds}
                   className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
                 />
-              </div>
+                
+</div>
 
               <div className="space-y-1.5 text-left">
                 <TooltipLabel
@@ -150,12 +159,16 @@ export function DualMomentum() {
                   onChange={(e) => setLookback(parseInt(e.target.value) || 12)}
                   className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
                 />
-              </div>
+                
+</div>
 
               
-            </div>
-          </div>
-        </div>
+              
+</div>
+            
+</div>
+          
+</div>
 
         {hasRun ? (
           <div className="w-full space-y-6" id="report-content">
@@ -165,21 +178,27 @@ export function DualMomentum() {
                   label="CAGR"
                   tooltip="The average annual return of this dynamic strategy compared to a basic buy-and-hold option."
                 />
-                <div className="text-lg font-semibold num">12.4%</div>
+                <div className="text-lg font-semibold num">12.4%  
+</div>
                 <div className="text-sm text-green font-bold mt-1">
                   vs 10.1% Benchmark
-                </div>
-              </div>
+                  
+</div>
+                
+</div>
               <div className="bg-surface rounded-[2rem] border border-border p-6 shadow-sm">
                 <TooltipLabel
                   label="Max Drawdown"
                   tooltip="The largest loss suffered. The goal of the Dual Momentum strategy is precisely to avoid losing everything during a major crash!"
                 />
-                <div className="text-lg font-semibold num text-red">-14.2%</div>
+                <div className="text-lg font-semibold num text-red">-14.2%  
+</div>
                 <div className="text-sm text-green font-bold mt-1">
                   vs -51.0% Benchmark
-                </div>
-              </div>
+                  
+</div>
+                
+</div>
               <div className="bg-surface rounded-[2rem] border border-border p-6 shadow-sm">
                 <TooltipLabel
                   label="Current Signal"
@@ -187,12 +206,16 @@ export function DualMomentum() {
                 />
                 <div className="text-lg font-semibold text-pv-blue ">
                   {usEquity}
-                </div>
+                  
+</div>
                 <div className="text-sm text-text font-bold mt-1">
                   Updated EOM
-                </div>
-              </div>
-            </div>
+                  
+</div>
+                
+</div>
+              
+</div>
 
             <div className="bg-surface border border-border rounded-[2rem] p-6 shadow-sm">
               <h3 className="text-sm font-semibold mb-6 border-b border-border pb-4">
@@ -263,16 +286,25 @@ export function DualMomentum() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
+                
+</div>
+              
+</div>
+            
+</div>
         ) : (
           <div className="lg:col-span-3 h-full min-h-[500px] border border-border/30 rounded-[2rem] relative overflow-hidden bg-surface-2/20">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
-          </div>
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale">  
+</div>
+            <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90">  
+</div>
+            
+</div>
         )}
-      </div>
-    </div>
+        
+</div>
+      
+  <Disclaimer />
+</div>
   );
 }

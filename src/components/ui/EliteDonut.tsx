@@ -1,6 +1,7 @@
 import React from "react";
 import { Doughnut } from "react-chartjs-2";
 import { cn } from "../../lib/utils";
+import { useTranslation } from "../../contexts/LanguageContext";
 
 interface EliteDonutProps {
   assets: { symbol: string }[];
@@ -30,6 +31,8 @@ export function EliteDonut({
   colors = DEFAULT_COLORS,
   title,
 }: EliteDonutProps) {
+  const { t } = useTranslation();
+
   const dataList = assets
     .map((a) => ({
       symbol: a.symbol,
@@ -47,7 +50,7 @@ export function EliteDonut({
         data: dataList.map((a) => a.val),
         backgroundColor: colors.slice(0, dataList.length),
         borderWidth: 0,
-        borderColor: "transparent", // Work seamlessly across themes
+        borderColor: "transparent",
         hoverOffset: 12,
       },
     ],
@@ -61,7 +64,7 @@ export function EliteDonut({
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false, // We use our own custom legend
+        display: false,
       },
       tooltip: {
         backgroundColor: "rgba(255, 255, 255, 0.98)",
@@ -99,19 +102,18 @@ export function EliteDonut({
         {/* Inner Ring Data / Title */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className="text-[11px] font-black text-text-4 mb-1 uppercase tracking-[0.2em]">
-            Total Alloc
+            {t("pb.totalAlloc")}
           </span>
           <span className="text-4xl font-black text-text tracking-tighter leading-none drop-shadow-sm">
             {Math.round(total)}%
           </span>
         </div>
       </div>
-
-      <div className="flex-1 w-full bg-white p-6 rounded-[2rem] border border-border shadow-md">
+      <div className="flex-1 w-full bg-surface p-6 rounded-[2rem] border border-border shadow-md">
         <h4 className="text-[11px] font-black text-text mb-6 border-b border-border/80 pb-4 flex items-center justify-between uppercase tracking-[0.15em]">
-          <span>{title || "Allocation Details"}</span>
+          <span>{title || t("pb.assetAllocDetails")}</span>
           <span className="text-pv-blue bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl font-bold tracking-normal normal-case shadow-sm">
-            {dataList.length} Holdings
+            {dataList.length} {t("pb.holdings")}
           </span>
         </h4>
         <div className="flex flex-col gap-4">

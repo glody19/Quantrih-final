@@ -5,6 +5,11 @@ export function AssetLogo({ ticker, name, isCrypto, className }: { ticker: strin
  const [imgSrc, setImgSrc] = useState<string | null>(null);
  const [errorCount, setErrorCount] = useState(0);
  
+ React.useEffect(() => {
+  setImgSrc(null);
+  setErrorCount(0);
+ }, [ticker]);
+ 
  const cleanName = (name || '').split(' ')[0].toLowerCase().replace(',', '').replace('.', '');
  
  const WATCHLIST_DOMAINS: Record<string, string> = { 
@@ -23,37 +28,57 @@ export function AssetLogo({ ticker, name, isCrypto, className }: { ticker: strin
  PYPL: 'paypal.com',
  ADBE: 'adobe.com',
  COIN: 'coinbase.com',
+ MC: 'lvmh.com',
+ OR: 'loreal.com',
+ BNP: 'mabanque.bnpparibas',
+ SAN: 'sanofi.com',
+ AIR: 'airbus.com',
+ VOW3: 'volkswagen.de',
+ BP: 'bp.com',
+ HSBA: 'hsbc.com',
+ SHEL: 'shell.com',
+ AZN: 'astrazeneca.com',
+ GSK: 'gsk.com',
+ BTC: 'bitcoin.org',
+ ETH: 'ethereum.org',
  BTCUSDT: 'bitcoin.com', 
  ETHUSDT: 'ethereum.org' 
  };
  
  const getInitial = () => {
- const cleanTicker = (ticker || '').split('-')[0].split('.')[0].toUpperCase();
- 
- if (isCrypto || (ticker || '').includes('USDT') || (ticker || '').includes('-USD')) {
- const coin = (ticker || '').replace('USDT','').replace('-USD','').toLowerCase();
- return `https://assets.coincap.io/assets/icons/${coin}@2x.png`;
- }
- 
- // Attempt FinancialModelingPrep's public logo CDN first
- return `https://financialmodelingprep.com/image-stock/${cleanTicker}.png`;
+  const cleanTicker = (ticker || '').split('-')[0].split('.')[0].toUpperCase();
+  
+  if (isCrypto || (ticker || '').includes('USDT') || (ticker || '').includes('-USD')) {
+   const coin = (ticker || '').replace('USDT','').replace('-USD','').toLowerCase();
+   return `https://assets.coincap.io/assets/icons/${coin}@2x.png`;
+  }
+
+  if (WATCHLIST_DOMAINS[cleanTicker]) {
+   return `https://logo.clearbit.com/${WATCHLIST_DOMAINS[cleanTicker]}?size=80`;
+  }
+  
+  // Attempt modern FinancialModelingPrep symbol CDN first
+  return `https://images.financialmodelingprep.com/symbol/${cleanTicker}.png`;
  };
 
  const handleImageError = () => {
- const cleanTicker = (ticker || '').split('-')[0].split('.')[0].toUpperCase();
- 
- if (errorCount === 0) {
- // Fallback 1: Clearbit
- const domain = WATCHLIST_DOMAINS[cleanTicker] || (cleanName + '.com');
- setImgSrc(`https://logo.clearbit.com/${domain}?size=80`);
- } else if (errorCount === 1) {
- // Fallback 2: EODHD
- setImgSrc(`https://eodhd.com/img/logos/US/${cleanTicker}.png`);
- } else if (errorCount === 2) {
- // Fallback 3: Text initial
- setImgSrc(''); 
- }
- setErrorCount(prev => prev + 1);
+  const cleanTicker = (ticker || '').split('-')[0].split('.')[0].toUpperCase();
+  
+  if (errorCount === 0) {
+   // Fallback 1: Attempt old FinancialModelingPrep's image-stock endpoint
+   setImgSrc(`https://financialmodelingprep.com/image-stock/${cleanTicker}.png`);
+  } else if (errorCount === 1) {
+   // Fallback 2: Clearbit
+   const domain = WATCHLIST_DOMAINS[cleanTicker] || (cleanName + '.com');
+   setImgSrc(`https://logo.clearbit.com/${domain}?size=80`);
+  } else if (errorCount === 2) {
+   // Fallback 3: EODHD
+   setImgSrc(`https://eodhd.com/img/logos/US/${cleanTicker}.png`);
+  } else if (errorCount === 3) {
+   // Fallback 4: Text initial
+   setImgSrc(''); 
+  }
+  setErrorCount(prev => prev + 1);
  };
 
  const src = imgSrc === null ? getInitial() : imgSrc;

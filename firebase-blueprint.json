@@ -95,6 +95,59 @@
         "createdAt",
         "updatedAt"
       ]
+    },
+    "InvestorProfile": {
+      "title": "Investor Profile",
+      "description": "Investor suitability and KYC data for portfolio management.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "dob": { "type": "string" },
+        "taxCountry": { "type": "string" },
+        "taxState": { "type": "string" },
+        "taxCity": { "type": "string" },
+        "tin": { "type": "string" },
+        "isUsPerson": { "type": "boolean" },
+        "employmentStatus": { "type": "string" },
+        "professionType": { "type": "string" },
+        "incomeStability": { "type": "string" },
+        "incomeSourcesCount": { "type": "string" },
+        "incomeFrequency": { "type": "string" },
+        "monthlySavingsCapacity": { "type": "string" },
+        "approxFixedChargesPct": { "type": "string" },
+        "annualIncomeRange": { "type": "string" },
+        "financialSituationStableForInvesting": { "type": "boolean" },
+        "dependentOnSingleIncome": { "type": "boolean" },
+        "hasIncomeDropLast12m": { "type": "boolean" },
+        "approxNetWorth": { "type": "string" },
+        "financialWealthEstimate": { "type": "string" },
+        "realEstateWealthEstimate": { "type": "string" },
+        "businessWealthEstimate": { "type": "string" },
+        "immediatelyAvailableLiquidity": { "type": "string" },
+        "totalOutstandingDebt": { "type": "string" },
+        "debtServiceRatio": { "type": "string" },
+        "amountToInvestNow": { "type": "string" },
+        "investableSharePct": { "type": "string" },
+        "primarySourceOfFunds": { "type": "string" },
+        "secondarySourcesOfFunds": { "type": "array" },
+        "fundsOwnership": { "type": "string" },
+        "depositFrequency": { "type": "string" },
+        "capitalTaxStatus": { "type": "string" },
+        "overallExperienceYears": { "type": "string" },
+        "investmentFrequency": { "type": "string" },
+        "tradesPerYearRange": { "type": "string" },
+        "productsTraded": { "type": "array" },
+        "priorPlatformsUsed": { "type": "array" },
+        "ordersExecutedTypes": { "type": "array" },
+        "understandsPerfVsVolatility": { "type": "string" },
+        "experiencedMajorDrawdown": { "type": "string" },
+        "selfAssessedLevel": { "type": "string" },
+        "primaryObjective": { "type": "string" },
+        "timeHorizon": { "type": "string" },
+        "maxDrawdownAcceptable": { "type": "string" }
+      }
     }
   },
   "firestore": {
@@ -105,6 +158,10 @@
     "/users/{userId}/backtests/{backtestId}": {
       "schema": "BacktestConfig",
       "description": "User specific backtest configurations"
+    },
+    "/users/{userId}/profiles/{profileId}": {
+      "schema": "InvestorProfile",
+      "description": "User specific investor suitability profiles"
     }
   }
 }

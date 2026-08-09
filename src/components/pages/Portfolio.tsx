@@ -1,4 +1,5 @@
 import React from "react";
+import { Disclaimer } from "../ui/Disclaimer";
 import { PortfolioBacktesting } from "./PortfolioBacktesting";
 
 interface PortfolioProps {
@@ -12,7 +13,9 @@ export function Portfolio({ baseCcy, setBaseCcy }: PortfolioProps) {
  return (
  <div className="w-full animate-fade-in relative pt-4">
  <PortfolioBacktesting baseCcy={baseCcy} setBaseCcy={setBaseCcy} />
- </div>
+   
+  <Disclaimer />
+</div>
  );
 }
 

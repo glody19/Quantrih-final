@@ -75,7 +75,7 @@ export function FinancialTable({ title, data, fields }: { title: string, data: a
  {(data || []).map((row, i) => (
  <tr key={i} className="border-b border-border/50 last:border-0 hover:bg-surface-2/50 transition-colors">
  {fields.map(f => (
- <td key={f.key} className="py-2 px-3 text-[13px] font-mono text-text whitespace-nowrap">
+ <td key={f.key} className="py-2 px-3 text-xs font-mono text-text whitespace-nowrap">
  {formatValue(f.key, row[f.key])}
  </td>
  ))}

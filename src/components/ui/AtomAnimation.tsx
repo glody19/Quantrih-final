@@ -22,7 +22,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  
  // Scale for High-DPI screens
  const setupCanvas = () => {
- const dpr = Math.max(2, window.devicePixelRatio || 1);
+ const dpr = Math.min(1.5, window.devicePixelRatio || 1);
  width = canvas.offsetWidth;
  height = canvas.offsetHeight;
  canvas.width = width * dpr;
@@ -104,12 +104,12 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  const init = () => {
  nodes = [];
  gravityParticles = [];
- const numNodes = 1000; // Optimized for fluidity
+ const numNodes = 250;
  const radius = Math.min(width, height) * (width < 640 ? 0.34 * 1.2 : 0.48); // Dynamic scale with +20% on mobile only
  const cx = width / 2;
  
  // Initialize Gravity Particles
- for (let i = 0; i < 20; i++) {
+ for (let i = 0; i < 10; i++) {
  gravityParticles.push(new GravityParticle(cx, height, width));
  }
 
@@ -376,13 +376,13 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  const fontSize = Math.max(9, Math.floor(13 * scale));
  
  if (p.glow) {
- ctx.fillStyle = p.color + baseOpacity + ')';
- ctx.shadowBlur = 15;
- ctx.shadowColor = p.color + baseOpacity + ')';
- } else {
- ctx.fillStyle = p.color + (baseOpacity * 0.5) + ')';
- ctx.shadowBlur = 0;
- }
+            ctx.fillStyle = p.color + baseOpacity + ')';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = p.color + baseOpacity + ')';
+          } else {
+            ctx.fillStyle = p.color + (baseOpacity * 0.5) + ')';
+            ctx.shadowBlur = 0;
+          }
 
  ctx.font = `600 ${fontSize}px "Space Grotesk", monospace`;
  ctx.fillText(p.val, projectedX, projectedY);
@@ -395,7 +395,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  ctx.beginPath();
  ctx.arc(cx, cy, 0.4 + pulse * 0.6, 0, Math.PI * 2);
  ctx.fillStyle = `rgba(255, 255, 255, ${0.9 + pulse * 0.1})`;
- ctx.shadowBlur = 8 + pulse * 10;
+ ctx.shadowBlur = 0;
  ctx.shadowColor = '#06b6d4';
  ctx.fill();
  
@@ -413,7 +413,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  ctx.beginPath();
  ctx.arc(cx + Math.cos(orbitAngle) * orbitRadius, cy + Math.sin(orbitAngle) * orbitRadius, 0.3 + Math.random()*0.3, 0, Math.PI * 2);
  ctx.fillStyle = j === 0 ? '#3b82f6' : (j===1 ? '#a855f7' : '#06b6d4');
- ctx.shadowBlur = 3;
+            ctx.shadowBlur = 8;
  ctx.shadowColor = j === 0 ? '#3b82f6' : (j===1 ? '#a855f7' : '#06b6d4');
  ctx.fill();
  }
@@ -515,7 +515,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  }, []);
 
  return (
- <div className={"w-full h-full flex flex-col items-center justify-center relative max-sm:scale-90 origin-center " + (className || "")}>
+ <div className={"w-full h-full flex flex-col items-center justify-center relative max-sm:scale-[0.6] origin-center " + (className || "")}>
  {/* Ambient glowing background aura */}
  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#06b6d4]/5 to-transparent blur-3xl pointer-events-none" />
  

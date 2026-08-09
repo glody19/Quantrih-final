@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Disclaimer } from "../ui/Disclaimer";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import {
@@ -15,9 +16,10 @@ import {
 } from "recharts";
 import { Settings, Play, Target } from "lucide-react";
 import { TickerInput } from "../ui/TickerInput";
+import { PageHeader } from "../ui/PageHeader";
 
 export function MovingAverage() {
-  const { language } = useTranslation();
+  const { language, t } = useTranslation();
   const [hasRun, setHasRun] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [assetSymbol, setAssetSymbol] = useLocalStorage(
@@ -47,14 +49,16 @@ export function MovingAverage() {
   });
 
   return (
-    <div className="space-y-8 animate-fade-up w-full max-w-[1400px] mx-auto px-4 md:px-8 pb-24 font-sans">
-      <div className="mb-16 mt-4">
-        <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
-          <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
-            {"Moving Average"}
-          </h1>
-        </div>
-      </div>
+    <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24 font-sans">
+      <div className="mt-4">
+        <PageHeader
+          title={t("ma.title")}
+          badge={t("ma.badge")}
+          icon={Target}
+          description={t("ma.description")}
+        />
+        
+</div>
 
       <div className="flex flex-col gap-8 items-start">
         <div className="w-full space-y-6">
@@ -66,7 +70,7 @@ export function MovingAverage() {
               </h2>
               <input
                   type="text"
-                  placeholder={'Portfolio Name'}
+                  placeholder={t("mc.portfolio_name")}
                   value={saveName}
                   onChange={(e) => setSaveName(e.target.value)}
                   className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[200px]"
@@ -77,7 +81,8 @@ export function MovingAverage() {
               >
                 <Play size={12} fill="currentColor" /> {'Run Model'}
               </button>
-            </div>
+              
+</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-1.5 text-left">
@@ -89,7 +94,8 @@ export function MovingAverage() {
                   onChange={setAssetSymbol}
                   className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
                 />
-              </div>
+                
+</div>
 
               <div className="space-y-1.5 text-left">
                 <label className="text-xs font-semibold text-text block">
@@ -108,9 +114,12 @@ export function MovingAverage() {
                     <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
                       <path d="M5.516 7.548c0.436-0.446 1.043-0.481 1.576 0l3.058 3.125 3.018-3.083c0.533-0.481 1.141-0.446 1.576 0 0.436 0.445 0.408 1.197 0 1.615l-3.791 3.874c-0.533 0.481-1.393 0.481-1.926 0l-3.834-3.916c-0.436-0.446-0.436-1.169 0-1.615z" />
                     </svg>
-                  </div>
-                </div>
-              </div>
+                    
+</div>
+                  
+</div>
+                
+</div>
 
               <div className="space-y-1.5 text-left">
                 <label className="text-xs font-semibold text-text block">
@@ -124,12 +133,16 @@ export function MovingAverage() {
                   }
                   className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
                 />
-              </div>
+                
+</div>
 
               
-            </div>
-          </div>
-        </div>
+              
+</div>
+            
+</div>
+          
+</div>
 
         {hasRun ? (
           <div className="w-full space-y-6" id="report-content">
@@ -137,32 +150,45 @@ export function MovingAverage() {
               <div className="bg-surface rounded-[2rem] border border-border p-6 shadow-sm">
                 <div className="text-xs font-semibold text-text mb-1">
                   Sharpe Ratio
-                </div>
-                <div className="text-lg font-semibold num">0.86</div>
+                  
+</div>
+                <div className="text-lg font-semibold num">0.86  
+</div>
                 <div className="text-sm text-green font-bold mt-1">
                   vs 0.54 Buy & Hold
-                </div>
-              </div>
+                  
+</div>
+                
+</div>
               <div className="bg-surface rounded-[2rem] border border-border p-6 shadow-sm">
                 <div className="text-xs font-semibold text-text mb-1">
                   Volatility
-                </div>
-                <div className="text-lg font-semibold num text-green">8.9%</div>
+                  
+</div>
+                <div className="text-lg font-semibold num text-green">8.9%  
+</div>
                 <div className="text-sm text-green font-bold mt-1">
                   vs 15.2% Buy & Hold
-                </div>
-              </div>
+                  
+</div>
+                
+</div>
               <div className="bg-surface rounded-[2rem] border border-border p-6 shadow-sm">
                 <div className="text-xs font-semibold text-text mb-1">
                   Signal Status
-                </div>
-                <div className="text-lg font-semibold text-green ">RISK ON</div>
+                  
+</div>
+                <div className="text-lg font-semibold text-green ">RISK ON  
+</div>
                 <div className="text-sm text-text font-bold mt-1">
                   Price {">"} {movingAverageLength}{" "}
                   {period === "monthly" ? "Month" : "Day"} MA
-                </div>
-              </div>
-            </div>
+                  
+</div>
+                
+</div>
+              
+</div>
 
             <div className="bg-surface border border-border rounded-[2rem] p-6 shadow-sm">
               <h3 className="text-sm font-semibold mb-6 border-b border-border pb-4">
@@ -239,16 +265,25 @@ export function MovingAverage() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
+                
+</div>
+              
+</div>
+            
+</div>
         ) : (
           <div className="lg:col-span-3 h-full min-h-[500px] border border-border/30 rounded-[2rem] relative overflow-hidden bg-surface-2/20">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
-          </div>
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale">  
+</div>
+            <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90">  
+</div>
+            
+</div>
         )}
-      </div>
-    </div>
+        
+</div>
+      
+  <Disclaimer />
+</div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Disclaimer } from "../ui/Disclaimer";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import {
@@ -18,6 +19,7 @@ import {
 } from "recharts";
 import { Settings, Play, TrendingUp, HelpCircle } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { PageHeader } from "../ui/PageHeader";
 import { InfoTooltip } from "../ui/InfoTooltip";
 
 function TooltipLabel({
@@ -35,12 +37,13 @@ function TooltipLabel({
         {label}
       </label>
       <InfoTooltip content={<>{tooltip}</>} />
-    </div>
+      
+</div>
   );
 }
 
 export function RelativeStrength() {
-  const { language } = useTranslation();
+  const { language, t } = useTranslation();
   const [hasRun, setHasRun] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [lookback, setLookback] = useLocalStorage("rs_lookback", 6);
@@ -70,14 +73,16 @@ export function RelativeStrength() {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-up w-full max-w-[1400px] mx-auto px-4 md:px-8 pb-24 font-sans">
-      <div className="mb-16 mt-4">
-        <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
-          <h1 className="text-2xl font-bold text-pv-blue tracking-tight">
-            {"Relative Strength"}
-          </h1>
-        </div>
-      </div>
+    <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24 font-sans">
+      <div className="mt-4">
+        <PageHeader
+          title={t("rs.title")}
+          badge={t("rs.badge")}
+          icon={TrendingUp}
+          description={t("rs.description")}
+        />
+        
+</div>
 
       <div className="flex flex-col gap-8 items-start">
         <div className="w-full space-y-6">
@@ -89,7 +94,7 @@ export function RelativeStrength() {
               </h2>
               <input
                   type="text"
-                  placeholder={'Portfolio Name'}
+                  placeholder={t("mc.portfolio_name")}
                   value={saveName}
                   onChange={(e) => setSaveName(e.target.value)}
                   className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[200px]"
@@ -100,7 +105,8 @@ export function RelativeStrength() {
               >
                 <Play size={12} fill="currentColor" /> {'Run Model'}
               </button>
-            </div>
+              
+</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-2">
@@ -136,7 +142,8 @@ export function RelativeStrength() {
                 <button className="w-full py-2 border border-dashed border-border text-sm font-semibold text-text rounded-[1.5rem] hover:text-text transition-colors">
                   + Add Asset
                 </button>
-              </div>
+                
+</div>
 
               <div className="space-y-1.5 text-left pt-2">
                 <TooltipLabel
@@ -149,7 +156,8 @@ export function RelativeStrength() {
                   onChange={(e) => setLookback(parseInt(e.target.value) || 6)}
                   className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
                 />
-              </div>
+                
+</div>
 
               <div className="space-y-1.5 text-left">
                 <TooltipLabel
@@ -162,38 +170,51 @@ export function RelativeStrength() {
                   onChange={(e) => setTopN(parseInt(e.target.value) || 2)}
                   className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
                 />
-              </div>
+                
+</div>
 
               
-            </div>
-          </div>
-        </div>
+              
+</div>
+            
+</div>
+          
+</div>
 
         {hasRun ? (
           <div className="w-full space-y-6" id="report-content">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-surface rounded-[2rem] border border-border p-6 shadow-sm">
-                <div className="text-xs font-semibold text-text mb-1">CAGR</div>
+                <div className="text-xs font-semibold text-text mb-1">CAGR  
+</div>
                 <div className="text-lg font-semibold num text-green">
                   14.1%
-                </div>
+                  
+</div>
                 <div className="text-sm text-text font-bold mt-1">
                   vs 10.4% Benchmark
-                </div>
-              </div>
+                  
+</div>
+                
+</div>
               <div className="bg-surface rounded-[2rem] border border-border p-6 shadow-sm">
                 <div className="text-xs font-semibold text-text mb-1">
                   Max Drawdown
-                </div>
-                <div className="text-lg font-semibold num">-21.5%</div>
+                  
+</div>
+                <div className="text-lg font-semibold num">-21.5%  
+</div>
                 <div className="text-sm text-text font-bold mt-1">
                   vs -51.0% Benchmark
-                </div>
-              </div>
+                  
+</div>
+                
+</div>
               <div className="bg-surface rounded-[2rem] border border-border p-6 shadow-sm">
                 <div className="text-xs font-semibold text-text mb-1">
                   Current Holdings
-                </div>
+                  
+</div>
                 <div className="flex gap-2 mt-2">
                   <span className="px-3 py-1 bg-surface-2 border border-border rounded-2xl text-sm font-semibold">
                     QQQ
@@ -201,9 +222,12 @@ export function RelativeStrength() {
                   <span className="px-3 py-1 bg-surface-2 border border-border rounded-2xl text-sm font-semibold">
                     SPY
                   </span>
-                </div>
-              </div>
-            </div>
+                  
+</div>
+                
+</div>
+              
+</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-surface border border-border rounded-[2rem] p-6 shadow-sm">
@@ -264,8 +288,10 @@ export function RelativeStrength() {
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
-                </div>
-              </div>
+                  
+</div>
+                
+</div>
 
               <div className="bg-surface border border-border rounded-[2rem] p-6 shadow-sm">
                 <h3 className="text-sm font-semibold mb-4 border-b border-border pb-4">
@@ -324,17 +350,27 @@ export function RelativeStrength() {
                       />
                     </LineChart>
                   </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          </div>
+                  
+</div>
+                
+</div>
+              
+</div>
+            
+</div>
         ) : (
           <div className="lg:col-span-3 h-full min-h-[500px] border border-border/30 rounded-[2rem] relative overflow-hidden bg-surface-2/20">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
-          </div>
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale">  
+</div>
+            <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90">  
+</div>
+            
+</div>
         )}
-      </div>
-    </div>
+        
+</div>
+      
+  <Disclaimer />
+</div>
   );
 }

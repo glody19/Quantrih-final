@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ExternalLink, Clock } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useTranslation } from '../../contexts/LanguageContext';
 
 interface NewsItem {
  id: number;
@@ -12,7 +13,38 @@ interface NewsItem {
  datetime: number;
 }
 
+const newsLabels: Record<string, Record<string, string>> = {
+  en: {
+    noNews: "No recent news found.",
+    marketNews: "Market News",
+    newsFor: "News:"
+  },
+  fr: {
+    noNews: "Aucune actualité récente trouvée.",
+    marketNews: "Actualités du Marché",
+    newsFor: "Actualités :"
+  },
+  de: {
+    noNews: "Keine aktuellen Nachrichten gefunden.",
+    marketNews: "Marktnachrichten",
+    newsFor: "Nachrichten:"
+  },
+  nl: {
+    noNews: "Geen recent nieuws gevonden.",
+    marketNews: "Marktnieuws",
+    newsFor: "Nieuws:"
+  },
+  es: {
+    noNews: "No se encontraron noticias recientes.",
+    marketNews: "Noticias del Mercado",
+    newsFor: "Noticias:"
+  }
+};
+
 export const FinancialNews = ({ symbol }: { symbol?: string }) => {
+ const { language } = useTranslation();
+ const t = newsLabels[language] || newsLabels.en;
+
  const [news, setNews] = useState<NewsItem[]>([]);
  const [loading, setLoading] = useState(true);
 
@@ -32,10 +64,9 @@ export const FinancialNews = ({ symbol }: { symbol?: string }) => {
  const res = await fetch(endpoint);
  if (res.ok) {
  const data = await res.json();
- // Filter out missing images, Bloomberg/FT style favors big images
  const withImages = (Array.isArray(data) ? data : [])
  .filter(item => item.image && item.headline && item.url && !item.source?.toLowerCase().includes('yahoo'));
- setNews(withImages.slice(0, 10)); // Top 10
+ setNews(withImages.slice(0, 10));
  }
  } catch (e) {
  console.warn("Error fetching news:", e);
@@ -56,23 +87,23 @@ export const FinancialNews = ({ symbol }: { symbol?: string }) => {
  }
 
  if (news.length === 0) {
- return <div className="text-text text-center py-8">Aucune actualité récente trouvée.</div>;
+ return <div className="text-text text-center py-8">{t.noNews}</div>;
  }
 
- // First item is hero
  const heroNews = news[0];
  const gridNews = news.slice(1);
 
  const formatTime = (unixTs: number) => {
  const date = new Date(unixTs * 1000);
- return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+ const localeMap: Record<string, string> = { fr: 'fr-FR', de: 'de-DE', nl: 'nl-NL', es: 'es-ES', en: 'en-US' };
+ return date.toLocaleDateString(localeMap[language] || 'en-US', { day: 'numeric', month: 'short' });
  };
 
  return (
  <div className="space-y-8 w-full mt-12 mb-8">
  <h3 className="text-2xl font-semibold flex items-center gap-3 relative inline-flex pb-2 mb-6">
  <span className="bg-gradient-to-r from-text to-text-3 bg-clip-text text-transparent">
- {symbol ? `Actualités: ${symbol}` : 'Actualités du Marché'}
+ {symbol ? `${t.newsFor} ${symbol}` : t.marketNews}
  </span>
  <div className="absolute bottom-0 left-0 h-[3px] w-24 bg-gradient-to-r from-pv-blue to-transparent"></div>
  </h3>

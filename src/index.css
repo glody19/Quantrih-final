@@ -97,16 +97,15 @@
   }
 
   /* Global interactive cursors */
-  button, a, select, [role="button"] {
+  button, a, [role="button"] {
     cursor: pointer;
     transition-property: all;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 300ms;
   }
   
-  /* Make all inputs (like search bars) show pointer until focused */
+  /* Inputs */
   input {
-    cursor: pointer;
     transition-property: all;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 300ms;
@@ -114,7 +113,6 @@
   
   input:hover {
     box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
-    transform: translateY(-1px);
   }
   
   input:focus {

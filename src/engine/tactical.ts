@@ -4,7 +4,7 @@ export function evaluateTacticalModel(
   portfolio: Portfolio,
   currentMonthIndex: number,
   allCommonMonths: string[], // e.g. ["2010-01", "2010-02", ...]
-  pricesBySymbol: Map<string, MonthlyPrice[]>
+  priceLookup: Map<string, Map<string, number>>
 ): AssetAllocation[] {
   const model = portfolio.tacticalModel;
   // Def fallback is just the original static allocations
@@ -16,9 +16,8 @@ export function evaluateTacticalModel(
   const getPrice = (symbol: string, monthsAgo: number): number | null => {
     if (currentMonthIndex - monthsAgo < 0) return null;
     const targetMonth = allCommonMonths[currentMonthIndex - monthsAgo];
-    const prices = pricesBySymbol.get(symbol) || [];
-    const p = prices.find(x => x.normalizedDate === targetMonth);
-    return p ? p.close : null;
+    const price = priceLookup.get(symbol)?.get(targetMonth);
+    return price ?? null;
   };
 
   const getMomentum = (symbol: string, lookback: number): number | null => {

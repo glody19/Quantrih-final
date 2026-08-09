@@ -41,36 +41,160 @@ export function Auth({ onBack }: { onBack: () => void }) {
     }
   }, [user, onBack]);
 
-  const isFr = language === 'fr';
-  const t = isFr ? {
-    loginTitle: 'Connexion à Quantrih',
-    signupTitle: 'Créer votre compte',
-    email: 'Adresse e-mail',
-    pass: 'Mot de passe',
-    passVerify: 'Confirmer le mot de passe',
-    firstName: 'Prénom',
-    lastName: 'Nom',
-    company: 'Société (Optionnel)',
-    submitLogin: 'Se connecter',
-    submitSignup: 'Créer un compte',
-    forgotPassword: 'Mot de passe oublié ?',
-    googleBtnText: 'Continuer avec Google',
-    dividerText: 'ou continuer avec e-mail'
-  } : {
-    loginTitle: 'Sign in to Quantrih',
-    signupTitle: 'Create your account',
-    email: 'Email Address',
-    pass: 'Password',
-    passVerify: 'Confirm Password',
-    firstName: 'First Name',
-    lastName: 'Last Name',
-    company: 'Company (Optional)',
-    submitLogin: 'Sign In',
-    submitSignup: 'Create Account',
-    forgotPassword: 'Forgot password?',
-    googleBtnText: 'Continue with Google',
-    dividerText: 'or continue with email'
+  const authLabels: Record<string, Record<string, string>> = {
+    en: {
+      loginTitle: 'Sign in to Quantrih',
+      signupTitle: 'Create your account',
+      email: 'Email Address',
+      pass: 'Password',
+      passVerify: 'Confirm Password',
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      company: 'Company (Optional)',
+      submitLogin: 'Sign In',
+      submitSignup: 'Create Account',
+      forgotPassword: 'Forgot password?',
+      googleBtnText: 'Continue with Google',
+      dividerText: 'or continue with email',
+      upload: 'Upload',
+      noAccount: "Don't have an account?",
+      hasAccount: 'Already have an account?',
+      signUpLink: 'Sign Up',
+      signInLink: 'Sign In',
+      securedBy: 'Secure authentication powered by',
+      googleFail: 'Google Sign-In failed. Please try again.',
+      enterEmailFirst: 'Please enter your email address first.',
+      resetSent: 'Password reset email sent.',
+      resetErr: 'Error sending password reset email.',
+      passMismatch: 'Passwords do not match.',
+      emailInUse: 'Email already in use.',
+      invalidCreds: 'Invalid email or password.',
+      weakPass: 'Password must be at least 6 characters.',
+      genericErr: 'An error occurred. Please try again.'
+    },
+    fr: {
+      loginTitle: 'Connexion à Quantrih',
+      signupTitle: 'Créer votre compte',
+      email: 'Adresse e-mail',
+      pass: 'Mot de passe',
+      passVerify: 'Confirmer le mot de passe',
+      firstName: 'Prénom',
+      lastName: 'Nom',
+      company: 'Société (Optionnel)',
+      submitLogin: 'Se connecter',
+      submitSignup: 'Créer un compte',
+      forgotPassword: 'Mot de passe oublié ?',
+      googleBtnText: 'Continuer avec Google',
+      dividerText: 'ou continuer avec e-mail',
+      upload: 'Téléverser',
+      noAccount: "Vous n'avez pas de compte ?",
+      hasAccount: 'Vous avez déjà un compte ?',
+      signUpLink: "S'inscrire",
+      signInLink: 'Se connecter',
+      securedBy: 'Authentification sécurisée propulsée par',
+      googleFail: 'La connexion avec Google a échoué. Veuillez réessayer.',
+      enterEmailFirst: "Veuillez d'abord saisir votre adresse e-mail.",
+      resetSent: 'E-mail de réinitialisation du mot de passe envoyé.',
+      resetErr: "Erreur lors de l'envoi de l'e-mail de réinitialisation.",
+      passMismatch: 'Les mots de passe ne correspondent pas.',
+      emailInUse: 'Cet e-mail est déjà utilisé.',
+      invalidCreds: 'E-mail ou mot de passe invalide.',
+      weakPass: 'Le mot de passe doit contenir au moins 6 caractères.',
+      genericErr: 'Une erreur est survenue. Veuillez réessayer.'
+    },
+    de: {
+      loginTitle: 'Anmelden bei Quantrih',
+      signupTitle: 'Konto erstellen',
+      email: 'E-Mail-Adresse',
+      pass: 'Passwort',
+      passVerify: 'Passwort bestätigen',
+      firstName: 'Vorname',
+      lastName: 'Nachname',
+      company: 'Firma (Optional)',
+      submitLogin: 'Anmelden',
+      submitSignup: 'Konto erstellen',
+      forgotPassword: 'Passwort vergessen?',
+      googleBtnText: 'Weiter mit Google',
+      dividerText: 'oder weiter mit E-Mail',
+      upload: 'Hochladen',
+      noAccount: 'Noch kein Konto?',
+      hasAccount: 'Bereits ein Konto?',
+      signUpLink: 'Registrieren',
+      signInLink: 'Anmelden',
+      securedBy: 'Sichere Authentifizierung mit',
+      googleFail: 'Google-Anmeldung fehlgeschlagen. Bitte erneut versuchen.',
+      enterEmailFirst: 'Bitte geben Sie zuerst Ihre E-Mail-Adresse ein.',
+      resetSent: 'E-Mail zum Zurücksetzen des Passworts gesendet.',
+      resetErr: 'Fehler beim Senden der Passwort-Zurücksetzungs-E-Mail.',
+      passMismatch: 'Passwörter stimmen nicht überein.',
+      emailInUse: 'E-Mail wird bereits verwendet.',
+      invalidCreds: 'Ungültige E-Mail oder Passwort.',
+      weakPass: 'Passwort muss mindestens 6 Zeichen lang sein.',
+      genericErr: 'Ein Fehler ist aufgetreten. Bitte erneut versuchen.'
+    },
+    nl: {
+      loginTitle: 'Inloggen bij Quantrih',
+      signupTitle: 'Account aanmaken',
+      email: 'E-mailadres',
+      pass: 'Wachtwoord',
+      passVerify: 'Wachtwoord bevestigen',
+      firstName: 'Voornaam',
+      lastName: 'Achternaam',
+      company: 'Bedrijf (Optioneel)',
+      submitLogin: 'Inloggen',
+      submitSignup: 'Account aanmaken',
+      forgotPassword: 'Wachtwoord vergeten?',
+      googleBtnText: 'Doorgaan met Google',
+      dividerText: 'of doorgaan met e-mail',
+      upload: 'Uploaden',
+      noAccount: 'Nog geen account?',
+      hasAccount: 'Al een account?',
+      signUpLink: 'Registreren',
+      signInLink: 'Inloggen',
+      securedBy: 'Veilige authenticatie aangedreven door',
+      googleFail: 'Inloggen met Google mislukt. Probeer het opnieuw.',
+      enterEmailFirst: 'Voer eerst uw e-mailadres in.',
+      resetSent: 'E-mail voor het opnieuw instellen van wachtwoord verzonden.',
+      resetErr: 'Fout bij het verzenden van e-mail voor wachtwoordherstel.',
+      passMismatch: 'Wachtwoorden komen niet overeen.',
+      emailInUse: 'E-mailadres is al in gebruik.',
+      invalidCreds: 'Ongeldig e-mailadres of wachtwoord.',
+      weakPass: 'Wachtwoord moet minimaal 6 tekens bevatten.',
+      genericErr: 'Er is een fout opgetreden. Probeer het opnieuw.'
+    },
+    es: {
+      loginTitle: 'Iniciar sesión en Quantrih',
+      signupTitle: 'Crear su cuenta',
+      email: 'Correo electrónico',
+      pass: 'Contraseña',
+      passVerify: 'Confirmar contraseña',
+      firstName: 'Nombre',
+      lastName: 'Apellido',
+      company: 'Empresa (Opcional)',
+      submitLogin: 'Iniciar sesión',
+      submitSignup: 'Crear cuenta',
+      forgotPassword: '¿Olvidó su contraseña?',
+      googleBtnText: 'Continuar con Google',
+      dividerText: 'o continuar con correo electrónico',
+      upload: 'Subir',
+      noAccount: '¿No tiene una cuenta?',
+      hasAccount: '¿Ya tiene una cuenta?',
+      signUpLink: 'Registrarse',
+      signInLink: 'Iniciar sesión',
+      securedBy: 'Autenticación segura impulsada por',
+      googleFail: 'Error al iniciar sesión con Google. Inténtelo de nuevo.',
+      enterEmailFirst: 'Por favor, introduzca su correo electrónico primero.',
+      resetSent: 'Correo de restablecimiento de contraseña enviado.',
+      resetErr: 'Error al enviar el correo de restablecimiento de contraseña.',
+      passMismatch: 'Las contraseñas no coinciden.',
+      emailInUse: 'El correo electrónico ya está en uso.',
+      invalidCreds: 'Correo electrónico o contraseña no válidos.',
+      weakPass: 'La contraseña debe tener al menos 6 caracteres.',
+      genericErr: 'Ocurrió un error. Inténtelo de nuevo.'
+    }
   };
+
+  const t = authLabels[language] || authLabels['en'];
 
   const handleGoogleLogin = async () => {
     setError(null);
@@ -80,7 +204,7 @@ export function Auth({ onBack }: { onBack: () => void }) {
       onBack();
     } catch (err: any) {
       console.error("Google login failed:", err);
-      setError(isFr ? "La connexion avec Google a échoué. Veuillez réessayer." : "Google Sign-In failed. Please try again.");
+      setError(t.googleFail);
     } finally {
       setLoading(false);
     }
@@ -90,18 +214,18 @@ export function Auth({ onBack }: { onBack: () => void }) {
     setError(null);
     setResetMessage(null);
     if (!email) {
-      setError('Please enter your email address first.');
+      setError(t.enterEmailFirst);
       return;
     }
     try {
       await sendPasswordResetEmail(auth, email);
-      setResetMessage('Password reset email sent.');
+      setResetMessage(t.resetSent);
     } catch (err: any) {
-      setError('Error sending password reset email.');
+      setError(t.resetErr);
     }
   };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const reader = new FileReader();
@@ -112,15 +236,15 @@ export function Auth({ onBack }: { onBack: () => void }) {
     }
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (honeypot) {
-      setError("Validation system error.");
+      setError(t.genericErr);
       return;
     }
 
     if (!isLogin && password !== verifyPassword) {
-      setError("Passwords do not match.");
+      setError(t.passMismatch);
       return;
     }
 
@@ -151,13 +275,13 @@ const handleSubmit = async (e: React.FormEvent) => {
       onBack();
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
-        setError('Email already in use.');
+        setError(t.emailInUse);
       } else if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        setError('Invalid email or password.');
+        setError(t.invalidCreds);
       } else if (err.code === 'auth/weak-password') {
-        setError('Password must be at least 6 characters.');
+        setError(t.weakPass);
       } else {
-        setError('An error occurred. Please try again.');
+        setError(t.genericErr);
       }
     } finally {
       setLoading(false);
@@ -175,7 +299,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
       <div className="w-full max-w-md relative z-10 flex flex-col items-center">
         <div className="mb-8 cursor-pointer flex flex-col items-center transition-transform hover:scale-105" onClick={onBack}>
-           <QuantrihLogo variant="sigma" size="md" className="text-[#635BFF]" />
+           <QuantrihLogo variant="bars" size="md" className="text-[#635BFF]" />
         </div>
 
         <div className="w-full bg-white rounded-[2rem] shadow-[0_50px_100px_-20px_rgba(50,50,93,0.08),0_30px_60px_-30px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden">

@@ -409,32 +409,56 @@ const BOOKS: Book[] = [
   }
 ];
 
+const labels: Record<string, Record<string, string>> = {
+  en: {
+    search: "Search concepts, books, authors...",
+    library: "The Reference Library",
+    books: "Books",
+    no_books: "No books found.",
+    by: "By",
+    consult: "Consult Publication"
+  },
+  fr: {
+    search: "Rechercher des concepts, livres, auteurs...",
+    library: "La Bibliothèque de Référence",
+    books: "Livres",
+    no_books: "Aucun ouvrage trouvé.",
+    by: "Par",
+    consult: "Consulter l'ouvrage"
+  },
+  nl: {
+    search: "Zoeken naar concepten, boeken, auteurs...",
+    library: "De Referentiebibliotheek",
+    books: "Boeken",
+    no_books: "Geen boeken gevonden.",
+    by: "Door",
+    consult: "Raadpleeg Publicatie"
+  },
+  de: {
+    search: "Suchen Sie nach Konzepten, Büchern, Autoren...",
+    library: "Die Referenzbibliothek",
+    books: "Bücher",
+    no_books: "Keine Bücher gefunden.",
+    by: "Von",
+    consult: "Publikation einsehen"
+  },
+  es: {
+    search: "Buscar conceptos, libros, autores...",
+    library: "La Biblioteca de Referencia",
+    books: "Libros",
+    no_books: "No se encontraron libros.",
+    by: "Por",
+    consult: "Consultar Publicación"
+  }
+};
+
 export function Education() {
   const [search, setSearch] = useState("");
   const { language } = useTranslation();
+  const currentLabels = labels[language] || labels["en"];
 
   return (
-    <MobileZoomWrapper scaleMobile={0.3}>
-      <style>{`
-        @media (max-width: 640px) {
-          /* Enlarge font-sizes for legible reading at 30% scale on mobile */
-          .text-xs { font-size: 1.05rem !important; line-height: 1.4 !important; }
-          .text-sm { font-size: 1.25rem !important; line-height: 1.4 !important; }
-          .text-base { font-size: 1.45rem !important; line-height: 1.4 !important; }
-          .text-lg { font-size: 1.75rem !important; line-height: 1.3 !important; }
-          .text-xl { font-size: 2.15rem !important; line-height: 1.2 !important; }
-          .text-2xl { font-size: 2.55rem !important; line-height: 1.2 !important; }
-          .text-3xl { font-size: 3.15rem !important; line-height: 1.1 !important; }
-          .text-4xl { font-size: 3.65rem !important; line-height: 1.1 !important; }
-          .text-5xl { font-size: 4.25rem !important; line-height: 1.05 !important; }
-          .text-[10px] { font-size: 1.05rem !important; }
-          .text-[9px] { font-size: 0.95rem !important; }
-          
-          button, input, select, textarea {
-            font-size: 1.25rem !important;
-          }
-        }
-      `}</style>
+    <MobileZoomWrapper scaleMobile={0.6}>
       <div className="w-full mx-auto max-w-[1920px] px-8 md:px-16 space-y-16 pb-32 mt-8 relative min-h-[calc(100vh-80px)] font-sans">
         {/* Innovative Search Header - Amplified by 10% */}
         <div className="w-full mx-auto mb-12">
@@ -447,7 +471,7 @@ export function Education() {
                 <Search size={22} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input 
                   type="text" 
-                  placeholder={language === 'fr' ? "Rechercher des concepts, livres, auteurs..." : "Search concepts, books, authors..."}
+                  placeholder={currentLabels.search}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="w-full pl-12 pr-6 py-4 bg-slate-800 border border-slate-700/80 rounded-2xl text-lg text-white placeholder-slate-400 outline-none focus:border-[#635BFF] focus:shadow-[0_0_25px_rgba(99,91,255,0.3)] transition-all shadow-md"
@@ -467,6 +491,7 @@ export function Education() {
 }
 
 function BooksSection({ search, language }: { search: string, language: string }) {
+  const currentLabels = labels[language] || labels["en"];
   const filtered = BOOKS.filter(b => 
     b.title.toLowerCase().includes(search.toLowerCase()) || 
     b.author.toLowerCase().includes(search.toLowerCase()) ||
@@ -479,16 +504,16 @@ function BooksSection({ search, language }: { search: string, language: string }
       <div className="flex items-center gap-3.5 border-b border-border pb-4">
         <BookOpen size={28} className="text-[#635BFF]" />
         <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-          {language === 'fr' ? 'La Bibliothèque de Référence' : 'The Reference Library'}
+          {currentLabels.library}
         </h2>
         <span className="text-sm font-semibold bg-[#635BFF]/10 text-[#635BFF] px-3 py-1 rounded-full font-mono ml-auto">
-          {filtered.length} {language === 'fr' ? 'Livres' : 'Books'}
+          {filtered.length} {currentLabels.books}
         </span>
       </div>
       
       {filtered.length === 0 ? (
         <div className="text-center text-slate-500 py-24 bg-white rounded-[2.5rem] border border-border shadow-sm font-medium text-lg">
-          {language === 'fr' ? 'Aucun ouvrage trouvé.' : 'No books found.'}
+          {currentLabels.no_books}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
@@ -501,11 +526,201 @@ function BooksSection({ search, language }: { search: string, language: string }
   );
 }
 
+const SUMMARY_TRANSLATIONS: Record<string, Record<string, string>> = {
+  "Options, Futures, and Other Derivatives": {
+    de: "Der globale Maßstab für Derivatemärkte, Handelsdynamik und Risikomanagement-Preise.",
+    nl: "De wereldwijde benchmark voor derivatenmarkten, handelsdynamiek en risicobeheer.",
+    es: "El referente mundial sobre mercados de derivados, dinámica de negociación y fijación de precios."
+  },
+  "Advances in Financial Machine Learning": {
+    de: "Eine wegweisende Untersuchung von Algorithmen des maschinellen Lernens angewandt auf die quantitative Asset-Preisfindung.",
+    nl: "Een baanbrekende verkenning van machine learning-algoritmen toegepast op kwantitatieve activaprijzen.",
+    es: "Una exploración pionera de los algoritmos de aprendizaje automático aplicados a la fijación cuantitativa de precios de activos."
+  },
+  "The Intelligent Investor": {
+    de: "Das definitive Fundament für Value Investing, Risikominderung und emotionale Marktdisziplin.",
+    nl: "Het definitieve fundament voor waardebeleggen, risicomitigatie en emotionele marktdiscipline.",
+    es: "La base definitiva sobre la inversión en valor, la mitigación de riesgos y la disciplina emocional del mercado."
+  },
+  "Active Portfolio Management": {
+    de: "Der definitive mathematische Leitfaden für institutionelle Investmentmanager und Risikoallokatoren.",
+    nl: "De definitieve wiskundige gids voor institutionele beleggingsbeheerders en risico-allocators.",
+    es: "La guía matemática definitiva para gestores de inversiones institucionales y asignadores de riesgos."
+  },
+  "Thinking, Fast and Slow": {
+    de: "Umfassende Untersuchung kognitiver Verzerrungen, Heuristiken und menschlicher Entscheidungsarchitekturen unter Risiko.",
+    nl: "Uitgebreid onderzoek naar cognitieve biases, heuristieken en menselijke beslissingsarchitecturen onder risico.",
+    es: "Investigación exhaustiva sobre sesgos cognitivos, heurísticas y arquitecturas de decisión humana bajo riesgo."
+  },
+  "Principles": {
+    de: "Dalio teilt die Kernprinzipien, die sein Leben und seine Karriere geleitet haben, anwendbar auf persönliche Entscheidungen und systematische Anlagestrategien.",
+    nl: "Dalio deelt de kernprincipes die zijn leven en carrière hebben geleid, toepasbaar op zowel persoonlijke beslissingen als systematische investeringsstrategieën.",
+    es: "Dalio comparte los principios fundamentales que guiaron su vida y carrera, aplicables a decisiones personales y estrategias sistemáticas de inversión."
+  },
+  "The Little Book of Common Sense Investing": {
+    de: "Bogle plädiert überzeugend für kostengünstiges, langfristiges Indexfonds-Investieren gegenüber aktiver Aktienauswahl.",
+    nl: "Bogle pleit overtuigend voor goedkoop, langdurig indexbeleggen boven actieve aandelenselectie.",
+    es: "Bogle defiende de manera convincente la inversión en fondos indexados a bajo costo y a largo plazo frente a la selección activa de acciones."
+  },
+  "The Psychology of Money": {
+    de: "Erkundung der seltsamen Art und Weise, wie Menschen über Geld denken, und Vermittlung von Ansätzen für einen besseren Umgang mit Finanzen.",
+    nl: "Onderzoek naar de vreemde manieren waarop mensen over geld denken en lessen om beter om te gaan met een van de belangrijkste onderwerpen van het leven.",
+    es: "Exploración de las extrañas maneras en que la gente piensa sobre el dinero y lecciones sobre cómo tomar mejores decisiones financieras."
+  },
+  "Rich Dad Poor Dad": {
+    de: "Was die Reichen ihren Kindern über Geld beibringen, was die Armen und die Mittelschicht nicht tun!",
+    nl: "Wat de rijken hun kinderen leren over geld dat de armen en de middenklasse niet doen!",
+    es: "¡Lo que los ricos enseñan a sus hijos sobre el dinero que los pobres y la clase media no!"
+  },
+  "The Bogleheads' Guide to Investing": {
+    de: "Ein praktischer Leitfaden zur Boglehead-Investmentphilosophie, der frühes Sparen, einfache Indexierung und langfristige Disziplin beschreibt.",
+    nl: "Een praktische gids voor de Boglehead-beleggingsfilosofie, met details over vroeg sparen, eenvoudige indexering en langetermijndiscipline.",
+    es: "Una guía práctica sobre la filosofía de inversión de los Bogleheads, detallando el ahorro temprano, la indexación simple y la disciplina a largo plazo."
+  },
+  "One Up On Wall Street": {
+    de: "Wie Sie das nutzen, was Sie bereits wissen, um an den Märkten Geld zu verdienen, indem Sie herausragende lokale Konsumtrends erkennen.",
+    nl: "Hoe u kunt gebruiken wat u al weet om geld te verdienen op de markt door uitstekende lokale consumententrends te identificeren.",
+    es: "Cómo usar lo que ya sabe para ganar dinero en el mercado identificando tendencias destacadas de consumo local."
+  },
+  "Common Stocks and Uncommon Profits": {
+    de: "Ein klassischer Leitfaden für Investitionen, der die Bedeutung des Verständnisses des Geschäfts und Managements eines Unternehmens hervorhebt.",
+    nl: "Een klassieke gids voor beleggen die de nadruk legt op het belang van inzicht in de activiteiten en het management van een bedrijf.",
+    es: "Una guía clásica de inversión que enfatiza la importancia de comprender el negocio y la gestión de una empresa."
+  },
+  "The Black Swan": {
+    de: "Die extremen Auswirkungen höchst unwahrscheinlicher, zufälliger Ereignisse auf Finanzplanungsarchitekturen und strukturelle Marktfragilität.",
+    nl: "De extreme impact van hoogst onwaarschijnlijke, willekeurige gebeurtenissen op financiële planning en structurele marktketsbaarheid.",
+    es: "El impacto extremo de eventos aleatorios y altamente improbables en las arquitecturas de planificación financiera y la fragilidad estructural del mercado."
+  },
+  "Security Analysis": {
+    de: "Der ultimative klassische Grundriss zur Prüfung von Bilanzen, Ertragskraft und zur Erkennung unterbewerteter Vermögenswerte.",
+    nl: "De ultieme klassieke blauwdruk voor het controleren van balansen, winstkracht en het opsporen van ondergewaardeerde activa.",
+    es: "El plano clásico definitivo para auditar balances, poder de ganancias y detectar activos infravalorados."
+  },
+  "Market Wizards": {
+    de: "Interviews mit legendären Tradern, die ihre genauen Strategien, Risikokontrollparameter und mentale Disziplin beschreiben.",
+    nl: "Interviews met legendarische handelaren waarin zij hun exacte strategieën, risicobeheersingsparameters en mentale discipline toelichten.",
+    es: "Entrevistas con operadores legendarios que detallan sus estrategias exactas, parámetros de control de riesgos y disciplina mental."
+  },
+  "The Misbehavior of Markets": {
+    de: "Eine mathematische Kritik der Normalverteilung, die beweist, dass Finanzrenditen wilde Volatilitätscluster und schwere Ränder aufweisen.",
+    nl: "Een wiskundige kritiek op de normale verdeling, die bewijst dat financiële rendementen extreme volatiliteitsclustering en 'heavy tails' vertonen.",
+    es: "Una crítica matemática de la distribución normal, que demuestra que los rendimientos financieros muestran una volatilidad agrupada salvaje y colas pesadas."
+  },
+  "Fooled by Randomness": {
+    de: "Eine Untersuchung von Wahrscheinlichkeit, Glück und Überlebenden-Verzerrung, die zeigt, warum Spekulanten oft mit Genies verwechselt werden.",
+    nl: "Een onderzoek naar waarschijnlijkheid, geluk en survivorship bias, met de details waarom speculanten vaak voor genieën worden aangezien.",
+    es: "Una investigación de la probabilidad, la suerte y el sesgo de supervivencia, detallando por qué los especuladores a menudo son confundidos con genios."
+  },
+  "Expected Returns": {
+    de: "Eine monumentale Meisterklasse über die Gewinnung historischer Risikoprämien bei Aktien, Anleihen, Krediten und alternativen Stilen.",
+    nl: "Een monumentale masterclass over het oogsten van historische risicopremies op aandelen, obligaties, krediet- en alternatieve stijlen.",
+    es: "Una clase magistral monumental sobre la obtención de primas de riesgo históricas en acciones, bonos, crédito y estilos alternativos."
+  },
+  "The Little Book of Value Investing": {
+    de: "Ein einfacher und zugänglicher Leitfaden zu den Prinzipien des Value Investing, der erklärt, wie man Aktien findet, die unter ihrem inneren Wert gehandelt werden.",
+    nl: "Een eenvoudige en toegankelijke gids voor de principes van waardebeleggen, waarin wordt uitgelegd hoe u aandelen kunt vinden die onder hun intrinsieke waarde worden verhandeld.",
+    es: "Una guía sencilla y accesible sobre los principios de la inversión en valor, explicando cómo encontrar acciones que cotizan por debajo de su valor intrínseco."
+  },
+  "When Genius Failed": {
+    de: "Die spektakuläre Mahnung von LTCM, die zeigt, wie nobelpreisgekrönte Formeln unter plötzlichen Liquiditätsengpässen zusammenbrachen.",
+    nl: "Het spectaculaire waarschuwingsverhaal van LTCM, dat laat zien hoe Nobelprijs-winnende formules instortten onder plotselinge liquiditeitscrisissen.",
+    es: "La espectacular historia de advertencia de LTCM, que muestra cómo las fórmulas ganadoras del Nobel colapsaron bajo repentinas crisis de liquidez."
+  },
+  "Inside the Black Box": {
+    de: "Ein leicht verständlicher, professioneller Leitfaden, der detailliert beschreibt, wie quantitative systematische Modelle Handelssignale generieren.",
+    nl: "Een zeer toegankelijke professionele gids die in detail beschrijft hoe kwantitatieve systematische modellen handelssignalen genereren.",
+    es: "Una guía profesional altamente accesible que detalla cómo los modelos sistemáticos cuantitativos generan señales comerciales."
+  },
+  "Quantitative Momentum": {
+    de: "Eine quantitative Forschungsanalyse zur Erfassung systematischer relativer und absoluter Momentumtrends bei Aktien.",
+    nl: "Een kwantitatieve onderzoeksanalyse over het vastleggen van systematische relatieve en absolute momentumtrends in aandelen.",
+    es: "Un análisis de investigación cuantitativa sobre la captura de tendencias de impulso sistemático relativo y absoluto en acciones."
+  },
+  "Flash Boys": {
+    de: "Ein Sachbuch, das die Welt des Hochfrequenzhandels auf dem US-Aktienmarkt untersucht.",
+    nl: "Een non-fictieboek dat de wereld van high-frequency trading op de Amerikaanse aandelenmarkt verkent.",
+    es: "Un libro de no ficción que explora el mundo del trading de alta frecuencia en el mercado de valores de EE. UU."
+  },
+  "The Man Who Solved the Market": {
+    de: "Die meisterhaft erzählte Biografie von Jim Simons und dem Aufstieg des Medallion Funds von Renaissance Technologies.",
+    nl: "De meesterlijk geschreven biografie van Jim Simons en de opkomst van het Medallion Fund van Renaissance Technologies.",
+    es: "La biografía magistralmente reportada de Jim Simons y el surgimiento del Medallion Fund de Renaissance Technologies."
+  },
+  "Liar's Poker": {
+    de: "Ein halb-autobiografischer Bericht über die Erfahrungen des Autors als Rentenverkäufer bei Salomon Brothers Ende der 1980er Jahre.",
+    nl: "Een semi-autobiografisch verslag van de ervaringen van de auteur als obligatieverkoper bij Salomon Brothers in de late jaren 1980.",
+    es: "Un relato semiautobiográfico de las experiencias del autor como vendedor de bonos en Salomon Brothers a fines de la década de 1980."
+  },
+  "Dynamic Hedging": {
+    de: "Ein praktischer Leitfaden zur Verwaltung von Vanilla- und exotischen Optionsrisikoparametern unter volatilen realen Marktverteilungen.",
+    nl: "Een praktische gids voor het beheer van vanille- en exotica-optierisicoparameters onder volatiele reële marktdistributies.",
+    es: "Una guía práctica para gestionar los parámetros de riesgo de opciones vanilla y exóticas bajo distribuciones de mercado reales y volátiles."
+  },
+  "Continuous-Time Finance": {
+    de: "Der grundlegende mathematische Entwurf für die kontinuierliche Preisbewertung von Vermögenswerten, Konsumplänen und stochastischen Derivatmodellen.",
+    nl: "De fundamentele wiskundige blauwdruk van continue-tijd activaprijzen, consumptieplannen en stochastische derivatenmodellering.",
+    es: "El modelo matemático fundamental de la fijación de precios de activos en tiempo continuo, los planes de consumo y el modelado estocástico de derivados."
+  },
+  "Fixed Income Securities": {
+    de: "Fortgeschrittene analytische Instrumente für das Management der Preisgestaltung von Unternehmensanleihen, Repo-Geschäften, Renditekurven und Swap-Bewertungen.",
+    nl: "Geavanceerde analytische tools voor het beheren van de prijsstelling van bedrijfsschulden, repo-handel, rendementscurven en swapwaardering.",
+    es: "Herramientas analíticas avanzadas para gestionar la fijación de precios de deuda corporativa, la negociación de repos, las curvas de rendimiento y la valoración de swaps."
+  },
+  "Corporate Finance": {
+    de: "Das erstklassige akademische Handbuch für Kapitalwertregeln, Investitionsbudgetierung und Unternehmenskapitalstruktur.",
+    nl: "Het academische handboek bij uitstek voor netto contante waarderegels, kapitaalbudgettering en de kapitaalstructuur van ondernemingen.",
+    es: "El manual académico de referencia para las reglas de valor presente neto, la presupuestación de capital y la estructura de capital corporativo."
+  }
+};
+
 function BookCard({ book, language }: { book: Book, language: string }) {
   const searchLink = `https://www.google.com/search?tbm=bks&q=${encodeURIComponent(`${book.title} ${book.author}`)}`;
   const finalLink = book.link === "#" || book.link.includes('amazon.') ? searchLink : book.link;
   const [imageError, setImageError] = useState(false);
   const coverUrl = book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg` : null;
+  const currentLabels = labels[language] || labels["en"];
+
+  const tagTranslations: Record<string, Record<string, string>> = {
+    "Derivatives": { fr: "Produits Dérivés", nl: "Derivaten", de: "Derivate", es: "Derivados" },
+    "Machine Learning": { fr: "Apprentissage Automatique", nl: "Machine Learning", de: "Maschinelles Lernen", es: "Aprendizaje Automático" },
+    "Value Investing": { fr: "Investissement de Valeur", nl: "Waardebeleggen", de: "Value Investing", es: "Inversión en Valor" },
+    "Quant Investing": { fr: "Gestion Quantitative", nl: "Kwantitatief Beleggen", de: "Quantitatives Investieren", es: "Inversión Cuantitativa" },
+    "Behavioral Finance": { fr: "Finance Comportementale", nl: "Gedragsfinanciering", de: "Verhaltensökonomie", es: "Finanzas Conductuales" },
+    "Investment Philosophy": { fr: "Philosophie d'Investissement", nl: "Beleggingsfilosofie", de: "Anlagephilosophie", es: "Filosofía de Inversión" },
+    "Passive Investing": { fr: "Investissement Passif", nl: "Passief Beleggen", de: "Passives Investieren", es: "Inversión Pasiva" },
+    "Personal Finance": { fr: "Finances Personnelles", nl: "Persoonlijke Financiën", de: "Persönliche Finanzen", es: "Finanzas Personales" },
+    "Stock Picking": { fr: "Sélection d'Actions", nl: "Aandelenselectie", de: "Aktienauswahl", es: "Selección de Acciones" },
+    "Growth Investing": { fr: "Investissement de Croissance", nl: "Groeibeleggen", de: "Wachstums-Investieren", es: "Inversión en Crecimiento" },
+    "Risk Management": { fr: "Gestion des Risques", nl: "Risicobeheer", de: "Risicomanagement", es: "Gestión de Risgos" },
+    "Trading Psychology": { fr: "Psychologie du Trading", nl: "Handelspsychologie", de: "Trading-Psychologie", es: "Psicología del Trading" },
+    "Fractal Geometry": { fr: "Géométrie Fractale", nl: "Fractale Meetkunde", de: "Fraktale Geometrie", es: "Geometría Fractal" },
+    "Probability": { fr: "Probabilité", nl: "Waarschijnlijkheid", de: "Wahrscheinlichkeit", es: "Probabilidad" },
+    "Asset Allocation": { fr: "Allocation d'Actifs", nl: "Asset Allocatie", de: "Asset-Allokation", es: "Asignación de Activos" },
+    "Financial History": { fr: "Histoire Financière", nl: "Financiële Geschiedenis", de: "Finanzgeschichte", es: "Historia Financiera" },
+    "Quant Strategy": { fr: "Stratégie Quantitative", nl: "Kwantitatieve Strategie", de: "Quantitative Strategie", es: "Estrategia Cuantitativa" },
+    "Trend Following": { fr: "Suivi de Tendance", nl: "Trendvolgend", de: "Trendfolge", es: "Seguimiento de Tendencia" },
+    "Market Microstructure": { fr: "Microstructure du Marché", nl: "Marktmicrostructuur", de: "Marktmikrostruktur", es: "Microestructura del Mercado" },
+    "Wall Street Culture": { fr: "Culture de Wall Street", nl: "Wall Street Cultuur", de: "Wall Street Kultur", es: "Cultura de Wall Street" },
+    "Mathematical Finance": { fr: "Finance Mathématique", nl: "Wiskundige Financiering", de: "Finanzmathematik", es: "Finanzas Matemáticas" },
+    "Fixed Income": { fr: "Produits de Taux", nl: "Vastrentende Waarden", de: "Anleihen", es: "Renta Fija" },
+    "Corporate Finance": { fr: "Finance d'Entreprise", nl: "Bedrijfsfinanciering", de: "Unternehmensfinanzen", es: "Finanzas Corporativas" }
+  };
+
+  const getTag = () => {
+    const key = book.tag;
+    if (tagTranslations[key] && tagTranslations[key][language]) {
+      return tagTranslations[key][language];
+    }
+    return language === "fr" ? book.tagFr : book.tag;
+  };
+
+  const getSummary = () => {
+    if (SUMMARY_TRANSLATIONS[book.title] && SUMMARY_TRANSLATIONS[book.title][language]) {
+      return SUMMARY_TRANSLATIONS[book.title][language];
+    }
+    return language === "fr" ? book.summaryFr : book.summary;
+  };
 
   return (
     <motion.div
@@ -536,7 +751,7 @@ function BookCard({ book, language }: { book: Book, language: string }) {
             
             <div className="relative z-10">
               <span className="text-[9px] font-black uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-md">
-                {language === 'fr' ? book.tagFr : book.tag}
+                {getTag()}
               </span>
               <h4 className="font-bold text-base tracking-tight leading-snug mt-4 line-clamp-4">
                 {book.title}
@@ -554,7 +769,7 @@ function BookCard({ book, language }: { book: Book, language: string }) {
       <div className="p-8 flex flex-col flex-grow bg-white">
         <div className="flex items-center gap-2.5 mb-2.5">
           <span className="text-[10px] font-black text-[#635BFF] bg-[#635BFF]/10 px-3 py-1 rounded-full uppercase tracking-wider">
-            {language === 'fr' ? book.tagFr : book.tag}
+            {getTag()}
           </span>
           <span className="text-[11px] font-bold text-slate-400">
             {book.year}
@@ -565,12 +780,12 @@ function BookCard({ book, language }: { book: Book, language: string }) {
           {book.title}
         </h4>
         <p className="text-sm font-semibold text-slate-500 mt-1">
-          {language === 'fr' ? 'Par' : 'By'} {book.author}
+          {currentLabels.by} {book.author}
         </p>
 
         {/* beautiful, simplified description summary at the bottom */}
         <p className="text-sm text-slate-600 leading-relaxed mt-5 line-clamp-4 italic text-justify">
-          "{language === 'fr' ? book.summaryFr : book.summary}"
+          "{getSummary()}"
         </p>
 
         {/* Link Out to explore */}
@@ -581,7 +796,7 @@ function BookCard({ book, language }: { book: Book, language: string }) {
           className="mt-8 pt-5 border-t border-slate-100 flex items-center justify-between text-sm font-bold text-[#635BFF] hover:text-[#4B45D6] transition-colors cursor-pointer group/link"
         >
           <span className="flex items-center gap-2">
-            {language === 'fr' ? 'Consulter l\'ouvrage' : 'Consult Publication'}
+            {currentLabels.consult}
             <ExternalLink className="w-3.5 h-3.5" />
           </span>
           <MoveRight size={14} className="group-hover/link:translate-x-1.5 transition-transform" />

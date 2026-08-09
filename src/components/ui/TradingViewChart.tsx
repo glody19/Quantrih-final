@@ -186,8 +186,10 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ data, multiD
 
  } else if (type === 'relative' && multiData && multiData.length > 0) {
  multiData.forEach((seriesData) => {
- const series = chartRef.current!.addSeries(LightweightCharts.LineSeries, {
- color: seriesData.color,
+ const series = chartRef.current!.addSeries(LightweightCharts.AreaSeries, {
+ lineColor: seriesData.color,
+ topColor: seriesData.color + '66',
+ bottomColor: seriesData.color + '00',
  lineWidth: 2,
  crosshairMarkerVisible: true,
  crosshairMarkerRadius: 4,

@@ -23,6 +23,7 @@ export function CloudSaveLoad({ pageId, currentData, onLoad, onListUpdate }: Clo
   const [isSaving, setIsSaving] = useState(false);
   const [loadStatus, setLoadStatus] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<boolean>(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -81,14 +82,12 @@ export function CloudSaveLoad({ pageId, currentData, onLoad, onListUpdate }: Clo
 
   const handleDelete = async (id: string) => {
     if (!user) return;
-    if (!window.confirm("Are you sure you want to permanently delete this saved strategy? This action cannot be undone.")) return;
     try {
       await deleteDoc(doc(db, "users", user.uid, "backtests", id));
       await loadConfigs();
       if (onListUpdate) onListUpdate();
     } catch (e) {
       console.error(e);
-      alert("Failed to delete the strategy. Please try again.");
     }
   };
 
@@ -176,13 +175,31 @@ export function CloudSaveLoad({ pageId, currentData, onLoad, onListUpdate }: Clo
                         >
                           {loadStatus === config.id ? <Check size={16} /> : <Download size={16} />}
                         </button>
-                        <button
-                          onClick={() => handleDelete(config.id)}
-                          className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {deleteConfirmId === config.id ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(config.id);
+                              setDeleteConfirmId(null);
+                            }}
+                            className="px-2 py-1 text-[10px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
+                            title="Confirm deletion"
+                          >
+                            Confirm?
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteConfirmId(config.id);
+                              setTimeout(() => setDeleteConfirmId(prev => prev === config.id ? null : prev), 3000);
+                            }}
+                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import datacenterBg from "../../assets/images/datacenter_background_1783804486565.jpg";
 
 interface OrbitItem {
   id: string;
@@ -60,7 +59,7 @@ const ORBIT_ITEMS: OrbitItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=300&q=80"
   },
   { 
-    label: "BROKER\nPLATFORMS", 
+    label: "PLATFORMS", 
     accent: "#c084fc", 
     active: false, 
     id: "platforms",
@@ -77,7 +76,9 @@ const ORBIT_ITEMS: OrbitItem[] = [
 
 export const HexBadgeOrbit: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [time, setTime] = useState<number>(0);
+    const timeRef = useRef<number>(0);
+  const lineRefs = useRef<(SVGLineElement | null)[]>([]);
+  const badgeRefs = useRef<(HTMLDivElement | null)[]>([]);
   const isHoveredRef = useRef<boolean>(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -98,11 +99,33 @@ export const HexBadgeOrbit: React.FC<{ onNavigate: (page: string) => void }> = (
   useEffect(() => {
     let animationFrameId: number;
     const update = () => {
-      setTime((prev) => {
-        // Fast, dynamic planetary rotation
-        const increment = isHoveredRef.current ? 0.003 : 0.012;
-        return prev + increment;
+      
+      timeRef.current += isHoveredRef.current ? 0.003 : 0.012;
+      const t = timeRef.current;
+      const size = 960;
+      const cx = size / 2;
+      const cy = size / 2;
+      const r_base = window.innerWidth < 768 ? 210 : 360;
+
+      ORBIT_ITEMS.forEach((_, index) => {
+        const angleOffset = (index * 2 * Math.PI) / ORBIT_ITEMS.length;
+        const theta = t + angleOffset;
+        const x = cx + r_base * Math.cos(theta);
+        const y = cy + r_base * Math.sin(theta);
+        
+        const line = lineRefs.current[index];
+        if (line) {
+          line.setAttribute('x2', x.toString());
+          line.setAttribute('y2', y.toString());
+        }
+
+        const badge = badgeRefs.current[index];
+        if (badge) {
+          badge.style.left = `${x}px`;
+          badge.style.top = `${y}px`;
+        }
       });
+
       animationFrameId = requestAnimationFrame(update);
     };
     animationFrameId = requestAnimationFrame(update);
@@ -124,37 +147,11 @@ export const HexBadgeOrbit: React.FC<{ onNavigate: (page: string) => void }> = (
   const r_base = isMobile ? 210 : 360;
 
   // Calculate position along the horizontal planetary ring
-  const itemsWithOrbits = ORBIT_ITEMS.map((item, index) => {
-    const angleOffset = (index * 2 * Math.PI) / ORBIT_ITEMS.length;
-    const theta = time + angleOffset;
-
-    const x = cx + r_base * Math.cos(theta);
-    const y = cy + r_base * Math.sin(theta);
-
-    const scale = 1.0;
-    const opacity = 1.0;
-    const zIndex = 50;
-
-    return {
-      ...item,
-      x,
-      y,
-      scale,
-      opacity,
-      zIndex
-    };
-  });
+  
 
   return (
-    <div className="w-full py-12 px-4 sm:px-8 relative overflow-hidden flex flex-col items-center rounded-[3rem] border border-slate-800/50 bg-[#02050c]/90 shadow-[inset_0_0_80px_rgba(0,0,0,0.95)] max-w-6xl mx-auto my-6 min-h-[550px] md:min-h-0 justify-center">
+    <div className="w-full py-12 px-4 sm:px-8 relative flex flex-col items-center max-w-6xl mx-auto my-6 min-h-[550px] md:min-h-0 justify-center">
       
-      {/* Real dedicated background showing datacenter for Orbit section */}
-      <div 
-        className="absolute inset-0 z-0 pointer-events-none opacity-45 bg-cover bg-center grayscale-[15%] contrast-[1.05]"
-        style={{ backgroundImage: `url(${datacenterBg})` }}
-      />
-      <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#02050c] via-transparent to-[#02050c]" />
-
       {/* Self-contained custom styles mimicking the user's premium circular badge system */}
       <style>{`
         :root {
@@ -283,7 +280,7 @@ export const HexBadgeOrbit: React.FC<{ onNavigate: (page: string) => void }> = (
           position: absolute;
           inset: 0;
           border-radius: 50%;
-          background-image: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(4,8,18,0.2)), url(${datacenterBg});
+          background-image: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(4,8,18,0.2));
           background-size: 150%;
           background-position: center;
           z-index: 1;
@@ -364,75 +361,9 @@ export const HexBadgeOrbit: React.FC<{ onNavigate: (page: string) => void }> = (
         }
       `}</style>
 
-      {/* Decorative dynamic ambient glow behind entire section */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full bg-blue-500/5 blur-[160px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-yellow-500/4 blur-[140px] pointer-events-none" />
-
       {/* RESPONSIVE SCALE CONTAINER FOR ORBIT SYSTEM */}
       <div className="flex items-center justify-center w-[960px] h-[960px] relative my-4 orbit-container z-20 origin-center transition-all duration-300 shrink-0">
         
-        {/* Futuristic Quantum Celestial Background Disc */}
-        <div className="absolute inset-[15px] rounded-full bg-gradient-to-br from-[#020617] via-[#050b1a] to-[#010204] border-2 border-dashed border-sky-500/10 shadow-[0_0_120px_rgba(0,0,0,0.95)] pointer-events-none z-0 overflow-hidden">
-          {/* Animated concentric glowing rings for deep sci-fi complexity */}
-          <div className="absolute inset-[30px] rounded-full border border-sky-500/10 animate-[spin_120s_linear_infinite]" />
-          <div className="absolute inset-[70px] rounded-full border border-[#f4d675]/5 animate-[spin_80s_linear_infinite_reverse]" />
-          <div className="absolute inset-[110px] rounded-full border border-dashed border-sky-400/5" />
-          <div className="absolute inset-[150px] rounded-full border border-slate-500/5" />
-          
-          {/* Data Center Server Racks Stack Visual Grid */}
-          <div className="hidden sm:flex absolute inset-[40px] opacity-[0.25] group-hover:opacity-[0.32] transition-opacity duration-700 flex-col justify-between overflow-hidden pointer-events-none z-0 px-12 py-10 font-mono">
-            {Array.from({ length: 18 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between w-full border-b border-sky-500/10 py-1 text-[8px] tracking-widest text-sky-400/60">
-                {/* Rack Mounting Screw Accent */}
-                <div className="w-1.5 h-1.5 rounded-full border border-sky-500/20 bg-slate-900 flex items-center justify-center shrink-0">
-                  <div className="w-0.5 h-0.5 bg-slate-400 rounded-full" />
-                </div>
-                
-                {/* Server unit model tag */}
-                <span className="opacity-40 select-none hidden sm:inline">Q-NODE_{String(18 - i).padStart(2, '0')}</span>
-                
-                {/* Cooling vent slits */}
-                <div className="flex-1 mx-4 flex gap-1 justify-center opacity-35 overflow-hidden h-3">
-                  {Array.from({ length: 24 }).map((_, j) => (
-                    <div key={j} className="w-[1.5px] h-full bg-gradient-to-b from-sky-400 to-transparent shrink-0" />
-                  ))}
-                </div>
-
-                {/* Status LED panels */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[6px] text-emerald-400/80 animate-pulse hidden md:inline">ONLINE</span>
-                  <div className={`w-1 h-1 rounded-full ${i % 3 === 0 ? 'bg-amber-500 animate-ping' : i % 3 === 1 ? 'bg-emerald-500 animate-pulse' : 'bg-sky-500 animate-pulse'}`} style={{ animationDuration: `${1.5 + (i % 3) * 0.5}s` }} />
-                  <div className="w-1 h-1 rounded-full bg-emerald-400/80 animate-pulse" style={{ animationDuration: '0.8s' }} />
-                  <div className="w-1 h-1 rounded-full bg-sky-400/60 hidden sm:inline" />
-                </div>
-
-                {/* Network Ports / Activity Blinker */}
-                <div className="flex gap-0.5 ml-4 shrink-0">
-                  {Array.from({ length: 4 }).map((_, k) => (
-                    <div 
-                      key={k} 
-                      className={`w-[3px] h-[3px] rounded-sm ${
-                        (i + k) % 3 === 0 ? 'bg-amber-400' : (i + k) % 3 === 1 ? 'bg-emerald-400 animate-pulse' : 'bg-[#1e293b]'
-                      }`} 
-                    />
-                  ))}
-                </div>
-
-                {/* Rack Mounting Screw Accent */}
-                <div className="w-1.5 h-1.5 rounded-full border border-sky-500/20 bg-slate-900 flex items-center justify-center shrink-0 ml-4">
-                  <div className="w-0.5 h-0.5 bg-slate-400 rounded-full" />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Neon cosmic radial highlights */}
-          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.06)_0%,rgba(99,102,241,0.02)_45%,transparent_75%)]" />
-          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.04)_0%,transparent_50%)]" />
-          {/* Elegant gold glowing orbit path accent ring border */}
-          <div className="absolute inset-0 rounded-full border-2 border-amber-500/15" />
-        </div>
-
         {/* SVG connection lines and elegant orbital traces */}
         <div className="absolute inset-0 w-full h-full pointer-events-none z-10">
           <svg viewBox="0 0 960 960" className="w-full h-full opacity-85">
@@ -464,15 +395,16 @@ export const HexBadgeOrbit: React.FC<{ onNavigate: (page: string) => void }> = (
             />
 
             {/* Glowing dynamic connector rays connecting nucleus center to active badge electrons */}
-            {itemsWithOrbits.map((item, i) => {
+            {ORBIT_ITEMS.map((item, i) => {
               const isHovered = hoveredIndex === i;
               return (
                 <line
                   key={`line-${item.id}`}
+                  ref={(el) => { if (el) lineRefs.current[i] = el; }}
                   x1={cx}
                   y1={cy}
-                  x2={item.x}
-                  y2={item.y}
+                  x2={0}
+                  y2={0}
                   stroke={isHovered ? item.accent : "rgba(148, 163, 184, 0.12)"}
                   strokeWidth={isHovered ? "4" : "1.6"}
                   strokeOpacity={isHovered ? 1.0 : "0.45"}
@@ -492,24 +424,25 @@ export const HexBadgeOrbit: React.FC<{ onNavigate: (page: string) => void }> = (
 
         {/* Outer 3D orbiting badges representing the Atom's electrons */}
         <div className="absolute inset-0 w-full h-full pointer-events-none">
-          {itemsWithOrbits.map((item, i) => {
+          {ORBIT_ITEMS.map((item, i) => {
             const isHovered = hoveredIndex === i;
             const isDonate = item.id === "donate";
             // Hovered badge gets additional scale factor on top of 3D depth scale
-            const finalScale = isHovered ? item.scale * 1.16 : item.scale;
+            const finalScale = isHovered ? 1.16 : 1.0;
 
             return (
               <div
                 key={item.id}
+                ref={(el) => { if (el) badgeRefs.current[i] = el; }}
                 style={{
                   position: "absolute",
-                  left: `${item.x}px`,
-                  top: `${item.y}px`,
+                  left: '0px',
+                  top: '0px',
                   width: "172px",
                   height: "172px",
                   transform: `translate(-50%, -50%) scale(${finalScale.toFixed(3)})`,
-                  opacity: item.opacity,
-                  zIndex: item.zIndex,
+                  opacity: 1,
+                  zIndex: 50,
                   pointerEvents: "auto",
                   transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease"
                 }}

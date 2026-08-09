@@ -19,11 +19,11 @@ export async function runBacktest(
     }
   });
 
-  // 2. Fetch data for all symbols
+  // 2. Fetch data for all symbols in parallel
   const pricesBySymbol = new Map<string, MonthlyPrice[]>();
   const dividendsBySymbol = new Map<string, { date: string, amount: number }[]>();
   
-  for (const sym of Array.from(symbols)) {
+  await Promise.all(Array.from(symbols).map(async sym => {
     const [priceData, divData] = await Promise.all([
       fetchMonthlyPrices(sym, options.startDate, options.endDate),
       fetchDividends(sym)
@@ -40,13 +40,35 @@ export async function runBacktest(
     
     pricesBySymbol.set(sym, normalizedData);
     dividendsBySymbol.set(sym, divData);
-  }
+  }));
 
   // 3. (Skipped global common months check)
   const symbolList = Array.from(symbols);
   const emptySymbols = symbolList.filter(sym => !pricesBySymbol.has(sym) || pricesBySymbol.get(sym)!.length === 0);
   if (emptySymbols.length > 0) {
     throw new Error(`Aucune donnée historique trouvée pour : ${emptySymbols.join(', ')}. Vérifiez les tickers.`);
+  }
+
+  // Pre-process prices for O(1) lookups in tight loops
+  const priceLookup = new Map<string, Map<string, number>>();
+  for (const [sym, data] of pricesBySymbol.entries()) {
+    const lookup = new Map<string, number>();
+    for (const d of data) {
+      lookup.set(d.normalizedDate, d.close);
+    }
+    priceLookup.set(sym, lookup);
+  }
+
+  // Pre-process dividends for O(1) lookups
+  const divLookup = new Map<string, Map<string, number[]>>();
+  for (const [sym, data] of dividendsBySymbol.entries()) {
+    const lookup = new Map<string, number[]>();
+    for (const d of data) {
+      const month = d.date.substring(0, 7);
+      if (!lookup.has(month)) lookup.set(month, []);
+      lookup.get(month)!.push(d.amount);
+    }
+    divLookup.set(sym, lookup);
   }
 
   // 4. Simulate each portfolio
@@ -119,9 +141,7 @@ export async function runBacktest(
     const initialFee = (options.transactionFeeAmount || 0) * allocations.length;
     currentBalance -= initialFee; // deduct initial broker fees
     for (const alloc of allocations) {
-      const priceArray = pricesBySymbol.get(alloc.symbol)!;
-      const pricePoint = priceArray.find((p: any) => p.normalizedDate === firstMonth);
-      const price = pricePoint ? pricePoint.close : 1;
+      const price = priceLookup.get(alloc.symbol)?.get(firstMonth) || 1;
       const s = (currentBalance * alloc.weight) / price;
       shares.set(alloc.symbol, s);
       initialHoldings[alloc.symbol] = currentBalance * alloc.weight;
@@ -137,26 +157,20 @@ export async function runBacktest(
 
         // Update allocations based on Tactical Model (at start of the month before dividends/prices)
         if (portfolio.tacticalModel) {
-            allocations = evaluateTacticalModel(portfolio, i, commonMonths, pricesBySymbol);
+            allocations = evaluateTacticalModel(portfolio, i, commonMonths, priceLookup);
         }
 
         // 4.1 Handle Dividends & Taxes (Phase 3.2)
         for (const alloc of allocations) {
-          const dividends = dividendsBySymbol.get(alloc.symbol) || [];
-          const paidThisMonth = dividends.filter(d => {
-            const dYearMonth = d.date.substring(0, 7);
-            return dYearMonth === month;
-          });
+          const paidThisMonth = divLookup.get(alloc.symbol)?.get(month) || [];
 
-          for (const div of paidThisMonth) {
+          for (const amount of paidThisMonth) {
             const s = shares.get(alloc.symbol) || 0;
-            const grossDiv = s * div.amount;
+            const grossDiv = s * amount;
             const netDiv = grossDiv * (1 - (options.dividendTaxRate || 0));
             
             if (options.reinvestDividends !== false) {
-              const priceArray = pricesBySymbol.get(alloc.symbol)!;
-              const pricePoint = priceArray.find((p: any) => p.normalizedDate === month);
-              const price = pricePoint ? pricePoint.close : 0;
+              const price = priceLookup.get(alloc.symbol)?.get(month) || 0;
               if (price > 0) {
                 shares.set(alloc.symbol, s + (netDiv / price));
               }
@@ -182,10 +196,8 @@ export async function runBacktest(
           }
           
           for (const alloc of allocations) {
-              const priceArray = pricesBySymbol.get(alloc.symbol)!;
               const prevMonth = commonMonths[i - 1];
-              const pricePoint = priceArray.find((p: any) => p.normalizedDate === prevMonth); // Buy at end of prev month / start of current
-              const price = pricePoint ? pricePoint.close : 1;
+              const price = priceLookup.get(alloc.symbol)?.get(prevMonth) || 1;
               const currentShares = shares.get(alloc.symbol) || 0;
               shares.set(alloc.symbol, currentShares + (netCashflow * alloc.weight) / price);
           }
@@ -193,9 +205,7 @@ export async function runBacktest(
       
         // Calculate new balance based on updated shares and current price
         for (const alloc of allocations) {
-          const priceArray = pricesBySymbol.get(alloc.symbol)!;
-          const pricePoint = priceArray.find((p: any) => p.normalizedDate === month);
-          const price = pricePoint ? pricePoint.close : 0;
+          const price = priceLookup.get(alloc.symbol)?.get(month) || 0;
           const value = (shares.get(alloc.symbol) || 0) * price;
           newBalance += value;
           currentHoldings[alloc.symbol] = value;
@@ -250,9 +260,7 @@ export async function runBacktest(
          }
 
          for (const alloc of allocations) {
-           const priceArray = pricesBySymbol.get(alloc.symbol)!;
-           const pricePoint = priceArray.find((p: any) => p.normalizedDate === month);
-           const price = pricePoint ? pricePoint.close : 1;
+           const price = priceLookup.get(alloc.symbol)?.get(month) || 1;
            // Deduct transaction fee on rebalance (assumes you have to sell and buy, so 2 * fee, or just a simplified flat fee)
            const rebalanceAmount = currentBalance * alloc.weight;
            const rebalanceNet = rebalanceAmount - (options.transactionFeeAmount || 0);
@@ -278,10 +286,9 @@ export async function runBacktest(
     
     // Per-asset results for analysis (correlation, MC, etc)
     const assetResults: AssetResult[] = allocations.map(alloc => {
-      const priceArray = pricesBySymbol.get(alloc.symbol)!;
       const filteredPrices = commonMonths.map(month => {
-        const point = priceArray.find((p: any) => p.normalizedDate === month)!;
-        return { date: month + "-01", value: point.close };
+        const value = priceLookup.get(alloc.symbol)?.get(month) || 0;
+        return { date: month + "-01", value };
       });
 
       const rets: number[] = [];

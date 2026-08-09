@@ -5,8 +5,117 @@ import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../../contexts/LanguageContext';
 
+const labels: Record<string, Record<string, string>> = {
+  en: {
+    searchPlaceholder: "Search by name, ticker, or ISIN...",
+    filters: "Filters",
+    categorySector: "Category / Sector",
+    distributionPolicy: "Distribution Policy",
+    minAum: "Min AUM (M€)",
+    maxTer: "Max TER Fee (%)",
+    minYtd: "Min YTD Return (%)",
+    fundIdentity: "Fund Identity",
+    category: "Category",
+    isin: "ISIN",
+    aum: "AUM (M€)",
+    ter: "TER",
+    ytdReturn: "YTD Return",
+    distribution: "Distribution",
+    noEtfs: "No ETFs found matching your criteria.",
+    pageOf: "Page {page} of {total}",
+    previous: "Previous",
+    next: "Next",
+    all: "All"
+  },
+  fr: {
+    searchPlaceholder: "Rechercher par nom, ticker ou ISIN...",
+    filters: "Filtres",
+    categorySector: "Catégorie / Secteur",
+    distributionPolicy: "Politique de Distribution",
+    minAum: "AUM Min (M€)",
+    maxTer: "Frais TER Max (%)",
+    minYtd: "Rendement YTD Min (%)",
+    fundIdentity: "Identité du Fonds",
+    category: "Catégorie",
+    isin: "ISIN",
+    aum: "AUM (M€)",
+    ter: "TER",
+    ytdReturn: "Rendement YTD",
+    distribution: "Distribution",
+    noEtfs: "Aucun ETF trouvé correspondant à vos critères.",
+    pageOf: "Page {page} sur {total}",
+    previous: "Précédent",
+    next: "Suivant",
+    all: "Tous"
+  },
+  de: {
+    searchPlaceholder: "Suche nach Name, Ticker oder ISIN...",
+    filters: "Filter",
+    categorySector: "Kategorie / Sektor",
+    distributionPolicy: "Ausschüttungspolitik",
+    minAum: "Min. AUM (M€)",
+    maxTer: "Max. TER-Gebühr (%)",
+    minYtd: "Min. YTD-Rendite (%)",
+    fundIdentity: "Fonds-Identität",
+    category: "Kategorie",
+    isin: "ISIN",
+    aum: "AUM (M€)",
+    ter: "TER",
+    ytdReturn: "YTD-Rendite",
+    distribution: "Ausschüttung",
+    noEtfs: "Keine ETFs gefunden, die Ihren Kriterien entsprechen.",
+    pageOf: "Seite {page} von {total}",
+    previous: "Vorherige",
+    next: "Nächste",
+    all: "Alle"
+  },
+  nl: {
+    searchPlaceholder: "Zoeken op naam, ticker of ISIN...",
+    filters: "Filters",
+    categorySector: "Categorie / Sector",
+    distributionPolicy: "Distributiebeleid",
+    minAum: "Min. AUM (M€)",
+    maxTer: "Max. TER-vergoeding (%)",
+    minYtd: "Min. YTD-rendement (%)",
+    fundIdentity: "Fondsidentiteit",
+    category: "Categorie",
+    isin: "ISIN",
+    aum: "AUM (M€)",
+    ter: "TER",
+    ytdReturn: "YTD-rendement",
+    distribution: "Distributie",
+    noEtfs: "Geen ETF's gevonden die aan uw criteria voldoen.",
+    pageOf: "Pagina {page} van {total}",
+    previous: "Vorige",
+    next: "Volgende",
+    all: "Alle"
+  },
+  es: {
+    searchPlaceholder: "Buscar por nombre, ticker o ISIN...",
+    filters: "Filtros",
+    categorySector: "Categoría / Sector",
+    distributionPolicy: "Política de Distribución",
+    minAum: "AUM Mín (M€)",
+    maxTer: "Comisión TER Máx (%)",
+    minYtd: "Rendimiento YTD Mín (%)",
+    fundIdentity: "Identidad del Fondo",
+    category: "Categoría",
+    isin: "ISIN",
+    aum: "AUM (M€)",
+    ter: "TER",
+    ytdReturn: "Rendimiento YTD",
+    distribution: "Distribución",
+    noEtfs: "No se encontraron ETF que coincidan con sus criterios.",
+    pageOf: "Página {page} de {total}",
+    previous: "Anterior",
+    next: "Siguiente",
+    all: "Todo"
+  }
+};
+
 export function EtfScreener() {
- const { language } = useTranslation();
+  const { language } = useTranslation();
+  const currentLabels = labels[language] || labels["en"];
  const [search, setSearch] = useState('');
  const [selectedCategory, setSelectedCategory] = useState<string>('All');
  const [selectedDist, setSelectedDist] = useState<string>('All');
@@ -95,7 +204,7 @@ export function EtfScreener() {
  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text" />
  <input 
  type="text"
- placeholder={"Search by name, ticker, or ISIN..."}
+ placeholder={currentLabels.searchPlaceholder}
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="w-full pl-11 pr-4 py-3 bg-white border border-border rounded-[1.5rem] text-sm font-medium focus:ring-2 focus:ring-pv-blue/20 outline-none transition-all placeholder:text-text text-text shadow-sm"
@@ -121,7 +230,7 @@ export function EtfScreener() {
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 p-5 bg-white border border-border rounded-[2rem] shadow-sm">
  
  <div className="space-y-1">
- <label className="text-sm font-bold text-text pl-1 font-mono">{'Category / Sector'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{currentLabels.categorySector}</label>
  <div className="relative">
  <select
  value={selectedCategory}
@@ -135,7 +244,7 @@ export function EtfScreener() {
  </div>
 
  <div className="space-y-1">
- <label className="text-sm font-bold text-text pl-1 font-mono">{'Distribution Policy'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{currentLabels.distributionPolicy}</label>
  <div className="relative">
  <select
  value={selectedDist}
@@ -149,7 +258,7 @@ export function EtfScreener() {
  </div>
 
  <div className="space-y-1">
- <label className="text-sm font-bold text-text pl-1 font-mono">{'Min AUM (M€)'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{currentLabels.minAum}</label>
  <input 
  type="number"
  placeholder="e.g. 500"
@@ -160,7 +269,7 @@ export function EtfScreener() {
  </div>
 
  <div className="space-y-1">
- <label className="text-sm font-bold text-text pl-1 font-mono">{'Max TER Fee (%)'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{currentLabels.maxTer}</label>
  <input 
  type="number"
  placeholder="e.g. 0.20"
@@ -172,7 +281,7 @@ export function EtfScreener() {
  </div>
 
  <div className="space-y-1">
- <label className="text-sm font-bold text-text pl-1 font-mono">{'Min YTD Return (%)'}</label>
+ <label className="text-sm font-bold text-text pl-1 font-mono">{currentLabels.minYtd}</label>
  <input 
  type="number"
  placeholder="e.g. 5.1"
@@ -198,24 +307,24 @@ export function EtfScreener() {
  className="py-4 px-6 whitespace-nowrap cursor-pointer hover:bg-slate-200/50 transition-colors"
  onClick={() => handleSort('name')}
  >
- <div className="flex items-center gap-2">{'Fund Identity'} {sortField === 'name' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
+ <div className="flex items-center gap-2">{currentLabels.fundIdentity} {sortField === 'name' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
  </th>
  <th className="py-4 px-4 whitespace-nowrap cursor-pointer hover:bg-slate-200/50 transition-colors hidden sm:table-cell" onClick={() => handleSort('category')}>
- <div className="flex items-center gap-2">{'Category'} {sortField === 'category' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
+ <div className="flex items-center gap-2">{currentLabels.category} {sortField === 'category' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
  </th>
  <th className="py-4 px-4 whitespace-nowrap cursor-pointer hover:bg-slate-200/50 transition-colors" onClick={() => handleSort('isin')}>
- <div className="flex items-center gap-2">ISIN {sortField === 'isin' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
+ <div className="flex items-center gap-2">{currentLabels.isin} {sortField === 'isin' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
  </th>
  <th className="py-4 px-4 text-right whitespace-nowrap cursor-pointer hover:bg-slate-200/50 transition-colors" onClick={() => handleSort('sizeM')}>
- <div className="flex items-center justify-end gap-2">AUM (M€) {sortField === 'sizeM' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
+ <div className="flex items-center justify-end gap-2">{currentLabels.aum} {sortField === 'sizeM' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
  </th>
  <th className="py-4 px-4 text-right whitespace-nowrap cursor-pointer hover:bg-slate-200/50 transition-colors" onClick={() => handleSort('fee')}>
- <div className="flex items-center justify-end gap-2">TER {sortField === 'fee' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
+ <div className="flex items-center justify-end gap-2">{currentLabels.ter} {sortField === 'fee' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
  </th>
  <th className="py-4 px-4 text-right whitespace-nowrap cursor-pointer hover:bg-slate-200/50 transition-colors" onClick={() => handleSort('ytdReturn')}>
- <div className="flex items-center justify-end gap-2">{'YTD Return'} {sortField === 'ytdReturn' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
+ <div className="flex items-center justify-end gap-2">{currentLabels.ytdReturn} {sortField === 'ytdReturn' && <ArrowUpDown className="w-3 h-3 text-text" />}</div>
  </th>
- <th className="py-4 px-6 text-right whitespace-nowrap hidden lg:table-cell">{'Distribution'}</th>
+ <th className="py-4 px-6 text-right whitespace-nowrap hidden lg:table-cell">{currentLabels.distribution}</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-border/40 text-sm">
@@ -252,7 +361,7 @@ export function EtfScreener() {
  <td colSpan={7} className="py-16 text-center text-text font-medium">
  <div className="flex flex-col items-center justify-center space-y-2">
  <Zap className="w-8 h-8 text-text" />
- <p>{"No ETFs found matching your criteria."}</p>
+ <p>{currentLabels.noEtfs}</p>
  </div>
  </td>
  </tr>
@@ -263,7 +372,7 @@ export function EtfScreener() {
  {totalPages > 1 && (
    <div className="flex items-center justify-between px-6 py-4 bg-surface-2 border-t border-border sticky bottom-0 z-10">
      <span className="text-sm font-medium text-text">
-       Page {currentPage} of {totalPages}
+       {currentLabels.pageOf.replace('{page}', String(currentPage)).replace('{total}', String(totalPages))}
      </span>
      <div className="flex items-center gap-2">
        <button 
@@ -271,14 +380,14 @@ export function EtfScreener() {
          disabled={currentPage === 1}
          className="px-4 py-2 bg-white border border-border rounded-xl text-sm font-bold text-text disabled:opacity-50 hover:bg-surface transition-colors shadow-sm"
        >
-         Previous
+         {currentLabels.previous}
        </button>
        <button 
          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
          disabled={currentPage === totalPages}
          className="px-4 py-2 bg-white border border-border rounded-xl text-sm font-bold text-text disabled:opacity-50 hover:bg-surface transition-colors shadow-sm"
        >
-         Next
+         {currentLabels.next}
        </button>
      </div>
    </div>

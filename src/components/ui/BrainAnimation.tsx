@@ -210,7 +210,7 @@ export const BrainAnimation: React.FC = () => {
  if (pz > -fov + 100) {
  const pOpacity = Math.max(0, 1 - Math.abs(pz) / 500);
  ctx.fillStyle = `rgba(255, 255, 255, ${pOpacity})`;
- ctx.shadowBlur = 10;
+ ctx.shadowBlur = 0;
  ctx.shadowColor = p.color;
  ctx.beginPath();
  ctx.arc(px, py, 1.5 * sProj.scale, 0, Math.PI * 2);
@@ -238,7 +238,7 @@ export const BrainAnimation: React.FC = () => {
  
  ctx.fillStyle = textColor;
  if (isBright) {
- ctx.shadowBlur = 8;
+ ctx.shadowBlur = 0;
  ctx.shadowColor = '#60a5fa';
  } else {
  ctx.shadowBlur = 0;

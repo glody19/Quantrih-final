@@ -3,8 +3,9 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from
 import { Header } from "./components/layout/Header";
 import { CommandPalette } from "./components/layout/CommandPalette";
 import { Footer } from "./components/layout/Footer";
+import { MarketClock } from "./components/ui/MarketClock";
 import { CookieConsent } from "./components/layout/CookieConsent";
-import { GoogleOneTapPrompt } from "./components/ui/GoogleOneTapPrompt";
+
 import { Home } from "./components/pages/Home";
 import { AssetAllocations } from "./components/pages/AssetAllocations";
 import { MonteCarlo } from "./components/pages/MonteCarlo";
@@ -19,6 +20,7 @@ import { Platforms } from "./components/pages/Platforms";
 import { EtfScreener } from "./components/pages/EtfScreener";
 import { Auth } from "./components/pages/Auth";
 import { Profile } from "./components/pages/Profile";
+import { InvestorProfilePage } from "./components/pages/InvestorProfilePage";
 import { About } from "./components/pages/About";
 import { Legal } from "./components/pages/Legal";
 import { cn } from "./lib/utils";
@@ -29,80 +31,22 @@ import { Activity } from "lucide-react";
 import { QuantrihLogo } from "./components/ui/Logo";
 
 export default function App() {
-  const [configLoaded, setConfigLoaded] = useState(false);
-
   useEffect(() => {
-    // Retry fetch if server is still building caching data on first startup
-    const loadAssets = async (retries = 5) => {
+    // Attempt to load live asset config from server, but don't block render
+    const loadAssets = async () => {
       try {
         const res = await fetch("/api/config/assets");
-        if (res.status === 202) {
-          // System is building the asset cache
-          setTimeout(() => loadAssets(retries), 2000);
-          return;
-        }
         if (res.ok) {
           const data = await res.json();
-          // Mutate the global ASSET_DATA object in-place so all synchronous imports have it
           Object.keys(ASSET_DATA).forEach((k) => delete ASSET_DATA[k]);
           Object.assign(ASSET_DATA, data);
-        } else if (res.status >= 500 && retries > 0) {
-          console.warn(`Server returned ${res.status}, retrying...`);
-          setTimeout(() => loadAssets(retries - 1), 2000);
-          return;
         }
       } catch (e) {
         console.warn("Failed to load backend asset config", e);
-        if (retries > 0) {
-          console.warn(`Fetch failed, retrying... (${retries} retries left)`);
-          setTimeout(() => loadAssets(retries - 1), 2000);
-          return;
-        }
       }
-      setConfigLoaded(true);
     };
     loadAssets();
   }, []);
-
-  if (!configLoaded) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-bg font-sans overflow-hidden relative">
-        {/* Background ambient light */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-sky-500/10 blur-[100px] rounded-full pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col items-center">
-          <div className="animate-[pulse_3s_ease-in-out_infinite] scale-[1.7] mb-12">
-            <QuantrihLogo variant="sigma" size="lg" className="text-sky-400" />
-          </div>
-          
-          {/* Innovative dotted loading */}
-          <div className="relative flex justify-center items-center mt-6 h-8 w-32">
-            <div className="absolute inset-0 flex justify-center items-center animate-[spin_3s_linear_infinite]">
-              <div className="w-full h-full rounded-full border border-sky-500/10 border-t-sky-400/60 border-b-blue-500/60" />
-            </div>
-            <div className="absolute inset-0 flex justify-center items-center animate-[spin_4s_linear_infinite_reverse]">
-              <div className="w-[120%] h-[120%] rounded-full border border-indigo-500/10 border-r-indigo-400/40 border-l-sky-400/40" />
-            </div>
-            
-            <div className="flex gap-2.5 items-center z-10">
-              <div className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-[ping_1.5s_infinite_-0.4s] opacity-80" />
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-[ping_1.5s_infinite_-0.2s] opacity-80" />
-              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-[ping_1.5s_infinite] opacity-80" />
-            </div>
-            <div className="absolute flex gap-2.5 items-center z-20">
-              <div className="w-1.5 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,1)] animate-[pulse_1.5s_infinite_-0.4s]" />
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,1)] animate-[pulse_1.5s_infinite_-0.2s]" />
-              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,1)] animate-[pulse_1.5s_infinite]" />
-            </div>
-          </div>
-          
-          <div className="mt-10 text-[10px] font-bold uppercase tracking-[0.3em] text-text-3 animate-pulse">
-            Initialisation de l'espace
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <BrowserRouter>
@@ -141,22 +85,116 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    const handleGlobalWheel = (e: WheelEvent) => {
-      let target = e.target as HTMLElement | null;
-      while (target && target !== document.body) {
-        if (target.classList && target.classList.contains('overflow-x-auto')) {
-          if (target.scrollWidth > target.clientWidth) {
-            target.scrollLeft += e.deltaY;
-            e.preventDefault();
-            return;
-          }
-        }
-        target = target.parentElement;
-      }
-    };
-    window.addEventListener('wheel', handleGlobalWheel, { passive: false });
-    return () => window.removeEventListener('wheel', handleGlobalWheel);
-  }, []);
+    const isEn = language === "en";
+    let title = "Quantrih | Portfolio Backtesting & Investment Strategies";
+    let desc = "Quantrih provides advanced portfolio backtesting tools. Test your investment strategies against historical market data before committing capital.";
+
+    switch (location.pathname) {
+      case "/":
+      case "/home":
+        title = isEn 
+          ? "Quantrih | Portfolio Backtesting & Investment Strategies" 
+          : "Quantrih | Backtest de Portefeuille & Stratégies d'Investissement";
+        desc = isEn
+          ? "Quantrih provides advanced portfolio backtesting tools. Test your investment strategies against historical market data."
+          : "Quantrih propose des outils avancés de backtesting de portefeuille. Testez vos stratégies d'investissement.";
+        break;
+      case "/auth":
+        title = isEn ? "Sign In | Quantrih" : "Connexion | Quantrih";
+        desc = isEn ? "Sign in to access your saved investment portfolios and strategy audits on Quantrih." : "Connectez-vous pour accéder à vos portefeuilles et analyses de stratégies.";
+        break;
+      case "/profile":
+        title = isEn ? "My Account | Quantrih" : "Mon Compte | Quantrih";
+        desc = isEn ? "Manage your Quantrih account settings, preferences, and security." : "Gérez vos paramètres de compte, préférences et sécurité Quantrih.";
+        break;
+      case "/investor-profile":
+        title = isEn ? "Investor Profile & Suitability | Quantrih" : "Profil Investisseur & Qualification | Quantrih";
+        desc = isEn 
+          ? "Establish your investor suitability profile, broker strategy qualification, risk tolerance and career suitability." 
+          : "Établissez votre profil d'investisseur, qualification stratégique courtier, tolérance au risque et situation financière.";
+        break;
+      case "/asset-allocation":
+        title = isEn ? "Asset Allocation Tool | Quantrih" : "Allocation d'Actifs | Quantrih";
+        desc = isEn
+          ? "Construct, weigh, and analyze the distribution of your assets. Visualize geographic and asset class exposure."
+          : "Construisez, pondérez et analysez la répartition de vos actifs. Visualisez vos expositions géographiques et sectorielles.";
+        break;
+      case "/portfolio":
+      case "/portfolio-backtest":
+        title = isEn ? "Portfolio Backtesting Engine | Quantrih" : "Backtest de Portefeuille | Quantrih";
+        desc = isEn
+          ? "Test historical portfolio allocations against major financial crises. Analyze risk, CAGR, and drawdowns."
+          : "Testez les allocations historiques de portefeuilles face aux crises financières majeures. Analysez le CAGR et le Max Drawdown.";
+        break;
+      case "/montecarlo":
+        title = isEn ? "Monte Carlo Future Forecasts | Quantrih" : "Simulation de Monte Carlo | Quantrih";
+        desc = isEn
+          ? "Model future wealth with 10,000 stochastic paths. Evaluate probability of success for your financial goals."
+          : "Modélisez l'évolution future de votre capital via 10 000 chemins stochastiques. Évaluez la probabilité de succès.";
+        break;
+      case "/tactical-allocation":
+        title = isEn ? "Tactical Allocation & Trend Following | Quantrih" : "Allocation Tactique | Quantrih";
+        desc = isEn
+          ? "Run trend-following strategies using Simple Moving Average, Dual Momentum, and Relative Strength rules."
+          : "Exécutez des stratégies de suivi de tendance basées sur les moyennes mobiles, le Dual Momentum et la Force Relative.";
+        break;
+      case "/platforms":
+        title = isEn ? "Broker Platforms & Partnerships | Quantrih" : "Plateformes d'Investissement | Quantrih";
+        desc = isEn
+          ? "Discover top-tier regulated brokers, investment platforms, and exclusive premium course offerings."
+          : "Découvrez des courtiers régulés de premier plan, des plateformes d'investissement et des offres exclusives.";
+        break;
+      case "/market":
+        title = isEn ? "Market Equity Terminal | Quantrih" : "Terminal Action & Marché | Quantrih";
+        desc = isEn
+          ? "Explore live and historical financial charts, key financial ratios, valuation multiples, and stock market analysis."
+          : "Explorez les graphiques financiers en direct et historiques, les ratios financiers, les multiples et analyses.";
+        break;
+      case "/etf-overview":
+        title = isEn ? "ETF Screener & Directory | Quantrih" : "Screener & Aperçu ETF | Quantrih";
+        desc = isEn
+          ? "Screener for UCITS ETFs. Analyze TER, replication method, fund size, and detailed components."
+          : "Screener complet d'ETF UCITS. Analysez les frais (TER), le mode de réplication, l'encours et les composants.";
+        break;
+      case "/education":
+        title = isEn ? "Financial Education Lexicon | Quantrih" : "Lexique & Éducation Financière | Quantrih";
+        desc = isEn
+          ? "Learn quantitative terms, Sharpe ratio, Sortino, drawdowns, beta, alpha, and factor investing definitions."
+          : "Apprenez les termes quantitatifs, ratio de Sharpe, de Sortino, drawdowns, bêta, alpha et investissement factoriel.";
+        break;
+      case "/about":
+        title = isEn ? "About Quantrih | Quantrih" : "À Propos de Quantrih | Quantrih";
+        desc = isEn ? "Learn about Quantrih's mission, professional-grade portfolio models, and pricing neutralization." : "Découvrez la mission de Quantrih, nos modèles professionnels et notre neutralisation des barrières d'entrée.";
+        break;
+      case "/cookies":
+        title = isEn ? "Cookies Policy | Quantrih" : "Politique de Cookies | Quantrih";
+        break;
+      case "/privacy":
+        title = isEn ? "Privacy Policy | Quantrih" : "Politique de Confidentialité | Quantrih";
+        break;
+      default:
+        break;
+    }
+
+    document.title = title;
+
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute("content", desc);
+
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", title);
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute("content", desc);
+
+    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twitterTitle) twitterTitle.setAttribute("content", title);
+
+    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+    if (twitterDesc) twitterDesc.setAttribute("content", desc);
+  }, [location.pathname, language]);
+
+  
 
   const toggleTheme = () => {};
 
@@ -174,7 +212,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <div className="relative min-h-screen flex flex-col font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <Header
         currentPage={currentPage}
         onPageChange={handleNavigate}
@@ -183,12 +221,13 @@ function AppContent() {
         baseCcy={baseCcy}
         setBaseCcy={setBaseCcy}
       />
-      <main className={cn("flex-1 w-full mx-auto flex flex-col", currentPage === "home" ? "pt-0" : "pt-16")}>
+      <main className={cn("flex-1 w-full mx-auto flex flex-col", (currentPage === "home" || currentPage === "investor-profile" || currentPage === "profile") ? "pt-0" : "pt-24 lg:pt-28")}>
         <Routes>
           <Route path="/" element={<Home onGoPage={handleNavigate} />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/auth" element={<Auth onBack={() => handleNavigate("home")} />} />
           <Route path="/profile" element={<Profile onBack={() => handleNavigate("home")} />} />
+          <Route path="/investor-profile" element={<InvestorProfilePage onBack={() => handleNavigate("home")} />} />
           <Route path="/asset-allocation" element={<AssetAllocations baseCcy={baseCcy} onNavigate={handleNavigate} />} />
           <Route path="/portfolio" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="portfolio" />} />
           <Route path="/portfolio-backtest" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="portfolio-backtest" />} />
@@ -218,7 +257,8 @@ function AppContent() {
         }}
       />
       {currentPage !== "market" && <Footer onNavigate={handleNavigate} />}
-      <GoogleOneTapPrompt />
+      
+      
       <CookieConsent />
     </div>
   );

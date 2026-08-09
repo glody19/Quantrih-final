@@ -7,6 +7,7 @@ import { cn } from "../../lib/utils";
 // Extracted from the justETF list dataset
 const ETF_CATEGORIES = [
   {
+    key: "momentum",
     name: "Momentum Stocks",
     etfs: [
       { name: "iShares Edge MSCI Europe Momentum Factor UCITS ETF EUR (Dist)", ter: "0.25%", ytd: "7.29%", size: "39", date: "23/02/18", dist: "Distribution", rep: "Optimized sampling", isin: "IE00BG13YJ64", ticker: "IEMD" },
@@ -14,6 +15,7 @@ const ETF_CATEGORIES = [
     ]
   },
   {
+    key: "lowvol",
     name: "Low Volatility / Risk Weighted Stocks",
     etfs: [
       { name: "iShares Edge MSCI Europe Minimum Volatility UCITS ETF EUR (Dist)", ter: "0.25%", ytd: "6.12%", size: "23", date: "23/02/18", dist: "Distribution", rep: "Optimized sampling", isin: "IE00BG13YK79", ticker: "MVED" },
@@ -21,6 +23,7 @@ const ETF_CATEGORIES = [
     ]
   },
   {
+    key: "quality",
     name: "Fundamental / Quality Stocks",
     etfs: [
       { name: "iShares Edge MSCI Europe Quality Factor UCITS ETF EUR (Dist)", ter: "0.25%", ytd: "4.32%", size: "29", date: "23/02/18", dist: "Distribution", rep: "Optimized sampling", isin: "IE00BG13YG34", ticker: "IEQD" },
@@ -28,6 +31,7 @@ const ETF_CATEGORIES = [
     ]
   },
   {
+    key: "world",
     name: "World Stocks",
     etfs: [
       { name: "Amundi MSCI World Swap II UCITS ETF Dist", ter: "0.30%", ytd: "11.17%", size: "8,539", date: "26/04/06", dist: "Distribution", rep: "Swap-based", isin: "FR0010315770", ticker: "WLD" },
@@ -36,6 +40,7 @@ const ETF_CATEGORIES = [
     ]
   },
   {
+    key: "us",
     name: "US Stocks",
     etfs: [
       { name: "Amundi Core S&P 500 Swap UCITS ETF EUR Dist", ter: "0.05%", ytd: "11.91%", size: "3,089", date: "26/03/10", dist: "Distribution", rep: "Swap-based", isin: "LU0496786574", ticker: "SP5" },
@@ -44,6 +49,7 @@ const ETF_CATEGORIES = [
     ]
   },
   {
+    key: "europe",
     name: "Europe Stocks",
     etfs: [
       { name: "Amundi Core EURO STOXX 50 UCITS ETF EUR Dist", ter: "0.09%", ytd: "6.86%", size: "899", date: "29/06/10", dist: "Distribution", rep: "Full replication", isin: "LU1681047319", ticker: "CD5" },
@@ -52,7 +58,119 @@ const ETF_CATEGORIES = [
   }
 ];
 
-export function EtfLexicon({ language, search }: { language: string, search: string }) {
+const lexiconLabels: Record<string, Record<string, string>> = {
+  en: {
+    noEtfs: "No ETFs found",
+    adjustSearch: "Try adjusting your search criteria.",
+    fundName: "Fund Name",
+    annualFees: "Annual Fees",
+    ytd: "YTD",
+    inPercent: "in %",
+    fundSize: "Fund Size",
+    inM: "(in M €)",
+    inceptionDate: "Inception Date",
+    distribution: "Distribution",
+    replication: "Replication",
+    isin: "ISIN",
+    ticker: "Ticker",
+    cat_momentum: "Momentum Stocks",
+    cat_lowvol: "Low Volatility / Risk Weighted Stocks",
+    cat_quality: "Fundamental / Quality Stocks",
+    cat_world: "World Stocks",
+    cat_us: "US Stocks",
+    cat_europe: "Europe Stocks"
+  },
+  fr: {
+    noEtfs: "Aucun ETF trouvé",
+    adjustSearch: "Essayez de modifier vos critères de recherche.",
+    fundName: "Nom du Fonds",
+    annualFees: "Frais Annuels",
+    ytd: "YTD",
+    inPercent: "en %",
+    fundSize: "Taille du Fonds",
+    inM: "(en M €)",
+    inceptionDate: "Date de Création",
+    distribution: "Distribution",
+    replication: "Réplication",
+    isin: "ISIN",
+    ticker: "Ticker",
+    cat_momentum: "Actions Momentum",
+    cat_lowvol: "Actions Faible Volatilité / Pondérées Risque",
+    cat_quality: "Actions Qualité / Fondamentaux",
+    cat_world: "Actions Monde",
+    cat_us: "Actions USA",
+    cat_europe: "Actions Europe"
+  },
+  de: {
+    noEtfs: "Keine ETFs gefunden",
+    adjustSearch: "Versuchen Sie, Ihre Suchkriterien anzupassen.",
+    fundName: "Fondsname",
+    annualFees: "Jährliche Gebühren",
+    ytd: "YTD",
+    inPercent: "in %",
+    fundSize: "Fondsgröße",
+    inM: "(in Mio. €)",
+    inceptionDate: "Auflagedatum",
+    distribution: "Ausschüttung",
+    replication: "Replizierung",
+    isin: "ISIN",
+    ticker: "Ticker",
+    cat_momentum: "Momentum-Aktien",
+    cat_lowvol: "Geringe Volatilität / Risikogewichtet",
+    cat_quality: "Qualitätsaktien / Fundamentaldaten",
+    cat_world: "Weltweite Aktien",
+    cat_us: "US-Aktien",
+    cat_europe: "Europa-Aktien"
+  },
+  nl: {
+    noEtfs: "Geen ETF's gevonden",
+    adjustSearch: "Probeer je zoekcriteria aan te passen.",
+    fundName: "Fondsnaam",
+    annualFees: "Jaarlijkse Kosten",
+    ytd: "YTD",
+    inPercent: "in %",
+    fundSize: "Fondsomvang",
+    inM: "(in mln €)",
+    inceptionDate: "Lanceringsdatum",
+    distribution: "Distributie",
+    replication: "Replicatie",
+    isin: "ISIN",
+    ticker: "Ticker",
+    cat_momentum: "Momentum Aandelen",
+    cat_lowvol: "Lage Volatiliteit / Risicogewogen",
+    cat_quality: "KwaliteitsAandelen / Fundamenteel",
+    cat_world: "Wereldaandelen",
+    cat_us: "VS Aandelen",
+    cat_europe: "Europa Aandelen"
+  },
+  es: {
+    noEtfs: "No se encontraron ETFs",
+    adjustSearch: "Pruebe a ajustar sus criterios de búsqueda.",
+    fundName: "Nombre del Fondo",
+    annualFees: "Comisión Anual",
+    ytd: "YTD",
+    inPercent: "en %",
+    fundSize: "Tamaño del Fondo",
+    inM: "(en M €)",
+    inceptionDate: "Fecha de Creación",
+    distribution: "Distribución",
+    replication: "Replicación",
+    isin: "ISIN",
+    ticker: "Ticker",
+    cat_momentum: "Acciones Momentum",
+    cat_lowvol: "Acciones Baja Volatilidad / Ponderadas por Riesgo",
+    cat_quality: "Acciones de Calidad / Fundamentales",
+    cat_world: "Acciones Globales",
+    cat_us: "Acciones EE. UU.",
+    cat_europe: "Acciones Europa"
+  }
+};
+
+export function EtfLexicon({ language: propLanguage, search }: { language: string, search: string }) {
+  const { language } = useTranslation();
+  const activeLang = language || propLanguage || 'en';
+  const t = lexiconLabels[activeLang] || lexiconLabels.en;
+
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(
     ETF_CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat.name]: true }), {})
   );
@@ -78,19 +196,21 @@ export function EtfLexicon({ language, search }: { language: string, search: str
       {categoriesToRender.length === 0 ? (
         <div className="text-center py-20 animate-fade-in">
           <Database size={48} className="mx-auto text-border mb-4" />
-          <h3 className="text-xl font-bold text-text mb-2">No ETFs found</h3>
-          <p className="text-text font-medium">Try adjusting your search criteria.</p>
+          <h3 className="text-xl font-bold text-text mb-2">{t.noEtfs}</h3>
+          <p className="text-text font-medium">{t.adjustSearch}</p>
         </div>
       ) : (
         <div className="divide-y divide-slate-100">
-          {categoriesToRender.map((category, idx) => (
+          {categoriesToRender.map((category, idx) => {
+            const displayName = t[`cat_${category.key}`] || category.name;
+            return (
             <div key={idx} className="w-full text-text">
               <button 
                 onClick={() => toggleCategory(category.name)}
                 className="w-full flex items-center gap-2 py-4 px-6 text-left hover:bg-surface-2 transition-colors"
               >
                 <h3 className={cn("text-xl font-semibold tracking-tight transition-colors", openCategories[category.name] ? "text-amber-600" : "text-text")}>
-                  {category.name}
+                  {displayName}
                 </h3>
                 <div className={cn("text-amber-600 transition-transform duration-200", openCategories[category.name] ? "rotate-180" : "rotate-0")}>
                   <ChevronDown size={20} strokeWidth={2.5} />
@@ -111,15 +231,15 @@ export function EtfLexicon({ language, search }: { language: string, search: str
                       <table className="w-full text-sm text-left whitespace-nowrap min-w-[1000px]">
                         <thead className="text-sm font-bold text-text bg-surface-2 border-y border-surface-2">
                           <tr>
-                            <th className="px-6 py-3 font-semibold">Fund Name</th>
-                            <th className="px-4 py-3 font-semibold text-right">Annual Fees</th>
-                            <th className="px-4 py-3 font-semibold text-right">YTD<br/><span className="lowercase text-xs font-normal">in %</span></th>
-                            <th className="px-4 py-3 font-semibold text-right">Fund Size<br/><span className="lowercase text-xs font-normal">(in M €)</span></th>
-                            <th className="px-4 py-3 font-semibold">Inception Date</th>
-                            <th className="px-4 py-3 font-semibold">Distribution</th>
-                            <th className="px-4 py-3 font-semibold">Replication</th>
-                            <th className="px-4 py-3 font-semibold">ISIN</th>
-                            <th className="px-6 py-3 font-semibold">Ticker</th>
+                            <th className="px-6 py-3 font-semibold">{t.fundName}</th>
+                            <th className="px-4 py-3 font-semibold text-right">{t.annualFees}</th>
+                            <th className="px-4 py-3 font-semibold text-right">{t.ytd}<br/><span className="lowercase text-xs font-normal">{t.inPercent}</span></th>
+                            <th className="px-4 py-3 font-semibold text-right">{t.fundSize}<br/><span className="lowercase text-xs font-normal">{t.inM}</span></th>
+                            <th className="px-4 py-3 font-semibold">{t.inceptionDate}</th>
+                            <th className="px-4 py-3 font-semibold">{t.distribution}</th>
+                            <th className="px-4 py-3 font-semibold">{t.replication}</th>
+                            <th className="px-4 py-3 font-semibold">{t.isin}</th>
+                            <th className="px-6 py-3 font-semibold">{t.ticker}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -147,7 +267,8 @@ export function EtfLexicon({ language, search }: { language: string, search: str
                 )}
               </AnimatePresence>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>

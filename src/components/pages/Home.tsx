@@ -6,9 +6,8 @@ import { cn } from "../../lib/utils";
 import { AssetAllocationGraphic } from "../ui/AssetAllocationGraphic";
 import { AtomAnimation } from "../ui/AtomAnimation";
 import { LaptopDemo } from "../ui/LaptopDemo";
-import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { HexBadgeOrbit } from "../ui/HexBadgeOrbit";
-import datacenterBg from "../../assets/images/datacenter_background_1783804486565.jpg";
+
 
 interface PageInfo {
   title: string;
@@ -20,6 +19,7 @@ interface PageInfo {
 }
 
 function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: (id: string) => void }) {
+  const { t } = useTranslation();
   const isLeft = index % 2 === 0;
 
   return (
@@ -40,7 +40,7 @@ function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: 
             )}
             <div className="flex flex-col">
               <span className={cn("text-xs font-mono font-bold tracking-wider uppercase", page.color)}>
-                Phase 0{index + 1}
+                {t("home.phase")} 0{index + 1}
               </span>
               <h3 className="text-3xl font-semibold text-text tracking-tight mt-1">{page.title}</h3>
             </div>
@@ -113,67 +113,39 @@ function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: 
                   <div className="w-full flex-1 rounded-3xl bg-slate-950/50 border border-border/80 shadow-inner flex overflow-hidden">
                     {/* Chart/UI Animation based on module index */}
                     {index === 0 && (
-                      <div className="flex-1 w-full h-full p-2 flex items-center justify-center">
-                  <div className="flex-1 w-full h-full p-2 flex items-center justify-center">
-                    <img 
-                      src="/allocation_chart.jpg" 
-                      alt="Allocation" 
-                      className="w-full h-full object-cover rounded-2xl"
-                    />
-                  </div>
+                      <div className="flex-1 w-full h-full p-3 flex flex-col justify-between relative overflow-hidden">
+                        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '12px 12px', opacity: 0.15 }} />
+                        <div className="w-full flex items-end justify-between gap-2 h-full z-10 px-2 pb-2">
+                          {[30, 45, 25, 60, 40, 80, 55, 90, 70, 100].map((h, i) => (
+                            <div 
+                              key={i}
+                              className="w-full bg-blue-500 rounded-t-sm transition-all duration-500"
+                              style={{ height: `${h}%` }}
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
 
                     {index === 1 && (
                       <div className="flex-1 rounded-[2rem] bg-surface-2/50 border border-border/80 relative overflow-hidden flex items-center justify-center p-4">
-                        <motion.div 
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                          className="w-36 h-36 relative"
-                        >
-                          {[...Array(20)].map((_, i) => (
-                            <div key={i} className="absolute w-1.5 h-1.5 rounded-full bg-violet-400" 
-                              style={{
-                                top: (20 + Math.random() * 60) + "%",
-                                left: (20 + Math.random() * 60) + "%",
-                                transform: "scale(" + (0.5 + Math.random()) + ")",
-                                opacity: 0.4 + Math.random() * 0.6
-                              }}
-                            />
-                          ))}
-                          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full overflow-visible opacity-60">
+                        <div className="w-36 h-36 relative flex items-center justify-center animate-[spin_25s_linear_infinite]">
+                          <svg viewBox="0 0 100 100" className="w-full h-full opacity-90">
                             <path d="M10,80 Q40,30 90,10" fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeDasharray="4 4" />
-                            <circle cx="60" cy="22" r="3" fill="#a78bfa" />
+                            <circle cx="60" cy="22" r="4" fill="#a78bfa" className="animate-pulse" />
+                            <circle cx="30" cy="55" r="3" fill="#8b5cf6" />
+                            <circle cx="80" cy="15" r="3" fill="#c084fc" />
                           </svg>
-                        </motion.div>
+                        </div>
                       </div>
                     )}
 
                     {index === 2 && (
-                      <div className="flex-1 rounded-[2rem] bg-surface-2/50 border border-border/80 relative overflow-hidden p-2">
-                        <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-                          {[...Array(12)].map((_, i) => {
-                            const startY = 40;
-                            let d = "M0," + startY;
-                            let y = startY;
-                            for(let x=5; x<=100; x+=5) {
-                              y += (Math.random() - 0.45) * ((x/10) + 1);
-                              d += " L" + x + "," + Math.max(5, Math.min(95, y));
-                            }
-                            const isMain = i === 5;
-                            return (
-                              <motion.path 
-                                key={i} 
-                                d={d} 
-                                fill="none" 
-                                stroke={isMain ? "#34d399" : "rgba(16, 185, 129, 0.15)"} 
-                                strokeWidth={isMain ? 2 : 1} 
-                                initial={{ pathLength: 0 }}
-                                animate={{ pathLength: 1 }}
-                                transition={{ duration: 4, repeat: Infinity, delay: i * 0.2, ease: "linear" }}
-                              />
-                            );
-                          })}
+                      <div className="flex-1 rounded-[2rem] bg-surface-2/50 border border-border/80 relative overflow-hidden p-2 flex items-center">
+                        <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-pulse" preserveAspectRatio="none" style={{ animationDuration: '3s' }}>
+                          <path d="M0,70 L20,60 L40,65 L60,40 L80,45 L100,20" fill="none" stroke="rgba(16, 185, 129, 0.4)" strokeWidth="1.5" />
+                          <path d="M0,60 L20,50 L40,55 L60,30 L80,35 L100,10" fill="none" stroke="#34d399" strokeWidth="2.5" />
+                          <path d="M0,80 L20,75 L40,70 L60,55 L80,60 L100,35" fill="none" stroke="rgba(16, 185, 129, 0.3)" strokeWidth="1.5" />
                         </svg>
                       </div>
                     )}
@@ -183,13 +155,13 @@ function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: 
                         <div className="flex-1 rounded-[2rem] bg-surface-2/50 border border-border/80 relative overflow-hidden p-3 flex flex-col justify-center gap-3">
                           <div className="space-y-3 w-full">
                             <div className="w-full h-1.5 bg-surface-3 rounded-full overflow-hidden">
-                              <motion.div className="h-full bg-orange-500" initial={{ width: "20%" }} animate={{ width: "80%" }} transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut" }} />
+                              <div className="h-full bg-orange-500 rounded-full w-[75%]" />
                             </div>
                             <div className="w-full h-1.5 bg-surface-3 rounded-full overflow-hidden">
-                              <motion.div className="h-full bg-orange-400" initial={{ width: "70%" }} animate={{ width: "30%" }} transition={{ duration: 2.5, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut" }} />
+                              <div className="h-full bg-orange-400 rounded-full w-[50%]" />
                             </div>
                             <div className="w-full h-1.5 bg-surface-3 rounded-full overflow-hidden">
-                              <motion.div className="h-full bg-amber-400" initial={{ width: "40%" }} animate={{ width: "90%" }} transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut" }} />
+                              <div className="h-full bg-amber-400 rounded-full w-[90%]" />
                             </div>
                           </div>
                         </div>
@@ -210,73 +182,42 @@ function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: 
 }
 
 function TypewriterText({ text }: { text: string }) {
-  const [displayedText, setDisplayedText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-    let i = 0;
-    setDisplayedText("");
-    setIsTyping(true);
-
-    const timer = setInterval(() => {
-      if (i < text.length) {
-        if (isMounted) {
-          setDisplayedText(text.slice(0, i + 1));
-        }
-        i++;
-      } else {
-        setIsTyping(false);
-        clearInterval(timer);
-      }
-    }, 8); // Very fast typing animation
-
-    return () => {
-      isMounted = false;
-      clearInterval(timer);
-    };
-  }, [text]); // Only run once per text change (on mount)
-
   return (
-    <p className="text-slate-300 font-medium text-[9.5px] sm:text-base lg:text-lg leading-snug sm:leading-relaxed transition-all">
-      {displayedText}
-      {isTyping && (
-        <span className="inline-block w-0.5 h-2.5 ml-0.5 bg-sky-400 animate-pulse align-middle" />
-      )}
+    <p className="text-slate-300 text-[11px] sm:text-xs lg:text-sm leading-relaxed sm:leading-relaxed">
+      {text}
     </p>
   );
 }
 
 function ModuleCard({ p, i, onGoPage }: { p: PageInfo; i: number; onGoPage: (id: string) => void }) {
   const [isHovered, setIsHovered] = useState(false);
-  const isLeft = i % 2 === 0;
 
   return (
     <motion.div 
-      initial={{ opacity: 0, x: isLeft ? -50 : 50 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.8, delay: i * 0.15, ease: "easeOut" }}
+      initial={{ opacity: 0, y: 15 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.35, delay: i * 0.08, ease: "easeOut" }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative bg-slate-900 border border-slate-700/60 hover:border-slate-500 rounded-[2rem] p-4 sm:p-6 lg:p-8 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2.5 hover:scale-[1.01] shadow-[0_25px_50px_rgba(0,0,0,0.85)] overflow-hidden w-full h-[180px] sm:h-[260px] lg:h-[280px]"
+      className="group relative bg-slate-900 border border-slate-700/60 hover:border-slate-500 rounded-[2rem] p-4 sm:p-6 lg:p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-[0_15px_30px_rgba(0,0,0,0.6)] overflow-hidden w-full h-full min-h-[220px]"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
       <div className={cn("absolute top-0 left-0 right-0 h-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-500", p.color.replace('text-', 'bg-'))} />
       
-      <div className="relative z-10 flex-1 flex flex-col justify-start overflow-hidden">
-        <h4 className="text-[14px] sm:text-xl lg:text-3xl font-extrabold tracking-tight mb-1 sm:mb-3 text-blue-500 uppercase transition-all">
+      <div className="relative z-10 flex-1 flex flex-col justify-start">
+        <h4 className="text-[14px] sm:text-xl lg:text-2xl font-extrabold tracking-tight mb-2 sm:mb-3 text-blue-500 uppercase transition-all">
           {p.title}
         </h4>
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1">
           <TypewriterText text={p.desc} />
         </div>
       </div>
       
-      <div className="relative z-10 mt-2 sm:mt-5 pt-1 sm:pt-2 flex justify-center">
+      <div className="relative z-10 mt-3 sm:mt-5 pt-1 sm:pt-2 flex justify-center">
         <button 
           onClick={() => onGoPage(p.id)}
-          className="px-4 sm:px-6 py-1 sm:py-2.5 bg-slate-800 hover:bg-blue-600 hover:text-white border border-slate-700 hover:border-blue-500 text-slate-300 hover:text-white font-bold text-[9px] sm:text-xs rounded-full transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 shadow-lg"
+          className="px-4 sm:px-6 py-1.5 sm:py-2.5 bg-slate-800 hover:bg-blue-600 hover:text-white border border-slate-700 hover:border-blue-500 text-slate-300 hover:text-white font-bold text-[10px] sm:text-xs rounded-full transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 shadow-lg"
         >
           {p.cta}
           <svg className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -294,72 +235,45 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
 
   const ObjectPages: PageInfo[] = [
     { 
-      title: 'Asset Allocation', 
+      title: t("home.pages.asset_allocation.title"), 
       id: 'asset-allocation', 
       color: 'text-blue-400',
-      cta: 'Define Allocation',
-      desc: 'Build your investment basket. Select your stocks, ETFs, or bonds, and instantly visualize their allocation clearly and graphically with our interactive heatmap.'
+      cta: t("home.pages.asset_allocation.cta"),
+      desc: t("home.pages.asset_allocation.desc")
     },
     {
-      title: 'Portfolio Backtesting',
+      title: t("home.pages.portfolio_backtest.title"),
       id: 'portfolio-backtest',
       color: 'text-rose-400',
-      cta: 'Start Simulation',
-      desc: 'Travel back in time to test your ideas. Observe how your portfolio would have performed over the past 10, 20, or 30 years to understand its real returns and historical risks.',
+      cta: t("home.pages.portfolio_backtest.cta"),
+      desc: t("home.pages.portfolio_backtest.desc"),
       useLaptop: true
     },
     { 
-      title: 'Tactical Allocation', 
+      title: t("home.pages.tactical_allocation.title"), 
       id: 'tactical-allocation', 
       color: 'text-orange-400',
-      cta: 'Program Rules',
-      desc: 'Automatically adapt your portfolio based on market trends. Define simple rules to buy or sell automatically, to protect your savings or seize opportunities.'
+      cta: t("home.pages.tactical_allocation.cta"),
+      desc: t("home.pages.tactical_allocation.desc")
     },
     { 
-      title: 'Monte Carlo', 
+      title: t("home.pages.montecarlo.title"), 
       id: 'montecarlo', 
       color: 'text-emerald-400',
-      cta: 'Simulate Future',
-      desc: 'Forecast the future of your savings. Simulate thousands of future market scenarios to precisely evaluate the resilience of your financial strategy against crises and unforeseen events.'
+      cta: t("home.pages.montecarlo.cta"),
+      desc: t("home.pages.montecarlo.desc")
     }
   ];
 
   return (
-    <MobileZoomWrapper scaleMobile={0.8}>
+    
       <div
         className="flex flex-col w-full min-h-[100dvh] relative overflow-hidden selection:bg-blue-500/30"
-        style={{ background: 'radial-gradient(ellipse at top, #1e3a8a 0%, #0a0f1e 55%, #020617 100%)' }}>
+        style={{ background: 'radial-gradient(ellipse at top, #3b82f6 0%, #1e293b 55%, #0f172a 100%)' }}>
         
-        {/* Animated Full-Page Datacenter Background (seamlessly flowing from top past Atom down to Tools & Strategies) */}
-        <motion.div 
-          className="absolute inset-0 z-0 pointer-events-none opacity-[0.14]"
-          style={{ 
-            backgroundImage: `url(${datacenterBg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'repeat-y'
-          }}
-          animate={{
-            scale: [1, 1.04, 1.01, 1.05, 1],
-            y: [0, -12, 12, -6, 0],
-            x: [0, 8, -8, 4, 0],
-            filter: [
-              "hue-rotate(0deg) contrast(1.1) brightness(0.7) saturate(1.2)",
-              "hue-rotate(12deg) contrast(1.25) brightness(0.85) saturate(1.4)",
-              "hue-rotate(-8deg) contrast(1.05) brightness(0.6) saturate(1.1)",
-              "hue-rotate(0deg) contrast(1.1) brightness(0.7) saturate(1.2)"
-            ]
-          }}
-          transition={{
-            duration: 45,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-
         {/* Global smooth vignette to blend the datacenter image perfectly across all sections and fade to deep solid black at the bottom */}
-        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 20%, transparent 30%, #0a0f1e 95%)' }} />
-        <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-transparent via-[#03060d]/60 to-[#010204]" />
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 20%, transparent 30%, #1e293b 95%)' }} />
+        <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-transparent via-[#1e293b]/60 to-[#0f172a]" />
 
         <div className="relative z-10 w-full max-w-[1600px] flex-1 flex flex-col mx-auto">
           
@@ -382,7 +296,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                   Quantrih
                 </h1>
                 <h2 id="hero-gradient-title" className="text-3xl lg:text-4xl font-semibold leading-none tracking-tighter mt-4 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, #3b82f6, #06b6d4)' }}>
-                  {'portfolio backtesting.'}
+                  {t("home.hero.title2") + "."}
                 </h2>
               </motion.div>
               <motion.div 
@@ -392,16 +306,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                 className="max-w-xl"
               >
                 <p className="text-slate-200 font-medium text-2xl md:text-3xl leading-relaxed border-l-2 border-border-2 pl-6 py-2">
-                  {Array.from(t("home.hero.subtitle")).map((char, index) => (
-                    <motion.span
-                      key={index}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4 + index * 0.03, duration: 0.1 }}
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
+                  {t("home.hero.subtitle")}
                 </p>
               </motion.div>
             </div>
@@ -430,9 +335,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               }}
               className="text-xl font-bold text-white mb-4"
             >
-              {"Why Backtest Before Investing?".split("").map((char, i) => (
-                <motion.span key={i} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}>{char}</motion.span>
-              ))}
+              {t("home.why_backtest.title")}
             </motion.h4>
             <motion.p
               initial="hidden"
@@ -442,9 +345,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               }}
               className="text-slate-300 leading-relaxed"
             >
-              {"Before you commit your capital to the markets, it is crucial to understand how your investment strategy would have performed historically. Backtesting allows you to simulate your strategy against real market data from the past, helping you identify strengths, understand risks, and refine your approach to build a more resilient portfolio. Test your ideas first, invest with confidence later.".split("").map((char, i) => (
-                <motion.span key={i} variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}>{char}</motion.span>
-              ))}
+              {t("home.why_backtest.desc")}
             </motion.p>
           </div>
         </motion.div>
@@ -461,20 +362,18 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               className="mb-16 text-center"
             >
               <h3 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4 transition-colors duration-300">
-                {'Tools & Strategies'}
+                {t("home.tools.title")}
               </h3>
               <p className="text-slate-300 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                {"Discover our 4 simplified analysis tools to design, test, and secure your investment portfolio."}
+                {t("home.tools.subtitle")}
               </p>
             </motion.div>
 
-            {/* Solid Rectangular Frame Box for the 4 modules */}
-            <div className="bg-slate-800/98 border-t border-l border-slate-700/90 border-r-2 border-b-2 border-slate-900/95 p-4 sm:p-10 lg:p-12 shadow-[-10px_-20px_40px_rgba(255,255,255,0.01),0_40px_80px_rgba(0,0,0,0.9)] relative z-10 rounded-[3rem] w-full max-w-[90rem] mx-auto">
-              <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full">
-                {ObjectPages.map((p, i) => (
-                  <ModuleCard key={i} p={p} i={i} onGoPage={onGoPage} />
-                ))}
-              </div>
+            {/* 4 modules grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full max-w-[90rem] mx-auto relative z-10">
+              {ObjectPages.map((p, i) => (
+                <ModuleCard key={i} p={p} i={i} onGoPage={onGoPage} />
+              ))}
             </div>
           </div>
         </div>
@@ -483,7 +382,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
           <div className="w-full pt-24 pb-20 md:pt-28 md:pb-24 lg:pt-36 lg:pb-32 relative z-20 flex flex-col items-center justify-center">
             <h3 className="text-white text-3xl md:text-4xl font-extrabold tracking-tight mb-4">Quantrih</h3>
             <p className="text-slate-300 mb-12 text-center max-w-md px-6 leading-relaxed font-bold">
-              {"Explore our other pages and interesting data"}
+              {t("home.explore_pages")}
             </p>
             <HexBadgeOrbit onNavigate={onGoPage} />
           </div>
@@ -492,20 +391,20 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
           <div className="w-full px-6 lg:px-24 pt-16 pb-20 lg:pt-24 lg:pb-32 z-20">
             <div className="max-w-4xl mx-auto text-center relative z-10">
               <h3 className="text-white text-lg sm:text-xl lg:text-3xl font-black tracking-widest mb-4 uppercase drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
-                {"Support the Evolution of Quantrih."}
+                {t("home.support.title")}
               </h3>
               <p className="text-white text-sm sm:text-base lg:text-lg leading-relaxed font-extrabold mb-10 max-w-2xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                {"This systemic architecture is designed to neutralize the entry barrier to complex quant tools. Your support enables continuous funding for financial data pipes, high-quality data acquisition for each asset class, and rigorous stress-test research."}
+                {t("home.support.desc")}
               </p>
               <div className="flex flex-col items-center justify-center gap-4">
                 <button 
                   onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')}
                   className="px-10 py-4 bg-blue-600 hover:bg-blue-500 hover:scale-[1.03] text-white rounded-full shadow-[0_0_20px_rgba(37,99,235,0.15)] hover:shadow-[0_0_35px_rgba(37,99,235,0.35)] transition-all duration-300 text-sm sm:text-base lg:text-lg font-black tracking-wide text-center uppercase"
                 >
-                  {'Donation'}
+                  {t("home.support.button")}
                 </button>
                 <div className="text-xs sm:text-sm lg:text-base text-slate-300 font-mono mt-2">
-                  Direct Inquiry Protocol: <a href="mailto:contact@quantrih.com" className="text-blue-500 hover:text-blue-400 transition-colors font-bold underline underline-offset-4">contact@quantrih.com</a>
+                  {t("home.support.inquiry")}: <a href="mailto:contact@quantrih.com" className="text-blue-500 hover:text-blue-400 transition-colors font-bold underline underline-offset-4">contact@quantrih.com</a>
                 </div>
               </div>
             </div>
@@ -513,14 +412,14 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
 
         {/* Professional Branding Section */}
-        <div className="w-full pb-16 z-20 mt-12">
+        <div className="w-full pb-16 z-20 mt-12 max-sm:[zoom:0.4]">
           <div className="px-6 lg:px-24 flex flex-col items-center justify-center text-center space-y-4">
             <p className="text-white/80 text-[10px] sm:text-xs font-sans tracking-wide max-w-3xl mx-auto leading-relaxed">
-              {"Disclaimer: Past performance is not indicative of future results. Quantrih's tools and analyses are based exclusively on historical data from the past. Investing involves risks, including the potential loss of capital."}
+              {t("home.disclaimer")}
             </p>
           </div>
         </div>
       </div>
-    </MobileZoomWrapper>
+    
   );
 }

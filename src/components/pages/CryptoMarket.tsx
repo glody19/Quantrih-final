@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Activity, TrendingUp, Search, Info } from 'lucide-react';
 import { AssetLogo } from '../ui/AssetLogo';
 import { AdvancedTradingViewChart } from '../ui/AdvancedTradingViewChart';
+import { PageHeader } from '../ui/PageHeader';
+import { useTranslation } from '../../contexts/LanguageContext';
 
 const formatNumber = (num: number) => {
  if (!num) return '0';
@@ -26,7 +28,108 @@ const CRYPTO_TOKENS: Record<string, {name: string, ticker: string, category: str
  'DOTUSDT': { name: 'Polkadot', ticker: 'DOT', category: 'Layer 1' }
 };
 
+const cryptoLabels: Record<string, Record<string, string>> = {
+  en: {
+    searchPlaceholder: "Search cryptocurrency (e.g. BTC, Solana)...",
+    back: "Returns",
+    cryptoTerminal: "Crypto Terminal",
+    realtimeStats: "Real-time advanced chart and key statistics for",
+    trackerLive: "Crypto Tracker Live",
+    asset: "Asset",
+    price: "Price",
+    change24h: "24h Change",
+    volume: "Volume",
+    category: "Category",
+    marketMomentum: "Market Momentum",
+    greed: "Greed",
+    marketStats: "Market Statistics",
+    currentPrice: "Current Price",
+    high24h: "24h High",
+    low24h: "24h Low",
+    volume24h: "24h Volume"
+  },
+  fr: {
+    searchPlaceholder: "Rechercher une crypto-monnaie (ex. BTC, Solana)...",
+    back: "Retour",
+    cryptoTerminal: "Terminal Crypto",
+    realtimeStats: "Graphique avancé temps réel et statistiques clés pour",
+    trackerLive: "Suivi Crypto en Direct",
+    asset: "Actif",
+    price: "Prix",
+    change24h: "Variation 24h",
+    volume: "Volume",
+    category: "Catégorie",
+    marketMomentum: "Momentum du Marché",
+    greed: "Acupidité",
+    marketStats: "Statistiques du Marché",
+    currentPrice: "Prix Actuel",
+    high24h: "Plus Haut 24h",
+    low24h: "Plus Bas 24h",
+    volume24h: "Volume 24h"
+  },
+  de: {
+    searchPlaceholder: "Kryptowährung suchen (z. B. BTC, Solana)...",
+    back: "Zurück",
+    cryptoTerminal: "Krypto-Terminal",
+    realtimeStats: "Erweiterter Echtzeit-Chart und Wichtige Statistiken für",
+    trackerLive: "Krypto-Live-Tracker",
+    asset: "Anlagewert",
+    price: "Preis",
+    change24h: "24h Veränderung",
+    volume: "Volumen",
+    category: "Kategorie",
+    marketMomentum: "Marktdynamik",
+    greed: "Gier",
+    marketStats: "Marktstatistiken",
+    currentPrice: "Aktueller Preis",
+    high24h: "24h Höchststand",
+    low24h: "24h Tiefststand",
+    volume24h: "24h Volumen"
+  },
+  nl: {
+    searchPlaceholder: "Zoek cryptovaluta (bijv. BTC, Solana)...",
+    back: "Terug",
+    cryptoTerminal: "Crypto Terminal",
+    realtimeStats: "Real-time geavanceerde grafiek en belangrijkste statistieken voor",
+    trackerLive: "Crypto Tracker Live",
+    asset: "Actief",
+    price: "Prijs",
+    change24h: "24u Verandering",
+    volume: "Volume",
+    category: "Categorie",
+    marketMomentum: "Marktmomentum",
+    greed: "Gulzigheid",
+    marketStats: "Marktstatistieken",
+    currentPrice: "Huidige Prijs",
+    high24h: "24u Hoog",
+    low24h: "24u Laag",
+    volume24h: "24u Volume"
+  },
+  es: {
+    searchPlaceholder: "Buscar criptomoneda (ej. BTC, Solana)...",
+    back: "Volver",
+    cryptoTerminal: "Terminal Cripto",
+    realtimeStats: "Gráfico avanzado en tiempo real y estadísticas clave para",
+    trackerLive: "Seguimiento Cripto en Vivo",
+    asset: "Activo",
+    price: "Precio",
+    change24h: "Cambio 24h",
+    volume: "Volumen",
+    category: "Categoría",
+    marketMomentum: "Impulso del Mercado",
+    codicia: "Codicia",
+    marketStats: "Estadísticas del Mercado",
+    currentPrice: "Precio Actual",
+    high24h: "Máximo 24h",
+    low24h: "Mínimo 24h",
+    volume24h: "Volumen 24h"
+  }
+};
+
 export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: () => void, defaultSymbol?: string }) {
+ const { language } = useTranslation();
+ const t = cryptoLabels[language] || cryptoLabels.en;
+
  const [symbol, setSymbol] = useState(defaultSymbol);
  const [searchInput, setSearchInput] = useState('');
  const [cryptoInfo, setCryptoInfo] = useState<any>(null);
@@ -78,7 +181,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  const activeTokenInfo = CRYPTO_TOKENS[symbol] || { name: 'Crypto Asset', ticker: symbol.replace('USDT', ''), category: 'Crypto' };
 
  return (
- <div className="w-full mx-auto px-4 md:px-8 pb-16 pt-8 animate-in fade-in py-12 duration-500 font-sans">
+ <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-16 pt-8 animate-in fade-in py-12 duration-500 font-sans">
  
  {/* Search Header */}
  <div className="mb-6 w-full max-w-md relative z-50">
@@ -88,7 +191,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  </div>
  <input
  type="text"
- placeholder="Search cryptocurrency (e.g. BTC, Solana)..."
+ placeholder={t.searchPlaceholder}
  className="w-full bg-surface border border-border rounded-[1.5rem] pl-12 pr-4 py-3 text-sm text-text focus:border-pv-blue outline-none transition-all shadow-sm focus:ring-4 focus:ring-pv-blue/10 placeholder:text-text/70"
  value={searchInput}
  onChange={(e) => {
@@ -134,23 +237,27 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  <div className="flex items-center gap-6">
  {onBack && (
  <button onClick={onBack} className="text-text hover:text-pv-blue transition-colors flex items-center gap-2 text-sm font-bold mb-1">
- <ArrowLeft size={16} /> Returns
+ <ArrowLeft size={16} /> {t.back}
  </button>
  )}
  <div className="flex items-center gap-4">
  <div className="relative">
  <AssetLogo ticker={symbol} name={activeTokenInfo?.name || symbol} isCrypto={true} className="w-16 h-16 rounded-full bg-surface shadow-sm border border-border relative z-10" />
  </div>
- <div className="flex flex-col">
- <div className="inline-flex items-center px-4 py-2 rounded-[1rem] bg-pv-blue/10 border border-pv-blue/20 mb-4">
-      <h1 className="text-3xl md:text-4xl font-bold text-pv-blue tracking-tight">
-        {activeTokenInfo.name}
-      </h1>
-    </div>
- <div className="flex items-center gap-2 mt-2">
- <span className="text-pv-blue font-bold ">{symbol.replace('USDT', '')}</span>
- <span className="text-text text-sm font-medium">/ USD</span>
- </div>
+ <div className="flex-1">
+     <div className="flex flex-col gap-1">
+     <div className="flex items-center gap-2">
+       <span className="px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase bg-blue-500/10 border border-blue-500/20 rounded text-blue-500">
+         {t.cryptoTerminal} • {symbol.replace('USDT', '')}/USD
+       </span>
+     </div>
+     <h1 className="text-2xl md:text-3xl font-black tracking-tight text-text uppercase font-sans">
+       {activeTokenInfo.name}
+     </h1>
+     <p className="text-xs md:text-sm text-text-3 font-medium leading-relaxed max-w-2xl">
+       {t.realtimeStats} {activeTokenInfo.name}.
+     </p>
+   </div>
  </div>
  </div>
  </div>
@@ -165,17 +272,17 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  {/* Watchlist Table */}
  <div className="bg-white border border-border rounded-3xl overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.03)] ring-1 ring-slate-900/5">
  <div className="p-6 md:px-8 border-b border-surface-2 flex justify-between items-center bg-surface-2 backdrop-blur-sm">
- <h3 className="text-sm font-semibold text-text flex items-center gap-2"><Activity size={16} className="text-pv-blue" /> Crypto Tracker Live</h3>
+ <h3 className="text-sm font-semibold text-text flex items-center gap-2"><Activity size={16} className="text-pv-blue" /> {t.trackerLive}</h3>
  </div>
  <div className="overflow-x-auto hide-scrollbar">
  <table className="w-full text-left border-collapse text-sm">
  <thead className="bg-white border-b border-surface-2">
  <tr>
- <th className="px-8 py-5 font-semibold text-text text-sm ">Actif</th>
- <th className="px-8 py-5 font-semibold text-text text-sm text-right">Prix</th>
- <th className="px-8 py-5 font-semibold text-text text-sm text-right">Variation 24h</th>
- <th className="px-8 py-5 font-semibold text-text text-sm text-right hidden sm:table-cell">Volume</th>
- <th className="px-8 py-5 font-semibold text-text text-sm text-right">Catégorie</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm ">{t.asset}</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm text-right">{t.price}</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm text-right">{t.change24h}</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm text-right hidden sm:table-cell">{t.volume}</th>
+ <th className="px-8 py-5 font-semibold text-text text-sm text-right">{t.category}</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-slate-100">
@@ -234,7 +341,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white backdrop-blur-sm border border-white/30">
  <TrendingUp size={16} />
  </div>
- <h3 className="text-sm font-semibold text-blue-100">Market Momentum</h3>
+ <h3 className="text-sm font-semibold text-blue-100">{t.marketMomentum}</h3>
  </div>
  <div className="px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm font-bold text-white ">
  LIVE
@@ -243,7 +350,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
 
  <div className="relative z-10">
  <p className="text-white text-5xl font-semibold tracking-tighter mb-2">74</p>
- <p className="text-blue-200 text-sm font-bold ">Greed</p>
+ <p className="text-blue-200 text-sm font-bold ">{t.greed}</p>
  <div className="w-full h-2 bg-blue-950/50 rounded-full mt-6 overflow-hidden flex">
  <div className="h-full bg-rose-500 w-1/4"></div>
  <div className="h-full bg-amber-500 w-1/4"></div>
@@ -261,17 +368,17 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center text-pv-blue border border-border/50">
  <Info size={16} />
  </div>
- <h3 className="text-sm font-semibold text-text">Market Statistics</h3>
+ <h3 className="text-sm font-semibold text-text">{t.marketStats}</h3>
  </div>
  
  {cryptoInfo ? (
  <div className="space-y-6">
  <div className="bg-surface-2 rounded-[2rem] p-5 border border-border/50">
- <p className="text-sm text-text font-bold mb-2">Current Price</p>
+ <p className="text-sm text-text font-bold mb-2">{t.currentPrice}</p>
  <p className="text-4xl font-semibold text-text tracking-tighter">${formatNumber(parseFloat(cryptoInfo.lastPrice || '0'))}</p>
  </div>
  <div className="pt-6 border-t border-border/50">
- <p className="text-sm text-text font-bold mb-2">24h Change</p>
+ <p className="text-sm text-text font-bold mb-2">{t.change24h}</p>
  <div className="flex items-center gap-3">
  <p className={`text-2xl font-semibold tracking-tight ${parseFloat(cryptoInfo.priceChangePercent || '0') >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
  {parseFloat(cryptoInfo.priceChangePercent || '0') > 0 ? '+' : ''}{parseFloat(cryptoInfo.priceChangePercent || '0').toFixed(2)}%
@@ -283,16 +390,16 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  </div>
  <div className="pt-6 border-t border-surface-2/80 grid grid-cols-2 gap-6">
  <div>
- <p className="text-sm text-text font-bold mb-2">24h High</p>
+ <p className="text-sm text-text font-bold mb-2">{t.high24h}</p>
  <p className="text-[15px] font-bold text-text tracking-tight">${formatNumber(parseFloat(cryptoInfo.highPrice || cryptoInfo.lastPrice || '0'))}</p>
  </div>
  <div>
- <p className="text-sm text-text font-bold mb-2">24h Low</p>
+ <p className="text-sm text-text font-bold mb-2">{t.low24h}</p>
  <p className="text-[15px] font-bold text-text tracking-tight">${formatNumber(parseFloat(cryptoInfo.lowPrice || cryptoInfo.lastPrice || '0'))}</p>
  </div>
  </div>
  <div className="pt-6 border-t border-surface-2/80">
- <p className="text-sm text-text font-bold mb-2">24h Volume</p>
+ <p className="text-sm text-text font-bold mb-2">{t.volume24h}</p>
  <p className="text-lg font-semibold text-text tracking-tight">{formatNumber(parseFloat(cryptoInfo.quoteVolume || '0'))}</p>
  </div>
  </div>

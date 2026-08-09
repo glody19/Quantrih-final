@@ -176,7 +176,7 @@ export const HeroInteractiveMockup = () => {
  {/* Sidebar Component */}
  <div className="w-56 bg-surface-2 border-r border-border p-4 hidden sm:flex flex-col gap-2 z-30 shrink-0">
  <div className="mb-6 mt-2 ml-1">
- <QuantrihLogo variant="sigma" size="sm" showText={false} className="text-blue-600" />
+ <QuantrihLogo variant="bars" size="sm" showText={false} className="text-blue-600" />
  </div>
  
  <div className={cn("flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium cursor-default transition-colors", state.scene === 'backtest' ? "bg-blue-50 text-blue-700" : "text-text")}>
