@@ -1247,9 +1247,7 @@ export function PortfolioBacktesting({
                 <div className="space-y-1.5">
                   <TooltipLabel
                     label={t("pb.capital")}
-                    tooltip={
-                      "Initial starting capital injected at the beginning."
-                    }
+                    tooltip={t("aa.tt.cap")}
                   />
                   <input
                     type="number"
@@ -1261,9 +1259,7 @@ export function PortfolioBacktesting({
                 <div className="space-y-1.5">
                   <TooltipLabel
                     label={t("pb.reb")}
-                    tooltip={
-                      "Frequency of rebalancing to initial target weights."
-                    }
+                    tooltip={t("aa.tt.rebal")}
                   />
                   <CustomSelect
                     value={rebalancing}
@@ -1278,8 +1274,8 @@ export function PortfolioBacktesting({
                 </div>
                 <div className="space-y-1.5">
                   <TooltipLabel
-                    label={"Rebalancing Bands"}
-                    tooltip={"Threshold trigger bands."}
+                    label={t("pb.reb_bands")}
+                    tooltip={t("aa.tt.bands")}
                   />
                   <CustomSelect
                     value={rebalancingBands}
@@ -1382,8 +1378,8 @@ export function PortfolioBacktesting({
                 </div>
                 <div className="space-y-1.5">
                   <TooltipLabel
-                    label="Cashflows"
-                    tooltip={"Periodic contributions or withdrawals."}
+                    label={t("pb.cashflows")}
+                    tooltip={t("aa.tt.cashflows")}
                   />
                   <CustomSelect
                     value={cashflowType}
@@ -1397,7 +1393,7 @@ export function PortfolioBacktesting({
                 </div>
                 {cashflowType !== "none" && (
                   <div className="space-y-1.5">
-                    <TooltipLabel label="Amount & Freq" tooltip="" />
+                    <TooltipLabel label={t("pb.amount_freq")} tooltip={t("aa.tt.amount_freq")} />
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         type="number"
@@ -1430,7 +1426,7 @@ export function PortfolioBacktesting({
                 <div className="space-y-1.5">
                   <TooltipLabel
                     label={t("pb.currency")}
-                    tooltip={"Primary currency used for calculations."}
+                    tooltip={t("aa.tt.currency")}
                   />
                   <CustomSelect
                     value={baseCurrency}
@@ -1444,7 +1440,7 @@ export function PortfolioBacktesting({
                 <div className="space-y-1.5">
                   <TooltipLabel
                     label={t("pb.broker")}
-                    tooltip={"Simulated broker pricing."}
+                    tooltip={t("aa.tt.broker")}
                   />
                   <CustomSelect
                     value={broker}

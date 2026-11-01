@@ -269,11 +269,11 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
     
       <div
         className="flex flex-col w-full min-h-[100dvh] relative overflow-hidden selection:bg-blue-500/30"
-        style={{ background: 'radial-gradient(ellipse at top, #3b82f6 0%, #1e293b 55%, #0f172a 100%)' }}>
+        style={{ background: 'radial-gradient(ellipse at top, #1e3a8a 0%, #0a0f1e 55%, #020617 100%)' }}>
         
         {/* Global smooth vignette to blend the datacenter image perfectly across all sections and fade to deep solid black at the bottom */}
-        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 20%, transparent 30%, #1e293b 95%)' }} />
-        <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-transparent via-[#1e293b]/60 to-[#0f172a]" />
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 20%, transparent 30%, #0a0f1e 95%)' }} />
+        <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-b from-transparent via-[#03060d]/60 to-[#010204]" />
 
         <div className="relative z-10 w-full max-w-[1600px] flex-1 flex flex-col mx-auto">
           
