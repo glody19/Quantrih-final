@@ -1,0 +1,40 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: quantrih
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    autoDeploy: true
+    domains:
+      - quantrih.com
+      - www.quantrih.com
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_URL
+        value: https://quantrih.com
+      # Secrets: Render asks for these values when the Blueprint is created
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FINNHUB_API_KEY
+        sync: false
+      - key: FMP_API_KEY
+        sync: false
+      - key: FRED_API_KEY
+        sync: false
+      - key: ALPACA_API_KEY
+        sync: false
+      - key: ALPACA_SECRET_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false
+      - key: VITE_RECAPTCHA_V3_SITE_KEY
+        sync: false

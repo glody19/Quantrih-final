@@ -101,7 +101,7 @@ async function startServer() {
   }
 
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
   console.log("NODE_ENV:", process.env.NODE_ENV);
   app.set("trust proxy", 1);
 
@@ -127,7 +127,9 @@ async function startServer() {
     "https://quantrih.com",
     "http://quantrih.com",
     "https://www.quantrih.com",
-    "http://www.quantrih.com"
+    "http://www.quantrih.com",
+    // Render injects the service's public URL (e.g. https://quantrih.onrender.com)
+    ...(process.env.RENDER_EXTERNAL_URL ? [process.env.RENDER_EXTERNAL_URL] : [])
   ];
   app.use(cors({
     origin: function (origin, callback) {
@@ -153,6 +155,9 @@ async function startServer() {
   });
 
   // Apply rate limiter to all API routes
+  // Lightweight health check for the hosting platform (not rate limited)
+  app.get("/healthz", (_req, res) => { res.status(200).send("ok"); });
+
   app.use("/api/", apiLimiter);
 
   // Stripe Webhook MUST be placed BEFORE express.json() to preserve raw body

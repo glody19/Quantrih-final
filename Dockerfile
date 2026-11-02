@@ -10,6 +10,10 @@ RUN npm ci
 # Copy all source files
 COPY . .
 
+# Vite inlines VITE_* variables at build time; Render passes env vars as build args
+ARG VITE_RECAPTCHA_V3_SITE_KEY
+ENV VITE_RECAPTCHA_V3_SITE_KEY=$VITE_RECAPTCHA_V3_SITE_KEY
+
 # Build the frontend (Vite) and backend (esbuild -> dist/server.cjs)
 RUN npm run build
 
