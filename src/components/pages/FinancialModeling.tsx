@@ -2120,7 +2120,6 @@ const isEuropeanMarketOpen = () => {
  <div className="flex bg-slate-100 p-1 rounded-lg w-fit mb-2 mt-1 ml-1 z-10 relative shadow-inner">
  {[
  { label: '5D', range: '5d', interval: '1d' },
- { label: '3M', range: '3mo', interval: '1d' },
  { label: '6M', range: '6mo', interval: '1d' },
  { label: '1Y', range: '1y', interval: '1d' },
  { label: '5Y', range: '5y', interval: '1d' },

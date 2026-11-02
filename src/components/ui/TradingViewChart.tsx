@@ -40,6 +40,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ data, multiD
  background: { type: LightweightCharts.ColorType.Solid, color: isLight ? '#ffffff' : '#131722' },
  textColor: isLight ? '#1e293b' : '#d1d4dc',
  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+ fontSize: type === 'relative' ? 14 : 12,
  },
  grid: {
  vertLines: { color: isLight ? '#f1f5f9' : 'rgba(42, 46, 57, 0.5)', style: LightweightCharts.LineStyle.Solid },
@@ -186,11 +187,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({ data, multiD
 
  } else if (type === 'relative' && multiData && multiData.length > 0) {
  multiData.forEach((seriesData) => {
- const series = chartRef.current!.addSeries(LightweightCharts.AreaSeries, {
- lineColor: seriesData.color,
- topColor: seriesData.color + '66',
- bottomColor: seriesData.color + '00',
- lineWidth: 2,
+ const series = chartRef.current!.addSeries(LightweightCharts.LineSeries, {
+ color: seriesData.color,
+ lineWidth: 3,
  crosshairMarkerVisible: true,
  crosshairMarkerRadius: 4,
  crosshairMarkerBorderColor: '#fff',
