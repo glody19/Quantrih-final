@@ -258,7 +258,6 @@ const translations: Record<Language, Record<string, string>> = {
     "cloud.saved_configs": "Cloud Configurations",
     "cloud.save_new": "Save Current",
     "cloud.load_existing": "Saved Configurations",
-    "mc.title": "Portfolio Monte Carlo Simulation",
     "mc.overview": "Overview",
     "mc.config": "Simulation Model Configuration",
     "mc.portfolio_name": "Portfolio Name",
