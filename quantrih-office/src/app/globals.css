@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+/* Design system Quantrih Office : sobre, intemporel, beaucoup d'air (plan §7). */
+@theme {
+  --color-navy: #0f1e2e;
+  --color-navy-soft: #1c3046;
+  --color-ivory: #f7f4ee;
+  --color-paper: #fffdf9;
+  --color-sand: #ece6da;
+  --color-line: #ddd5c6;
+  --color-gold: #b08d57;
+  --color-gold-dark: #8a6c3f;
+  --color-slate: #5b6672;
+  --color-sage: #5e7d6a;
+  --color-danger: #9b2c2c;
+  --font-serif: var(--font-cormorant), "Libre Caslon Text", Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+@layer base {
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--color-ivory);
+  color: var(--color-navy);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, .serif {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+}
+
+.field {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--color-navy);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field:focus {
+  outline: none;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgb(176 141 87 / 0.18);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.75rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.btn-primary {
+  background: var(--color-navy);
+  color: var(--color-ivory);
+}
+.btn-primary:hover {
+  background: var(--color-navy-soft);
+}
+.btn-gold {
+  background: var(--color-gold);
+  color: #fff;
+}
+.btn-gold:hover {
+  background: var(--color-gold-dark);
+}
+.btn-ghost {
+  border: 1px solid var(--color-line);
+  color: var(--color-navy);
+}
+.btn-ghost:hover {
+  border-color: var(--color-navy);
+}
+.btn:disabled {
+  opacity: 0.6;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gold-dark);
+}
+
+.card {
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
