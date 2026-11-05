@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Globe, ChevronDown, Check } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { cn } from "../../lib/utils";
 
@@ -122,20 +122,10 @@ export function LanguageSwitcher() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.96 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute right-0 top-full mt-2 w-72 bg-surface/95 backdrop-blur-xl border border-border/80 shadow-2xl rounded-3xl p-3 flex flex-col gap-2.5 z-50 overflow-hidden ring-1 ring-black/5"
+            className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border shadow-lg rounded-2xl p-1.5 flex flex-col gap-1 z-50 overflow-hidden ring-1 ring-black/5"
           >
-            {/* Header */}
-            <div className="flex flex-col gap-2 pb-2 border-b border-border/60">
-              <div className="flex items-center justify-between px-2 pt-1">
-                <span className="text-[11px] font-bold text-text-3 uppercase tracking-widest flex items-center gap-1.5">
-                  <Globe size={12} className="text-pv-blue" />
-                  Language / Taal
-                </span>
-              </div>
-            </div>
-
             {/* Scrollable Language List */}
-            <div className="max-h-60 overflow-y-auto pr-1 flex flex-col gap-1 scrollbar-thin scrollbar-thumb-pv-blue/20 hover:scrollbar-thumb-pv-blue/40">
+            <div className="flex flex-col gap-0.5 scrollbar-thin scrollbar-thumb-pv-blue/20 hover:scrollbar-thumb-pv-blue/40">
               {languages.map((lang) => {
                   const isSelected = language === lang.code;
                   const Flag = lang.FlagComponent;
@@ -150,32 +140,24 @@ export function LanguageSwitcher() {
                         setIsOpen(false);
                       }}
                       className={cn(
-                        "group flex items-center justify-between p-2.5 rounded-2xl transition-all duration-200 text-left w-full border",
+                        "group flex items-center justify-between px-2 py-1.5 rounded-xl transition-all duration-200 text-left w-full border",
                         isSelected
                           ? "bg-pv-blue/10 border-pv-blue/40 text-pv-blue shadow-xs font-bold"
                           : "bg-transparent border-transparent text-text hover:bg-surface-2 hover:border-border/60"
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="relative p-1 rounded-xl bg-surface border border-border/50 group-hover:scale-105 transition-transform shadow-xs">
-                          <Flag className="w-6 h-4 rounded-xs object-cover" />
-                        </div>
+                      <div className="flex items-center gap-2.5">
+                        <Flag className="w-5 h-3.5 rounded-xs object-cover shadow-xs" />
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold leading-none text-text group-hover:text-pv-blue transition-colors flex items-center gap-1.5">
+                          <span className="text-xs font-semibold leading-none text-text group-hover:text-pv-blue transition-colors">
                             {lang.nativeLabel}
-                            <span className="text-[10px] uppercase font-mono font-bold text-text-4 px-1 rounded bg-surface-3">
-                              {lang.code}
-                            </span>
-                          </span>
-                          <span className="text-[10px] text-text-3 font-medium mt-0.5">
-                            {lang.region}
                           </span>
                         </div>
                       </div>
 
                       {isSelected && (
-                        <div className="w-6 h-6 rounded-full bg-pv-blue text-white flex items-center justify-center shrink-0 shadow-xs">
-                          <Check size={13} strokeWidth={3} />
+                        <div className="w-4 h-4 rounded-full bg-pv-blue text-white flex items-center justify-center shrink-0">
+                          <Check size={10} strokeWidth={3} />
                         </div>
                       )}
                     </motion.button>

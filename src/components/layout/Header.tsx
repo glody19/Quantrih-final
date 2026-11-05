@@ -98,6 +98,11 @@ export function Header({
           : "sticky top-0 bg-bg/90 border-border/50"
       )}
     >
+      {/* Market hours strip, shown above the navigation */}
+      <div className="hidden md:flex justify-center items-center border-b border-border/40 py-1.5 px-6 overflow-x-auto no-scrollbar">
+        <MarketClock />
+      </div>
+
       {/* Main Header Top Row: Logo + Page Nav Menu + Controls */}
       <div className="h-14 lg:h-16 flex items-center justify-between px-4 md:px-8 max-w-full mx-auto text-xs lg:text-sm font-normal">
         
@@ -360,7 +365,7 @@ export function Header({
             transition={{ duration: 0.2 }}
             className="xl:hidden absolute top-full left-0 right-0 w-full bg-surface border-b border-border p-5 shadow-2xl z-[150] flex flex-col gap-2 max-h-[80vh] overflow-y-auto scroll-smooth rounded-b-3xl max-sm:[zoom:0.7]"
           >
-            <div className="mb-3 pb-3 border-b border-border flex justify-center">
+            <div className="mb-3 pb-3 border-b border-border flex justify-start overflow-x-auto no-scrollbar">
               <MarketClock />
             </div>
             {menus.map((menu) => {
@@ -424,11 +429,6 @@ export function Header({
           </motion.div>
         )}
       </AnimatePresence>
-    
-      {/* Bottom Sub-Header for Market Clock */}
-      <div className="hidden lg:flex justify-end items-center border-t border-border/20 py-1.5 px-6">
-        <MarketClock />
-      </div>
     </header>
   );
 }

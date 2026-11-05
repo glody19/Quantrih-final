@@ -3,76 +3,73 @@ import { cn } from "../../lib/utils";
 
 interface MarketCity {
   id: string;
+  code: string;
   name: string;
   tz: string;
   open: [number, number];
   close: [number, number];
 }
 
+// Regular-session hours in each exchange's local time (lunch breaks ignored).
 const CLOCK_CITIES: MarketCity[] = [
-  { id: "nyc", name: "NYC", tz: "America/New_York", open: [9, 30], close: [16, 0] },
-  { id: "lon", name: "LDN", tz: "Europe/London", open: [8, 0], close: [16, 30] },
-  { id: "fra", name: "FRA", tz: "Europe/Berlin", open: [9, 0], close: [17, 30] },
-  { id: "jpn", name: "TYO", tz: "Asia/Tokyo", open: [9, 0], close: [15, 0] },
+  { id: "nyc", code: "NYC", name: "New York (NYSE, Nasdaq)", tz: "America/New_York", open: [9, 30], close: [16, 0] },
+  { id: "tor", code: "TOR", name: "Toronto (TSX)", tz: "America/Toronto", open: [9, 30], close: [16, 0] },
+  { id: "sao", code: "SAO", name: "São Paulo (B3)", tz: "America/Sao_Paulo", open: [10, 0], close: [17, 55] },
+  { id: "lon", code: "LDN", name: "London (LSE)", tz: "Europe/London", open: [8, 0], close: [16, 30] },
+  { id: "par", code: "PAR", name: "Paris, Brussels, Amsterdam (Euronext)", tz: "Europe/Paris", open: [9, 0], close: [17, 30] },
+  { id: "fra", code: "FRA", name: "Frankfurt (Xetra)", tz: "Europe/Berlin", open: [9, 0], close: [17, 30] },
+  { id: "zrh", code: "ZRH", name: "Zurich (SIX)", tz: "Europe/Zurich", open: [9, 0], close: [17, 30] },
+  { id: "hkg", code: "HKG", name: "Hong Kong (HKEX)", tz: "Asia/Hong_Kong", open: [9, 30], close: [16, 0] },
+  { id: "tyo", code: "TYO", name: "Tokyo (TSE)", tz: "Asia/Tokyo", open: [9, 0], close: [15, 30] },
 ];
 
-const getClockStatus = (tz: string, oH: number, oM: number, cH: number, cM: number) => {
+type ClockStatus = "open" | "pre" | "closed";
+
+const getClockStatus = (tz: string, oH: number, oM: number, cH: number, cM: number): ClockStatus => {
   const now = new Date();
-  const dayOptions = { timeZone: tz, weekday: "short" } as const;
-  const dayString = new Intl.DateTimeFormat("en-US", dayOptions).format(now);
-  if (dayString === "Sat" || dayString === "Sun") {
-    return "closed";
-  }
+  const day = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" }).format(now);
+  if (day === "Sat" || day === "Sun") return "closed";
 
-  const options = { timeZone: tz, hour: "numeric", minute: "numeric", hour12: false } as const;
-  const timeString = new Intl.DateTimeFormat("en-US", options).format(now);
-  const [hour, minute] = timeString.split(":").map(Number);
+  const time = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "numeric", hour12: false }).format(now);
+  const [hour, minute] = time.split(":").map(Number);
+  const minutes = (hour % 24) * 60 + minute;
+  const openAt = oH * 60 + oM;
+  const closeAt = cH * 60 + cM;
 
-  if (hour > oH || (hour === oH && minute >= oM)) {
-    if (hour < cH || (hour === cH && minute < cM)) {
-      return "open";
-    }
-  }
-  if (hour === oH - 1 || (hour === oH && minute < oM)) return "pre";
+  if (minutes >= openAt && minutes < closeAt) return "open";
+  if (minutes >= openAt - 60 && minutes < openAt) return "pre";
   return "closed";
 };
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
 export function MarketClock() {
-  const [times, setTimes] = useState<Record<string, string>>({});
+  const [, setTick] = useState(0);
 
   useEffect(() => {
-    const tick = () => {
-      const nt: Record<string, string> = {};
-      CLOCK_CITIES.forEach((c) => {
-        nt[c.id] = new Date().toLocaleTimeString("en-GB", {
-          timeZone: c.tz,
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      });
-      setTimes(nt);
-    };
-
-    const timer = setInterval(tick, 30000);
-    tick();
-
+    const timer = setInterval(() => setTick((n) => n + 1), 30000);
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <div className="flex items-center gap-3 sm:gap-4 font-mono text-[10px] sm:text-[11px]">
+    <div className="flex items-center gap-4 lg:gap-5 font-mono text-[10px] whitespace-nowrap">
       {CLOCK_CITIES.map((c) => {
         const status = getClockStatus(c.tz, c.open[0], c.open[1], c.close[0], c.close[1]);
+        const time = new Date().toLocaleTimeString("en-GB", { timeZone: c.tz, hour: "2-digit", minute: "2-digit" });
         return (
-          <div key={c.id} className="flex items-center gap-1.5">
+          <div
+            key={c.id}
+            className="flex items-center gap-1.5"
+            title={`${c.name} · ${pad(c.open[0])}:${pad(c.open[1])} to ${pad(c.close[0])}:${pad(c.close[1])} local time`}
+          >
             <span
               className={cn(
                 "w-1.5 h-1.5 rounded-full shrink-0",
                 status === "open" ? "bg-emerald-500" : status === "pre" ? "bg-amber-400" : "bg-rose-500/70"
               )}
             />
-            <span className="font-bold text-text-2">{c.name}</span>
-            <span className="text-text font-semibold">{times[c.id] || "--:--"}</span>
+            <span className="font-bold text-text-3">{c.code}</span>
+            <span className="text-text font-semibold">{time}</span>
           </div>
         );
       })}
