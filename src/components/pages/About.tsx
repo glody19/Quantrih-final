@@ -31,7 +31,7 @@ export function About() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-5xl md:text-7xl font-semibold tracking-tighter mb-6 bg-clip-text text-transparent"
+            className="text-4xl md:text-5xl font-semibold tracking-tighter mb-6 bg-clip-text text-transparent"
             style={{ backgroundImage: 'linear-gradient(to right, #ffffff, #94a3b8)' }}
           >
             Engineering the Future of <br className="hidden md:block"/> Quantitative Allocation

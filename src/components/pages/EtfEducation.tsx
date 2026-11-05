@@ -322,7 +322,7 @@ export function EtfEducation({ language: propLanguage }: { language: string }) {
   const t = eduLabels[activeLang] || eduLabels.en;
 
   return (
-    <section className="animate-fade-in space-y-16 max-w-4xl mx-auto pb-20">
+    <section className="animate-fade-in space-y-16 max-w-6xl mx-auto pb-20">
       
       {/* 1. Introduction */}
       <div className="space-y-6">
