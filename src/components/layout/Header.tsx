@@ -132,7 +132,7 @@ export function Header({
                           if (menu.id === "fmp-group") onPageChange("market");
                         }}
                         className={cn(
-                          "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-2xl text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all flex items-center gap-1 relative overflow-visible",
+                          "px-2.5 py-1.5 lg:px-3 lg:py-2 rounded-2xl whitespace-nowrap text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all flex items-center gap-1 relative overflow-visible",
                           isActive 
                             ? "text-white bg-blue-600 shadow-md shadow-blue-500/20 scale-105 font-bold" 
                             : "text-text-2 hover:bg-surface-2 hover:text-text"
@@ -168,7 +168,7 @@ export function Header({
                     <button
                       onClick={() => onPageChange(menu.id)}
                       className={cn(
-                        "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-2xl text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all relative overflow-visible",
+                        "px-2.5 py-1.5 lg:px-3 lg:py-2 rounded-2xl whitespace-nowrap text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all relative overflow-visible",
                         isActive 
                           ? "text-white bg-blue-600 shadow-md shadow-blue-500/20 scale-105 font-bold" 
                           : "text-text-2 hover:bg-surface-2 hover:text-text"

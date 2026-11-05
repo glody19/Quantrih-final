@@ -418,5 +418,89 @@ export const PLATFORMS = [
     pros: ['Large global network', 'Access to internal funds and excellent life insurance'],
     cons: ['Often complex fee structure', 'Fees significantly higher than neo-brokers'],
     bestFor: 'Wealthy clients seeking structured traditional support.'
+  },
+  {
+    id: 'bolero',
+    name: 'Bolero',
+    type: 'broker',
+    logo: '',
+    rating: 4.2,
+    fees: 'Low (from €2.50)',
+    features: ['Euronext Brussels', 'Belgian Tax Handled', 'KBC Group', 'Funds & Bonds'],
+    pros: ['Belgian stock exchange tax (TOB) handled automatically', 'Orders from €2.50 up to €250 on Euronext', 'No custody fees'],
+    cons: ['More expensive than DEGIRO on large orders', 'Fewer international markets than IBKR'],
+    bestFor: 'Belgian investors who want their taxes handled by a local, regulated broker.'
+  },
+  {
+    id: 'keytrade',
+    name: 'Keytrade Bank',
+    type: 'broker',
+    logo: '',
+    rating: 4.1,
+    fees: 'Medium',
+    features: ['Keyplan ETF Plans', 'Belgian Tax Handled', 'Banking Services', 'Pension Savings'],
+    pros: ['Automatic ETF savings plans (Keyplan)', 'Belgian taxes handled', 'Full online bank in one account'],
+    cons: ['Per-order fees higher than neo-brokers', 'Limited advanced trading tools'],
+    bestFor: 'Belgian savers who want ETF plans and banking with a single provider.'
+  },
+  {
+    id: 'mexem',
+    name: 'MEXEM',
+    type: 'broker',
+    logo: '',
+    rating: 4.3,
+    fees: 'Very Low (0.06%, min €1)',
+    features: ['IBKR Infrastructure', 'Global Markets', 'Options & Futures', 'Belgian Tax Reports'],
+    pros: ['Interactive Brokers pricing and market access', 'No inactivity or account fees', 'Local support in several European languages'],
+    cons: ['Minimum deposit required', 'Platform inherits IBKR complexity'],
+    bestFor: 'Experienced investors who want IBKR power with European support.'
+  },
+  {
+    id: 'lightyear',
+    name: 'Lightyear',
+    type: 'broker',
+    logo: '',
+    rating: 4.3,
+    fees: 'Low',
+    features: ['Commission-free ETFs', 'Interest on Cash', 'Multi-currency', 'Fractional Shares'],
+    pros: ['No commission on ETFs', 'Interest paid on uninvested EUR cash', 'Clean, simple mobile app'],
+    cons: ['Fewer instruments than larger brokers', 'No options or bonds'],
+    bestFor: 'Beginners building a low-cost ETF portfolio in euros.'
+  },
+  {
+    id: 'ing',
+    name: 'ING Self Invest',
+    type: 'bank',
+    logo: '',
+    rating: 3.9,
+    fees: 'Medium (0.35%, min €1)',
+    features: ['Bank Integration', 'Belgian Tax Handled', 'Curated ETFs', 'Mobile App'],
+    pros: ['Investing inside your everyday ING account', 'Belgian stock exchange tax handled', 'Large banking group'],
+    cons: ['Monthly custody fee per position', 'Higher costs than online brokers'],
+    bestFor: 'ING customers who want to invest without opening a separate broker account.'
+  },
+  {
+    id: 'kbc',
+    name: 'KBC',
+    type: 'bank',
+    logo: '',
+    rating: 3.8,
+    fees: 'High',
+    features: ['Investment Plans', 'Advisory', 'Pension Savings', 'KBC Mobile'],
+    pros: ['Personal advice in branches', 'Well rated mobile app', 'Owner of the Bolero online broker'],
+    cons: ['Fund fees well above index ETFs', 'Products mostly from the in-house range'],
+    bestFor: 'Clients who want advice and a single bank for everything.'
+  },
+  {
+    id: 'belfius',
+    name: 'Belfius',
+    type: 'bank',
+    logo: '',
+    rating: 3.7,
+    fees: 'High',
+    features: ['Investment Plans', 'Advisory', 'Pension Savings', 'Mobile App'],
+    pros: ['Strong Belgian mobile banking app', 'Advisors available in branches'],
+    cons: ['High fees on in-house funds', 'Limited choice of external ETFs'],
+    bestFor: 'Belgian clients who value local advice over low costs.'
   }
 ];
