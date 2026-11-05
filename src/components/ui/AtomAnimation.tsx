@@ -196,10 +196,6 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
 
  
  
- const titleEl = document.getElementById('hero-gradient-title');
- if (titleEl) {
- titleEl.style.backgroundImage = `linear-gradient(to right, rgb(${currentColors[0]}), rgb(${currentColors[1]}))`;
- }
 
  const cosY = Math.cos(angleY);
  const sinY = Math.sin(angleY);
