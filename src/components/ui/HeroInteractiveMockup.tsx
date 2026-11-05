@@ -258,7 +258,7 @@ export const HeroInteractiveMockup = () => {
  {Array.from({ length: 4 }).map((_, i) => (
  <line key={i} x1="0" y1={i * 75} x2="1000" y2={i * 75} stroke="#e2e8f0" strokeWidth="1" />
  ))}
- <motion.path initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.5, ease: "easeInOut" }} d="M0 250 Q 150 240, 300 200 T 600 120 T 800 60 T 1000 40" fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" />
+ <motion.path initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.5, ease: "easeInOut" }} d="M0 250 Q 150 240, 300 200 T 600 120 T 800 60 T 1000 40" fill="none" stroke="#7363EA" strokeWidth="3" strokeLinecap="round" />
  <motion.path initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }} d="M0 250 Q 150 250, 300 220 T 600 180 T 800 120 T 1000 90" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" />
  <motion.path initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.5, ease: "easeInOut", delay: 0.4 }} d="M0 250 Q 150 260, 300 250 T 600 210 T 800 180 T 1000 150" fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
  </svg>

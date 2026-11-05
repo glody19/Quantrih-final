@@ -18,7 +18,7 @@ const ORBIT_ITEMS: OrbitItem[] = [
   },
   { 
     label: "ASSET\nALLOCATION", 
-    accent: "#3b82f6", 
+    accent: "#7363EA", 
     active: false, 
     id: "asset-allocation",
     imageUrl: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=300&q=80"

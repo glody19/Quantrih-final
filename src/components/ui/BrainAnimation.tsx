@@ -69,7 +69,7 @@ export const BrainAnimation: React.FC = () => {
  else x -= 15;
 
  // Colors centered around institutional blues and slates
- const colorPool = ['#3b82f6', '#1d4ed8', '#0ea5e9', '#6366f1', '#64748b'];
+ const colorPool = ['#7363EA', '#4A3BC0', '#0ea5e9', '#6366f1', '#64748b'];
  const color = colorPool[Math.floor(Math.random() * colorPool.length)];
 
  nodes.push(new Node(x, y, z, color));
@@ -184,7 +184,7 @@ export const BrainAnimation: React.FC = () => {
  target: target,
  progress: 0,
  speed: 0.02 + Math.random() * 0.03,
- color: Math.random() > 0.5 ? '#60a5fa' : '#38bdf8',
+ color: Math.random() > 0.5 ? '#9283F2' : '#38bdf8',
  });
  }
  });
@@ -239,7 +239,7 @@ export const BrainAnimation: React.FC = () => {
  ctx.fillStyle = textColor;
  if (isBright) {
  ctx.shadowBlur = 0;
- ctx.shadowColor = '#60a5fa';
+ ctx.shadowColor = '#9283F2';
  } else {
  ctx.shadowBlur = 0;
  }

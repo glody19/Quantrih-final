@@ -129,7 +129,7 @@ const BOOKS: Book[] = [
     tagFr: "Finance Comportementale",
     summary: "Exploring the strange ways people think about money and teaching you how to make better sense of one of life's most important topics.",
     summaryFr: "Explorer les façons étranges dont les gens pensent à l'argent et vous apprendre à mieux comprendre l'un des sujets les plus importants de la vie.",
-    coverColor: "#2563eb",
+    coverColor: "#5B4BDB",
     isbn: "9780857197689",
     featured: false,
     link: "https://www.amazon.com/Psychology-Money-Timeless-lessons-happiness/dp/0857197681"
@@ -402,7 +402,7 @@ const BOOKS: Book[] = [
     tagFr: "Finance d'Entreprise",
     summary: "The gold-standard academic handbook for net present value rules, capital budgeting, and corporate capital structure.",
     summaryFr: "Le manuel de référence mondiale pour comprendre les décisions financières et budgétaires des entreprises.",
-    coverColor: "#1d4ed8",
+    coverColor: "#4A3BC0",
     isbn: "1259918947",
     featured: false,
     link: "https://www.amazon.com/Corporate-Finance-Stephen-Ross/dp/1259918947"
@@ -744,7 +744,7 @@ function BookCard({ book, language }: { book: Book, language: string }) {
           <div 
             className="w-48 h-64 rounded-lg p-5 flex flex-col justify-between text-left relative overflow-hidden text-white transition-all duration-500 group-hover:scale-[1.05] shadow-xl"
             style={{ 
-              backgroundColor: book.coverColor || '#3B82F6',
+              backgroundColor: book.coverColor || '#7363EA',
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20 pointer-events-none" />

@@ -114,7 +114,7 @@ function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: 
                     {/* Chart/UI Animation based on module index */}
                     {index === 0 && (
                       <div className="flex-1 w-full h-full p-3 flex flex-col justify-between relative overflow-hidden">
-                        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#3b82f6 1px, transparent 1px)', backgroundSize: '12px 12px', opacity: 0.15 }} />
+                        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#7363EA 1px, transparent 1px)', backgroundSize: '12px 12px', opacity: 0.15 }} />
                         <div className="w-full flex items-end justify-between gap-2 h-full z-10 px-2 pb-2">
                           {[30, 45, 25, 60, 40, 80, 55, 90, 70, 100].map((h, i) => (
                             <div 
@@ -295,7 +295,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                 <h1 className="text-[18vw] sm:text-[10vw] md:text-8xl lg:text-[140px] max-w-[100vw] break-keep whitespace-nowrap font-semibold leading-[0.85] tracking-tighter shimmer-text-animate hover:scale-105 transition-transform duration-500 origin-left overflow-visible">
                   Quantrih
                 </h1>
-                <h2 id="hero-gradient-title" className="text-3xl lg:text-4xl font-semibold leading-none tracking-tighter mt-4 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, #3b82f6, #06b6d4)' }}>
+                <h2 id="hero-gradient-title" className="text-3xl lg:text-4xl font-semibold leading-none tracking-tighter mt-4 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, #7363EA, #06b6d4)' }}>
                   {t("home.hero.title2") + "."}
                 </h2>
               </motion.div>

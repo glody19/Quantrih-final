@@ -759,7 +759,7 @@ const isEuropeanMarketOpen = () => {
   const visibleMarqueeSymbols = useMemo(() => {
     return MARQUEE_SYMBOLS;
   }, []);
- const watchlistColors = ['#ef4444', '#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#0ea5e9', '#14b8a6', '#f43f5e', '#84cc16'];
+ const watchlistColors = ['#ef4444', '#22c55e', '#7363EA', '#f59e0b', '#8b5cf6', '#ec4899', '#0ea5e9', '#14b8a6', '#f43f5e', '#84cc16'];
  const getWatchlistColor = (index: number) => {
  return watchlistColors[index % watchlistColors.length];
  };
@@ -1984,7 +1984,7 @@ const isEuropeanMarketOpen = () => {
  <Tooltip formatter={(value: any) => formatAggregate(Number(value))} cursor={{fill: 'rgba(0,0,0,0.02)'}} contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontSize: '13px', fontWeight: 500, padding: '12px' }} itemStyle={{ paddingTop: '4px' }} />
  <Legend iconType="circle" wrapperStyle={{ paddingTop: "24px", fontSize: "12px", fontWeight: "500", color: '#475569' }} verticalAlign="bottom" height={40} />
  <Bar dataKey="revenue" fill="#0EA5E9" name="Revenue" barSize={16} radius={[4, 4, 0, 0]} />
- <Bar dataKey="grossProfit" fill="#3B82F6" name="Gross Profit" barSize={16} radius={[4, 4, 0, 0]} />
+ <Bar dataKey="grossProfit" fill="#7363EA" name="Gross Profit" barSize={16} radius={[4, 4, 0, 0]} />
  <Bar dataKey="operatingIncome" fill="#6366F1" name="Operating" barSize={16} radius={[4, 4, 0, 0]} />
  <Bar dataKey="netIncome" fill="#10B981" name="Net Income" barSize={16} radius={[4, 4, 0, 0]} />
  </BarChart>

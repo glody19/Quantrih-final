@@ -69,7 +69,7 @@ export function LaptopDemo() {
                          />
                          <motion.path 
                            d="M0,0 L10,0 L20,-2 L30,-5 L40,-15 L50,-2 L60,0 L70,-2 L80,-5 L90,0 L100,0"
-                           fill="none" stroke="#3b82f6" strokeWidth="1.5"
+                           fill="none" stroke="#7363EA" strokeWidth="1.5"
                            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.4 }}
                          />
                        </svg>

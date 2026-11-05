@@ -1,43 +1,57 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
   --animate-marquee: marquee 20s linear infinite;
   --animate-color-shift: color-shift 4s ease-in-out infinite alternate;
-  
-  --color-pv-blue: #2563EB;
-  --color-pv-blue-d: #1D4ED8;
-  --color-pv-blue-l: #3B82F6;
-  --color-pv-blue-bg: #DBEAFE;
 
-  /* Surfaces (light) */
-  --color-bg: #FFFFFF;
-  --color-surface: #ffffff;
+  /* Brand accent: deep violet (Finary-like). Kept under the pv-blue names so every page picks it up. */
+  --color-pv-blue: #5B4BDB;
+  --color-pv-blue-d: #4636C2;
+  --color-pv-blue-l: #7B6CF0;
+  --color-pv-blue-bg: #EEECFD;
+
+  /* Tailwind's blue scale remapped to the violet accent */
+  --color-blue-50: #F4F2FE;
+  --color-blue-100: #EAE7FD;
+  --color-blue-200: #D6D0FB;
+  --color-blue-300: #B6ABF7;
+  --color-blue-400: #9283F2;
+  --color-blue-500: #7363EA;
+  --color-blue-600: #5B4BDB;
+  --color-blue-700: #4A3BC0;
+  --color-blue-800: #3C3199;
+  --color-blue-900: #312A79;
+  --color-blue-950: #1E1948;
+
+  /* Surfaces (light, warm off-white) */
+  --color-bg: #FAFAF7;
+  --color-surface: #FFFFFF;
   --color-surface-2: #FFFFFF;
-  --color-surface-3: #E2E8F0;
-  --color-border: #E2E8F0;
-  --color-border-2: #CBD5E1;
+  --color-surface-3: #F1EFEA;
+  --color-border: #ECEAE4;
+  --color-border-2: #DAD7CF;
 
   /* Text */
-  --color-text: #0F172A;
-  --color-text-2: #1E293B;
-  --color-text-3: #475569;
-  --color-text-4: #64748B;
+  --color-text: #14141A;
+  --color-text-2: #26262F;
+  --color-text-3: #5C5C68;
+  --color-text-4: #8A8A96;
 
   /* Semantic */
-  --color-green: #10B981;
-  --color-green-bg: #D1FAE5;
-  --color-red: #F43F5E;
-  --color-red-bg: #FFE4E6;
-  --color-gold: #F59E0B;
+  --color-green: #12A26E;
+  --color-green-bg: #E3F6EE;
+  --color-red: #E5484D;
+  --color-red-bg: #FDECEC;
+  --color-gold: #C9A24A;
 
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.03);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
-  --shadow-lg: 0 12px 24px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 2px rgba(20,20,26,0.04);
+  --shadow-md: 0 6px 18px rgba(20,20,26,0.05);
+  --shadow-lg: 0 16px 40px rgba(20,20,26,0.07);
 }
 
 @keyframes scroll {
@@ -66,10 +80,10 @@
   --color-text-2: #E2E8F0;
   --color-text-3: #94A3B8;
   --color-text-4: #64748B;
-  --color-pv-blue: #2563EB;
-  --color-pv-blue-d: #1D4ED8;
-  --color-pv-blue-l: #3B82F6;
-  --color-pv-blue-bg: #DBEAFE;
+  --color-pv-blue: #7B6CF0;
+  --color-pv-blue-d: #5B4BDB;
+  --color-pv-blue-l: #9283F2;
+  --color-pv-blue-bg: #1E1948;
 }
 
 [data-theme="dark"] .bg-surface,
@@ -85,8 +99,8 @@
     @apply text-text font-sans antialiased;
     background-color: var(--color-bg);
     background-attachment: scroll; /* Changed from fixed for better mobile performance */
-    font-size: 16px;
-    letter-spacing: -0.01em;
+    font-size: 14px;
+    letter-spacing: -0.005em;
     font-weight: 400;
     -webkit-tap-highlight-color: transparent;
     /* overflow-x: hidden; removed to test sticky header */ /* Prevent horizontal scroll causing scroll-lock on mobile */
@@ -112,7 +126,7 @@
   }
   
   input:hover {
-    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 4px 20px rgba(91, 75, 219, 0.12);
   }
   
   input:focus {
@@ -126,7 +140,7 @@
 }
 
 .card {
-  @apply relative overflow-hidden bg-surface/80 border border-border/60 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl transition-all duration-500 hover:shadow-[0_8px_30px_rgba(0,112,243,0.1)] hover:border-pv-blue/30;
+  @apply relative overflow-hidden bg-surface border border-border rounded-3xl p-6 shadow-[0_6px_24px_rgba(20,20,26,0.04)] transition-all duration-500 hover:shadow-[0_12px_36px_rgba(91,75,219,0.10)] hover:border-pv-blue/30;
 }
 .card::before {
   content: "";
@@ -137,7 +151,12 @@
 }
 
 .inventive-card {
-  @apply relative overflow-hidden bg-surface/80 border border-border/60 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl transition-all duration-500 hover:shadow-[0_8px_30px_rgba(0,112,243,0.1)] hover:border-pv-blue/30;
+  @apply relative overflow-hidden bg-surface border border-border rounded-3xl p-6 shadow-[0_6px_24px_rgba(20,20,26,0.04)] transition-all duration-500 hover:shadow-[0_12px_36px_rgba(91,75,219,0.10)] hover:border-pv-blue/30;
+}
+
+/* Shared page width: fills wide screens while keeping a comfortable gutter */
+.page-container {
+  @apply w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10;
 }
 .inventive-card::before {
   content: "";

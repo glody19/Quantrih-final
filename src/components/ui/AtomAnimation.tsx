@@ -412,9 +412,9 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  const orbitRadius = 6 + j * 2.5; // Tighter orbits
  ctx.beginPath();
  ctx.arc(cx + Math.cos(orbitAngle) * orbitRadius, cy + Math.sin(orbitAngle) * orbitRadius, 0.3 + Math.random()*0.3, 0, Math.PI * 2);
- ctx.fillStyle = j === 0 ? '#3b82f6' : (j===1 ? '#a855f7' : '#06b6d4');
+ ctx.fillStyle = j === 0 ? '#7363EA' : (j===1 ? '#a855f7' : '#06b6d4');
             ctx.shadowBlur = 8;
- ctx.shadowColor = j === 0 ? '#3b82f6' : (j===1 ? '#a855f7' : '#06b6d4');
+ ctx.shadowColor = j === 0 ? '#7363EA' : (j===1 ? '#a855f7' : '#06b6d4');
  ctx.fill();
  }
  
