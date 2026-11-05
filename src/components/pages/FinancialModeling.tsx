@@ -22,6 +22,9 @@ import { topETFs } from './etfData';
 import { assetClasses, majorIndices, megatrends } from './assetClassesData';
 import { lazyPortfolios } from './lazyPortfoliosData';
 
+// One accent per lazy portfolio row
+const LAZY_COLORS = ['#5B4BDB', '#14B8A6', '#C9A24A', '#E5484D', '#0EA5E9', '#8B5CF6', '#F97316', '#10B981', '#EC4899', '#64748B'];
+
 const MARQUEE_SYMBOLS = [
  "GOOGL", "AMZN", "META", "TSLA", "AAPL", "NVDA", "MSFT", "IBKR", "SPCX",
  "BTC-USD", "ETH-USD", "^GSPC", "^DJI", "^IXIC", "^RUT", "BRK-B", "LLY", "AVGO",
@@ -1689,7 +1692,7 @@ const isEuropeanMarketOpen = () => {
  <div className="mt-12 p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100/50">
  <h4 className="text-sm font-medium text-blue-900 mb-3">{language === 'fr' ? 'Analyse & Aperçu du Portefeuille' : language === 'de' ? 'Portfolio-Analyse & Einblicke' : language === 'nl' ? 'Portfolio-analyse & Inzicht' : language === 'es' ? 'Análisis y Perspectiva de Cartera' : 'Portfolio Analytics & Insight'}</h4>
  <p className="text-blue-800/80 text-[13px] leading-relaxed font-medium">
- {language === 'fr' ? 'Cette répartition d\'allocation est spécifiquement modélisée pour atteindre ses performances historiques sans nécessiter d\'ajustements tactiques. La stratégie repose sur un calendrier de rééquilibrage strict et objectif, généralement exécuté chaque année ou semestre, pour garantir que les pondérations ne s\'écartent jamais de l\'allocation cible.' : language === 'de' ? 'Diese Allokationsaufteilung ist speziell darauf ausgelegt, ihre historische Performance zu erzielen, ohne dass taktische Anpassungen erforderlich sind. Die Strategie basiert auf einem strikten, emotionslosen Rebalancing-Zeitplan – der in der Regel jährlich oder halbjährlich durchgeführt wird – um sicherzustellen, dass die Gewichtungen nie zu weit von der Kern-Zielallokation abweichen.' : language === 'nl' ? 'Deze allocatiespreiding is specifiek gemodelleerd om de historische prestaties te behalen zonder dat tactische aanpassingen nodig zijn. De strategie gedijt bij een strikt, emotieloos herbalanceringsschema - meestal jaarlijks of halfjaarlijks uitgevoerd - om ervoor te zorgen dat de wegingen nooit te ver afwijken van de doelallocatie.' : language === 'es' ? 'Esta distribución de asignación está diseñada específicamente para lograr su historial de rendimiento sin requerir ajustes tácticos. La estrategia prospera con un calendario de reequilibrio estricto y objetivo, que generalmente se realiza de forma anual o semestral, para garantizar que las ponderaciones nunca se desvíen demasiado de la asignación objetivo.' : 'This allocation spread is specifically modeled to achieve its stated historical track record without requiring tactical timing adjustments. The strategy thrives on a strict, emotionless rebalancing schedule—typically executed annually or semi-annually—to ensure weightings never drift too far from the target core allocation.'}
+ {language === 'fr' ? 'Cette répartition d\'allocation est spécifiquement modélisée pour atteindre ses performances historiques sans nécessiter d\'ajustements tactiques. La stratégie repose sur un calendrier de rééquilibrage strict et objectif, généralement exécuté chaque année ou semestre, pour garantir que les pondérations ne s\'écartent jamais de l\'allocation cible.' : language === 'de' ? 'Diese Allokationsaufteilung ist speziell darauf ausgelegt, ihre historische Performance zu erzielen, ohne dass taktische Anpassungen erforderlich sind. Die Strategie basiert auf einem strikten, emotionslosen Rebalancing-Zeitplan, der in der Regel jährlich oder halbjährlich durchgeführt wird, um sicherzustellen, dass die Gewichtungen nie zu weit von der Kern-Zielallokation abweichen.' : language === 'nl' ? 'Deze allocatiespreiding is specifiek gemodelleerd om de historische prestaties te behalen zonder dat tactische aanpassingen nodig zijn. De strategie gedijt bij een strikt, emotieloos herbalanceringsschema, meestal jaarlijks of halfjaarlijks uitgevoerd, om ervoor te zorgen dat de wegingen nooit te ver afwijken van de doelallocatie.' : language === 'es' ? 'Esta distribución de asignación está diseñada específicamente para lograr su historial de rendimiento sin requerir ajustes tácticos. La estrategia prospera con un calendario de reequilibrio estricto y objetivo, que generalmente se realiza de forma anual o semestral, para garantizar que las ponderaciones nunca se desvíen demasiado de la asignación objetivo.' : 'This allocation spread is specifically modeled to achieve its stated historical track record without requiring tactical timing adjustments. The strategy thrives on a strict, emotionless rebalancing schedule, typically executed annually or semi-annually, to ensure weightings never drift too far from the target core allocation.'}
  </p>
  </div>
  </div>
@@ -2579,14 +2582,18 @@ const isEuropeanMarketOpen = () => {
          <thead className="bg-[#f8f9fa] border-b border-border/80 text-sm font-semibold text-text leading-none">
            <tr>
              <th className="py-3 px-4 text-left whitespace-nowrap">Portfolio</th>
-             <th className="py-3 px-4 text-center whitespace-nowrap border-l border-border" colSpan={3}>Allocation</th>
+             <th className="py-3 px-4 text-left whitespace-nowrap border-l border-border">Allocation</th>
              <th className="py-3 px-4 text-center whitespace-nowrap border-l border-border" colSpan={4}>Annualized Returns</th>
            </tr>
            <tr className="bg-white border-b border-border text-xs text-text/80 uppercase tracking-normal md:tracking-wider">
              <th className="py-2 px-4 text-left font-semibold">Author & Strategy</th>
-             <th className="py-0 px-0.5 md:py-2 md:px-3 text-center border-l border-border font-semibold">STOCKS</th>
-             <th className="py-0 px-0.5 md:py-2 md:px-3 text-center font-semibold">BONDS</th>
-             <th className="py-0 px-0.5 md:py-2 md:px-3 text-center font-semibold">COMM</th>
+             <th className="py-2 px-4 text-left border-l border-border font-semibold">
+               <span className="inline-flex items-center gap-3 normal-case tracking-normal">
+                 <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#5B4BDB]" />Stocks</span>
+                 <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#14B8A6]" />Bonds</span>
+                 <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#C9A24A]" />Commodities</span>
+               </span>
+             </th>
              <th className="py-2 px-4 text-right border-l border-border font-semibold">1Y</th>
              <th className="py-2 px-4 text-right font-semibold">5Y</th>
              <th className="py-2 px-4 text-right font-semibold">10Y</th>
@@ -2596,26 +2603,45 @@ const isEuropeanMarketOpen = () => {
          <tbody className="divide-y divide-slate-100 text-sm">
            {lazyPortfolios.map((item, idx) => {
              return (
-               <tr key={idx} className="hover:bg-blue-50/50 transition-colors group">
-                 <td className="py-3.5 px-4 min-w-[260px] md:min-w-[340px]">
-                   <div className="flex flex-col">
-                     <div className="font-bold text-text text-sm transition-colors leading-tight">{item.name}</div>
-                     <div className="text-xs text-text/60 font-medium leading-tight mt-1">{item.author}</div>
+               <tr key={idx} className="hover:bg-blue-50/40 transition-colors group">
+                 <td className="py-3 px-4 min-w-[260px] md:min-w-[320px]">
+                   <div className="flex items-center gap-3">
+                     <span
+                       className="w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-bold text-white shrink-0 shadow-sm"
+                       style={{ backgroundColor: LAZY_COLORS[idx % LAZY_COLORS.length] }}
+                     >
+                       {item.name.replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase()}
+                     </span>
+                     <div className="flex flex-col">
+                       <div className="font-bold text-text text-sm leading-tight">{item.name}</div>
+                       <div className="text-xs text-text-3 font-medium leading-tight mt-0.5">{item.author}</div>
+                     </div>
                    </div>
                  </td>
-                 <td className="py-3.5 px-3 text-center border-l border-slate-50">
-                   <span className="inline-flex items-center justify-center min-w-[32px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold text-xs">{item.stocks}%</span>
+                 <td className="py-3 px-4 border-l border-border/60 min-w-[220px]">
+                   <div className="flex h-2.5 w-full rounded-full overflow-hidden bg-surface-3">
+                     <div style={{ width: `${item.stocks}%`, backgroundColor: "#5B4BDB" }} />
+                     <div style={{ width: `${item.bonds}%`, backgroundColor: "#14B8A6" }} />
+                     <div style={{ width: `${item.comm}%`, backgroundColor: "#C9A24A" }} />
+                   </div>
+                   <div className="flex justify-between text-[10px] font-semibold text-text-3 mt-1 font-mono">
+                     <span>{item.stocks}%</span>
+                     <span>{item.bonds}%</span>
+                     <span>{item.comm}%</span>
+                   </div>
                  </td>
-                 <td className="py-3.5 px-3 text-center">
-                   <span className="inline-flex items-center justify-center min-w-[32px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-bold text-xs">{item.bonds}%</span>
-                 </td>
-                 <td className="py-3.5 px-3 text-center">
-                   <span className="inline-flex items-center justify-center min-w-[32px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-bold text-xs">{item.comm}%</span>
-                 </td>
-                 <td className="py-3.5 px-4 text-right border-l border-slate-50 font-bold text-text">{item.y1 != null ? item.y1.toFixed(2) : "-"}%</td>
-                 <td className="py-3.5 px-4 text-right font-bold text-text">{item.y5 != null ? item.y5.toFixed(2) : "-"}%</td>
-                 <td className="py-3.5 px-4 text-right font-bold text-text">{item.y10 != null ? item.y10.toFixed(2) : "-"}%</td>
-                 <td className="py-3.5 px-4 text-right font-bold text-emerald-600 bg-emerald-50/10">{item.y30 != null ? item.y30.toFixed(2) : "-"}%</td>
+                 {[item.y1, item.y5, item.y10, item.y30].map((v, k) => (
+                   <td key={k} className={cn("py-3 px-4 text-right", k === 0 && "border-l border-border/60")}>
+                     <span
+                       className={cn(
+                         "inline-block min-w-[58px] px-2 py-0.5 rounded-md font-mono text-xs font-bold",
+                         v == null ? "text-text-4" : v < 0 ? "bg-red-bg text-red" : v >= 8 ? "bg-green-bg text-green" : "bg-[#F0FAF5] text-[#2F855A]"
+                       )}
+                     >
+                       {v != null ? `${v.toFixed(2)}%` : "-"}
+                     </span>
+                   </td>
+                 ))}
                </tr>
              )
            })}
@@ -2660,54 +2686,6 @@ const isEuropeanMarketOpen = () => {
  </div>
  </div>
  )}
-
- {/* Live Marquee Ticker */}
- <div className="fixed bottom-0 left-0 w-full bg-[#0a0a0a] flex items-stretch overflow-hidden z-[100] border-t border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.4)] h-12">
- <div className="flex items-center px-4 bg-[#0a0a0a] border-r border-slate-800 z-10 shadow-[4px_0_10px_rgba(0,0,0,0.2)] shrink-0 gap-2">
- <button 
- onClick={() => setMarqueeMode('stocks')}
- className={cn("text-xs font-bold uppercase tracking-normal md:tracking-wider px-3 py-1.5 rounded-md transition-all flex items-center gap-1 md:gap-1.5", marqueeMode === 'stocks' ? "bg-slate-800 text-yellow-500 border border-slate-700" : "text-slate-400 hover:text-white hover:bg-slate-800")}
- >
- <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", marqueeMode === 'stocks' ? "bg-yellow-500" : "bg-slate-600")} /> Global
- </button>
- <button 
- onClick={() => setMarqueeMode('crypto')}
- className={cn("text-xs font-bold uppercase tracking-normal md:tracking-wider px-3 py-1.5 rounded-md transition-all flex items-center gap-1 md:gap-1.5", marqueeMode === 'crypto' ? "bg-slate-800 text-emerald-500 border border-slate-700" : "text-slate-400 hover:text-white hover:bg-slate-800")}
- >
- <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", marqueeMode === 'crypto' ? "bg-emerald-500" : "bg-slate-600")} /> Crypto
- </button>
- </div>
- <div className="flex flex-1 overflow-hidden relative">
- <div className="flex w-max animate-marquee" style={{ animationDuration: marqueeMode === 'crypto' ? '60s' : '120s' }}>
-  {marqueeMode === 'stocks' ? (
-  [...visibleMarqueeSymbols, ...visibleMarqueeSymbols].map((sym, idx) => {
-  const liveData = tickerPrices[sym] || tickerPrices[sym.toUpperCase()] || tickerPrices[sym.toLowerCase()];
-  const data = (liveData && typeof liveData.price === "number") ? liveData : persistentPrices.current[sym];
-  return (
-    <MarqueeItem 
-      key={`stock-${sym}-${idx}`}
-      symbol={sym} 
-      data={data} 
-      onClick={() => fetchStockData(sym)} 
-    />
-  );
-  })
-  ) : (
-  [...cryptos.slice(0, 30), ...cryptos.slice(0, 30)].map((c, idx) => {
-  return (
-    <MarqueeItem 
-      key={`crypto-${c.id}-${idx}`}
-      symbol={c.symbol} 
-      data={c} 
-      onClick={() => setSelectedTradingViewSymbol(c.symbol)} 
-      isCrypto 
-    />
-  );
-  })
-  )}
- </div>
- </div>
- </div>
 
  </div>
   </MobileZoomWrapper>
