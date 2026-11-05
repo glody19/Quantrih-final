@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { acceptInvitation, type FormState } from "@/actions/auth";
 import { MIN_PASSWORD, passwordScore } from "@/lib/password";
 import { Alert } from "./LoginForm";
+import { keepFormSubmit } from "@/components/useKeepForm";
 
 const LABELS = ["Trop court", "Faible", "Correct", "Solide", "Excellent"];
 
@@ -12,7 +13,7 @@ export function InvitationForm({ token }: { token: string }) {
   const [pw, setPw] = useState("");
   const score = passwordScore(pw);
   return (
-    <form action={action} className="flex flex-col gap-5">
+    <form onSubmit={keepFormSubmit(action)} className="flex flex-col gap-5">
       <input type="hidden" name="token" value={token} />
       <div>
         <label htmlFor="password" className="mb-1.5 block text-sm text-slate">

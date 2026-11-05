@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { submitLead, type LeadState } from "@/actions/public";
 import { PROFILES, SERVICES, WEALTH_RANGES } from "@/lib/content";
+import { keepFormSubmit } from "@/components/useKeepForm";
 
 export function LeadForm() {
   const [state, action, pending] = useActionState<LeadState, FormData>(submitLead, {});
@@ -17,7 +18,7 @@ export function LeadForm() {
     );
   }
   return (
-    <form action={action} className="card space-y-7 p-6 sm:p-8">
+    <form onSubmit={keepFormSubmit(action)} className="card space-y-7 p-6 sm:p-8">
       <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
       <fieldset>
         <legend className="eyebrow">Vous êtes</legend>

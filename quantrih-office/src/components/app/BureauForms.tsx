@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { addHolding, createClient, resendInvitation, type BureauState } from "@/actions/bureau";
 import { CATEGORY_LABEL } from "@/lib/content";
+import { keepFormSubmit } from "@/components/useKeepForm";
 
 function Feedback({ state }: { state: BureauState }) {
   const [copied, setCopied] = useState(false);
@@ -39,7 +40,7 @@ export function NewClientForm({ lead }: { lead?: { id: string; name: string; ema
   const [state, action, pending] = useActionState<BureauState, FormData>(createClient, {});
   const defaultKind = lead?.profile === "famille" ? "famille" : "personne";
   return (
-    <form action={action} className="space-y-5">
+    <form onSubmit={keepFormSubmit(action)} className="space-y-5">
       {lead && <input type="hidden" name="leadId" value={lead.id} />}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -84,7 +85,7 @@ export function NewClientForm({ lead }: { lead?: { id: string; name: string; ema
 export function ResendInvitation({ userId }: { userId: string }) {
   const [state, action, pending] = useActionState<BureauState, FormData>(resendInvitation, {});
   return (
-    <form action={action} className="space-y-2">
+    <form onSubmit={keepFormSubmit(action)} className="space-y-2">
       <input type="hidden" name="userId" value={userId} />
       <button disabled={pending} className="text-xs font-semibold text-gold-dark underline">
         {pending ? "…" : "Nouveau lien d'invitation"}
@@ -97,8 +98,12 @@ export function ResendInvitation({ userId }: { userId: string }) {
 export function AddHoldingForm({ relationshipId }: { relationshipId: string }) {
   const [state, action, pending] = useActionState<BureauState, FormData>(addHolding, {});
   const today = new Date().toISOString().slice(0, 10);
+  const ref = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (state.ok) ref.current?.reset();
+  }, [state]);
   return (
-    <form action={action} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <form ref={ref} onSubmit={keepFormSubmit(action)} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <input type="hidden" name="relationshipId" value={relationshipId} />
       <input name="label" required placeholder="Libellé (ex. : Compte-titres BNP)" className="field lg:col-span-2" aria-label="Libellé" />
       <select name="category" className="field" aria-label="Catégorie">

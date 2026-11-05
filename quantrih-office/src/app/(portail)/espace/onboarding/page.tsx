@@ -1,4 +1,4 @@
-import { clientStep } from "@/actions/espace";
+import Link from "next/link";
 import { Card, Empty, PageTitle } from "@/components/app/AppShell";
 import { getClientContext } from "@/lib/client-context";
 import { getSteps } from "@/lib/data";
@@ -43,20 +43,16 @@ export default async function Onboarding() {
                   </div>
                   <p className="mt-1 text-sm text-slate">{s.description}</p>
                 </div>
-                {s.owner === "Vous" && (s.status === "a_faire" || s.status === "en_cours") && (
-                  <form action={clientStep} className="shrink-0">
-                    <input type="hidden" name="relationshipId" value={relationship.id} />
-                    <input type="hidden" name="key" value={s.key} />
-                    <input type="hidden" name="status" value={s.status === "a_faire" ? "en_cours" : "en_revue"} />
-                    <button className={`btn ${s.status === "a_faire" ? "btn-ghost" : "btn-primary"}`}>{s.status === "a_faire" ? "Commencer" : "Transmettre pour revue"}</button>
-                  </form>
+                {s.owner === "Vous" && (
+                  <Link href={`/espace/onboarding/${s.key}`} className={`btn shrink-0 ${s.status === "a_faire" || s.status === "en_cours" ? "btn-primary" : "btn-ghost"}`}>
+                    {s.status === "a_faire" ? "Commencer" : s.status === "en_cours" ? "Continuer" : "Consulter"}
+                  </Link>
                 )}
               </div>
             </Card>
           </li>
         ))}
       </ol>
-      <p className="mt-6 text-xs text-slate">Les formulaires détaillés de chaque étape (signature électronique, vérification d&apos;identité, inventaire guidé, dépôt de documents) arrivent dans la prochaine version.</p>
     </>
   );
 }

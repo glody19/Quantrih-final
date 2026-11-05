@@ -47,7 +47,7 @@ async function main() {
         { relationshipId: rel!.id, label: "Résidence principale, Louvain-la-Neuve", category: "immobilier", owner: "Claire Exemple", value: "1150000.00", valuedAt: d, source: "expertise" },
         { relationshipId: rel!.id, label: "Immeuble de rapport, Bruxelles", category: "immobilier", owner: "Exemple Holding SRL", value: "980000.00", valuedAt: d, source: "declaratif" },
         { relationshipId: rel!.id, label: "Participation Exemple Industries", category: "participations", owner: "Exemple Holding SRL", value: "1600000.00", valuedAt: d, source: "declaratif" },
-        { relationshipId: rel!.id, label: "Crédit hypothécaire", category: "autres", institution: "Banque A", owner: "Exemple Holding SRL", value: "-520000.00", valuedAt: d, source: "releve" },
+        { relationshipId: rel!.id, label: "Crédit hypothécaire", category: "dettes", institution: "Banque A", owner: "Exemple Holding SRL", value: "-520000.00", valuedAt: d, source: "releve" },
       ]);
       console.log(`Démo créée : ${demoEmail} (même mot de passe que l'administrateur)`);
     }

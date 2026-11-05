@@ -3,6 +3,7 @@ import { z } from "zod";
 import { deleteHolding, setStepStatus } from "@/actions/bureau";
 import { Card, Empty, PageTitle } from "@/components/app/AppShell";
 import { AddHoldingForm, ResendInvitation } from "@/components/app/BureauForms";
+import { BureauDossier } from "@/components/app/BureauDossier";
 import { HoldingsTable } from "@/components/app/HoldingsTable";
 import { getRelationshipDetail } from "@/lib/bureau-data";
 import { getHoldings, getSteps } from "@/lib/data";
@@ -86,6 +87,8 @@ export default async function ClientDetail({ params }: { params: Promise<{ id: s
           </ul>
         </Card>
       </div>
+
+      <BureauDossier relationshipId={id.data} />
 
       <Card title="Patrimoine consolidé" className="mt-6">
         <AddHoldingForm relationshipId={id.data} />

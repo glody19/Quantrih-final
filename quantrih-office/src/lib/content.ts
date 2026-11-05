@@ -37,6 +37,8 @@ export const CATEGORY_LABEL = {
   participations: "Participations",
   private_equity: "Private equity",
   actifs_passion: "Actifs de passion",
+  pension: "Pension (2e et 3e piliers)",
+  dettes: "Crédits et dettes",
   autres: "Autres",
 } as const;
 

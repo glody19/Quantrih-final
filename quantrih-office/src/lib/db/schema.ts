@@ -42,6 +42,8 @@ export const assetCategoryEnum = pgEnum("asset_category", [
   "participations",
   "private_equity",
   "actifs_passion",
+  "pension",
+  "dettes",
   "autres",
 ]);
 export type AssetCategory = (typeof assetCategoryEnum.enumValues)[number];
@@ -205,4 +207,106 @@ export const settings = pgTable("settings", {
   key: text("key").primaryKey(),
   value: jsonb("value").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/* ---------- Onboarding détaillé (phase 2) ---------- */
+
+/** Personnes de la relation. Le numéro de registre national est chiffré ; seuls les 4 derniers chiffres sont lisibles. */
+export const persons = pgTable(
+  "persons",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    relationshipId: uuid("relationship_id")
+      .notNull()
+      .references(() => relationships.id, { onDelete: "cascade" }),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
+    link: text("link").notNull(),
+    birthDate: date("birth_date"),
+    nissEncrypted: text("niss_encrypted"),
+    nissLast4: text("niss_last4"),
+    nationality: text("nationality").notNull().default("BE"),
+    taxResidence: text("tax_residence").notNull().default("BE"),
+    maritalRegime: text("marital_regime"),
+    pep: boolean("pep").notNull().default(false),
+    usPerson: boolean("us_person").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("persons_rel_idx").on(t.relationshipId)],
+);
+
+/** Sociétés et structures détenues (belges ou étrangères). */
+export const entities = pgTable(
+  "entities",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    relationshipId: uuid("relationship_id")
+      .notNull()
+      .references(() => relationships.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    legalForm: text("legal_form").notNull(),
+    country: text("country").notNull().default("BE"),
+    bceNumber: text("bce_number"),
+    role: text("role").notNull(),
+    ownership: text("ownership"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("entities_rel_idx").on(t.relationshipId)],
+);
+
+/** Documents déposés : chiffrés (AES-256-GCM) puis stockés dans le stockage privé européen. */
+export const documents = pgTable(
+  "documents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    relationshipId: uuid("relationship_id")
+      .notNull()
+      .references(() => relationships.id, { onDelete: "cascade" }),
+    category: text("category").notNull(),
+    fileName: text("file_name").notNull(),
+    contentType: text("content_type").notNull(),
+    size: integer("size").notNull(),
+    sha256: text("sha256").notNull(),
+    storageKey: text("storage_key").notNull(),
+    uploadedBy: uuid("uploaded_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("documents_rel_idx").on(t.relationshipId, t.createdAt)],
+);
+
+/** Autorisations de partage d'informations (RGPD) : une ligne par professionnel, révocable. */
+export const consents = pgTable(
+  "consents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    relationshipId: uuid("relationship_id")
+      .notNull()
+      .references(() => relationships.id, { onDelete: "cascade" }),
+    partnerCategory: text("partner_category").notNull(),
+    partnerName: text("partner_name").notNull(),
+    scopes: jsonb("scopes").$type<string[]>().notNull(),
+    grantedBy: uuid("granted_by").references(() => users.id, { onDelete: "set null" }),
+    grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (t) => [index("consents_rel_idx").on(t.relationshipId)],
+);
+
+/** Lettre de mission acceptée : version, base de calcul, preuve d'acceptation, fin du délai de rétractation. */
+export const engagements = pgTable("engagements", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  relationshipId: uuid("relationship_id")
+    .notNull()
+    .references(() => relationships.id, { onDelete: "cascade" }),
+  version: text("version").notNull(),
+  declaredWealth: numeric("declared_wealth", { precision: 16, scale: 2 }).notNull(),
+  annualFeeNet: numeric("annual_fee_net", { precision: 12, scale: 2 }).notNull(),
+  vatRate: numeric("vat_rate", { precision: 5, scale: 4 }).notNull(),
+  acceptedBy: uuid("accepted_by").references(() => users.id, { onDelete: "set null" }),
+  acceptedName: text("accepted_name").notNull(),
+  acceptedAt: timestamp("accepted_at", { withTimezone: true }).notNull().defaultNow(),
+  ip: text("ip"),
+  isConsumer: boolean("is_consumer").notNull().default(true),
+  waivedWithdrawalStart: boolean("waived_withdrawal_start").notNull().default(false),
+  withdrawalUntil: timestamp("withdrawal_until", { withTimezone: true }),
 });

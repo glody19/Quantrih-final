@@ -12,7 +12,7 @@ export function summarize(rows: HoldingRow[]) {
     return [...m.entries()].map(([k, v]) => ({ key: k, value: v, share: assets ? v / assets : 0 })).sort((a, b) => b.value - a.value);
   };
   const oldest = rows.reduce<string | null>((o, r) => (!o || r.valuedAt < o ? r.valuedAt : o), null);
-  const illiquid = new Set<AssetCategory>(["immobilier", "participations", "private_equity", "actifs_passion"]);
+  const illiquid = new Set<AssetCategory>(["immobilier", "participations", "private_equity", "actifs_passion", "pension"]);
   const liquid = rows.filter((r) => r.value > 0 && !illiquid.has(r.category)).reduce((s, r) => s + r.value, 0);
   return {
     assets,

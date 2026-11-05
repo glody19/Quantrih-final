@@ -10,7 +10,7 @@ export default async function EspaceLayout({ children }: { children: React.React
     { href: "/espace", label: "Vue d'ensemble" },
     ...(relationship?.status === "onboarding" ? [{ href: "/espace/onboarding", label: "Mon onboarding" }] : []),
     { href: "/espace/patrimoine", label: "Patrimoine" },
-    { href: "/espace/documents", label: "Documents", soon: true },
+    { href: "/espace/documents", label: "Documents" },
     { href: "/espace/projets", label: "Projets", soon: true },
     { href: "/espace/messages", label: "Messages", soon: true },
     { href: "/espace/honoraires", label: "Honoraires", soon: true },

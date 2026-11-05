@@ -11,10 +11,10 @@ export function HoldingsTable({ rows, action }: { rows: HoldingRow[]; action?: (
         <thead>
           <tr className="border-b border-line text-left text-xs uppercase tracking-wider text-slate">
             <th className="px-5 py-2 font-medium sm:px-0">Élément</th>
-            <th className="py-2 font-medium">Catégorie</th>
-            <th className="py-2 font-medium">Établissement</th>
-            <th className="py-2 font-medium">Titulaire</th>
-            <th className="py-2 font-medium">Source · date</th>
+            <th className="py-2 pr-4 font-medium">Catégorie</th>
+            <th className="py-2 pr-4 font-medium">Établissement</th>
+            <th className="py-2 pr-4 font-medium">Titulaire</th>
+            <th className="py-2 pr-4 font-medium">Source · date</th>
             <th className="py-2 text-right font-medium">Valeur</th>
             {action && <th className="py-2" />}
           </tr>
@@ -23,10 +23,10 @@ export function HoldingsTable({ rows, action }: { rows: HoldingRow[]; action?: (
           {rows.map((r) => (
             <tr key={r.id} className="border-b border-line/60">
               <td className="px-5 py-3 font-medium sm:px-0">{r.label}</td>
-              <td className="py-3 text-slate">{CATEGORY_LABEL[r.category]}</td>
-              <td className="py-3 text-slate">{r.institution ?? "—"}</td>
-              <td className="py-3 text-slate">{r.owner ?? "—"}</td>
-              <td className="py-3 text-slate">
+              <td className="py-3 pr-4 text-slate">{CATEGORY_LABEL[r.category]}</td>
+              <td className="py-3 pr-4 text-slate">{r.institution ?? "—"}</td>
+              <td className="py-3 pr-4 text-slate">{r.owner ?? "—"}</td>
+              <td className="py-3 pr-4 text-slate">
                 {SOURCE[r.source] ?? r.source} · {longDate(r.valuedAt)}
               </td>
               <td className={`py-3 text-right font-medium ${r.value < 0 ? "text-danger" : ""}`}>{eur(r.value)}</td>
