@@ -1,5 +1,4 @@
 import express from "express";
-import DOMPurify from "isomorphic-dompurify";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -183,9 +182,13 @@ export function createApp() {
   app.use('/api/', express.json());
 
   // Basic XSS Sanitization Middleware
+  // Strips HTML tags from incoming strings (defence in depth: the API never renders HTML).
+  // A regex is used instead of DOMPurify because jsdom cannot load in Vercel's Node runtime.
+  const stripTags = (value: string) => value.replace(/<[^>]*>?/g, "");
+
   const sanitizeValue = (value: any): any => {
     if (typeof value === 'string') {
-      return DOMPurify.sanitize(value);
+      return stripTags(value);
     }
     if (Array.isArray(value)) {
       return value.map(sanitizeValue);
