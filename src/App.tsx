@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { Header } from "./components/layout/Header";
 import { CommandPalette } from "./components/layout/CommandPalette";
 import { Footer } from "./components/layout/Footer";
@@ -52,6 +53,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppContent />
+        <Analytics />
       </AuthProvider>
     </BrowserRouter>
   );
