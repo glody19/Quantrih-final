@@ -90,12 +90,14 @@ export function Header({
 
   return (
     <header 
-      data-theme={(currentPage === "home" || currentPage === "investor-profile" || currentPage === "profile") ? "dark" : undefined}
+      data-theme={(currentPage === "investor-profile" || currentPage === "profile") ? "dark" : undefined}
       className={cn(
-        "z-[100] transition-all duration-300 ease-in-out w-full border-b shadow-md backdrop-blur-md",
-        (currentPage === "home" || currentPage === "investor-profile" || currentPage === "profile")
-          ? "absolute top-0 left-0 bg-transparent border-white/10"
-          : "sticky top-0 bg-bg/90 border-border/50"
+        "z-[100] transition-all duration-300 ease-in-out w-full border-b backdrop-blur-md",
+        currentPage === "home"
+          ? "absolute top-0 left-0 bg-white/40 border-white/60"
+          : (currentPage === "investor-profile" || currentPage === "profile")
+            ? "absolute top-0 left-0 bg-transparent border-white/10 shadow-md"
+            : "sticky top-0 bg-bg/90 border-border/50 shadow-md"
       )}
     >
       {/* Market hours strip, shown above the navigation */}

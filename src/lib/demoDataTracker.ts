@@ -26,7 +26,10 @@ export function installDemoDataTracker() {
   window.fetch = async (...args: Parameters<typeof fetch>) => {
     const response = await originalFetch(...args);
     try {
-      if (!demoSeen && response.headers.get("X-Quantrih-Data") === "demo") {
+      // Requests marked quiet=1 handle demo data themselves (for example by hiding the widget).
+      const url = typeof args[0] === "string" ? args[0] : args[0] instanceof URL ? args[0].href : (args[0] as Request).url;
+      const quiet = url.includes("quiet=1");
+      if (!demoSeen && !quiet && response.headers.get("X-Quantrih-Data") === "demo") {
         demoSeen = true;
         listeners.forEach((l) => l(true));
       }
