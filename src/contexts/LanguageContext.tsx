@@ -1754,11 +1754,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         return saved as Language;
       }
     } catch(e) {}
-    // First visit: follow the browser language (Belgian and French visitors land in French).
-    try {
-      const browser = (navigator.language || "").slice(0, 2).toLowerCase();
-      if (browser === "fr" || browser === "nl" || browser === "de" || browser === "es") return browser as Language;
-    } catch(e) {}
     return "en";
   });
 

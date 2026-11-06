@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
-import { ArrowRight, Play, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowRight, Dices, Layers, LineChart as LineIcon, PieChart as PieIcon, Play, TrendingDown, TrendingUp } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, Cell, Line, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { cn } from "../../lib/utils";
@@ -13,16 +13,8 @@ const COPY = {
     tagline: "Testez avant d'investir.",
     lead: "Regardez comment votre portefeuille aurait traversé la bulle internet, la crise de 2008 et le Covid, puis comparez les courtiers belges et français pour le mettre en place.",
     ctaStart: "Tester mon portefeuille",
-    ctaDemo: "Voir l'outil en action",
     live: "Marchés",
     methodTitle: "Quatre outils, une seule méthode",
-    methodSub: "Répartir, rejouer, protéger, projeter. Chaque étape répond à une question que tout investisseur se pose.",
-    steps: [
-      { verb: "Répartir", q: "Quelle part en actions, en obligations, en or ?", d: "Comparez jusqu'à six allocations côte à côte et voyez laquelle a le mieux résisté aux crises.", cta: "Comparer des allocations", id: "asset-allocation" },
-      { verb: "Rejouer", q: "Qu'aurait donné mon portefeuille depuis 2000 ?", d: "Vos ETF ou actions, vos versements, vos frais. Le calcul se fait mois par mois, dividendes compris.", cta: "Lancer un backtest", id: "portfolio-backtest" },
-      { verb: "Protéger", q: "Peut-on éviter les grosses baisses ?", d: "Testez des règles simples, comme la moyenne mobile sur 200 jours, qui passent en obligations quand le marché se retourne.", cta: "Tester une stratégie", id: "tactical-allocation" },
-      { verb: "Projeter", q: "Mon épargne tiendra-t-elle ?", d: "10 000 scénarios pour estimer vos chances d'atteindre votre objectif, inflation et retraits compris.", cta: "Simuler mon épargne", id: "montecarlo" },
-    ],
     demoTag: "Démo",
     demoTitle: "Trois portefeuilles, un clic, des réponses nettes",
     demoText: "Vous entrez vos ETF et leurs pondérations. Quantrih rejoue chaque mois depuis 2000 et vous montre ce que vous auriez gagné, ce que vous auriez perdu au pire moment et le temps qu'il aurait fallu pour vous en remettre.",
@@ -50,16 +42,8 @@ const COPY = {
     tagline: "Test before you invest.",
     lead: "See how your portfolio would have handled the dot-com bubble, 2008 and Covid, then compare Belgian and French brokers to put it in place.",
     ctaStart: "Test my portfolio",
-    ctaDemo: "See the tool in action",
     live: "Markets",
     methodTitle: "Four tools, one method",
-    methodSub: "Allocate, replay, protect, project. Each step answers a question every investor asks.",
-    steps: [
-      { verb: "Allocate", q: "How much in stocks, bonds and gold?", d: "Compare up to six allocations side by side and see which one held up best in crises.", cta: "Compare allocations", id: "asset-allocation" },
-      { verb: "Replay", q: "How would my portfolio have done since 2000?", d: "Your ETFs or stocks, your contributions, your fees. Computed month by month, dividends included.", cta: "Run a backtest", id: "portfolio-backtest" },
-      { verb: "Protect", q: "Can I avoid the big drops?", d: "Test simple rules, such as the 200-day moving average, that switch to bonds when the market turns.", cta: "Test a strategy", id: "tactical-allocation" },
-      { verb: "Project", q: "Will my savings last?", d: "10,000 scenarios to estimate your odds of reaching your goal, inflation and withdrawals included.", cta: "Simulate my savings", id: "montecarlo" },
-    ],
     demoTag: "Demo",
     demoTitle: "Three portfolios, one click, clear answers",
     demoText: "Enter your ETFs and weights. Quantrih replays every month since 2000 and shows what you would have earned, what you would have lost at the worst moment and how long recovery would have taken.",
@@ -213,87 +197,76 @@ function LiveMarkets({ label }: { label: string }) {
   );
 }
 
-// ─────────────────────────────── method (4 tools) ───────────────────────────────
-// Small schematic per step, drawn in SVG so they stay crisp at any size.
-function StepVisual({ i }: { i: number }) {
-  const stroke = "#B6ABF7";
-  if (i === 0) {
-    return (
-      <svg viewBox="0 0 120 70" className="w-full h-full">
-        <circle cx="35" cy="35" r="24" fill="none" stroke="#7B6CF0" strokeWidth="11" strokeDasharray="75 151" transform="rotate(-90 35 35)" />
-        <circle cx="35" cy="35" r="24" fill="none" stroke="#2DD4BF" strokeWidth="11" strokeDasharray="38 151" strokeDashoffset="-75" transform="rotate(-90 35 35)" />
-        <circle cx="35" cy="35" r="24" fill="none" stroke="#E2B84F" strokeWidth="11" strokeDasharray="38 151" strokeDashoffset="-113" transform="rotate(-90 35 35)" />
-        {[0, 1, 2].map((k) => <rect key={k} x="72" y={18 + k * 14} width={[38, 26, 18][k]} height="6" rx="3" fill={["#7B6CF0", "#2DD4BF", "#E2B84F"][k]} opacity="0.85" />)}
-      </svg>
-    );
-  }
-  if (i === 1) {
-    return (
-      <svg viewBox="0 0 120 70" className="w-full h-full">
-        <polyline points="4,60 20,52 34,55 48,40 58,48 72,30 86,34 100,18 116,10" fill="none" stroke={stroke} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        <polyline points="4,62 24,58 44,54 64,50 84,44 104,40 116,36" fill="none" stroke="#E2B84F" strokeWidth="2" strokeDasharray="2 5" strokeLinecap="round" />
-        <circle cx="116" cy="10" r="3.5" fill={stroke} />
-      </svg>
-    );
-  }
-  if (i === 2) {
-    return (
-      <svg viewBox="0 0 120 70" className="w-full h-full">
-        <rect x="56" y="6" width="26" height="58" rx="4" fill="#2DD4BF" opacity="0.12" />
-        <polyline points="4,40 18,30 32,34 46,22 56,26 62,48 70,58 82,40 96,30 116,18" fill="none" stroke="#F87171" strokeWidth="2" strokeDasharray="3 4" opacity="0.7" />
-        <polyline points="4,40 18,30 32,34 46,22 56,26 82,26 96,20 116,10" fill="none" stroke={stroke} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
+// ──────────────────────────────── the four tools ────────────────────────────────
+const TOOL_ACCENTS = [
+  { icon: PieIcon, from: "#7B6CF0", to: "#B6ABF7" },
+  { icon: LineIcon, from: "#2DD4BF", to: "#7DE3D2" },
+  { icon: Layers, from: "#E2B84F", to: "#F3D58C" },
+  { icon: Dices, from: "#60A5FA", to: "#A5C8FB" },
+];
+
+function ToolCard({ i, title, desc, cta, onClick, wide }: { i: number; title: string; desc: string; cta: string; onClick: () => void; wide: boolean }) {
+  const a = TOOL_ACCENTS[i];
+  const Icon = a.icon;
   return (
-    <svg viewBox="0 0 120 70" className="w-full h-full">
-      <path d="M4 50 L116 8 L116 64 Z" fill="#7B6CF0" opacity="0.18" />
-      <path d="M4 50 L116 22 L116 50 Z" fill="#7B6CF0" opacity="0.25" />
-      <line x1="4" y1="50" x2="116" y2="36" stroke={stroke} strokeWidth="3" strokeLinecap="round" />
-    </svg>
+    <motion.button
+      onClick={onClick}
+      initial={{ opacity: 0, y: 26 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.55, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      className={cn("group relative text-left rounded-[1.75rem] p-px overflow-hidden", wide ? "lg:col-span-2" : "lg:col-span-1")}
+      style={{ background: `linear-gradient(140deg, ${a.from}66, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.04) 70%, ${a.to}40)` }}
+    >
+      <div className="relative h-full rounded-[calc(1.75rem-1px)] bg-[#100E2C] p-8 md:p-10 overflow-hidden transition-colors duration-300 group-hover:bg-[#141236]">
+        {/* accent glow, brighter on hover */}
+        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-30 group-hover:opacity-60 transition-opacity duration-500" style={{ background: a.from }} />
+        <span className="absolute right-8 top-6 text-[7rem] leading-none font-bold text-white/[0.04] select-none">{String(i + 1).padStart(2, "0")}</span>
+
+        <div className="relative flex h-full flex-col">
+          <span className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(135deg, ${a.from}, ${a.to})` }}>
+            <Icon size={26} className="text-[#0B0A1F]" />
+          </span>
+          <h3 className="mt-8 text-2xl md:text-3xl font-bold tracking-tight text-white">{title}</h3>
+          <p className={cn("mt-4 text-base md:text-[17px] text-white/65 leading-relaxed", wide ? "max-w-2xl" : "")}>{desc}</p>
+          <span className="mt-auto pt-8 inline-flex items-center gap-2 text-base font-semibold" style={{ color: a.to }}>
+            {cta}
+            <span className="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center group-hover:translate-x-1 transition-transform"><ArrowRight size={15} /></span>
+          </span>
+        </div>
+      </div>
+    </motion.button>
   );
 }
 
-function Method({ c, onGoPage }: { c: Copy; onGoPage: (id: string) => void }) {
+function ToolsSection({ title, onGoPage }: { title: string; onGoPage: (id: string) => void }) {
+  const { t } = useTranslation();
+  const tools = [
+    { id: "asset-allocation", key: "asset_allocation" },
+    { id: "portfolio-backtest", key: "portfolio_backtest" },
+    { id: "tactical-allocation", key: "tactical_allocation" },
+    { id: "montecarlo", key: "montecarlo" },
+  ];
   return (
     <section className="relative py-24 md:py-32">
       <div className="page-container">
-        <div className="max-w-2xl">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-[1.08]">{c.methodTitle}</h2>
-          <p className="mt-5 text-lg md:text-xl text-white/65 leading-relaxed">{c.methodSub}</p>
+        <div className="max-w-3xl">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-[1.08]">{title}</h2>
+          <p className="mt-5 text-lg md:text-xl text-white/65 leading-relaxed">{t("home.tools.subtitle")}</p>
         </div>
-
-        <div className="relative mt-16">
-          {/* connecting rail behind the step numbers */}
-          <div className="hidden lg:block absolute top-6 left-6 right-6 h-px bg-gradient-to-r from-[#7B6CF0] via-[#2DD4BF] to-[#E2B84F] opacity-50" />
-          <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {c.steps.map((s, i) => (
-              <motion.li
-                key={s.id}
-                initial={{ opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="relative"
-              >
-                <span className="relative z-10 flex w-12 h-12 rounded-full items-center justify-center text-lg font-bold text-white bg-[#16133A] border border-white/15 shadow-[0_0_0_6px_rgba(11,10,31,1)]">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <button
-                  onClick={() => onGoPage(s.id)}
-                  className="group mt-6 w-full text-left rounded-3xl border border-white/10 bg-white/[0.04] p-6 hover:bg-white/[0.07] hover:border-[#7B6CF0]/50 hover:-translate-y-1 transition-all duration-300"
-                >
-                  <div className="h-20 mb-5 rounded-2xl bg-[#0F0D2A] border border-white/5 p-3"><StepVisual i={i} /></div>
-                  <p className="text-2xl font-bold text-white">{s.verb}</p>
-                  <p className="mt-2 text-base font-semibold text-[#CFC8FB] leading-snug">{s.q}</p>
-                  <p className="mt-3 text-[15px] text-white/60 leading-relaxed">{s.d}</p>
-                  <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:gap-3 transition-all">
-                    {s.cta} <ArrowRight size={16} />
-                  </span>
-                </button>
-              </motion.li>
-            ))}
-          </ol>
+        {/* bento layout: wide, narrow / narrow, wide */}
+        <div className="mt-14 grid gap-5 lg:grid-cols-3">
+          {tools.map((tool, i) => (
+            <ToolCard
+              key={tool.id}
+              i={i}
+              wide={i === 0 || i === 3}
+              title={t(`home.pages.${tool.key}.title`)}
+              desc={t(`home.pages.${tool.key}.desc`)}
+              cta={t(`home.pages.${tool.key}.cta`)}
+              onClick={() => onGoPage(tool.id)}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -512,14 +485,6 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             {c.tagline}
           </p>
           <p className="mt-7 max-w-xl text-lg md:text-xl text-white/70 leading-relaxed">{c.lead}</p>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <button onClick={() => onGoPage("portfolio-backtest")} className="group inline-flex items-center gap-2 bg-white text-[#0B0A1F] font-semibold text-base px-7 py-4 rounded-full shadow-[0_14px_40px_-12px_rgba(123,108,240,0.8)] hover:bg-white/90">
-              {c.ctaStart} <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
-            <button onClick={() => document.getElementById("demo")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/15 text-white font-semibold text-base px-7 py-4 rounded-full hover:bg-white/10">
-              <Play size={16} className="text-[#B6ABF7]" /> {c.ctaDemo}
-            </button>
-          </div>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.1, delay: 0.15 }} className="relative min-h-[380px] lg:min-h-[660px] flex items-center justify-center">
@@ -529,7 +494,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
 
       <LiveMarkets label={c.live} />
 
-      <Method c={c} onGoPage={onGoPage} />
+      <ToolsSection title={c.methodTitle} onGoPage={onGoPage} />
 
       <ProductDemo c={c} />
 

@@ -98,7 +98,7 @@ function AppContent() {
   useEffect(() => {
     // English metadata for English visitors, French for every other language (main markets: Belgium, France).
     const route = findSeoRoute(location.pathname);
-    const meta = language === "en" ? route.en : route.fr;
+    const meta = language === "fr" ? route.fr : route.en;
     const canonical = SITE_URL + (route.path === "/" ? "/" : route.path);
 
     document.title = meta.title;

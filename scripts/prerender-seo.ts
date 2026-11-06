@@ -1,7 +1,7 @@
 // Runs after `vite build`. For every indexable route it writes dist/<route>/index.html with the
 // route's own title, description, canonical URL, Open Graph tags, JSON-LD and a crawlable text
 // summary inside #root (React replaces it on load). It also writes sitemap.xml and robots.txt.
-// French metadata is used because the primary markets are Belgium and France.
+// English metadata, matching the language every visitor lands on.
 import fs from "fs";
 import path from "path";
 import { SEO_ROUTES, SITE_URL, OG_IMAGE, type SeoRoute } from "../src/seo/routes";
@@ -21,11 +21,11 @@ function replaceMeta(html: string, re: RegExp, replacement: string) {
 }
 
 function render(route: SeoRoute): string {
-  const m = route.fr;
+  const m = route.en;
   const url = urlFor(route);
   let html = template;
 
-  html = html.replace(/<html lang="[^"]*">/, '<html lang="fr">');
+  html = html.replace(/<html lang="[^"]*">/, '<html lang="en">');
   html = replaceMeta(html, /<title>[\s\S]*?<\/title>/, `<title>${esc(m.title)}</title>`);
   html = replaceMeta(html, /<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${url}" />`);
   html = replaceMeta(html, /<meta name="description" content="[^"]*" \/>/, `<meta name="description" content="${esc(m.description)}" />`);
@@ -52,7 +52,7 @@ function render(route: SeoRoute): string {
         url,
         name: m.title,
         description: m.description,
-        inLanguage: "fr",
+        inLanguage: "en",
         isPartOf: { "@id": `${SITE_URL}/#website` },
         primaryImageOfPage: OG_IMAGE,
       },
@@ -62,16 +62,16 @@ function render(route: SeoRoute): string {
 
   const extraHead = `
     <meta name="robots" content="${robots}" />
-    <meta property="og:locale" content="fr_BE" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:locale:alternate" content="fr_BE" />
     <meta property="og:locale:alternate" content="fr_FR" />
-    <meta property="og:locale:alternate" content="en_GB" />
     <script type="application/ld+json">${JSON.stringify(pageLd)}</script>
   </head>`;
   html = replaceMeta(html, /\s*<\/head>/, extraHead);
 
   // Crawlable summary and internal links, replaced by the React app on load.
-  const links = SEO_ROUTES.filter((r) => r.indexable && r.path !== route.path && r.fr.summary)
-    .map((r) => `<li><a href="${r.path}">${esc(r.fr.h1)}</a></li>`)
+  const links = SEO_ROUTES.filter((r) => r.indexable && r.path !== route.path && r.en.summary)
+    .map((r) => `<li><a href="${r.path}">${esc(r.en.h1)}</a></li>`)
     .join("");
   const body = `<div id="root"><main style="max-width:880px;margin:0 auto;padding:48px 20px;font-family:system-ui,sans-serif;color:#14141A">
       <h1>${esc(m.h1)}</h1>
