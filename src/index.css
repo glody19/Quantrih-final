@@ -28,19 +28,19 @@
   --color-blue-900: #312A79;
   --color-blue-950: #1E1948;
 
-  /* Surfaces (light, warm off-white) */
-  --color-bg: #FAFAF7;
+  /* Surfaces (plain white, neutral greys) */
+  --color-bg: #FFFFFF;
   --color-surface: #FFFFFF;
   --color-surface-2: #FFFFFF;
-  --color-surface-3: #F1EFEA;
-  --color-border: #ECEAE4;
-  --color-border-2: #DAD7CF;
+  --color-surface-3: #F3F4F7;
+  --color-border: #E6E7EC;
+  --color-border-2: #D3D5DD;
 
   /* Text */
-  --color-text: #14141A;
-  --color-text-2: #26262F;
-  --color-text-3: #5C5C68;
-  --color-text-4: #8A8A96;
+  --color-text: #111118;
+  --color-text-2: #23232D;
+  --color-text-3: #53566A;
+  --color-text-4: #858899;
 
   /* Semantic */
   --color-green: #12A26E;
@@ -99,7 +99,7 @@
     @apply text-text font-sans antialiased;
     background-color: var(--color-bg);
     background-attachment: scroll; /* Changed from fixed for better mobile performance */
-    font-size: 14px;
+    font-size: 15px;
     letter-spacing: -0.005em;
     font-weight: 400;
     -webkit-tap-highlight-color: transparent;
@@ -333,3 +333,18 @@ th > div > input[type="text"]:focus {
   mask-composite: exclude;
   pointer-events: none;
 }
+
+/* Analysis tool pages: larger, harmonised text. Many tool components use fixed pixel sizes,
+   so they are bumped here rather than in each of the large page files. */
+.tool-page { background: #FFFFFF; }
+.tool-page .text-\[8px\] { font-size: 10px; }
+.tool-page .text-\[9px\] { font-size: 11px; }
+.tool-page .text-\[10px\] { font-size: 12px; }
+.tool-page .text-\[11px\] { font-size: 13px; }
+.tool-page .text-\[12px\] { font-size: 14px; }
+.tool-page .text-\[13px\] { font-size: 14.5px; }
+.tool-page .text-\[14px\] { font-size: 15.5px; }
+.tool-page .text-xs { font-size: 0.86rem; line-height: 1.35rem; }
+.tool-page .text-sm { font-size: 0.95rem; line-height: 1.45rem; }
+.tool-page table { font-size: 0.95rem; }
+.tool-page input, .tool-page select { font-size: 0.95rem; }

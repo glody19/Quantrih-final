@@ -12,13 +12,14 @@ import { auth, db, serverTimestamp } from "../../firebase";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { cn } from "../../lib/utils";
-import { QuantrihLogo } from "../ui/Logo";
-import { ArrowLeft, Building2, CheckCircle2, Eye, EyeOff, Lock, Mail, MailCheck, User, Save, LineChart, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Building2, CheckCircle2, Eye, EyeOff, Lock, Mail, MailCheck, User, Save, UserCheck, ShieldCheck } from "lucide-react";
 
 type Mode = "login" | "signup" | "reset" | "verify";
 
 const LABELS = {
   en: {
+    backToSite: "Back to site",
+    panelTitle: "Your portfolios, tested and saved.",
     login: "Sign in", signup: "Create account",
     loginTitle: "Welcome back", loginSub: "Sign in to find your saved portfolios and analyses.",
     signupTitle: "Create your Quantrih account", signupSub: "Save your portfolios, simulations and investor profile.",
@@ -45,6 +46,8 @@ const LABELS = {
     secured: "Secure authentication by Google Firebase",
   },
   fr: {
+    backToSite: "Retour au site",
+    panelTitle: "Vos portefeuilles, testés et sauvegardés.",
     login: "Connexion", signup: "Inscription",
     loginTitle: "Bon retour", loginSub: "Connectez-vous pour retrouver vos portefeuilles et analyses sauvegardés.",
     signupTitle: "Créez votre compte Quantrih", signupSub: "Sauvegardez vos portefeuilles, vos simulations et votre profil d'investisseur.",
@@ -71,6 +74,8 @@ const LABELS = {
     secured: "Authentification sécurisée par Google Firebase",
   },
   nl: {
+    backToSite: "Terug naar de site",
+    panelTitle: "Je portefeuilles, getest en bewaard.",
     login: "Inloggen", signup: "Registreren",
     loginTitle: "Welkom terug", loginSub: "Log in om je opgeslagen portefeuilles en analyses terug te vinden.",
     signupTitle: "Maak je Quantrih-account", signupSub: "Bewaar je portefeuilles, simulaties en beleggersprofiel.",
@@ -97,6 +102,8 @@ const LABELS = {
     secured: "Veilige authenticatie via Google Firebase",
   },
   de: {
+    backToSite: "Zurück zur Website",
+    panelTitle: "Ihre Portfolios, getestet und gespeichert.",
     login: "Anmelden", signup: "Registrieren",
     loginTitle: "Willkommen zurück", loginSub: "Melden Sie sich an, um Ihre gespeicherten Portfolios und Analysen zu finden.",
     signupTitle: "Erstellen Sie Ihr Quantrih-Konto", signupSub: "Speichern Sie Portfolios, Simulationen und Anlegerprofil.",
@@ -123,6 +130,8 @@ const LABELS = {
     secured: "Sichere Authentifizierung über Google Firebase",
   },
   es: {
+    backToSite: "Volver al sitio",
+    panelTitle: "Sus carteras, probadas y guardadas.",
     login: "Iniciar sesión", signup: "Registrarse",
     loginTitle: "Bienvenido de nuevo", loginSub: "Inicie sesión para recuperar sus carteras y análisis guardados.",
     signupTitle: "Cree su cuenta Quantrih", signupSub: "Guarde sus carteras, simulaciones y perfil de inversor.",
@@ -150,7 +159,7 @@ const LABELS = {
   },
 };
 
-const PERK_ICONS = [Save, LineChart, ShieldCheck];
+const PERK_ICONS = [Save, UserCheck, ShieldCheck];
 
 function passwordScore(pw: string) {
   if (pw.length < 8) return 0;
@@ -296,52 +305,55 @@ export function Auth({ onBack }: { onBack: () => void }) {
   const strengthColor = ["bg-red", "bg-red", "bg-amber-400", "bg-green", "bg-green"][score];
 
   return (
-    <div className="min-h-[calc(100vh-80px)] -mt-6 grid lg:grid-cols-[0.95fr_1.05fr] bg-bg font-sans">
-      {/* Brand panel */}
-      <aside className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-[#1E1948] text-white p-12 xl:p-16">
-        <div className="absolute -top-32 -right-24 w-[420px] h-[420px] rounded-full bg-[#7B6CF0]/40 blur-[100px]" />
-        <div className="absolute -bottom-32 -left-24 w-[380px] h-[380px] rounded-full bg-[#C9A24A]/25 blur-[100px]" />
-        <button onClick={onBack} className="relative self-start inline-flex items-center gap-2.5">
-          <span className="w-9 h-9 rounded-xl bg-white flex items-center justify-center"><img src="/icon.svg" alt="" className="w-6 h-6" /></span>
-          <span className="text-xl font-bold tracking-tight">Quantrih</span>
-        </button>
-
-        <div className="relative">
-          <svg viewBox="0 0 420 160" className="w-full max-w-md mb-10" aria-hidden="true">
-            <defs>
-              <linearGradient id="authArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#9283F2" stopOpacity="0.55" /><stop offset="100%" stopColor="#9283F2" stopOpacity="0" /></linearGradient>
-            </defs>
-            <path d="M0 130 L40 118 L80 122 L120 98 L160 104 L200 76 L240 84 L280 58 L320 62 L360 34 L420 22 L420 160 L0 160 Z" fill="url(#authArea)" />
-            <path d="M0 130 L40 118 L80 122 L120 98 L160 104 L200 76 L240 84 L280 58 L320 62 L360 34 L420 22" fill="none" stroke="#B6ABF7" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M0 132 L60 128 L120 122 L180 112 L240 108 L300 96 L360 90 L420 80" fill="none" stroke="#C9A24A" strokeWidth="2" strokeDasharray="3 8" strokeLinecap="round" />
-          </svg>
-          <ul className="grid gap-6">
-            {L.perks.map((p, i) => {
-              const Icon = PERK_ICONS[i];
-              return (
-                <li key={p.t} className="flex gap-4">
-                  <span className="w-10 h-10 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0"><Icon size={18} /></span>
-                  <div>
-                    <p className="font-semibold">{p.t}</p>
-                    <p className="text-sm text-white/65 mt-0.5">{p.d}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-white font-sans">
+      {/* Photo half: full height, splits the screen in two */}
+      <aside className="relative hidden lg:block overflow-hidden">
+        <picture>
+          <source srcSet="/media/skyline.webp" type="image/webp" />
+          <img src="/media/skyline.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        </picture>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0A1F] via-[#0B0A1F]/55 to-[#0B0A1F]/20" />
+        <div className="relative h-full flex flex-col justify-between p-12 xl:p-16 text-white">
+          <button onClick={onBack} className="self-start inline-flex items-center gap-2.5">
+            <span className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-lg"><img src="/icon.svg" alt="" className="w-6 h-6" /></span>
+            <span className="text-xl font-bold tracking-tight">Quantrih</span>
+          </button>
+          <div>
+            <p className="text-4xl xl:text-5xl font-bold tracking-tight leading-[1.08] max-w-lg">{L.panelTitle}</p>
+            <ul className="mt-10 grid gap-5 max-w-lg">
+              {L.perks.map((p, i) => {
+                const Icon = PERK_ICONS[i];
+                return (
+                  <li key={p.t} className="flex gap-4">
+                    <span className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shrink-0"><Icon size={18} /></span>
+                    <div>
+                      <p className="font-semibold text-base">{p.t}</p>
+                      <p className="text-sm text-white/70 mt-0.5">{p.d}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="mt-12 text-xs text-white/55">{L.secured}</p>
+          </div>
         </div>
-
-        <p className="relative text-xs text-white/50">{L.secured}</p>
       </aside>
 
       {/* Form panel */}
-      <main className="relative flex flex-col items-center justify-center px-5 py-12">
-        <button onClick={onBack} className="absolute top-6 left-5 inline-flex items-center gap-1.5 text-sm text-text-3 hover:text-text">
-          <ArrowLeft size={16} />
+      <main className="relative flex flex-col items-center justify-center px-5 py-16 min-h-screen">
+        <button onClick={onBack} className="absolute top-6 left-6 inline-flex items-center gap-1.5 text-sm font-medium text-text-3 hover:text-text">
+          <ArrowLeft size={16} /> {L.backToSite}
         </button>
 
         <div className="w-full max-w-[420px]">
-          <div className="lg:hidden mb-8 flex justify-center"><QuantrihLogo variant="bars" size="md" className="text-pv-blue" /></div>
+          <div className="lg:hidden relative mb-8 h-36 rounded-3xl overflow-hidden">
+            <img src="/media/skyline.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0A1F]/85 to-[#0B0A1F]/10" />
+            <span className="absolute left-5 bottom-4 inline-flex items-center gap-2 text-white">
+              <span className="w-8 h-8 rounded-lg bg-white flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5" /></span>
+              <span className="text-lg font-bold">Quantrih</span>
+            </span>
+          </div>
 
           {(mode === "login" || mode === "signup") && (
             <div className="grid grid-cols-2 p-1 rounded-2xl bg-surface-3 mb-8">

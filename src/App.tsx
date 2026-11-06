@@ -32,6 +32,12 @@ import { Activity } from "lucide-react";
 import { QuantrihLogo } from "./components/ui/Logo";
 import { findSeoRoute, SITE_URL } from "./seo/routes";
 
+// Analysis tools get a plain white background and larger text (see .tool-page in index.css).
+const TOOL_PAGES = new Set([
+  "asset-allocation", "portfolio", "portfolio-backtest", "tactical-allocation", "montecarlo",
+  "moving-average", "dual-momentum", "relative-strength", "market", "etf-overview",
+]);
+
 export default function App() {
   useEffect(() => {
     // Attempt to load live asset config from server, but don't block render
@@ -138,15 +144,19 @@ function AppContent() {
 
   return (
     <div className="relative min-h-screen flex flex-col font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
-      <Header
+      {currentPage !== "auth" && <Header
         currentPage={currentPage}
         onPageChange={handleNavigate}
         theme={theme}
         toggleTheme={toggleTheme}
         baseCcy={baseCcy}
         setBaseCcy={setBaseCcy}
-      />
-      <main className={cn("flex-1 w-full mx-auto flex flex-col", (currentPage === "home" || currentPage === "investor-profile" || currentPage === "profile") ? "pt-0" : "pt-24 lg:pt-28")}>
+      />}
+      <main className={cn(
+        "flex-1 w-full mx-auto flex flex-col",
+        (currentPage === "home" || currentPage === "investor-profile" || currentPage === "profile" || currentPage === "auth") ? "pt-0" : "pt-4 lg:pt-6",
+        TOOL_PAGES.has(currentPage) && "tool-page"
+      )}>
         <Routes>
           <Route path="/" element={<Home onGoPage={handleNavigate} />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
@@ -181,7 +191,7 @@ function AppContent() {
           setIsCommandOpen(false);
         }}
       />
-      {currentPage !== "market" && <Footer onNavigate={handleNavigate} />}
+      {currentPage !== "market" && currentPage !== "auth" && <Footer onNavigate={handleNavigate} />}
       
       
       <CookieConsent />
