@@ -1439,39 +1439,5 @@ export function createApp() {
 // Vite middleware setup
 
   // SEO Routes
-  app.get("/robots.txt", (req, res) => {
-    res.type("text/plain");
-    res.send(`User-agent: *
-Allow: /
-Sitemap: https://quantrih.com/sitemap.xml
-`);
-  });
-
-  app.get("/sitemap.xml", (req, res) => {
-    const pages = [
-      "",
-      "/asset-allocation",
-      "/portfolio",
-      "/tactical-allocation",
-      "/montecarlo",
-      "/fmp",
-      "/education",
-      "/platforms",
-      "/about",
-    ];
-    
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${pages.map(p => `  <url>
-    <loc>https://quantrih.com${p}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>${p === "" ? "1.0" : "0.8"}</priority>
-  </url>`).join('\n')}
-</urlset>`;
-
-    res.header("Content-Type", "application/xml");
-    res.send(xml);
-  });
-
   return app;
 }

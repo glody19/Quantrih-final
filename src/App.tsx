@@ -18,6 +18,7 @@ import { RelativeStrength } from "./components/pages/RelativeStrength";
 import { Education } from "./components/pages/Education";
 import { FinancialModeling as MarketEquity } from "./components/pages/FinancialModeling";
 import { Platforms } from "./components/pages/Platforms";
+import { Partners } from "./components/pages/Partners";
 import { EtfScreener } from "./components/pages/EtfScreener";
 import { Auth } from "./components/pages/Auth";
 import { Profile } from "./components/pages/Profile";
@@ -30,6 +31,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ASSET_DATA } from "./constants";
 import { Activity } from "lucide-react";
 import { QuantrihLogo } from "./components/ui/Logo";
+import { findSeoRoute, SITE_URL } from "./seo/routes";
 
 export default function App() {
   useEffect(() => {
@@ -89,113 +91,33 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    const isEn = language === "en";
-    let title = "Quantrih | Portfolio Backtesting & Investment Strategies";
-    let desc = "Quantrih provides advanced portfolio backtesting tools. Test your investment strategies against historical market data before committing capital.";
+    // English metadata for English visitors, French for every other language (main markets: Belgium, France).
+    const route = findSeoRoute(location.pathname);
+    const meta = language === "en" ? route.en : route.fr;
+    const canonical = SITE_URL + (route.path === "/" ? "/" : route.path);
 
-    switch (location.pathname) {
-      case "/":
-      case "/home":
-        title = isEn 
-          ? "Quantrih | Portfolio Backtesting & Investment Strategies" 
-          : "Quantrih | Backtest de Portefeuille & Stratégies d'Investissement";
-        desc = isEn
-          ? "Quantrih provides advanced portfolio backtesting tools. Test your investment strategies against historical market data."
-          : "Quantrih propose des outils avancés de backtesting de portefeuille. Testez vos stratégies d'investissement.";
-        break;
-      case "/auth":
-        title = isEn ? "Sign In | Quantrih" : "Connexion | Quantrih";
-        desc = isEn ? "Sign in to access your saved investment portfolios and strategy audits on Quantrih." : "Connectez-vous pour accéder à vos portefeuilles et analyses de stratégies.";
-        break;
-      case "/profile":
-        title = isEn ? "My Account | Quantrih" : "Mon Compte | Quantrih";
-        desc = isEn ? "Manage your Quantrih account settings, preferences, and security." : "Gérez vos paramètres de compte, préférences et sécurité Quantrih.";
-        break;
-      case "/investor-profile":
-        title = isEn ? "Investor Profile & Suitability | Quantrih" : "Profil Investisseur & Qualification | Quantrih";
-        desc = isEn 
-          ? "Establish your investor suitability profile, broker strategy qualification, risk tolerance and career suitability." 
-          : "Établissez votre profil d'investisseur, qualification stratégique courtier, tolérance au risque et situation financière.";
-        break;
-      case "/asset-allocation":
-        title = isEn ? "Asset Allocation Tool | Quantrih" : "Allocation d'Actifs | Quantrih";
-        desc = isEn
-          ? "Construct, weigh, and analyze the distribution of your assets. Visualize geographic and asset class exposure."
-          : "Construisez, pondérez et analysez la répartition de vos actifs. Visualisez vos expositions géographiques et sectorielles.";
-        break;
-      case "/portfolio":
-      case "/portfolio-backtest":
-        title = isEn ? "Portfolio Backtesting Engine | Quantrih" : "Backtest de Portefeuille | Quantrih";
-        desc = isEn
-          ? "Test historical portfolio allocations against major financial crises. Analyze risk, CAGR, and drawdowns."
-          : "Testez les allocations historiques de portefeuilles face aux crises financières majeures. Analysez le CAGR et le Max Drawdown.";
-        break;
-      case "/montecarlo":
-        title = isEn ? "Monte Carlo Future Forecasts | Quantrih" : "Simulation de Monte Carlo | Quantrih";
-        desc = isEn
-          ? "Model future wealth with 10,000 stochastic paths. Evaluate probability of success for your financial goals."
-          : "Modélisez l'évolution future de votre capital via 10 000 chemins stochastiques. Évaluez la probabilité de succès.";
-        break;
-      case "/tactical-allocation":
-        title = isEn ? "Tactical Allocation & Trend Following | Quantrih" : "Allocation Tactique | Quantrih";
-        desc = isEn
-          ? "Run trend-following strategies using Simple Moving Average, Dual Momentum, and Relative Strength rules."
-          : "Exécutez des stratégies de suivi de tendance basées sur les moyennes mobiles, le Dual Momentum et la Force Relative.";
-        break;
-      case "/platforms":
-        title = isEn ? "Broker Platforms & Partnerships | Quantrih" : "Plateformes d'Investissement | Quantrih";
-        desc = isEn
-          ? "Discover top-tier regulated brokers, investment platforms, and exclusive premium course offerings."
-          : "Découvrez des courtiers régulés de premier plan, des plateformes d'investissement et des offres exclusives.";
-        break;
-      case "/market":
-        title = isEn ? "Market Equity Terminal | Quantrih" : "Terminal Action & Marché | Quantrih";
-        desc = isEn
-          ? "Explore live and historical financial charts, key financial ratios, valuation multiples, and stock market analysis."
-          : "Explorez les graphiques financiers en direct et historiques, les ratios financiers, les multiples et analyses.";
-        break;
-      case "/etf-overview":
-        title = isEn ? "ETF Screener & Directory | Quantrih" : "Screener & Aperçu ETF | Quantrih";
-        desc = isEn
-          ? "Screener for UCITS ETFs. Analyze TER, replication method, fund size, and detailed components."
-          : "Screener complet d'ETF UCITS. Analysez les frais (TER), le mode de réplication, l'encours et les composants.";
-        break;
-      case "/education":
-        title = isEn ? "Financial Education Lexicon | Quantrih" : "Lexique & Éducation Financière | Quantrih";
-        desc = isEn
-          ? "Learn quantitative terms, Sharpe ratio, Sortino, drawdowns, beta, alpha, and factor investing definitions."
-          : "Apprenez les termes quantitatifs, ratio de Sharpe, de Sortino, drawdowns, bêta, alpha et investissement factoriel.";
-        break;
-      case "/about":
-        title = isEn ? "About Quantrih | Quantrih" : "À Propos de Quantrih | Quantrih";
-        desc = isEn ? "Learn about Quantrih's mission, professional-grade portfolio models, and pricing neutralization." : "Découvrez la mission de Quantrih, nos modèles professionnels et notre neutralisation des barrières d'entrée.";
-        break;
-      case "/cookies":
-        title = isEn ? "Cookies Policy | Quantrih" : "Politique de Cookies | Quantrih";
-        break;
-      case "/privacy":
-        title = isEn ? "Privacy Policy | Quantrih" : "Politique de Confidentialité | Quantrih";
-        break;
-      default:
-        break;
+    document.title = meta.title;
+    document.documentElement.lang = language;
+
+    const setMeta = (selector: string, attr: string, value: string) => {
+      const el = document.querySelector(selector);
+      if (el) el.setAttribute(attr, value);
+    };
+    setMeta('meta[name="description"]', "content", meta.description);
+    setMeta('meta[property="og:title"]', "content", meta.title);
+    setMeta('meta[property="og:description"]', "content", meta.description);
+    setMeta('meta[property="og:url"]', "content", canonical);
+    setMeta('meta[name="twitter:title"]', "content", meta.title);
+    setMeta('meta[name="twitter:description"]', "content", meta.description);
+    setMeta('link[rel="canonical"]', "href", canonical);
+
+    let robots = document.querySelector('meta[name="robots"]');
+    if (!robots) {
+      robots = document.createElement("meta");
+      robots.setAttribute("name", "robots");
+      document.head.appendChild(robots);
     }
-
-    document.title = title;
-
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute("content", desc);
-
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute("content", title);
-
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute("content", desc);
-
-    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
-    if (twitterTitle) twitterTitle.setAttribute("content", title);
-
-    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
-    if (twitterDesc) twitterDesc.setAttribute("content", desc);
+    robots.setAttribute("content", route.indexable ? "index, follow" : "noindex, follow");
   }, [location.pathname, language]);
 
   
@@ -241,6 +163,8 @@ function AppContent() {
           <Route path="/dual-momentum" element={<DualMomentum />} />
           <Route path="/relative-strength" element={<RelativeStrength />} />
           <Route path="/platforms" element={<Platforms onNavigate={handleNavigate} />} />
+          <Route path="/partenaires" element={<Partners />} />
+          <Route path="/partners" element={<Navigate to="/partenaires" replace />} />
           <Route path="/market" element={<MarketEquity />} />
           <Route path="/etf-overview" element={<EtfScreener />} />
           <Route path="/education" element={<Education />} />

@@ -1,21 +1,21 @@
 {
-  "name": "Quantrih Analytics",
+  "name": "Quantrih",
   "short_name": "Quantrih",
-  "description": "Institutional Quantitative Analytics",
+  "description": "Backtest de portefeuille et outils d'investissement",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#020817",
-  "theme_color": "#020817",
+  "background_color": "#FAFAF7",
+  "theme_color": "#5B4BDB",
   "icons": [
     {
-      "src": "/vite.svg",
-      "sizes": "192x192",
+      "src": "/icon.svg",
+      "sizes": "any",
       "type": "image/svg+xml"
     },
     {
-      "src": "/vite.svg",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { BookOpen, Search, ExternalLink, Star } from "lucide-react";
+import { BookOpen, Search, ExternalLink, Star, GraduationCap, LineChart, Users, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
@@ -140,6 +141,57 @@ const tagLabel = (book: Book, language: string) =>
 const summaryLabel = (book: Book, language: string) =>
   SUMMARY_TRANSLATIONS[book.title]?.[language] ?? (language === "fr" ? book.summaryFr : book.summary);
 
+const COURSES_BAND = {
+  fr: {
+    title: "Formations et cours partenaires",
+    text: "Vous formez des investisseurs ? Présentez vos cours ici, à côté des livres de référence.",
+    cta: "Devenir partenaire",
+    cats: ["Formations en bourse et trading", "Investir en actions et ETF", "Coaching patrimonial"],
+    soon: "Places disponibles",
+  },
+  en: {
+    title: "Partner courses and training",
+    text: "Do you train investors? Present your courses here, next to the reference books.",
+    cta: "Become a partner",
+    cats: ["Stock market and trading courses", "Investing in stocks and ETFs", "Wealth coaching"],
+    soon: "Spots available",
+  },
+};
+
+function PartnerCoursesBand({ language }: { language: string }) {
+  const navigate = useNavigate();
+  const c = language === "fr" ? COURSES_BAND.fr : COURSES_BAND.en;
+  const icons = [LineChart, BookOpen, Users];
+  return (
+    <section className="mb-12 rounded-3xl border border-border bg-gradient-to-br from-[#F4F2FE] via-surface to-[#FBF3E2] p-6 md:p-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div className="flex items-start gap-3">
+          <span className="w-10 h-10 rounded-2xl bg-gold/15 text-gold flex items-center justify-center shrink-0"><GraduationCap size={20} /></span>
+          <div>
+            <h2 className="text-lg font-bold text-text">{c.title}</h2>
+            <p className="text-sm text-text-3 mt-0.5">{c.text}</p>
+          </div>
+        </div>
+        <button onClick={() => navigate("/partenaires")} className="shrink-0 inline-flex items-center gap-2 bg-text text-bg text-sm font-semibold px-5 py-2.5 rounded-full hover:opacity-90">
+          {c.cta} <ArrowRight size={15} />
+        </button>
+      </div>
+      <div className="grid sm:grid-cols-3 gap-4">
+        {c.cats.map((cat, i) => {
+          const Icon = icons[i];
+          return (
+            <button key={cat} onClick={() => navigate("/partenaires")} className="group text-left rounded-2xl border border-dashed border-pv-blue/30 bg-white/70 p-4 hover:border-pv-blue/60 transition-colors">
+              <Icon size={18} className="text-pv-blue mb-2" />
+              <p className="text-sm font-semibold text-text">{cat}</p>
+              <p className="text-[11px] text-text-4 mt-1">{c.soon}</p>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function Education() {
   const { language } = useTranslation();
   const L = labels[language] || labels.en;
@@ -220,6 +272,8 @@ export function Education() {
             </select>
           </div>
         </div>
+
+        <PartnerCoursesBand language={language} />
 
         {filtered.length === 0 ? (
           <div className="text-center text-text-3 py-20 bg-surface rounded-3xl border border-border text-sm">

@@ -154,7 +154,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.timing": "Timing Models",
     "nav.markets": "Markets",
     "nav.education": "Education",
-    "nav.platforms": "Brokers & Banks",
+    "nav.platforms": "Investment Platforms",
     "platforms.coming_soon.title": "Coming Soon",
     "platforms.coming_soon.desc": "This exclusive space is reserved for our future partner brokers and advanced investment courses. We are rigorously selecting the best market players to offer you unprecedented benefits and premium educational content.",
     "platforms.coming_soon.badge": "Partnerships in progress",
@@ -600,7 +600,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.factors": "Analyse Factorielle",
     "nav.markets": "Marchés",
     "nav.education": "Éducation",
-    "nav.platforms": "Courtiers & Banques",
+    "nav.platforms": "Plateformes d'investissement",
     "home.hero.title": "LA PRÉCISION AU POUVOIR",
     "home.hero.title2": "backtest de portefeuille",
     "home.explore_tools": "Explorer les outils",
@@ -984,7 +984,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.factors": "Faktoranalyse",
     "nav.markets": "Märkte",
     "nav.education": "Bibliothek",
-    "nav.platforms": "Broker & Banken",
+    "nav.platforms": "Anlageplattformen",
     "home.hero.title": "PRÄZISION STÄRKEN",
     "home.hero.title2": "Backtest-Portfolio",
     "home.explore_tools": "Werkzeuge erkunden",
@@ -1293,7 +1293,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.factors": "Factorenanalyse",
     "nav.markets": "Markten",
     "nav.education": "Bibliotheek",
-    "nav.platforms": "Brokers & Banken",
+    "nav.platforms": "Beleggingsplatformen",
     "home.hero.title": "PRECISIE VERSTERKEN",
     "home.hero.title2": "backtest portfolio",
     "home.explore_tools": "Gereedschappen verkennen",
@@ -1640,7 +1640,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.factors": "Análisis de Factores",
     "nav.markets": "Mercados",
     "nav.education": "Biblioteca",
-    "nav.platforms": "Brókers y Bancos",
+    "nav.platforms": "Plataformas de inversión",
     "home.hero.title": "EMPODERAR LA PRECISIÓN",
     "home.hero.title2": "portafolio de backtest",
     "home.explore_tools": "Explorar herramientas",
@@ -1753,6 +1753,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (saved === "en" || saved === "fr" || saved === "de" || saved === "nl" || saved === "es") {
         return saved as Language;
       }
+    } catch(e) {}
+    // First visit: follow the browser language (Belgian and French visitors land in French).
+    try {
+      const browser = (navigator.language || "").slice(0, 2).toLowerCase();
+      if (browser === "fr" || browser === "nl" || browser === "de" || browser === "es") return browser as Language;
     } catch(e) {}
     return "en";
   });
