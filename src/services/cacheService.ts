@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 // Initialize DB in the project root
-const defaultDbPath = path.join(process.cwd(), 'price_cache.db');
+const defaultDbPath = process.env.VERCEL ? '/tmp/price_cache.db' : path.join(process.cwd(), 'price_cache.db');
 const fallbackDbPath = '/tmp/price_cache.db';
 let db: InstanceType<typeof Database>;
 

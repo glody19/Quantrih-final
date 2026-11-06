@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 
-const defaultDbPath = path.join(process.cwd(), 'quantrih.db');
+const defaultDbPath = process.env.VERCEL ? '/tmp/quantrih.db' : path.join(process.cwd(), 'quantrih.db');
 const fallbackDbPath = '/tmp/quantrih.db';
 
 let db: InstanceType<typeof Database>;

@@ -5,6 +5,7 @@ import { CommandPalette } from "./components/layout/CommandPalette";
 import { Footer } from "./components/layout/Footer";
 import { MarketClock } from "./components/ui/MarketClock";
 import { CookieConsent } from "./components/layout/CookieConsent";
+import { DemoDataBadge } from "./components/ui/DemoDataBadge";
 
 import { Home } from "./components/pages/Home";
 import { AssetAllocations } from "./components/pages/AssetAllocations";
@@ -36,10 +37,13 @@ export default function App() {
     const loadAssets = async () => {
       try {
         const res = await fetch("/api/config/assets");
-        if (res.ok) {
+        // 202 means the server has not built the asset data yet: keep the bundled defaults.
+        if (res.status === 200) {
           const data = await res.json();
-          Object.keys(ASSET_DATA).forEach((k) => delete ASSET_DATA[k]);
-          Object.assign(ASSET_DATA, data);
+          if (data && typeof data === "object" && !data.waitingForBuild && Object.keys(data).length > 0) {
+            Object.keys(ASSET_DATA).forEach((k) => delete ASSET_DATA[k]);
+            Object.assign(ASSET_DATA, data);
+          }
         }
       } catch (e) {
         console.warn("Failed to load backend asset config", e);
@@ -260,6 +264,7 @@ function AppContent() {
       
       
       <CookieConsent />
+      <DemoDataBadge />
     </div>
   );
 }

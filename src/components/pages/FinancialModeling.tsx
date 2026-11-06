@@ -932,61 +932,110 @@ const isEuropeanMarketOpen = () => {
  }
  }, [activeSymbol, tickerPrices]);
 
- // Establish persistent Real-time WebSocket connection to backend
+ // Live prices: WebSocket relay when the server supports it (local / long-running host),
+ // otherwise polling of /api/stock/bulk-quotes every 10s (Vercel serverless has no WebSocket).
  const wsRef = useRef<WebSocket | null>(null);
+ const liveSymbolsRef = useRef<string[]>([]);
+ liveSymbolsRef.current = Array.from(new Set([activeSymbol, ...visibleWatchlist].filter(Boolean)));
+
+ const applyPriceUpdates = (items: any[]) => {
+  setTickerPrices(prev => {
+   let hasChanges = false;
+   const next = { ...prev };
+   items.forEach((item: any) => {
+    if (!item || !item.symbol) return;
+    const sym = item.symbol.toUpperCase();
+    const existing = next[sym];
+    const newPrice = item.price || item.regularMarketPrice || item.regularMarketPreviousClose;
+    if (typeof newPrice === "number" && (!existing || existing.price !== newPrice)) {
+     hasChanges = true;
+     next[sym] = { ...existing, ...item, price: newPrice, symbol: sym };
+    }
+   });
+   return hasChanges ? next : prev;
+  });
+ };
 
  useEffect(() => {
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const wsUrl = `${protocol}//${window.location.host}/api/ws`;
-  let reconnectTimeout: NodeJS.Timeout;
+  let reconnectTimeout: ReturnType<typeof setTimeout> | undefined;
+  let pollTimer: ReturnType<typeof setInterval> | undefined;
+  let failedAttempts = 0;
+  let everOpened = false;
+  let disposed = false;
+
+  const poll = async () => {
+   if (document.hidden) return;
+   const symbols = liveSymbolsRef.current.filter(s => !s.toUpperCase().includes("USDT"));
+   if (symbols.length === 0) return;
+   try {
+    const res = await fetch(`/api/stock/bulk-quotes?symbols=${encodeURIComponent(symbols.join(","))}`);
+    if (!res.ok) return;
+    const quotes = await res.json();
+    if (!Array.isArray(quotes)) return;
+    applyPriceUpdates(quotes.map((q: any) => ({
+     symbol: q.symbol,
+     price: q.price ?? q.regularMarketPrice,
+     change: q.change ?? q.regularMarketChange,
+     changesPercentage: q.changesPercentage ?? q.regularMarketChangePercent,
+    })));
+   } catch (e) {}
+  };
+
+  const startPolling = () => {
+   if (pollTimer || disposed) return;
+   poll();
+   pollTimer = setInterval(poll, 10000);
+  };
 
   const connect = () => {
-   if (wsRef.current?.readyState === WebSocket.OPEN) return;
-   const ws = new WebSocket(wsUrl);
+   if (disposed || wsRef.current?.readyState === WebSocket.OPEN) return;
+   let ws: WebSocket;
+   try {
+    ws = new WebSocket(wsUrl);
+   } catch (e) {
+    startPolling();
+    return;
+   }
    wsRef.current = ws;
    ws.onopen = () => {
-    const allSymbols = Array.from(new Set([activeSymbol, ...visibleWatchlist, ...visibleMarqueeSymbols].filter(Boolean)));
+    everOpened = true;
+    failedAttempts = 0;
     if (ws.readyState === WebSocket.OPEN) {
-     ws.send(JSON.stringify({ type: "subscribe", symbols: allSymbols }));
+     ws.send(JSON.stringify({ type: "subscribe", symbols: liveSymbolsRef.current }));
     }
    };
    ws.onmessage = (event) => {
     try {
      const payload = JSON.parse(event.data);
-     if (payload.type === "price-update" && Array.isArray(payload.data)) {
-      setTickerPrices(prev => {
-       let hasChanges = false;
-       const next = { ...prev };
-       payload.data.forEach((item: any) => {
-        if (!item || !item.symbol) return;
-        const sym = item.symbol.toUpperCase();
-        const existing = next[sym];
-        const newPrice = item.price || item.regularMarketPrice || item.regularMarketPreviousClose;
-        if (typeof newPrice === "number" && (!existing || existing.price !== newPrice)) {
-         hasChanges = true;
-         next[sym] = { ...existing, ...item, price: newPrice, symbol: sym };
-        }
-       });
-       return hasChanges ? next : prev;
-      });
-     }
+     if (payload.type === "price-update" && Array.isArray(payload.data)) applyPriceUpdates(payload.data);
     } catch (e) {}
    };
-   ws.onclose = () => { reconnectTimeout = setTimeout(connect, 5000); };
+   ws.onclose = () => {
+    if (disposed) return;
+    failedAttempts += 1;
+    if (!everOpened && failedAttempts >= 2) {
+     startPolling();
+     return;
+    }
+    reconnectTimeout = setTimeout(connect, 5000);
+   };
   };
   connect();
   return () => {
+   disposed = true;
    if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); }
    clearTimeout(reconnectTimeout);
+   clearInterval(pollTimer);
   };
  }, []);
 
  useEffect(() => {
   if (wsRef.current?.readyState === WebSocket.OPEN) {
-   const allSymbols = Array.from(new Set([activeSymbol, ...visibleWatchlist, ...visibleMarqueeSymbols].filter(Boolean)));
-   wsRef.current.send(JSON.stringify({ type: "subscribe", symbols: allSymbols }));
+   wsRef.current.send(JSON.stringify({ type: "subscribe", symbols: liveSymbolsRef.current }));
   }
- }, [activeSymbol, visibleWatchlist, visibleMarqueeSymbols]);
+ }, [activeSymbol, visibleWatchlist]);
 
  // Trigger chart fetch when period or watchlist changes
  useEffect(() => {
