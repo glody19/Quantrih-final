@@ -105,13 +105,6 @@ export function Footer({ onNavigate }: FooterProps) {
             {isFr ? "À propos" : "About us"}
           </button>
           <button 
-            onClick={() => handleNav('partenaires')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Devenir partenaire" : "Become a partner"}
-          </button>
-          <button 
             onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')} 
             className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >

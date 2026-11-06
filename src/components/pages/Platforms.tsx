@@ -6,6 +6,7 @@ import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { cn } from "../../lib/utils";
 import { PLATFORMS } from "./platformsData";
 import { INVESTMENT_PLATFORMS, PLATFORM_SOURCES, type InvestmentPlatform, type Market, type PlatformType } from "../../data/investmentPlatforms";
+import { PARTNERS, type Partner } from "../../data/partners";
 
 type LegacyPlatform = (typeof PLATFORMS)[number];
 type Tab = Market | "INTL";
@@ -73,12 +74,7 @@ const L = {
     fees: "Frais", tax: "Fiscalité", regulator: "Régulateur", bestFor: "Idéal pour",
     official: "Site officiel et tarifs", cards: "Fiches", table: "Tableau",
     colName: "Plateforme", colType: "Type", colFees: "Frais indicatifs", colTax: "Fiscalité", colReg: "Régulateur",
-    partnerSlot: "Emplacement partenaire",
-    partnerSlotText: "Votre plateforme mise en avant ici, en tête de la liste, auprès des investisseurs belges et français.",
-    partnerCta: "Découvrir les offres",
-    bannerTitle: "Vous êtes une banque, un courtier ou un formateur ?",
-    bannerText: "Présentez votre offre aux investisseurs qui préparent activement leurs décisions sur Quantrih.",
-    bannerCta: "Devenir partenaire",
+    partner: "Partenaire",
     sources: "Sources et méthode",
     disclaimer: "Tarifs indicatifs relevés en novembre 2026 à partir des grilles publiques et des comparatifs ci-dessous. Les frais évoluent régulièrement : seule la grille tarifaire officielle de chaque établissement fait foi. Quantrih ne fournit pas de conseil en investissement. Les emplacements partenaires sont toujours signalés comme tels.",
     countryCount: "plateformes",
@@ -93,12 +89,7 @@ const L = {
     fees: "Fees", tax: "Taxes", regulator: "Regulator", bestFor: "Best for",
     official: "Official website and prices", cards: "Cards", table: "Table",
     colName: "Platform", colType: "Type", colFees: "Indicative fees", colTax: "Taxes", colReg: "Regulator",
-    partnerSlot: "Partner placement",
-    partnerSlotText: "Your platform featured here, at the top of the list, in front of Belgian and French investors.",
-    partnerCta: "See the packages",
-    bannerTitle: "Are you a bank, a broker or an educator?",
-    bannerText: "Present your offer to investors actively preparing their decisions on Quantrih.",
-    bannerCta: "Become a partner",
+    partner: "Partner",
     sources: "Sources and method",
     disclaimer: "Indicative fees collected in November 2026 from public price lists and the comparisons below. Fees change regularly: only each provider's official price list prevails. Quantrih does not provide investment advice. Partner placements are always labelled as such.",
     countryCount: "platforms",
@@ -122,20 +113,27 @@ function Logo({ domain, name, color, fallbackSrc, size = 48 }: { domain?: string
   );
 }
 
-function PartnerSlot({ l, onNavigate }: { l: typeof L.fr; onNavigate?: (p: string) => void }) {
+function PartnerCard({ p, l, lang }: { p: Partner; l: typeof L.fr; lang: "fr" | "en" }) {
   return (
-    <button
-      onClick={() => onNavigate?.("partenaires")}
-      className="group relative flex flex-col items-start justify-center gap-4 text-left rounded-3xl border-2 border-dashed border-pv-blue/35 bg-gradient-to-br from-pv-blue/[0.06] via-surface to-gold/[0.08] p-7 min-h-[220px] hover:border-pv-blue/70 transition-colors"
+    <a
+      href={p.url}
+      target="_blank"
+      rel="noopener sponsored"
+      className="group relative flex flex-col gap-4 rounded-3xl border-2 border-gold/50 bg-gradient-to-br from-[#FBF3E2] via-surface to-surface p-6 shadow-[0_14px_36px_rgba(201,162,74,0.15)] hover:border-gold transition-colors"
     >
-      <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-pv-blue bg-pv-blue/10 px-2.5 py-1 rounded-full">
-        <Megaphone size={12} /> {l.partnerSlot}
+      <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#8A6A1F] bg-gold/15 px-2.5 py-1 rounded-full">
+        <Megaphone size={11} /> {l.partner}
       </span>
-      <p className="text-base font-semibold text-text leading-snug">{l.partnerSlotText}</p>
-      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-pv-blue group-hover:gap-2.5 transition-all">
-        {l.partnerCta} <ArrowRight size={14} />
+      <Logo domain={p.domain} name={p.name} color={p.color} size={52} />
+      <div>
+        <h3 className="text-lg font-bold text-text">{p.name}</h3>
+        <p className="text-sm text-text-2 mt-1 leading-relaxed">{p.tagline[lang]}</p>
+      </div>
+      {p.highlight && <p className="text-sm font-semibold text-[#8A6A1F] bg-gold/10 rounded-xl px-3 py-2">{p.highlight[lang]}</p>}
+      <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-bold text-text group-hover:gap-2.5 transition-all">
+        {l.official} <ArrowRight size={14} />
       </span>
-    </button>
+    </a>
   );
 }
 
@@ -248,6 +246,7 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
       .sort((a, b) => b.rating - a.rating);
   }, [query]);
 
+  const partners = tab === "INTL" ? [] : PARTNERS.filter((p) => p.kind !== "education" && p.markets.includes(tab));
   const count = (m: Market) => INVESTMENT_PLATFORMS.filter((p) => p.markets.includes(m)).length;
   const tabs: { id: Tab; label: string; flag: string; n: number }[] = [
     { id: "BE", label: l.tabBE, flag: "🇧🇪", n: count("BE") },
@@ -263,18 +262,6 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
         <div className="flex flex-col gap-2 mb-6">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text">{l.title}</h1>
           <p className="text-sm text-text-3 max-w-3xl leading-relaxed">{l.subtitle}</p>
-        </div>
-
-        {/* Partner banner */}
-        <div className="mb-8 rounded-3xl bg-gradient-to-r from-[#1E1948] via-[#3C3199] to-[#5B4BDB] text-white p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4 justify-between overflow-hidden relative">
-          <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10 blur-2xl" />
-          <div className="relative">
-            <p className="text-base font-bold">{l.bannerTitle}</p>
-            <p className="text-sm text-white/75 mt-1">{l.bannerText}</p>
-          </div>
-          <button onClick={() => onNavigate?.("partenaires")} className="relative shrink-0 inline-flex items-center gap-2 bg-white text-[#3C3199] font-bold text-sm px-5 py-2.5 rounded-full hover:bg-white/90 transition-colors">
-            {l.bannerCta} <ArrowRight size={15} />
-          </button>
         </div>
 
         {/* Market tabs */}
@@ -325,7 +312,7 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
           </div>
         ) : view === "cards" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <PartnerSlot l={l} onNavigate={onNavigate} />
+            {partners.map((p) => <PartnerCard key={p.id} p={p} l={l} lang={lang} />)}
             {marketList.map((p, i) => <PlatformCard key={p.id} p={p} l={l} lang={lang} index={i} />)}
           </div>
         ) : (

@@ -18,7 +18,6 @@ import { RelativeStrength } from "./components/pages/RelativeStrength";
 import { Education } from "./components/pages/Education";
 import { FinancialModeling as MarketEquity } from "./components/pages/FinancialModeling";
 import { Platforms } from "./components/pages/Platforms";
-import { Partners } from "./components/pages/Partners";
 import { EtfScreener } from "./components/pages/EtfScreener";
 import { Auth } from "./components/pages/Auth";
 import { Profile } from "./components/pages/Profile";
@@ -163,8 +162,6 @@ function AppContent() {
           <Route path="/dual-momentum" element={<DualMomentum />} />
           <Route path="/relative-strength" element={<RelativeStrength />} />
           <Route path="/platforms" element={<Platforms onNavigate={handleNavigate} />} />
-          <Route path="/partenaires" element={<Partners />} />
-          <Route path="/partners" element={<Navigate to="/partenaires" replace />} />
           <Route path="/market" element={<MarketEquity />} />
           <Route path="/etf-overview" element={<EtfScreener />} />
           <Route path="/education" element={<Education />} />

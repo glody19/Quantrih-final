@@ -148,28 +148,6 @@ export const SEO_ROUTES: SeoRoute[] = [
     },
   },
   {
-    path: "/partenaires",
-    indexable: true,
-    priority: 0.7,
-    changefreq: "monthly",
-    fr: {
-      title: "Devenir partenaire : courtiers, banques, formations | Quantrih",
-      description:
-        "Présentez votre plateforme d'investissement, votre banque ou votre formation aux investisseurs belges et français utilisant Quantrih. Offres de visibilité dès 80 € par mois.",
-      h1: "Devenir partenaire de Quantrih",
-      summary:
-        "Quantrih propose aux courtiers, banques, néobanques et formateurs en investissement des emplacements de visibilité clairement identifiés auprès d'investisseurs qui préparent activement leurs décisions.",
-    },
-    en: {
-      title: "Become a Partner: Brokers, Banks, Courses | Quantrih",
-      description:
-        "Present your investment platform, bank or course to Belgian and French investors using Quantrih. Visibility packages from €80 per month.",
-      h1: "Become a Quantrih partner",
-      summary:
-        "Quantrih offers brokers, banks, neobanks and investment educators clearly labelled visibility placements in front of investors actively preparing their decisions.",
-    },
-  },
-  {
     path: "/education",
     indexable: true,
     priority: 0.7,

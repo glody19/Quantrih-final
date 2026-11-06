@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { BookOpen, Search, ExternalLink, Star, GraduationCap, LineChart, Users, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { BookOpen, Search, ExternalLink, Star, GraduationCap } from "lucide-react";
+import { PARTNERS } from "../../data/partners";
 import { motion } from "motion/react";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
@@ -141,52 +141,32 @@ const tagLabel = (book: Book, language: string) =>
 const summaryLabel = (book: Book, language: string) =>
   SUMMARY_TRANSLATIONS[book.title]?.[language] ?? (language === "fr" ? book.summaryFr : book.summary);
 
-const COURSES_BAND = {
-  fr: {
-    title: "Formations et cours partenaires",
-    text: "Vous formez des investisseurs ? Présentez vos cours ici, à côté des livres de référence.",
-    cta: "Devenir partenaire",
-    cats: ["Formations en bourse et trading", "Investir en actions et ETF", "Coaching patrimonial"],
-    soon: "Places disponibles",
-  },
-  en: {
-    title: "Partner courses and training",
-    text: "Do you train investors? Present your courses here, next to the reference books.",
-    cta: "Become a partner",
-    cats: ["Stock market and trading courses", "Investing in stocks and ETFs", "Wealth coaching"],
-    soon: "Spots available",
-  },
+const COURSES_TITLE: Record<string, string> = {
+  fr: "Formations partenaires",
+  en: "Partner courses",
+  nl: "Partneropleidingen",
+  de: "Partnerkurse",
+  es: "Cursos de socios",
 };
+const PARTNER_LABEL: Record<string, string> = { fr: "Partenaire", en: "Partner", nl: "Partner", de: "Partner", es: "Socio" };
 
+// Shows paying education partners only; renders nothing while there are none.
 function PartnerCoursesBand({ language }: { language: string }) {
-  const navigate = useNavigate();
-  const c = language === "fr" ? COURSES_BAND.fr : COURSES_BAND.en;
-  const icons = [LineChart, BookOpen, Users];
+  const courses = PARTNERS.filter((p) => p.kind === "education");
+  if (courses.length === 0) return null;
+  const lang = language === "fr" ? "fr" : "en";
   return (
-    <section className="mb-12 rounded-3xl border border-border bg-gradient-to-br from-[#F4F2FE] via-surface to-[#FBF3E2] p-6 md:p-8">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-        <div className="flex items-start gap-3">
-          <span className="w-10 h-10 rounded-2xl bg-gold/15 text-gold flex items-center justify-center shrink-0"><GraduationCap size={20} /></span>
-          <div>
-            <h2 className="text-lg font-bold text-text">{c.title}</h2>
-            <p className="text-sm text-text-3 mt-0.5">{c.text}</p>
-          </div>
-        </div>
-        <button onClick={() => navigate("/partenaires")} className="shrink-0 inline-flex items-center gap-2 bg-text text-bg text-sm font-semibold px-5 py-2.5 rounded-full hover:opacity-90">
-          {c.cta} <ArrowRight size={15} />
-        </button>
-      </div>
-      <div className="grid sm:grid-cols-3 gap-4">
-        {c.cats.map((cat, i) => {
-          const Icon = icons[i];
-          return (
-            <button key={cat} onClick={() => navigate("/partenaires")} className="group text-left rounded-2xl border border-dashed border-pv-blue/30 bg-white/70 p-4 hover:border-pv-blue/60 transition-colors">
-              <Icon size={18} className="text-pv-blue mb-2" />
-              <p className="text-sm font-semibold text-text">{cat}</p>
-              <p className="text-[11px] text-text-4 mt-1">{c.soon}</p>
-            </button>
-          );
-        })}
+    <section className="mb-12">
+      <h2 className="text-lg font-bold text-text mb-4 flex items-center gap-2"><GraduationCap size={20} className="text-gold" />{COURSES_TITLE[language] || COURSES_TITLE.en}</h2>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {courses.map((c) => (
+          <a key={c.id} href={c.url} target="_blank" rel="noopener sponsored" className="relative rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-[#FBF3E2] to-surface p-5 hover:border-gold transition-colors">
+            <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider text-[#8A6A1F] bg-gold/15 px-2 py-0.5 rounded-full">{PARTNER_LABEL[language] || PARTNER_LABEL.en}</span>
+            <p className="font-bold text-text pr-20">{c.name}</p>
+            <p className="text-sm text-text-2 mt-1">{c.tagline[lang]}</p>
+            {c.highlight && <p className="text-xs font-semibold text-[#8A6A1F] mt-3">{c.highlight[lang]}</p>}
+          </a>
+        ))}
       </div>
     </section>
   );

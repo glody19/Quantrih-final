@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
-export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean, isHovered?: boolean }> = ({ className, fullScreen, isHovered }) => {
+export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean, isHovered?: boolean, variant?: 'dark' | 'light' }> = ({ className, fullScreen, isHovered, variant = 'dark' }) => {
+ const isLight = variant === 'light';
  const canvasRef = useRef<HTMLCanvasElement>(null);
  const mouseRef = useRef({ x: -1000, y: -1000, active: false });
 
@@ -153,7 +154,13 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  let colorProgress = 0;
  let hoverScale = 1;
 
- const palettes = [
+ const palettes = isLight ? [
+ [ [91, 75, 219], [124, 108, 240], [20, 20, 26] ],
+ [ [18, 162, 110], [13, 148, 136], [38, 38, 47] ],
+ [ [201, 162, 74], [91, 75, 219], [38, 38, 47] ],
+ [ [14, 116, 144], [91, 75, 219], [20, 20, 26] ],
+ [ [124, 58, 237], [201, 162, 74], [38, 38, 47] ]
+ ] : [
  [ [6, 182, 212], [59, 130, 246], [255, 255, 255] ],
  [ [34, 197, 94], [16, 185, 129], [255, 255, 255] ],
  [ [255, 255, 255], [200, 200, 200], [150, 150, 150] ],
@@ -279,7 +286,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  const rgb = currentColors[pNode.colorType];
  
  // Draw Ray
- const rayOpacity = Math.round(opacity * 0.35 * 10) / 10;
+ const rayOpacity = Math.round(opacity * (isLight ? 0.22 : 0.35) * 10) / 10;
  const newStrokeStyle = `rgba(${rgb}, ${rayOpacity})`;
  if (currentStrokeStyle !== newStrokeStyle) {
  ctx.strokeStyle = newStrokeStyle;
@@ -345,10 +352,10 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  let numberStr = baseNum;
  if (randType < 0.33) {
    p.val = `+${numberStr}%`;
-   p.color = 'rgba(6, 182, 212, '; // Cyan
+   p.color = isLight ? 'rgba(14, 116, 144, ' : 'rgba(6, 182, 212, '; // Cyan
  } else if (randType < 0.66) {
    p.val = `+${(Math.random() * 5).toFixed(2)}%`;
-   p.color = 'rgba(168, 85, 247, '; // Purple
+   p.color = isLight ? 'rgba(91, 75, 219, ' : 'rgba(168, 85, 247, '; // Purple
  } else {
    p.val = `-${numberStr}%`;
    p.color = 'rgba(239, 68, 68, '; // Red
@@ -390,7 +397,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  // Core center - micro
  ctx.beginPath();
  ctx.arc(cx, cy, 0.4 + pulse * 0.6, 0, Math.PI * 2);
- ctx.fillStyle = `rgba(255, 255, 255, ${0.9 + pulse * 0.1})`;
+ ctx.fillStyle = isLight ? `rgba(91, 75, 219, ${0.9 + pulse * 0.1})` : `rgba(255, 255, 255, ${0.9 + pulse * 0.1})`;
  ctx.shadowBlur = 0;
  ctx.shadowColor = '#06b6d4';
  ctx.fill();
@@ -416,8 +423,28 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  
  ctx.shadowBlur = 0;
 
+ if (onScreen && !document.hidden) {
+ animationFrameId = requestAnimationFrame(animate);
+ } else {
+ running = false;
+ }
+ };
+
+ // Pause the loop when the canvas is off-screen or the tab is hidden (saves battery on mobile).
+ let onScreen = true;
+ let running = false;
+ const start = () => {
+ if (running || !onScreen || document.hidden) return;
+ running = true;
  animationFrameId = requestAnimationFrame(animate);
  };
+ const visibilityObserver = new IntersectionObserver((entries) => {
+ onScreen = entries.some((e) => e.isIntersecting);
+ if (onScreen) start();
+ });
+ visibilityObserver.observe(canvas);
+ const handleVisibility = () => { if (!document.hidden) start(); };
+ document.addEventListener('visibilitychange', handleVisibility);
 
  const handleResize = () => {
  setupCanvas();
@@ -496,10 +523,12 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  resizeObserver.observe(canvas);
 
  init();
- animate();
+ start();
 
  return () => {
  cancelAnimationFrame(animationFrameId);
+ visibilityObserver.disconnect();
+ document.removeEventListener('visibilitychange', handleVisibility);
  resizeObserver.disconnect();
  canvas.removeEventListener('mousemove', handleMouseMove);
  canvas.removeEventListener('mouseleave', handleMouseLeave);
@@ -513,7 +542,7 @@ export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean,
  return (
  <div className={"w-full h-full flex flex-col items-center justify-center relative max-sm:scale-[0.6] origin-center " + (className || "")}>
  {/* Ambient glowing background aura */}
- <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#06b6d4]/5 to-transparent blur-3xl pointer-events-none" />
+ <div className={"absolute inset-0 bg-gradient-to-r from-transparent to-transparent blur-3xl pointer-events-none " + (isLight ? "via-[#5B4BDB]/10" : "via-[#06b6d4]/5")} />
  
  {/* Interactive 3D Canvas */}
  <canvas 
