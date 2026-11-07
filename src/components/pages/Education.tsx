@@ -750,7 +750,7 @@ function BookCard({ book, language }: { book: Book, language: string }) {
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20 pointer-events-none" />
             
             <div className="relative z-10">
-              <span className="text-[9px] font-black uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-md">
+              <span className="text-[11px] font-black uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-md">
                 {getTag()}
               </span>
               <h4 className="font-bold text-base tracking-tight leading-snug mt-4 line-clamp-4">
@@ -759,7 +759,7 @@ function BookCard({ book, language }: { book: Book, language: string }) {
             </div>
             <div className="relative z-10 text-xs font-semibold opacity-95 border-t border-white/20 pt-2 flex justify-between items-center">
               <span>{book.author}</span>
-              <span className="text-[9px] font-mono bg-black/10 px-1.5 py-0.5 rounded">{book.year}</span>
+              <span className="text-[11px] font-mono bg-black/10 px-1.5 py-0.5 rounded">{book.year}</span>
             </div>
           </div>
         )}
@@ -768,10 +768,10 @@ function BookCard({ book, language }: { book: Book, language: string }) {
       {/* Book Core Information & Summary at the bottom */}
       <div className="p-8 flex flex-col flex-grow bg-white">
         <div className="flex items-center gap-2.5 mb-2.5">
-          <span className="text-[10px] font-black text-[#635BFF] bg-[#635BFF]/10 px-3 py-1 rounded-full uppercase tracking-wider">
+          <span className="text-[12px] font-black text-[#635BFF] bg-[#635BFF]/10 px-3 py-1 rounded-full uppercase tracking-wider">
             {getTag()}
           </span>
-          <span className="text-[11px] font-bold text-slate-400">
+          <span className="text-[13px] font-bold text-slate-400">
             {book.year}
           </span>
         </div>

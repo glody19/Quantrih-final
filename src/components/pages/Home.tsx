@@ -183,7 +183,7 @@ function FlowNode({ page, index, onGo }: { page: PageInfo, index: number, onGo: 
 
 function TypewriterText({ text }: { text: string }) {
   return (
-    <p className="text-slate-300 text-[11px] sm:text-xs lg:text-sm leading-relaxed sm:leading-relaxed">
+    <p className="text-slate-300 text-[13px] sm:text-xs lg:text-sm leading-relaxed sm:leading-relaxed">
       {text}
     </p>
   );
@@ -217,7 +217,7 @@ function ModuleCard({ p, i, onGoPage }: { p: PageInfo; i: number; onGoPage: (id:
       <div className="relative z-10 mt-3 sm:mt-5 pt-1 sm:pt-2 flex justify-center">
         <button 
           onClick={() => onGoPage(p.id)}
-          className="px-4 sm:px-6 py-1.5 sm:py-2.5 bg-slate-800 hover:bg-blue-600 hover:text-white border border-slate-700 hover:border-blue-500 text-slate-300 hover:text-white font-bold text-[10px] sm:text-xs rounded-full transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 shadow-lg"
+          className="px-4 sm:px-6 py-1.5 sm:py-2.5 bg-slate-800 hover:bg-blue-600 hover:text-white border border-slate-700 hover:border-blue-500 text-slate-300 hover:text-white font-bold text-[12px] sm:text-xs rounded-full transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 shadow-lg"
         >
           {p.cta}
           <svg className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300 w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -414,7 +414,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         {/* Professional Branding Section */}
         <div className="w-full pb-16 z-20 mt-12 max-sm:[zoom:0.4]">
           <div className="px-6 lg:px-24 flex flex-col items-center justify-center text-center space-y-4">
-            <p className="text-white/80 text-[10px] sm:text-xs font-sans tracking-wide max-w-3xl mx-auto leading-relaxed">
+            <p className="text-white/80 text-[12px] sm:text-xs font-sans tracking-wide max-w-3xl mx-auto leading-relaxed">
               {t("home.disclaimer")}
             </p>
           </div>

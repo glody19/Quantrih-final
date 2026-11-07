@@ -69,7 +69,7 @@ export function GoogleOneTapPrompt() {
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 text-xs">Sign in with Google</h3>
-                  <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">Quick portfolio access</p>
+                  <p className="text-[12px] text-gray-400 mt-0.5 leading-tight">Quick portfolio access</p>
                 </div>
               </div>
               <button 
@@ -80,7 +80,7 @@ export function GoogleOneTapPrompt() {
               </button>
             </div>
             <div className="bg-gray-50 px-4 py-2 border-t border-gray-100">
-               <p className="text-[9px] text-gray-400 text-center leading-tight">
+               <p className="text-[11px] text-gray-400 text-center leading-tight">
                  By continuing, you agree to the Terms of Service.
                </p>
             </div>

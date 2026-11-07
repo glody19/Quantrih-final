@@ -159,7 +159,7 @@ export function CloudSaveLoad({ pageId, currentData, onLoad, onListUpdate }: Clo
                     <div key={config.id} className="flex items-center justify-between p-4 rounded-2xl bg-bg border border-border group hover:border-sky-500/30 transition-colors">
                       <div className="flex flex-col">
                         <span className="font-bold text-text text-sm">{config.name}</span>
-                        <span className="text-[11px] text-text-3">
+                        <span className="text-[13px] text-text-3">
                           {new Date(config.updatedAt).toLocaleString()}
                         </span>
                       </div>
@@ -182,7 +182,7 @@ export function CloudSaveLoad({ pageId, currentData, onLoad, onListUpdate }: Clo
                               handleDelete(config.id);
                               setDeleteConfirmId(null);
                             }}
-                            className="px-2 py-1 text-[10px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
+                            className="px-2 py-1 text-[12px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
                             title="Confirm deletion"
                           >
                             Confirm?

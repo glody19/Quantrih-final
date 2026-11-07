@@ -87,7 +87,7 @@ export function CommandPalette({ onNavigate, isOpen, onClose }: CommandPalettePr
             }}
           />
           <div className="flex items-center gap-1">
-             <kbd className="hidden sm:inline-flex px-2 py-1 text-[10px] font-mono text-text-3 font-semibold uppercase bg-surface-2 rounded border border-border">ESC</kbd>
+             <kbd className="hidden sm:inline-flex px-2 py-1 text-[12px] font-mono text-text-3 font-semibold uppercase bg-surface-2 rounded border border-border">ESC</kbd>
           </div>
         </div>
 
@@ -128,7 +128,7 @@ export function CommandPalette({ onNavigate, isOpen, onClose }: CommandPalettePr
         
         {/* Footer */}
         <div className="p-4 border-t border-border bg-surface-2 text-xs text-text-4 flex items-center justify-between">
-           <span>Use <kbd className="mx-1 px-1.5 py-0.5 rounded bg-surface border border-border text-text font-mono text-[10px]">↑</kbd><kbd className="mx-1 px-1.5 py-0.5 rounded bg-surface border border-border text-text font-mono text-[10px]">↓</kbd> to navigate, <kbd className="mx-1 px-1.5 py-0.5 rounded bg-surface border border-border text-text font-mono text-[10px]">↵</kbd> to select</span>
+           <span>Use <kbd className="mx-1 px-1.5 py-0.5 rounded bg-surface border border-border text-text font-mono text-[12px]">↑</kbd><kbd className="mx-1 px-1.5 py-0.5 rounded bg-surface border border-border text-text font-mono text-[12px]">↓</kbd> to navigate, <kbd className="mx-1 px-1.5 py-0.5 rounded bg-surface border border-border text-text font-mono text-[12px]">↵</kbd> to select</span>
            <span className="font-bold flex items-center gap-1 opacity-50">Odoo UI Inspired <Activity size={12}/></span>
         </div>
       </div>

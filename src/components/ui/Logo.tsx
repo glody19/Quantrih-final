@@ -18,7 +18,7 @@ export const QuantrihLogo = ({ className, variant = "bars", showText = true, siz
   };
 
   const textClasses = {
-    sm: "text-[11px] font-semibold tracking-tight",
+    sm: "text-[13px] font-semibold tracking-tight",
     md: "text-xs lg:text-sm font-semibold tracking-tight",
     lg: "text-base lg:text-lg font-bold tracking-tight"
   };

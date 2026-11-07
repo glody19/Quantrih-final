@@ -360,7 +360,7 @@ export const HeroInteractiveMockup = () => {
  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform shadow-lg">
  <Play fill="white" size={14} className="text-white ml-0.5" />
  </div>
- <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded shadow">14:20</div>
+ <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded shadow">14:20</div>
  </div>
  <div className="p-3">
  <div className="text-xs font-bold text-text mb-1 line-clamp-2 leading-tight">

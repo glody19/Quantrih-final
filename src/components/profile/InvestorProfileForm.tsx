@@ -189,7 +189,7 @@ const FieldHelp: React.FC<FieldHelpProps> = ({ titleEn, titleFr, descEn, descFr,
           onToggle(helpId);
         }}
         aria-label="Aide"
-        className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-extrabold transition-all cursor-pointer ${
+        className={`w-4 h-4 rounded-full flex items-center justify-center text-[12px] font-extrabold transition-all cursor-pointer ${
           isOpen
             ? 'bg-blue-500 text-white shadow-md shadow-blue-500/50 scale-110 ring-2 ring-blue-400/50'
             : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-blue-400 border border-zinc-700'
@@ -648,7 +648,7 @@ export const InvestorProfileForm: React.FC = () => {
                     <span className="text-2xl leading-none">{currentCountryObj.flag}</span>
                     <div className="flex items-center gap-2 font-bold text-white text-sm">
                       <span>{isEn ? currentCountryObj.nameEn : currentCountryObj.nameFr}</span>
-                      <span className="text-[10px] bg-zinc-700/80 text-zinc-300 px-1.5 py-0.5 rounded font-mono uppercase">
+                      <span className="text-[12px] bg-zinc-700/80 text-zinc-300 px-1.5 py-0.5 rounded font-mono uppercase">
                         {currentCountryObj.code}
                       </span>
                     </div>
@@ -707,7 +707,7 @@ export const InvestorProfileForm: React.FC = () => {
                                 <div className="flex items-center gap-3">
                                   <span className="text-xl leading-none">{c.flag}</span>
                                   <span className="text-xs font-medium">{isEn ? c.nameEn : c.nameFr}</span>
-                                  <span className="text-[10px] text-zinc-500 font-mono">({c.code})</span>
+                                  <span className="text-[12px] text-zinc-500 font-mono">({c.code})</span>
                                 </div>
                                 {isSelected && <Check className="w-4 h-4 text-blue-400" />}
                               </button>
@@ -1081,7 +1081,7 @@ export const InvestorProfileForm: React.FC = () => {
                       }`}
                     >
                       <div className="text-xs font-bold">{charge.label}</div>
-                      <div className="text-[10px] opacity-80">{charge.desc}</div>
+                      <div className="text-[12px] opacity-80">{charge.desc}</div>
                     </button>
                   ))}
                 </div>
@@ -1206,7 +1206,7 @@ export const InvestorProfileForm: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-300 mb-1">
+                  <label className="block text-[13px] font-medium text-zinc-300 mb-1">
                     {isEn ? "Financial assets" : "Patrimoine financier (actions, ETFs)"}
                   </label>
                   <CustomSelect 
@@ -1226,7 +1226,7 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-300 mb-1">
+                  <label className="block text-[13px] font-medium text-zinc-300 mb-1">
                     {isEn ? "Real estate assets" : "Patrimoine immobilier"}
                   </label>
                   <CustomSelect 
@@ -1246,7 +1246,7 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-300 mb-1">
+                  <label className="block text-[13px] font-medium text-zinc-300 mb-1">
                     {isEn ? "Business assets" : "Patrimoine professionnel"}
                   </label>
                   <CustomSelect 
@@ -1515,7 +1515,7 @@ export const InvestorProfileForm: React.FC = () => {
                         key={item.id}
                         type="button"
                         onClick={() => toggleArrayValue('ordersExecutedTypes', item.id)}
-                        className={`p-2.5 rounded-xl text-left text-[11px] font-bold transition-all cursor-pointer border ${
+                        className={`p-2.5 rounded-xl text-left text-[13px] font-bold transition-all cursor-pointer border ${
                           active 
                             ? 'bg-blue-600/30 text-blue-300 border-blue-500/50' 
                             : 'bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 border-zinc-700/40'
@@ -1761,7 +1761,7 @@ export const InvestorProfileForm: React.FC = () => {
     <div className="w-full flex flex-col gap-4">
       {/* Subtle Auto-save status header bar */}
         <div className="flex items-center justify-between pb-3 mb-2 border-b border-zinc-800/50">
-          <div className="flex items-center gap-2 text-[11px] font-medium">
+          <div className="flex items-center gap-2 text-[13px] font-medium">
             {cloudSyncStatus === 'offline' ? (
               <div className="flex items-center gap-1.5 text-zinc-400">
                 <CloudOff className="w-3.5 h-3.5" />
@@ -1777,7 +1777,7 @@ export const InvestorProfileForm: React.FC = () => {
                 <Cloud className="w-3.5 h-3.5 shrink-0" />
                 <span>{isEn ? "Saved to Cloud" : "Sauvegardé sur le Cloud"}</span>
                 {lastSavedTime && (
-                  <span className="text-zinc-500 font-mono text-[10px]">
+                  <span className="text-zinc-500 font-mono text-[12px]">
                     ({lastSavedTime})
                   </span>
                 )}
@@ -1792,7 +1792,7 @@ export const InvestorProfileForm: React.FC = () => {
           <button
             type="button"
             onClick={handleResetDraft}
-            className="text-[10px] text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer underline"
+            className="text-[12px] text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer underline"
           >
             {isEn ? "Reset draft" : "Réinitialiser le brouillon"}
           </button>
@@ -1805,7 +1805,7 @@ export const InvestorProfileForm: React.FC = () => {
       <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-4 flex flex-col">
         <div className="bg-slate-900/90 shadow-2xl p-5 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl border border-white/10 space-y-4 flex-1">
           <div className="pb-1">
-            <span className="text-[11px] font-semibold text-blue-400 block mb-0.5">
+            <span className="text-[13px] font-semibold text-blue-400 block mb-0.5">
               Quantrih suitability
             </span>
             <h2 className="text-base font-black text-white tracking-tight">

@@ -30,7 +30,7 @@ export function LaptopDemo() {
                 <div className="flex gap-3 md:gap-5 w-full h-[120px] md:h-[160px]">
                    {/* Bar Chart Card */}
                    <div className="flex-1 bg-white rounded-lg md:rounded-xl shadow-sm border border-slate-200 p-2 md:p-4 flex flex-col">
-                     <div className="text-[8px] md:text-[11px] font-bold text-slate-800 mb-2 flex items-center gap-1.5">
+                     <div className="text-[10px] md:text-[13px] font-bold text-slate-800 mb-2 flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-orange-400"></div>
                         Annual Returns
                      </div>
@@ -51,7 +51,7 @@ export function LaptopDemo() {
 
                    {/* Drawdowns Card */}
                    <div className="flex-1 bg-white rounded-lg md:rounded-xl shadow-sm border border-slate-200 p-2 md:p-4 flex flex-col">
-                     <div className="text-[8px] md:text-[11px] font-bold text-slate-800 mb-2 flex items-center gap-1.5">
+                     <div className="text-[10px] md:text-[13px] font-bold text-slate-800 mb-2 flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 md:w-2.5 md:h-2.5 rounded-full bg-pink-400"></div>
                         Drawdowns
                      </div>
@@ -81,11 +81,11 @@ export function LaptopDemo() {
 
                 {/* Bottom Row: Table */}
                 <div className="w-full bg-white rounded-lg md:rounded-xl shadow-sm border border-slate-200 p-2 md:p-4 flex flex-col gap-2 md:gap-3">
-                   <div className="text-[9px] md:text-[12px] font-bold text-slate-800 border-b border-slate-100 pb-1.5 md:pb-2">
+                   <div className="text-[11px] md:text-[12px] font-bold text-slate-800 border-b border-slate-100 pb-1.5 md:pb-2">
                      Trailing Returns
                    </div>
                    <div className="flex flex-col gap-1.5 md:gap-2.5 mt-1">
-                     <div className="flex justify-between text-[7px] md:text-[9px] text-slate-400 font-medium">
+                     <div className="flex justify-between text-[9px] md:text-[11px] text-slate-400 font-medium">
                        <div className="w-20 md:w-32">Portfolio</div>
                        <div className="flex-1 flex justify-between text-right">
                          <span className="w-8 md:w-12">1 Year</span>
@@ -104,7 +104,7 @@ export function LaptopDemo() {
                      ].map((row, i) => (
                        <motion.div 
                          key={i} 
-                         className="flex justify-between text-[7px] md:text-[10px] text-slate-700 py-0.5 md:py-1 border-b border-slate-50 last:border-0"
+                         className="flex justify-between text-[9px] md:text-[12px] text-slate-700 py-0.5 md:py-1 border-b border-slate-50 last:border-0"
                          initial={{ opacity: 0, x: -10 }}
                          animate={{ opacity: 1, x: 0 }}
                          transition={{ duration: 0.5, delay: 1 + i * 0.1 }}

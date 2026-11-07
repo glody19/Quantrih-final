@@ -47,7 +47,7 @@ export function InfoTooltip({ content }: InfoTooltipProps) {
             <div className="absolute inset-0 bg-blue-500/10 blur-lg rounded-[1rem]"></div>
             
             {/* Tooltip Card */}
-            <div className="relative rounded-xl bg-slate-950/95 backdrop-blur-xl border border-slate-700/60 p-3 text-[11px] leading-relaxed text-slate-200 shadow-xl font-sans font-medium text-left">
+            <div className="relative rounded-xl bg-slate-950/95 backdrop-blur-xl border border-slate-700/60 p-3 text-[13px] leading-relaxed text-slate-200 shadow-xl font-sans font-medium text-left">
               {content}
             </div>
             

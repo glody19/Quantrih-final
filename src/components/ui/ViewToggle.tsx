@@ -23,7 +23,7 @@ export function ViewToggle({
         <button
           onClick={() => onViewChange("simulator")}
           className={cn(
-            "relative flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider transition-colors duration-300 whitespace-nowrap outline-none",
+            "relative flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-wider transition-colors duration-300 whitespace-nowrap outline-none",
             activeView === "simulator" ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
           )}
         >
@@ -44,7 +44,7 @@ export function ViewToggle({
         <button
           onClick={() => onViewChange("dashboard")}
           className={cn(
-            "relative flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider transition-colors duration-300 whitespace-nowrap outline-none",
+            "relative flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[12px] md:text-[13px] font-bold uppercase tracking-wider transition-colors duration-300 whitespace-nowrap outline-none",
             activeView === "dashboard" ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
           )}
         >

@@ -9,7 +9,8 @@ import { PageHeader } from '../ui/PageHeader';
 import { FMP_RATIOS } from '../../data/fmpRatios';
 import { useFinancialData } from '../../hooks/useFinancialData';
 import { StatCard } from '../ui/StatCard';
-import { TickerInput } from '../ui/TickerInput';
+import { StockSearchBar } from '../market/StockSearchBar';
+import { StockAnalysis } from '../market/StockAnalysis';
 import { AssetLogo } from '../ui/AssetLogo';
 import { FinancialTable } from '../ui/FinancialTable';
 import { InfoTooltip } from '../ui/InfoTooltip';
@@ -155,7 +156,7 @@ function MarqueeItem({ symbol, data, onClick, isCrypto }: { symbol: string, data
           </span>
           
           <div className={cn(
-            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all duration-500 border",
+            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[12px] font-bold transition-all duration-500 border",
             isUp 
               ? 'bg-green-500/10 text-green-400 border-green-500/20' 
               : 'bg-red-500/10 text-red-400 border-red-500/20',
@@ -167,7 +168,7 @@ function MarqueeItem({ symbol, data, onClick, isCrypto }: { symbol: string, data
           </div>
         </div>
       ) : (
-        <span className="text-slate-600 text-[10px] animate-pulse">Loading...</span>
+        <span className="text-slate-600 text-[12px] animate-pulse">Loading...</span>
       )}
     </div>
   );
@@ -1219,7 +1220,8 @@ const isEuropeanMarketOpen = () => {
  }
 
  let displayPrice = currentPrice;
- let displayChangePct = periodChangePct;
+ // No real price received: show "---" instead of a misleading 0.00%
+ let displayChangePct: number | null = (typeof currentPrice === 'number' && currentPrice > 0) ? periodChangePct : null;
 
  if (hoveredTime && activeDataPoints && activeDataPoints[sym] !== undefined) {
  // Display hovered price directly
@@ -1493,41 +1495,18 @@ const isEuropeanMarketOpen = () => {
  
   {marketPageUrl === 'stocks' && (
   <div className="flex-1 min-h-0 overflow-auto">
-  {/* ULTRA COMPACT SEARCH BAR */}
-  <div ref={searchSectionRef} className="w-full px-4 md:px-8 mt-4 mb-6 max-w-[2400px] xl:px-12 mx-auto flex justify-start">
-    <div className="relative z-50 w-full max-w-[280px] group transition-all duration-300">
-      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-sky-400/20 via-blue-500/5 to-transparent blur-sm opacity-30 transition-opacity duration-300 group-focus-within:opacity-50"></div>
-      <div className="relative flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-border/60 dark:border-white/10 rounded-full shadow-sm p-0.5 transition-all duration-300 focus-within:shadow focus-within:border-sky-400/40 hover:border-sky-400/20">
-        <div className="pl-3 pr-1 text-text-4 group-focus-within:text-sky-500 transition-colors">
-          <Search size={14} strokeWidth={2} />
-        </div>
-        <TickerInput 
-          value={searchInput}
-          onChange={setSearchInput}
-          onSelect={(sym) => {
-            setSearchInput(sym);
-            fetchStockData(sym);
-          }}
-          onSubmit={(sym) => {
-            setSearchInput(sym);
-            fetchStockData(sym);
-          }}
-          placeholder={currentLabels.searchPlaceholder}
-          className="w-full bg-transparent border-none pl-1 pr-2 py-1.5 text-[14px] md:text-[12px] font-medium outline-none text-text placeholder:text-text-4/60 rounded-full focus:ring-0 shadow-none !ring-0 focus:!border-transparent"
-        />
-        <button 
-          onClick={(e) => {
-            e.preventDefault();
-            if (searchInput.trim()) {
-              fetchStockData(searchInput.trim().toUpperCase());
-            }
-          }}
-          className="mr-0.5 shrink-0 bg-surface-2 hover:bg-sky-50 text-text hover:text-sky-600 px-3 py-1 rounded-full font-medium transition-all text-[10px] border border-border/80"
-        >
-          {currentLabels.go}
-        </button>
-      </div>
-    </div>
+  {/* STOCK SEARCH BAR */}
+  <div ref={searchSectionRef} className="w-full px-4 md:px-8 mt-4 mb-8 max-w-[2400px] xl:px-12 mx-auto flex justify-start relative z-50">
+    <StockSearchBar
+      value={searchInput}
+      onChange={setSearchInput}
+      activeSymbol={activeSymbol}
+      language={language}
+      onSelect={(sym) => {
+        setSelectedLazyPortfolio(null);
+        fetchStockData(sym);
+      }}
+    />
   </div>
 
   {selectedLazyPortfolio ? (
@@ -1712,14 +1691,13 @@ const isEuropeanMarketOpen = () => {
  </div>
  
  <div className="flex flex-wrap items-center gap-2 text-[13px] font-medium text-text mt-1">
- <span className="flex items-center gap-1 md:gap-1.5 text-text bg-transparent px-0 py-0">
- Action {quote.quoteType === 'EQUITY' ? '' : `(${quote.quoteType})`}
- </span>
- <span className="px-1">•</span>
- <span className="flex items-center gap-1 md:gap-1.5 text-text bg-transparent px-0 py-0">
- 🇺🇸 États-Unis
- </span>
- <span className="px-1">•</span>
+ <span className="font-bold text-text bg-surface-2 border border-border px-2 py-0.5 rounded-md">{quote.symbol}</span>
+ {quote.quoteType && (
+ <span className="text-text-3">{quote.quoteType === 'EQUITY' ? (language === 'fr' ? 'Action' : 'Stock') : quote.quoteType}</span>
+ )}
+ {profile?.country && (<><span className="px-1">•</span><span className="text-text-3">{profile.country}</span></>)}
+ {profile?.sector && (<><span className="px-1">•</span><span className="text-text-3">{profile.sector}</span></>)}
+ {quote.fullExchangeName && <span className="px-1">•</span>}
  {quote.fullExchangeName && (
  <span className="flex items-center gap-1 md:gap-1.5 text-text bg-transparent px-0 py-0">
  {quote.fullExchangeName.replace(/NasdaqGS/gi, 'NASDAQ').replace(/NMS/gi, 'NASDAQ')}
@@ -1761,7 +1739,7 @@ const isEuropeanMarketOpen = () => {
  {new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
  </span>
  <span className="text-2xl font-semibold font-mono text-text tracking-tighter leading-none flex items-baseline">
- <span className="text-lg mr-1">$</span>
+ <span className="text-lg mr-1">{(() => { try { return new Intl.NumberFormat('en-US', { style: 'currency', currency: quote.currency || profile?.currency || 'USD' }).formatToParts(0).find(p => p.type === 'currency')?.value || '$'; } catch { return '$'; } })()}</span>
  <BlinkingPriceText price={liveQuotePrice !== null ? liveQuotePrice : (quote.price || 0)} />
  </span>
  </div>
@@ -1819,7 +1797,7 @@ const isEuropeanMarketOpen = () => {
  {/* Full Width Presentation Description */}
  {profile?.description && (
  <div className="w-full">
- <h3 className="text-sm font-medium text-text mb-2">Présentation de {quote.symbol}</h3>
+ <h3 className="text-base font-semibold text-text mb-2">{language === 'fr' ? `Présentation de ${quote.symbol}` : `About ${quote.symbol}`}</h3>
  <p className="text-sm text-text font-medium text-justify w-full">
  {profile.description}
  </p>
@@ -1843,6 +1821,23 @@ const isEuropeanMarketOpen = () => {
  </div>
  </div>
  </div>
+ </div>
+
+ {/* In-depth financial analysis (real data only) */}
+ <div className="mt-10">
+ <StockAnalysis
+ quote={quote}
+ profile={profile}
+ ratios={ratios}
+ income={income}
+ balance={balance}
+ cashFlow={cashFlow}
+ recommendation={finnhubRecommendation}
+ peers={finnhubPeers}
+ news={finnhubNews}
+ language={language}
+ onSelectSymbol={(sym) => { setSearchInput(sym); fetchStockData(sym); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+ />
  </div>
 
  {/* Navigation Tabs (Moved Below Chart and Watchlist Table) */}
@@ -1894,10 +1889,10 @@ const isEuropeanMarketOpen = () => {
  <span className="text-sm font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
  </div>
  <ResponsiveContainer width="100%" height={380}>
- <BarChart data={slicedIncome} margin={{ top: 20, right: 10, left: -20, bottom: 5 }} barGap={6} barCategoryGap="25%">
+ <BarChart data={slicedIncome} margin={{ top: 20, right: 10, left: 0, bottom: 5 }} barGap={6} barCategoryGap="25%">
  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
  <XAxis dataKey="calendarYear" stroke="#94a3b8" tickLine={false} axisLine={false} tick={{ fontSize: 12, fontWeight: 500, fill: '#64748B' }} dy={10} />
- <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} tickFormatter={(value) => formatAggregate(value)} tick={{ fontSize: 11, fill: '#94a3b8' }} width={50} dx={-10} />
+ <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} tickFormatter={(value) => formatAggregate(value)} tick={{ fontSize: 12, fill: "#64748B" }} width={64} />
  <Tooltip formatter={(value: any) => formatAggregate(Number(value))} cursor={{fill: 'rgba(0,0,0,0.02)'}} contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontSize: '13px', fontWeight: 500, padding: '12px' }} itemStyle={{ paddingTop: '4px' }} />
  <Legend iconType="circle" wrapperStyle={{ paddingTop: "24px", fontSize: "12px", fontWeight: "500", color: '#475569' }} verticalAlign="bottom" height={40} />
  <Bar dataKey="revenue" fill="#0EA5E9" name="Revenue" barSize={16} radius={[4, 4, 0, 0]} />
@@ -1938,10 +1933,10 @@ const isEuropeanMarketOpen = () => {
  <span className="text-sm font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
  </div>
  <ResponsiveContainer width="100%" height={380}>
- <BarChart data={slicedBalance} margin={{ top: 20, right: 10, left: -20, bottom: 5 }} barGap={6} barCategoryGap="25%">
+ <BarChart data={slicedBalance} margin={{ top: 20, right: 10, left: 0, bottom: 5 }} barGap={6} barCategoryGap="25%">
  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
  <XAxis dataKey="calendarYear" stroke="#94a3b8" tickLine={false} axisLine={false} tick={{ fontSize: 12, fontWeight: 500, fill: '#64748B' }} dy={10} />
- <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} tickFormatter={(value) => formatAggregate(value)} tick={{ fontSize: 11, fill: '#94a3b8' }} width={50} dx={-10} />
+ <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} tickFormatter={(value) => formatAggregate(value)} tick={{ fontSize: 12, fill: "#64748B" }} width={64} />
  <Tooltip formatter={(value: any) => formatAggregate(Number(value))} cursor={{fill: 'rgba(0,0,0,0.02)'}} contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontSize: '13px', fontWeight: 500, padding: '12px' }} itemStyle={{ paddingTop: '4px' }} />
  <Legend iconType="circle" wrapperStyle={{ paddingTop: "24px", fontSize: "12px", fontWeight: "500", color: '#475569' }} verticalAlign="bottom" height={40} />
  <Bar dataKey="totalAssets" fill="#0EA5E9" name="Total Assets" barSize={16} radius={[4, 4, 0, 0]} />
@@ -1982,10 +1977,10 @@ const isEuropeanMarketOpen = () => {
  <span className="text-sm font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
  </div>
  <ResponsiveContainer width="100%" height={380}>
- <BarChart data={slicedCashFlow} margin={{ top: 20, right: 10, left: -20, bottom: 5 }} barGap={6} barCategoryGap="25%">
+ <BarChart data={slicedCashFlow} margin={{ top: 20, right: 10, left: 0, bottom: 5 }} barGap={6} barCategoryGap="25%">
  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
  <XAxis dataKey="calendarYear" stroke="#94a3b8" tickLine={false} axisLine={false} tick={{ fontSize: 12, fontWeight: 500, fill: '#64748B' }} dy={10} />
- <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} tickFormatter={(value) => formatAggregate(value)} tick={{ fontSize: 11, fill: '#94a3b8' }} width={50} dx={-10} />
+ <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} tickFormatter={(value) => formatAggregate(value)} tick={{ fontSize: 12, fill: "#64748B" }} width={64} />
  <Tooltip formatter={(value: any) => formatAggregate(Number(value))} cursor={{fill: 'rgba(0,0,0,0.02)'}} contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontSize: '13px', fontWeight: 500, padding: '12px' }} itemStyle={{ paddingTop: '4px' }} />
  <Legend iconType="circle" wrapperStyle={{ paddingTop: "24px", fontSize: "12px", fontWeight: "500", color: '#475569' }} verticalAlign="bottom" height={40} />
  <Bar dataKey="operatingCashFlow" fill="#0EA5E9" name="Operating CF" barSize={16} radius={[4, 4, 0, 0]} />
@@ -2082,7 +2077,7 @@ const isEuropeanMarketOpen = () => {
 
 {/* Watchlist Table Header & Add Ticker Form */}
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-5 mb-2.5">
-  <span className="text-[10px] font-bold uppercase text-text-3 tracking-wider">Watchlist Assets</span>
+  <span className="text-[12px] font-bold uppercase text-text-3 tracking-wider">Watchlist Assets</span>
   
   {/* Add Ticker to Watchlist Form */}
   <form onSubmit={handleAddToWatchlist} className="flex items-center gap-2 z-10">
@@ -2095,15 +2090,15 @@ const isEuropeanMarketOpen = () => {
           setWatchlistAddError(null);
         }}
         placeholder="Add Ticker (e.g., TSLA)" 
-        className="text-[11px] px-2.5 py-1 rounded-lg border border-border bg-surface text-text placeholder-text-3 focus:outline-none focus:ring-1 focus:ring-pv-blue/50 w-36 transition-all"
+        className="text-[13px] px-2.5 py-1 rounded-lg border border-border bg-surface text-text placeholder-text-3 focus:outline-none focus:ring-1 focus:ring-pv-blue/50 w-36 transition-all"
       />
       {watchlistAddError && (
-        <span className="absolute -bottom-3.5 left-0 text-[8px] text-red font-medium whitespace-nowrap">{watchlistAddError}</span>
+        <span className="absolute -bottom-3.5 left-0 text-[10px] text-red font-medium whitespace-nowrap">{watchlistAddError}</span>
       )}
     </div>
     <button 
       type="submit" 
-      className="flex items-center gap-1 text-[11px] font-semibold bg-pv-blue hover:bg-pv-blue/90 text-white px-2 py-1 rounded-lg transition-all shadow-sm"
+      className="flex items-center gap-1 text-[13px] font-semibold bg-pv-blue hover:bg-pv-blue/90 text-white px-2 py-1 rounded-lg transition-all shadow-sm"
     >
       <Plus size={10} />
       <span>Add</span>
@@ -2115,7 +2110,7 @@ const isEuropeanMarketOpen = () => {
 <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
   <div className="overflow-x-auto">
     <table className="w-full text-left">
-      <thead className="bg-surface-2 border-b border-border/80 text-[10px] uppercase font-bold text-text-3 tracking-wider">
+      <thead className="bg-surface-2 border-b border-border/80 text-[12px] uppercase font-bold text-text-3 tracking-wider">
         <tr>
           <th className="px-3 py-1.5 rounded-tl-xl">Asset</th>
           <th className="px-3 py-1.5 text-right">Price</th>
@@ -2136,17 +2131,19 @@ const isEuropeanMarketOpen = () => {
                     {m.ticker}
                     <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: watchlistColors[m.index % watchlistColors.length] }} />
                   </span>
-                  <span className="text-[10px] text-text-3 truncate max-w-[100px] sm:max-w-[150px]">{m.name}</span>
+                  <span className="text-[12px] text-text-3 truncate max-w-[100px] sm:max-w-[150px]">{m.name}</span>
                 </div>
               </div>
             </td>
             <td className="px-3 py-1 text-right font-mono text-xs font-semibold text-text">
-              {m.price ? "$" + m.price.toFixed(2) : "---"}
+              {typeof m.price === 'number' && m.price > 0 ? "$" + m.price.toFixed(2) : "---"}
             </td>
             <td className="px-3 py-1 text-right font-mono text-xs font-semibold">
-              <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-bold", m.periodChangePct >= 0 ? "bg-green/10 text-green" : "bg-red/10 text-red")}>
+              {typeof m.periodChangePct === 'number' && isFinite(m.periodChangePct) ? (
+              <span className={cn("px-1.5 py-0.5 rounded text-[12px] font-bold", m.periodChangePct >= 0 ? "bg-green/10 text-green" : "bg-red/10 text-red")}>
                 {m.periodChangePct > 0 ? '+' : ''}{m.periodChangePct.toFixed(2)}%
               </span>
+              ) : <span className="text-text-3">---</span>}
             </td>
             <td className="px-3 py-1 text-right font-mono text-xs text-text-2 hidden sm:table-cell">
               {m.marketCap ? formatAggregate(m.marketCap) : "---"}

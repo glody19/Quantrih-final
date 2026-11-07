@@ -538,7 +538,7 @@ export function AssetAllocations({
           <div className="flex items-center gap-2">
             <button
               onClick={loadSavedConfigs}
-              className="flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-[11px] font-extrabold uppercase tracking-wider rounded-xl transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-[13px] font-extrabold uppercase tracking-wider rounded-xl transition-all shadow-sm"
             >
               <RefreshCw size={12} className="text-slate-400 animate-spin-slow" />
               Refresh
@@ -549,34 +549,34 @@ export function AssetAllocations({
         {/* Dashboard Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-white border border-slate-200/80 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+            <p className="text-[12px] font-extrabold uppercase tracking-widest text-slate-400">
               {t("dashboard.saved_scenarios")}
             </p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-slate-900 tracking-tight">{totalCount}</p>
-              <p className="text-[11px] text-slate-500 font-medium mt-1">{t("aa.conf_cloud")}</p>
+              <p className="text-[13px] text-slate-500 font-medium mt-1">{t("aa.conf_cloud")}</p>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200/80 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-500">
+            <p className="text-[12px] font-extrabold uppercase tracking-widest text-emerald-500">
               {t("dashboard.best_cagr")}
             </p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-emerald-600 tracking-tight">{bestCagr}</p>
-              <p className="text-[11px] text-slate-500 font-medium truncate mt-1" title={bestCagrName}>
+              <p className="text-[13px] text-slate-500 font-medium truncate mt-1" title={bestCagrName}>
                 {bestCagrName || "No report generated"}
               </p>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200/80 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-500">
+            <p className="text-[12px] font-extrabold uppercase tracking-widest text-indigo-500">
               {t("dashboard.best_sharpe")}
             </p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-indigo-600 tracking-tight">{bestSharpe}</p>
-              <p className="text-[11px] text-slate-500 font-medium truncate mt-1" title={bestSharpeName}>
+              <p className="text-[13px] text-slate-500 font-medium truncate mt-1" title={bestSharpeName}>
                 {bestSharpeName || "No report generated"}
               </p>
             </div>
@@ -605,7 +605,7 @@ export function AssetAllocations({
 
           <div className="bg-white border border-slate-200/80 p-6 rounded-[2rem] shadow-sm lg:col-span-4 flex flex-col gap-6">
             <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-              <h3 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+              <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
                 <Sparkles size={14} className="text-yellow-500" />
                 {t("dashboard.ai_analysis")}
               </h3>
@@ -616,7 +616,7 @@ export function AssetAllocations({
                   <p className="font-extrabold flex items-center gap-1.5 text-slate-900">
                     💡 {rec.title}
                   </p>
-                  <p className="font-medium text-[11px] text-slate-500">{rec.text}</p>
+                  <p className="font-medium text-[13px] text-slate-500">{rec.text}</p>
                 </div>
               ))}
             </div>
@@ -638,7 +638,7 @@ export function AssetAllocations({
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                  <tr className="bg-slate-100/50 text-slate-500 font-bold uppercase text-[9px] tracking-wider border-b border-slate-200">
+                  <tr className="bg-slate-100/50 text-slate-500 font-bold uppercase text-[11px] tracking-wider border-b border-slate-200">
                     <th className="px-6 py-3 bg-slate-100/20 w-[240px]">{t("dashboard.parameter_metric")}</th>
                     {comparedConfigs.map(c => (
                       <th key={c.id} className="px-6 py-3 font-extrabold text-blue-600 text-center border-l border-slate-100">
@@ -734,11 +734,11 @@ export function AssetAllocations({
                       <td key={c.id} className="px-6 py-4 border-l border-slate-100">
                         <div className="flex flex-wrap gap-1 justify-center max-w-[200px] mx-auto">
                           {c.portfolioAssets?.filter((a: any) => a.weights && a.weights.some((w: any) => Number(w) > 0)).slice(0, 4).map((a: any, i: number) => (
-                            <span key={i} className="px-2 py-0.5 rounded bg-slate-50 border border-slate-100 text-slate-600 font-bold text-[9px]">
+                            <span key={i} className="px-2 py-0.5 rounded bg-slate-50 border border-slate-100 text-slate-600 font-bold text-[11px]">
                               {a.symbol}: {a.weights[0]}%
                             </span>
                           ))}
-                          {c.portfolioAssets?.length > 4 && <span className="text-[9px] font-bold text-slate-400">...</span>}
+                          {c.portfolioAssets?.length > 4 && <span className="text-[11px] font-bold text-slate-400">...</span>}
                         </div>
                       </td>
                     ))}
@@ -748,7 +748,7 @@ export function AssetAllocations({
                   <tr className="hover:bg-slate-50/30">
                     <td className="px-6 py-3 font-semibold text-slate-600 bg-slate-50/20">{t("dashboard.period_contribution")}</td>
                     {comparedConfigs.map(c => (
-                      <td key={c.id} className="px-6 py-3 border-l border-slate-100 text-center text-[10px] text-slate-600 font-medium">
+                      <td key={c.id} className="px-6 py-3 border-l border-slate-100 text-center text-[12px] text-slate-600 font-medium">
                         <div>{c.startYear} - {c.endYear}</div>
                         {c.cashflowAmount > 0 && <div className="text-emerald-600 font-bold">+{c.cashflowAmount}$ ({c.cashflowFrequency})</div>}
                       </td>
@@ -759,7 +759,7 @@ export function AssetAllocations({
                   <tr className="hover:bg-slate-50/30">
                     <td className="px-6 py-3 font-semibold text-slate-600 bg-slate-50/20">{t("dashboard.rebalancing")}</td>
                     {comparedConfigs.map(c => (
-                      <td key={c.id} className="px-6 py-3 border-l border-slate-100 text-center uppercase tracking-wide font-bold text-[9px] text-slate-500">
+                      <td key={c.id} className="px-6 py-3 border-l border-slate-100 text-center uppercase tracking-wide font-bold text-[11px] text-slate-500">
                         {c.rebalancing || "Annual"}
                       </td>
                     ))}
@@ -803,13 +803,13 @@ export function AssetAllocations({
                     return (
                       <>
                         <div className="p-3.5 bg-white/5  rounded-2xl">
-                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_ret")}</span>
+                          <span className="text-[12px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_ret")}</span>
                           <p className="text-sm font-medium text-slate-200">
                             <span className="text-emerald-400 font-extrabold">{highestCagrName}</span> {t("aa.leads_ret")} <span className="text-emerald-400 font-extrabold">{highestCagr.toFixed(2)}%</span>.
                           </p>
                         </div>
                         <div className="p-3.5 bg-white/5  rounded-2xl">
-                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.risk_prot")}</span>
+                          <span className="text-[12px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.risk_prot")}</span>
                           <p className="text-sm font-medium text-slate-200">
                             <span className="text-blue-400 font-extrabold">{lowestMddName}</span> {t("aa.resil_dd")} <span className="text-blue-400 font-extrabold">-{lowestMdd.toFixed(2)}%</span>.
                           </p>
@@ -841,12 +841,12 @@ export function AssetAllocations({
                     return (
                       <>
                         <div className="p-3.5 bg-white/5  rounded-2xl">
-                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_eff")}</span>
+                          <span className="text-[12px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_eff")}</span>
                           <p className="text-sm font-medium text-slate-200">
                             {t("aa.eff_port")} <span className="text-purple-400 font-extrabold">{highestSharpeName}</span> {t("aa.with_sharpe")} <span className="text-purple-400 font-extrabold">{highestSharpe.toFixed(2)}</span>.
                           </p>
                         </div>
-                        <p className="text-[10px] text-slate-400 italic leading-relaxed px-1 mt-2">{t("aa.sharpe_note")}</p>
+                        <p className="text-[12px] text-slate-400 italic leading-relaxed px-1 mt-2">{t("aa.sharpe_note")}</p>
                       </>
                     );
                   })()}
@@ -878,7 +878,7 @@ export function AssetAllocations({
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/50 text-slate-400 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-100">
+                  <tr className="bg-slate-50/50 text-slate-400 font-extrabold uppercase text-[12px] tracking-wider border-b border-slate-100">
                     <th className="px-6 py-4 w-[60px] text-center">{t("aa.compare")}</th>
                     <th className="px-6 py-4">{t("aa.strat_name")}</th>
                     <th className="px-6 py-4">{t("aa.const_assets")}</th>
@@ -916,17 +916,17 @@ export function AssetAllocations({
                         </td>
                         <td className="px-6 py-4">
                           <div className="font-extrabold text-slate-900 text-sm">{config.name}</div>
-                          <div className="text-[10px] text-slate-400 font-semibold mt-0.5 uppercase tracking-wider">Page: {config.pageId || "Allocation"}</div>
+                          <div className="text-[12px] text-slate-400 font-semibold mt-0.5 uppercase tracking-wider">Page: {config.pageId || "Allocation"}</div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-1 max-w-[280px]">
                             {config.portfolioAssets?.filter((a: any) => a.weights && a.weights.some((w: any) => Number(w) > 0)).slice(0, 3).map((a: any, i: number) => (
-                              <span key={i} className="px-2 py-0.5 rounded bg-slate-50 border border-slate-100 text-slate-600 font-bold text-[10px]">
+                              <span key={i} className="px-2 py-0.5 rounded bg-slate-50 border border-slate-100 text-slate-600 font-bold text-[12px]">
                                 {a.symbol} ({a.weights[0]}%)
                               </span>
                             ))}
                             {config.portfolioAssets?.length > 3 && (
-                              <span className="text-[10px] font-bold text-slate-400 px-1">+ {config.portfolioAssets.length - 3}</span>
+                              <span className="text-[12px] font-bold text-slate-400 px-1">+ {config.portfolioAssets.length - 3}</span>
                             )}
                           </div>
                         </td>
@@ -934,24 +934,24 @@ export function AssetAllocations({
                           {primaryMetrics ? (
                             <div className="flex gap-4">
                               <div>
-                                <span className="text-[9px] font-extrabold text-slate-400 block uppercase">CAGR</span>
+                                <span className="text-[11px] font-extrabold text-slate-400 block uppercase">CAGR</span>
                                 <span className="font-bold text-emerald-600">{primaryMetrics.cagr?.toFixed(2)}%</span>
                               </div>
                               <div>
-                                <span className="text-[9px] font-extrabold text-slate-400 block uppercase">SHARPE</span>
+                                <span className="text-[11px] font-extrabold text-slate-400 block uppercase">SHARPE</span>
                                 <span className="font-bold text-slate-700">{primaryMetrics.sharpe?.toFixed(2)}</span>
                               </div>
                             </div>
                           ) : (
-                            <span className="text-slate-400 font-semibold italic text-[10px]">{t("aa.not_calc")}</span>
+                            <span className="text-slate-400 font-semibold italic text-[12px]">{t("aa.not_calc")}</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex flex-col items-end gap-1">
-                            <span className="text-[9px] uppercase tracking-wider text-slate-400 font-extrabold">{t("aa.saved_on")}</span>
+                            <span className="text-[11px] uppercase tracking-wider text-slate-400 font-extrabold">{t("aa.saved_on")}</span>
                             <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/50 rounded-lg px-2.5 py-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.01)] w-fit">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="font-mono text-[11px] font-bold text-slate-700 tracking-tight">
+                              <span className="font-mono text-[13px] font-bold text-slate-700 tracking-tight">
                                 {formatDate(config.updatedAt || config.createdAt)}
                               </span>
                             </div>
@@ -961,7 +961,7 @@ export function AssetAllocations({
                           <div className="inline-flex items-center gap-2">
                             <button
                               onClick={() => loadConfigIntoSimulator(config)}
-                              className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-sm text-[10px] font-extrabold uppercase tracking-wide rounded-lg transition-all"
+                              className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-sm text-[12px] font-extrabold uppercase tracking-wide rounded-lg transition-all"
                             >{t("aa.load")}</button>
                             {deleteConfirmId === config.id ? (
                               <button
@@ -970,7 +970,7 @@ export function AssetAllocations({
                                   deleteConfig(config.id);
                                   setDeleteConfirmId(null);
                                 }}
-                                className="px-2 py-1 text-[10px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
+                                className="px-2 py-1 text-[12px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
                                 title="Confirm deletion"
                               >{t("aa.confirm")}</button>
                             ) : (
@@ -1658,7 +1658,7 @@ export function AssetAllocations({
                         {aIdx === portfolioAssets.length - 1 && (
                           <button
                             onClick={addAssetRow}
-                            className="text-pv-blue hover:underline text-[11px] font-semibold break-keep whitespace-nowrap block mt-1"
+                            className="text-pv-blue hover:underline text-[13px] font-semibold break-keep whitespace-nowrap block mt-1"
                           >+ {t("aa.add_more")}</button>
                         )}
                       </td>
@@ -1942,13 +1942,13 @@ export function AssetAllocations({
                               .map(([sym, w]) => (
                                 <span
                                   key={sym}
-                                  className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium"
+                                  className="text-[12px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium"
                                 >
                                   {sym} {String(w)}%
                                 </span>
                               ))}
                             {Object.keys(r.alloc).length > 3 && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium">
+                              <span className="text-[12px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium">
                                 +{Object.keys(r.alloc).length - 3}
                               </span>
                             )}

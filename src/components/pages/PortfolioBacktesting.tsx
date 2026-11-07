@@ -916,28 +916,28 @@ export function PortfolioBacktesting({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">{t("aa.conf_cloud")}</p>
+            <p className="text-[13px] font-extrabold uppercase tracking-widest text-slate-400">{t("aa.conf_cloud")}</p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-slate-900">{totalCount}</p>
-              <p className="text-[11px] text-slate-500 font-medium mt-1">{t("aa.conf_cloud")}</p>
+              <p className="text-[13px] text-slate-500 font-medium mt-1">{t("aa.conf_cloud")}</p>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-500">{t("dashboard.best_cagr")}</p>
+            <p className="text-[13px] font-extrabold uppercase tracking-widest text-emerald-500">{t("dashboard.best_cagr")}</p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-emerald-600">{bestCagr}</p>
-              <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestCagrName}>
+              <p className="text-[13px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestCagrName}>
                 {bestCagrName || "No report generated"}
               </p>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">{t("dashboard.best_sharpe")}</p>
+            <p className="text-[13px] font-extrabold uppercase tracking-widest text-indigo-500">{t("dashboard.best_sharpe")}</p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-indigo-600">{bestSharpe}</p>
-              <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestSharpeName}>
+              <p className="text-[13px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestSharpeName}>
                 {bestSharpeName || "No report generated"}
               </p>
             </div>
@@ -967,7 +967,7 @@ export function PortfolioBacktesting({
             <div className="border-b border-slate-100 pb-3">
               <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
                 <Activity size={16} className="text-blue-500" />{t("dashboard.ai_analysis")}</h3>
-              <p className="text-[10px] text-slate-500 font-medium mt-1">{t("dashboard.matrix_desc")}</p>
+              <p className="text-[12px] text-slate-500 font-medium mt-1">{t("dashboard.matrix_desc")}</p>
             </div>
 
             <div className="space-y-4 overflow-y-auto max-h-[300px] pr-1">
@@ -984,7 +984,7 @@ export function PortfolioBacktesting({
                     {rec.type === "info" && "ℹ️"}
                     {rec.title}
                   </p>
-                  <p className="font-medium text-[11px] opacity-90">{rec.text}</p>
+                  <p className="font-medium text-[13px] opacity-90">{rec.text}</p>
                 </div>
               ))}
             </div>
@@ -1023,13 +1023,13 @@ export function PortfolioBacktesting({
                     return (
                       <>
                         <div className="p-3.5 bg-white/5  rounded-2xl">
-                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_ret")}</span>
+                          <span className="text-[12px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_ret")}</span>
                           <p className="text-sm font-medium text-slate-200">
                             <span className="text-emerald-400 font-extrabold">{highestCagrName}</span> {t("aa.leads_ret")} <span className="text-emerald-400 font-extrabold">{highestCagr.toFixed(2)}%</span>.
                           </p>
                         </div>
                         <div className="p-3.5 bg-white/5  rounded-2xl">
-                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.risk_prot")}</span>
+                          <span className="text-[12px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.risk_prot")}</span>
                           <p className="text-sm font-medium text-slate-200">
                             <span className="text-blue-400 font-extrabold">{lowestMddName}</span> {t("aa.resil_dd")} <span className="text-blue-400 font-extrabold">-{lowestMdd.toFixed(2)}%</span>.
                           </p>
@@ -1061,12 +1061,12 @@ export function PortfolioBacktesting({
                     return (
                       <>
                         <div className="p-3.5 bg-white/5  rounded-2xl">
-                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_eff")}</span>
+                          <span className="text-[12px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_eff")}</span>
                           <p className="text-sm font-medium text-slate-200">
                             {t("aa.eff_port")} <span className="text-indigo-400 font-extrabold">{highestSharpeName}</span> {t("aa.with_sharpe")} <span className="text-indigo-400 font-extrabold">{highestSharpe.toFixed(2)}</span>.
                           </p>
                         </div>
-                        <p className="text-[10px] text-slate-400 italic leading-relaxed px-1 mt-2">{t("aa.sharpe_note")}</p>
+                        <p className="text-[12px] text-slate-400 italic leading-relaxed px-1 mt-2">{t("aa.sharpe_note")}</p>
                       </>
                     );
                   })()}
@@ -1088,7 +1088,7 @@ export function PortfolioBacktesting({
             ) : (
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/50 text-slate-400 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-100">
+                  <tr className="bg-slate-50/50 text-slate-400 font-extrabold uppercase text-[12px] tracking-wider border-b border-slate-100">
                     <th className="px-6 py-4">{t("aa.strat_name")}</th>
                     <th className="px-6 py-4">{t("pb.simSpan")}</th>
                     <th className="px-6 py-4">{t("pb.capital")}</th>
@@ -1120,7 +1120,7 @@ export function PortfolioBacktesting({
                               const weight = a.weights?.[0] || 0;
                               if (Number(weight) <= 0) return null;
                               return (
-                                <span key={index} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold">
+                                <span key={index} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[12px] font-bold">
                                   {a.symbol}: {weight}%
                                 </span>
                               );
@@ -1131,15 +1131,15 @@ export function PortfolioBacktesting({
                           {primaryMetrics ? (
                             <div className="flex gap-4">
                               <div>
-                                <span className="text-[10px] font-bold text-slate-400 block uppercase">CAGR</span>
+                                <span className="text-[12px] font-bold text-slate-400 block uppercase">CAGR</span>
                                 <span className="font-bold text-emerald-600">{primaryMetrics.cagr?.toFixed(2)}%</span>
                               </div>
                               <div>
-                                <span className="text-[10px] font-bold text-slate-400 block uppercase">Max DD</span>
+                                <span className="text-[12px] font-bold text-slate-400 block uppercase">Max DD</span>
                                 <span className="font-bold text-red-500">-{Math.abs(primaryMetrics.maxDrawdown || 0)?.toFixed(2)}%</span>
                               </div>
                               <div>
-                                <span className="text-[10px] font-bold text-slate-400 block uppercase">Sharpe</span>
+                                <span className="text-[12px] font-bold text-slate-400 block uppercase">Sharpe</span>
                                 <span className="font-bold text-slate-700">{primaryMetrics.sharpe?.toFixed(2)}</span>
                               </div>
                             </div>
@@ -1149,10 +1149,10 @@ export function PortfolioBacktesting({
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex flex-col items-end gap-1">
-                            <span className="text-[9px] uppercase tracking-wider text-slate-400 font-extrabold">{t("aa.saved_on")}</span>
+                            <span className="text-[11px] uppercase tracking-wider text-slate-400 font-extrabold">{t("aa.saved_on")}</span>
                             <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/50 rounded-lg px-2.5 py-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.01)] w-fit">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="font-mono text-[11px] font-bold text-slate-700 tracking-tight">
+                              <span className="font-mono text-[13px] font-bold text-slate-700 tracking-tight">
                                 {formatDate(config.updatedAt || config.createdAt)}
                               </span>
                             </div>
@@ -1162,7 +1162,7 @@ export function PortfolioBacktesting({
                           <div className="inline-flex items-center gap-2">
                             <button
                               onClick={() => loadConfigIntoSimulator(config)}
-                              className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 text-[10px] font-bold uppercase rounded-lg transition-all"
+                              className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 text-[12px] font-bold uppercase rounded-lg transition-all"
                             >{t("aa.load")}</button>
                             {deleteConfirmId === config.id ? (
                               <button
@@ -1171,7 +1171,7 @@ export function PortfolioBacktesting({
                                   deleteConfig(config.id);
                                   setDeleteConfirmId(null);
                                 }}
-                                className="px-2 py-1 text-[10px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
+                                className="px-2 py-1 text-[12px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
                                 title="Confirm deletion"
                               >{t("aa.confirm")}</button>
                             ) : (
@@ -1637,7 +1637,7 @@ export function PortfolioBacktesting({
                           {aIdx === portfolioAssets.length - 1 && (
                             <button
                               onClick={addAsset}
-                              className="text-pv-blue hover:underline text-[11px] font-semibold break-keep whitespace-nowrap block mt-1"
+                              className="text-pv-blue hover:underline text-[13px] font-semibold break-keep whitespace-nowrap block mt-1"
                             >
                               + {t("aa.add_more") || "Add More"}
                             </button>
@@ -1891,7 +1891,7 @@ export function PortfolioBacktesting({
                                 r.totalContributions !== undefined &&
                                 r.totalContributions !== r.initialAmount,
                             ) && (
-                              <th className="px-4 py-4 text-center font-medium text-text uppercase tracking-wider text-[10px]">
+                              <th className="px-4 py-4 text-center font-medium text-text uppercase tracking-wider text-[12px]">
                                 {t("pb.contributions")}
                               </th>
                             )}
@@ -1902,7 +1902,7 @@ export function PortfolioBacktesting({
                               CAGR
                             </th>
                             {results.some((r) => r.irr !== undefined) && (
-                              <th className="px-4 py-4 text-center font-medium text-text uppercase tracking-wider text-[10px]">
+                              <th className="px-4 py-4 text-center font-medium text-text uppercase tracking-wider text-[12px]">
                                 IRR
                               </th>
                             )}
@@ -1966,13 +1966,13 @@ export function PortfolioBacktesting({
                                     .map(([sym, w]) => (
                                       <span
                                         key={sym}
-                                        className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium"
+                                        className="text-[12px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium"
                                       >
                                         {sym} {String(w)}%
                                       </span>
                                     ))}
                                   {Object.keys(r.alloc).length > 3 && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium">
+                                    <span className="text-[12px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium">
                                       +{Object.keys(r.alloc).length - 3}
                                     </span>
                                   )}

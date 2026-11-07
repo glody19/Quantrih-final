@@ -127,7 +127,7 @@ export function LanguageSwitcher() {
             {/* Header */}
             <div className="flex flex-col gap-2 pb-2 border-b border-border/60">
               <div className="flex items-center justify-between px-2 pt-1">
-                <span className="text-[11px] font-bold text-text-3 uppercase tracking-widest flex items-center gap-1.5">
+                <span className="text-[13px] font-bold text-text-3 uppercase tracking-widest flex items-center gap-1.5">
                   <Globe size={12} className="text-pv-blue" />
                   Language / Taal
                 </span>
@@ -163,11 +163,11 @@ export function LanguageSwitcher() {
                         <div className="flex flex-col">
                           <span className="text-xs font-bold leading-none text-text group-hover:text-pv-blue transition-colors flex items-center gap-1.5">
                             {lang.nativeLabel}
-                            <span className="text-[10px] uppercase font-mono font-bold text-text-4 px-1 rounded bg-surface-3">
+                            <span className="text-[12px] uppercase font-mono font-bold text-text-4 px-1 rounded bg-surface-3">
                               {lang.code}
                             </span>
                           </span>
-                          <span className="text-[10px] text-text-3 font-medium mt-0.5">
+                          <span className="text-[12px] text-text-3 font-medium mt-0.5">
                             {lang.region}
                           </span>
                         </div>

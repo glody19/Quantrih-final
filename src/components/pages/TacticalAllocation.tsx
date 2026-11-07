@@ -1113,7 +1113,7 @@ export function TacticalAllocation() {
                     {aIdx === portfolioAssets.length - 1 && (
                       <button
                         onClick={addAssetRow}
-                        className="text-pv-blue hover:underline text-[11px] font-semibold break-keep whitespace-nowrap block mt-1"
+                        className="text-pv-blue hover:underline text-[13px] font-semibold break-keep whitespace-nowrap block mt-1"
                       >
                         + {currentLabels.addMoreAssets || "Add More"}
                       </button>
@@ -1439,40 +1439,40 @@ export function TacticalAllocation() {
         {/* KPI Panel */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between text-left">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-text-3">
+            <p className="text-[13px] font-extrabold uppercase tracking-widest text-text-3">
               {isEn ? "Total Strategies" : "Stratégies totales"}
             </p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-text">{totalCount}</p>
-              <p className="text-[11px] text-text-4 font-medium mt-1">
+              <p className="text-[13px] text-text-4 font-medium mt-1">
                 {isEn ? "Tactical setups stored in cloud" : "Modèles tactiques enregistrés"}
               </p>
             </div>
           </div>
 
           <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between text-left">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-500">
+            <p className="text-[13px] font-extrabold uppercase tracking-widest text-emerald-500">
               {isEn ? "Best CAGR Rate" : "Meilleur TCAC (CAGR)"}
             </p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-emerald-600">
                 {bestCagr > 0 ? `${bestCagr.toFixed(2)}%` : "N/A"}
               </p>
-              <p className="text-[11px] text-text-4 font-medium truncate mt-1" title={bestCagrName}>
+              <p className="text-[13px] text-text-4 font-medium truncate mt-1" title={bestCagrName}>
                 {bestCagrName || (isEn ? "No results generated" : "Aucun résultat généré")}
               </p>
             </div>
           </div>
 
           <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between text-left">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">
+            <p className="text-[13px] font-extrabold uppercase tracking-widest text-indigo-500">
               {isEn ? "Best Sharpe Ratio" : "Meilleur ratio de Sharpe"}
             </p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-indigo-600">
                 {bestSharpe > 0 ? bestSharpe.toFixed(2) : "N/A"}
               </p>
-              <p className="text-[11px] text-text-4 font-medium truncate mt-1" title={bestSharpeName}>
+              <p className="text-[13px] text-text-4 font-medium truncate mt-1" title={bestSharpeName}>
                 {bestSharpeName || (isEn ? "No results generated" : "Aucun résultat généré")}
               </p>
             </div>
@@ -1560,7 +1560,7 @@ export function TacticalAllocation() {
                                   handleCloudLoad(config.data);
                                   setActiveMainView("simulator");
                                 }}
-                                className="px-3 py-1.5 bg-pv-blue hover:bg-pv-blue-l text-white text-[11px] font-bold rounded-lg transition-all active:scale-95 cursor-pointer"
+                                className="px-3 py-1.5 bg-pv-blue hover:bg-pv-blue-l text-white text-[13px] font-bold rounded-lg transition-all active:scale-95 cursor-pointer"
                               >
                                 {isEn ? "Load" : "Charger"}
                               </button>
@@ -1572,7 +1572,7 @@ export function TacticalAllocation() {
                                     deleteConfig(config.id);
                                     setDeleteConfirmId(null);
                                   }}
-                                  className="px-2.5 py-1.5 text-[10px] font-extrabold text-white bg-red hover:bg-red/80 rounded-lg transition-all cursor-pointer animate-pulse"
+                                  className="px-2.5 py-1.5 text-[12px] font-extrabold text-white bg-red hover:bg-red/80 rounded-lg transition-all cursor-pointer animate-pulse"
                                 >
                                   {isEn ? "Confirm?" : "Sûr ?"}
                                 </button>
@@ -1607,7 +1607,7 @@ export function TacticalAllocation() {
                 <Activity size={16} className="text-pv-blue" />
                 {isEn ? "Tactical Guidelines" : "Conseils tactiques"}
               </h3>
-              <p className="text-[10px] text-text-3 font-medium mt-1">
+              <p className="text-[12px] text-text-3 font-medium mt-1">
                 {isEn 
                   ? "Execution and structural trading analysis"
                   : "Analyse d'exécution et de structure de trading"}
@@ -1625,7 +1625,7 @@ export function TacticalAllocation() {
                     {rec.type === "warning" ? "⚠️" : "💡"}
                     {rec.title}
                   </p>
-                  <p className="font-medium text-[11px] opacity-90 leading-relaxed">{rec.text}</p>
+                  <p className="font-medium text-[13px] opacity-90 leading-relaxed">{rec.text}</p>
                 </div>
               ))}
             </div>
@@ -2823,13 +2823,13 @@ export function TacticalAllocation() {
                                 .map(([sym, w]) => (
                                   <span
                                     key={sym}
-                                    className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium"
+                                    className="text-[12px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium"
                                   >
                                     {sym} {String(w)}%
                                   </span>
                                 ))}
                               {Object.keys(r.alloc).length > 3 && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium">
+                                <span className="text-[12px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium">
                                   +{Object.keys(r.alloc).length - 3}
                                 </span>
                               )}

@@ -247,7 +247,7 @@ export function CryptoMarket({ onBack, defaultSymbol = 'BTCUSDT' }: { onBack?: (
  <div className="flex-1">
      <div className="flex flex-col gap-1">
      <div className="flex items-center gap-2">
-       <span className="px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase bg-blue-500/10 border border-blue-500/20 rounded text-blue-500">
+       <span className="px-2 py-0.5 text-[11px] font-bold tracking-widest uppercase bg-blue-500/10 border border-blue-500/20 rounded text-blue-500">
          {t.cryptoTerminal} • {symbol.replace('USDT', '')}/USD
        </span>
      </div>

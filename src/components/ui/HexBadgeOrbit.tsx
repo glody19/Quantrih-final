@@ -461,7 +461,7 @@ export const HexBadgeOrbit: React.FC<{ onNavigate: (page: string) => void }> = (
                       backgroundPosition: "center"
                     } as React.CSSProperties}
                   >
-                    <span className={isDonate ? "pt-2 text-[10px] leading-tight opacity-90" : ""}>
+                    <span className={isDonate ? "pt-2 text-[12px] leading-tight opacity-90" : ""}>
                       {item.label.split("\n").map((line, idx) => (
                         <React.Fragment key={idx}>
                           {line}

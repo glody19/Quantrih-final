@@ -667,6 +667,7 @@ async function startServer() {
         return {
           symbol: r.symbol,
           label: r.shortname || r.longname || r.symbol,
+          exchange: r.exchDisp || r.exchange || null,
           type: isCrypto ? 'Crypto' : (r.quoteType === 'EQUITY' ? 'Equity' : r.quoteType || 'Equity')
         };
       });
@@ -750,7 +751,8 @@ async function startServer() {
                   website: p.website,
                   companyOfficers: [{ name: p.ceo }],
                   fullTimeEmployees: parseInt(p.fullTimeEmployees) || undefined,
-                  beta: p.beta
+                  beta: p.beta,
+                  country: p.country
                 },
                 financialData: {
                   financialCurrency: p.currency
@@ -799,6 +801,9 @@ async function startServer() {
           exchange: quote.exchange,
           pe: quote.trailingPE,
           eps: quote.epsTrailingTwelveMonths,
+          currency: quote.currency || null,
+          quoteType: quote.quoteType || null,
+          fullExchangeName: quote.fullExchangeName || quote.exchange || null,
         },
         profile: profile.assetProfile ? {
           description: profile.assetProfile.longBusinessSummary,
@@ -807,6 +812,7 @@ async function startServer() {
           website: profile.assetProfile.website,
           ceo: profile.assetProfile.companyOfficers?.[0]?.name,
           employeeTotal: profile.assetProfile.fullTimeEmployees,
+          country: profile.assetProfile.country || null,
           currency: profile.financialData?.financialCurrency || "USD",
           beta: profile.assetProfile.beta || profile.financialData?.targetMeanPrice ? quote.beta : undefined,
           lastDiv: quote.trailingAnnualDividendYield ? (quote.trailingAnnualDividendYield * 100).toFixed(2) + '%' : null
@@ -1070,6 +1076,39 @@ async function startServer() {
         currentRatioTTM: fd.currentRatio || null,
         quickRatioTTM: fd.quickRatio || null,
         debtEquityRatioTTM: fd.debtToEquity || null,
+
+        // Extra real metrics (Yahoo quoteSummary)
+        beta: sd.beta ?? ks.beta ?? null,
+        forwardEps: ks.forwardEps ?? null,
+        trailingEps: ks.trailingEps ?? null,
+        payoutRatio: sd.payoutRatio != null ? sd.payoutRatio * 100 : null,
+        dividendRate: sd.dividendRate ?? null,
+        revenueGrowth: fd.revenueGrowth != null ? fd.revenueGrowth * 100 : null,
+        earningsGrowth: fd.earningsGrowth != null ? fd.earningsGrowth * 100 : null,
+        totalCash: fd.totalCash ?? null,
+        totalDebt: fd.totalDebt ?? null,
+        totalRevenue: fd.totalRevenue ?? null,
+        freeCashflow: fd.freeCashflow ?? null,
+        operatingCashflow: fd.operatingCashflow ?? null,
+        ebitda: fd.ebitda ?? null,
+        targetMeanPrice: fd.targetMeanPrice ?? null,
+        targetHighPrice: fd.targetHighPrice ?? null,
+        targetLowPrice: fd.targetLowPrice ?? null,
+        recommendationKey: fd.recommendationKey ?? null,
+        recommendationMean: fd.recommendationMean ?? null,
+        numberOfAnalystOpinions: fd.numberOfAnalystOpinions ?? null,
+        sharesOutstanding: ks.sharesOutstanding ?? null,
+        floatShares: ks.floatShares ?? null,
+        heldPercentInsiders: ks.heldPercentInsiders != null ? ks.heldPercentInsiders * 100 : null,
+        heldPercentInstitutions: ks.heldPercentInstitutions != null ? ks.heldPercentInstitutions * 100 : null,
+        shortPercentOfFloat: ks.shortPercentOfFloat != null ? ks.shortPercentOfFloat * 100 : null,
+        week52Change: ks['52WeekChange'] != null ? ks['52WeekChange'] * 100 : null,
+        fiftyTwoWeekHigh: sd.fiftyTwoWeekHigh ?? null,
+        fiftyTwoWeekLow: sd.fiftyTwoWeekLow ?? null,
+        fiftyDayAverage: sd.fiftyDayAverage ?? null,
+        twoHundredDayAverage: sd.twoHundredDayAverage ?? null,
+        averageVolume: sd.averageVolume ?? null,
+        currency: summary.price?.currency || fd.financialCurrency || null,
       };
 
       res.json(ratios);

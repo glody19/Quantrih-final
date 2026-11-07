@@ -126,7 +126,7 @@ export function Header({
                           if (menu.id === "fmp-group") onPageChange("market");
                         }}
                         className={cn(
-                          "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-2xl text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all flex items-center gap-1 relative overflow-visible",
+                          "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-2xl text-[12px] lg:text-[13px] xl:text-[12px] font-semibold tracking-wide transition-all flex items-center gap-1 relative overflow-visible",
                           isActive 
                             ? "text-white bg-blue-600 shadow-md shadow-blue-500/20 scale-105 font-bold" 
                             : "text-text-2 hover:bg-surface-2 hover:text-text"
@@ -148,7 +148,7 @@ export function Header({
                             <button
                               key={child.id}
                               onClick={() => onPageChange(child.id)}
-                              className={`w-full text-left px-4 py-2.5 rounded-[1.5rem] text-[11px] lg:text-xs font-semibold transition-all ${
+                              className={`w-full text-left px-4 py-2.5 rounded-[1.5rem] text-[13px] lg:text-xs font-semibold transition-all ${
                                 currentPage === child.id ? "bg-blue-600 text-white font-bold" : "text-text hover:bg-surface-2"
                               }`}
                             >
@@ -162,7 +162,7 @@ export function Header({
                     <button
                       onClick={() => onPageChange(menu.id)}
                       className={cn(
-                        "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-2xl text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all relative overflow-visible",
+                        "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-2xl text-[12px] lg:text-[13px] xl:text-[12px] font-semibold tracking-wide transition-all relative overflow-visible",
                         isActive 
                           ? "text-white bg-blue-600 shadow-md shadow-blue-500/20 scale-105 font-bold" 
                           : "text-text-2 hover:bg-surface-2 hover:text-text"
@@ -194,7 +194,7 @@ export function Header({
           <div className="hidden lg:flex items-center gap-2">
             <button
               onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 text-blue-500 hover:text-blue-600 rounded-lg transition-all duration-300 text-[10px] font-medium tracking-wider shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 text-blue-500 hover:text-blue-600 rounded-lg transition-all duration-300 text-[12px] font-medium tracking-wider shadow-sm"
             >
               <Heart size={10} className="fill-blue-500 text-blue-500 animate-[pulse_2s_ease-in-out_infinite]" />
               <span>{t("header.donate")}</span>
@@ -211,7 +211,7 @@ export function Header({
                 userMenuOpen && "border-blue-500/50 shadow-[0_0_15px_rgba(37,99,235,0.15)]"
               )}
             >
-              <div className="w-6 h-6 lg:w-7 lg:h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] lg:text-[11px] shadow-inner overflow-hidden">
+              <div className="w-6 h-6 lg:w-7 lg:h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-[12px] lg:text-[13px] shadow-inner overflow-hidden">
                 {user ? (
                   firestorePhoto ? (
                     <img src={firestorePhoto} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -224,7 +224,7 @@ export function Header({
                   <User size={12} className="lg:w-[14px] lg:h-[14px]" />
                 )}
               </div>
-              <span className="text-[10px] lg:text-[11px] font-bold text-text max-w-[60px] lg:max-w-[100px] truncate hidden sm:block">
+              <span className="text-[12px] lg:text-[13px] font-bold text-text max-w-[60px] lg:max-w-[100px] truncate hidden sm:block">
                 {user ? (firestoreName || user.displayName || user.email?.split("@")[0]) : t("header.login")}
               </span>
               <ChevronDown size={12} className={cn("text-text-3 transition-transform duration-200", userMenuOpen && "rotate-180 text-blue-500")} />
@@ -266,7 +266,7 @@ export function Header({
                           </p>
                           <div className="flex items-center gap-1 mt-0.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                            <span className="text-[12px] font-semibold text-emerald-600 dark:text-emerald-400">
                               {t("header.connected")}
                             </span>
                           </div>
@@ -316,7 +316,7 @@ export function Header({
                           <p className="text-xs font-bold text-text">
                             {t("header.welcome")}
                           </p>
-                          <p className="text-[10px] text-text-3 font-medium">
+                          <p className="text-[12px] text-text-3 font-medium">
                             {t("header.guest")}
                           </p>
                         </div>

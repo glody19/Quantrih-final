@@ -21,34 +21,34 @@ export function Footer({ onNavigate }: FooterProps) {
         
         {/* Allocations & Backtesting */}
         <div className="flex flex-col gap-1">
-          <h4 className="text-[11px] font-bold text-slate-100 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+          <h4 className="text-[13px] font-bold text-slate-100 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
             {isFr ? "Allocations & Backtest" : "Allocations & Backtesting"}
           </h4>
           <button 
             onClick={() => handleNav('asset-allocation')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "Asset Allocation" : "Asset Allocation"}
           </button>
           <button 
             onClick={() => handleNav('portfolio-backtest')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "Portfolio Backtesting" : "Portfolio Backtesting"}
           </button>
           <button 
             onClick={() => handleNav('tactical-allocation')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "Tactical Allocation" : "Tactical Allocation"}
           </button>
           <button 
             onClick={() => handleNav('montecarlo')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "Monte Carlo" : "Monte Carlo"}
@@ -57,27 +57,27 @@ export function Footer({ onNavigate }: FooterProps) {
 
         {/* Markets & Research */}
         <div className="flex flex-col gap-1">
-          <h4 className="text-[11px] font-bold text-slate-100 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+          <h4 className="text-[13px] font-bold text-slate-100 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
             {isFr ? "Marchés & Recherche" : "Markets & Research"}
           </h4>
           <button 
             onClick={() => handleNav('market')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "Market Equity" : "Market Equity"}
           </button>
           <button 
             onClick={() => handleNav('etf-overview')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "ETF Overview" : "ETF Overview"}
           </button>
           <button 
             onClick={() => handleNav('education')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "Education" : "Education"}
@@ -86,34 +86,34 @@ export function Footer({ onNavigate }: FooterProps) {
 
         {/* Information & Legal */}
         <div className="flex flex-col gap-1">
-          <h4 className="text-[11px] font-bold text-slate-100 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+          <h4 className="text-[13px] font-bold text-slate-100 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
             {isFr ? "Informations & Légal" : "Information & Legal"}
           </h4>
           <button 
             onClick={() => handleNav('about')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "About Us" : "About Us"}
           </button>
           <button 
             onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "Support / Donate" : "Support / Donate"}
           </button>
           <button 
             onClick={() => handleNav('cookies')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "Cookies Policy" : "Cookies Policy"}
           </button>
           <button 
             onClick={() => handleNav('privacy')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+            className="text-left text-[13px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
             {isFr ? "Privacy Policy" : "Privacy Policy"}
@@ -123,7 +123,7 @@ export function Footer({ onNavigate }: FooterProps) {
       </div>
       
       {/* Bottom Bar */}
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 mt-5 pt-3 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[10px]">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 mt-5 pt-3 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[12px]">
         <p>© {new Date().getFullYear()} Quantrih. {isFr ? "Tous droits réservés." : "All rights reserved."}</p>
         <div className="flex items-center gap-4">
           <a href="mailto:contact@quantrih.com" className="hover:text-slate-300 transition-colors flex items-center gap-1">

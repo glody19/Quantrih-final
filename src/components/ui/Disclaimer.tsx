@@ -31,7 +31,7 @@ export const Disclaimer = () => {
 
   return (
     <div className="mt-12 text-center text-blue-600 dark:text-blue-400 max-w-5xl mx-auto space-y-2 px-4 pb-8 max-sm:[zoom:0.4]">
-      <p className="font-bold uppercase tracking-[0.2em] text-[9px] flex items-center justify-center gap-1 text-blue-600/80 dark:text-blue-400/80">
+      <p className="font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-1 text-blue-600/80 dark:text-blue-400/80">
         <AlertTriangle size={9} className="shrink-0" /> {t.title}
       </p>
       <p className="text-xs sm:text-sm leading-relaxed font-medium max-w-4xl mx-auto opacity-80">

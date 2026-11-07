@@ -764,40 +764,40 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
         {/* KPI Panel */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between text-left">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-text-3">
+            <p className="text-[13px] font-extrabold uppercase tracking-widest text-text-3">
               {isEn ? "Total Configurations" : "Configurations totales"}
             </p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-text">{totalCount}</p>
-              <p className="text-[11px] text-text-4 font-medium mt-1">
+              <p className="text-[13px] text-text-4 font-medium mt-1">
                 {isEn ? "Simulations stored in cloud" : "Simulations stockées dans le cloud"}
               </p>
             </div>
           </div>
 
           <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between text-left">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-500">
+            <p className="text-[13px] font-extrabold uppercase tracking-widest text-emerald-500">
               {isEn ? "Best Solvency Rate" : "Meilleure solvabilité"}
             </p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-emerald-600">
                 {bestSolvency > 0 ? `${(bestSolvency * 100).toFixed(1)}%` : "N/A"}
               </p>
-              <p className="text-[11px] text-text-4 font-medium truncate mt-1" title={bestSolvencyName}>
+              <p className="text-[13px] text-text-4 font-medium truncate mt-1" title={bestSolvencyName}>
                 {bestSolvencyName || (isEn ? "No results simulated" : "Aucun résultat simulé")}
               </p>
             </div>
           </div>
 
           <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between text-left">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">
+            <p className="text-[13px] font-extrabold uppercase tracking-widest text-indigo-500">
               {isEn ? "Longest Horizon" : "Horizon maximal"}
             </p>
             <div className="mt-4">
               <p className="text-3xl font-extrabold text-indigo-600">
                 {longestHorizon > 0 ? `${longestHorizon} ${isEn ? "years" : "ans"}` : "N/A"}
               </p>
-              <p className="text-[11px] text-text-4 font-medium mt-1">
+              <p className="text-[13px] text-text-4 font-medium mt-1">
                 {isEn ? "Maximum stress horizon" : "Horizon de stress maximal"}
               </p>
             </div>
@@ -869,7 +869,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                           <td className="p-4">
                             {maxSolvObj !== undefined ? (
                               <span className={cn(
-                                "px-2 py-1 rounded-md text-[10px] font-extrabold font-mono",
+                                "px-2 py-1 rounded-md text-[12px] font-extrabold font-mono",
                                 maxSolvObj >= 0.90 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
                                 maxSolvObj >= 0.80 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
                                 "bg-red/10 text-red"
@@ -887,7 +887,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                                   handleCloudLoad(config.data);
                                   setActiveMainView("simulator");
                                 }}
-                                className="px-3 py-1.5 bg-pv-blue hover:bg-pv-blue-l text-white text-[11px] font-bold rounded-lg transition-all active:scale-95 cursor-pointer"
+                                className="px-3 py-1.5 bg-pv-blue hover:bg-pv-blue-l text-white text-[13px] font-bold rounded-lg transition-all active:scale-95 cursor-pointer"
                               >
                                 {isEn ? "Load" : "Charger"}
                               </button>
@@ -899,7 +899,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                                     deleteConfig(config.id);
                                     setDeleteConfirmId(null);
                                   }}
-                                  className="px-2.5 py-1.5 text-[10px] font-extrabold text-white bg-red hover:bg-red/80 rounded-lg transition-all cursor-pointer animate-pulse"
+                                  className="px-2.5 py-1.5 text-[12px] font-extrabold text-white bg-red hover:bg-red/80 rounded-lg transition-all cursor-pointer animate-pulse"
                                 >
                                   {isEn ? "Confirm?" : "Sûr ?"}
                                 </button>
@@ -934,7 +934,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                 <Activity size={16} className="text-pv-blue" />
                 {isEn ? "Stochastic Guidelines" : "Conseils stochastiques"}
               </h3>
-              <p className="text-[10px] text-text-3 font-medium mt-1">
+              <p className="text-[12px] text-text-3 font-medium mt-1">
                 {isEn 
                   ? "Analysis based on simulated paths and failure rates"
                   : "Analyse basée sur les trajectoires et probabilités d'échec"}
@@ -952,7 +952,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     {rec.type === "warning" ? "⚠️" : "💡"}
                     {rec.title}
                   </p>
-                  <p className="font-medium text-[11px] opacity-90 leading-relaxed">{rec.text}</p>
+                  <p className="font-medium text-[13px] opacity-90 leading-relaxed">{rec.text}</p>
                 </div>
               ))}
             </div>
@@ -1610,7 +1610,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                           {aIdx === portfolioAssets.length - 1 && (
                             <button
                               onClick={addAssetRow}
-                              className="text-pv-blue hover:underline text-[11px] font-semibold break-keep whitespace-nowrap block mt-1"
+                              className="text-pv-blue hover:underline text-[13px] font-semibold break-keep whitespace-nowrap block mt-1"
                             >
                               + {currentLabels.addMore}
                             </button>
@@ -1831,7 +1831,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                         <th className="px-6 py-4 text-right bg-blue-50/50">
                           {currentLabels.percentile50}
                           <br />
-                          <span className="text-[8px] text-pv-blue">
+                          <span className="text-[10px] text-pv-blue">
                             {currentLabels.median}
                           </span>
                         </th>

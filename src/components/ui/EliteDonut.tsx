@@ -101,7 +101,7 @@ export function EliteDonut({
         <Doughnut data={chartData} options={chartOptions} />
         {/* Inner Ring Data / Title */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-[11px] font-black text-text-4 mb-1 uppercase tracking-[0.2em]">
+          <span className="text-[13px] font-black text-text-4 mb-1 uppercase tracking-[0.2em]">
             {t("pb.totalAlloc")}
           </span>
           <span className="text-4xl font-black text-text tracking-tighter leading-none drop-shadow-sm">
@@ -110,7 +110,7 @@ export function EliteDonut({
         </div>
       </div>
       <div className="flex-1 w-full bg-surface p-6 rounded-[2rem] border border-border shadow-md">
-        <h4 className="text-[11px] font-black text-text mb-6 border-b border-border/80 pb-4 flex items-center justify-between uppercase tracking-[0.15em]">
+        <h4 className="text-[13px] font-black text-text mb-6 border-b border-border/80 pb-4 flex items-center justify-between uppercase tracking-[0.15em]">
           <span>{title || t("pb.assetAllocDetails")}</span>
           <span className="text-pv-blue bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl font-bold tracking-normal normal-case shadow-sm">
             {dataList.length} {t("pb.holdings")}

@@ -82,7 +82,7 @@ export const CustomSelect = ({ value, onChange, children, className, disabled }:
               {groupedOptions.length > 0 ? (
                 groupedOptions.map((group, gIdx) => (
                   <div key={gIdx} className="flex flex-col gap-1">
-                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-text-3/70 bg-surface-3/50 rounded-lg mt-1">
+                    <div className="px-3 py-1.5 text-[12px] font-bold uppercase tracking-wider text-text-3/70 bg-surface-3/50 rounded-lg mt-1">
                       {group.groupLabel}
                     </div>
                     {group.options.map((opt) => {

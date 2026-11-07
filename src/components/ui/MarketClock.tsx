@@ -60,7 +60,7 @@ export function MarketClock({ dark = false, className }: { dark?: boolean; class
   }, []);
 
   return (
-    <div className={cn("flex items-center gap-3 sm:gap-4 font-mono text-[10px] sm:text-[11px]", className)}>
+    <div className={cn("flex items-center gap-3 sm:gap-4 font-mono text-[12px] sm:text-[13px]", className)}>
       {CLOCK_CITIES.map((c) => {
         const status = getClockStatus(c.tz, c.open[0], c.open[1], c.close[0], c.close[1]);
         return (
