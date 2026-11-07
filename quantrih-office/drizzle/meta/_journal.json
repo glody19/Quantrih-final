@@ -15,6 +15,13 @@
       "when": 1793904810755,
       "tag": "0001_onboarding_detail",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794067673766,
+      "tag": "0002_sans_registre_national",
+      "breakpoints": true
     }
   ]
 }

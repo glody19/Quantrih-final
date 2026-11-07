@@ -7,9 +7,9 @@ const sans = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swa
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
-  title: { default: "Quantrih Office — Family office à Louvain-la-Neuve", template: "%s · Quantrih Office" },
+  title: { default: "Quantrih Office — Coordination patrimoniale, Louvain-la-Neuve", template: "%s · Quantrih Office" },
   description:
-    "Quantrih Office coordonne l'ensemble de votre patrimoine : une vision consolidée, un seul interlocuteur pour orchestrer banques, avocats, notaires et fiscalistes, et une transparence totale sur les honoraires.",
+    "Quantrih Office coordonne l'ensemble de votre patrimoine : une vision consolidée, un seul interlocuteur face à vos banques, avocats, notaires et conseillers fiscaux, et des honoraires publiés.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

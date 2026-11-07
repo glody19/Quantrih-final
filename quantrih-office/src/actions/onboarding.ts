@@ -18,14 +18,12 @@ import {
   WITHDRAWAL_DAYS,
   formatBce,
   isValidBce,
-  parseNiss,
 } from "@/lib/belgium";
 import { getDb } from "@/lib/db";
 import { assetCategoryEnum, consents, documents, engagements, entities, holdings, onboardingSteps, persons, relationships } from "@/lib/db/schema";
 import { computeFees, DEFAULT_FEE_GRID } from "@/lib/fees";
 import { assertMember, requireClient } from "@/lib/session";
 import { deleteStored } from "@/lib/storage";
-import { encryptText } from "@/lib/totp";
 import { ENGAGEMENT_VERSION } from "@/lib/engagement";
 
 export type ActionState = { ok?: boolean; error?: string; message?: string };
@@ -69,7 +67,6 @@ const personSchema = z.object({
   lastName: z.string().trim().min(1, "Indiquez le nom.").max(80),
   link: z.enum(keys(PERSON_LINKS)),
   birthDate: z.iso.date("Date de naissance invalide.").optional().or(z.literal("")),
-  niss: z.string().trim().max(20).optional(),
   nationality: z.enum(countryCodes),
   taxResidence: z.enum(countryCodes),
   maritalRegime: z.enum(keys(MARITAL_REGIMES)),
@@ -82,21 +79,10 @@ export async function addPerson(_p: ActionState, formData: FormData): Promise<Ac
   const parsed = personSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fail(parsed.error);
   const d = parsed.data;
-  let birthDate = d.birthDate || null;
-  let nissEncrypted: string | null = null;
-  let nissLast4: string | null = null;
-  if (d.niss) {
-    const niss = parseNiss(d.niss);
-    if (!niss.valid) return { error: "Numéro de registre national invalide (11 chiffres, au dos de la carte d'identité)." };
-    if (birthDate && niss.birthDate && niss.birthDate !== birthDate) return { error: "La date de naissance ne correspond pas au numéro de registre national." };
-    birthDate = birthDate ?? niss.birthDate;
-    const clean = d.niss.replace(/\D/g, "");
-    nissEncrypted = encryptText(clean, "niss");
-    nissLast4 = clean.slice(-4);
-  }
+  const birthDate = d.birthDate || null;
   const [row] = await getDb()
     .insert(persons)
-    .values({ relationshipId, firstName: d.firstName, lastName: d.lastName, link: d.link, birthDate, nissEncrypted, nissLast4, nationality: d.nationality, taxResidence: d.taxResidence, maritalRegime: d.maritalRegime, pep: d.pep, usPerson: d.usPerson })
+    .values({ relationshipId, firstName: d.firstName, lastName: d.lastName, link: d.link, birthDate, nationality: d.nationality, taxResidence: d.taxResidence, maritalRegime: d.maritalRegime, pep: d.pep, usPerson: d.usPerson })
     .returning({ id: persons.id });
   await touchStep(relationshipId, "profil");
   await audit(user.id, "personne.ajout", { relationshipId, target: row!.id });

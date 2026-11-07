@@ -1,30 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatBce, isValidBce, isValidIban, parseNiss, requiredDocuments } from "@/lib/belgium";
-
-/** Construit un NISS valide (clé calculée) pour les tests. */
-function niss(base9: string, after2000 = false) {
-  const check = 97 - (Number(after2000 ? `2${base9}` : base9) % 97);
-  return base9 + String(check).padStart(2, "0");
-}
-
-describe("registre national (NISS)", () => {
-  it("accepte un numéro valide né au XXe siècle et en déduit la date", () => {
-    expect(parseNiss(niss("850730033"))).toEqual({ valid: true, birthDate: "1985-07-30" });
-  });
-  it("accepte un numéro valide né après 2000", () => {
-    expect(parseNiss(niss("040215123", true))).toEqual({ valid: true, birthDate: "2004-02-15" });
-  });
-  it("accepte les séparateurs usuels", () => {
-    const n = niss("850730033");
-    expect(parseNiss(`${n.slice(0, 2)}.${n.slice(2, 4)}.${n.slice(4, 6)}-${n.slice(6, 9)}.${n.slice(9)}`).valid).toBe(true);
-  });
-  it("refuse une clé fausse ou une longueur incorrecte", () => {
-    const n = niss("850730033");
-    const wrong = n.slice(0, 9) + String((Number(n.slice(9)) + 1) % 100).padStart(2, "0");
-    expect(parseNiss(wrong).valid).toBe(false);
-    expect(parseNiss("1234").valid).toBe(false);
-  });
-});
+import { formatBce, isValidBce, isValidIban, requiredDocuments } from "@/lib/belgium";
 
 describe("numéro d'entreprise BCE", () => {
   it("valide un numéro connu (SPF Finances : 0308.357.159)", () => {

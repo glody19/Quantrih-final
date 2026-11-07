@@ -1,5 +1,5 @@
 import { Card, Empty } from "@/components/app/AppShell";
-import { countryLabel, DOCUMENT_CATEGORIES, ENTITY_ROLES, LEGAL_FORMS, MARITAL_REGIMES, maskNiss, OBJECTIVES, PARTNER_CATEGORIES, PERSON_LINKS, SHARE_SCOPES, WEALTH_ORIGINS } from "@/lib/belgium";
+import { countryLabel, DOCUMENT_CATEGORIES, ENTITY_ROLES, LEGAL_FORMS, MARITAL_REGIMES, OBJECTIVES, PARTNER_CATEGORIES, PERSON_LINKS, SHARE_SCOPES, WEALTH_ORIGINS } from "@/lib/belgium";
 import { dateTime, eur, longDate } from "@/lib/format";
 import { getConsents, getDocuments, getEngagement, getEntities, getPersons, getStepData } from "@/lib/onboarding-data";
 
@@ -44,7 +44,7 @@ export async function BureauDossier({ relationshipId }: { relationshipId: string
                 </strong>{" "}
                 · {L(PERSON_LINKS, p.link)}
                 <div className="text-xs text-slate">
-                  {p.birthDate ? longDate(p.birthDate) : "date de naissance non renseignée"} · {p.nissLast4 ? `RN ${maskNiss(p.nissLast4)}` : "RN non communiqué"} · {countryLabel(p.nationality)} · {L(MARITAL_REGIMES, p.maritalRegime)}
+                  {p.birthDate ? longDate(p.birthDate) : "date de naissance non renseignée"} · {countryLabel(p.nationality)} · {L(MARITAL_REGIMES, p.maritalRegime)}
                 </div>
               </li>
             ))}

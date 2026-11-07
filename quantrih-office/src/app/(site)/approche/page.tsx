@@ -5,16 +5,17 @@ export const metadata: Metadata = { title: "Notre approche", description: "Le r�
 
 const DO = [
   "Réunir l'ensemble de votre patrimoine dans une vision consolidée et tenue à jour.",
-  "Réaliser un audit patrimonial complet et proposer une feuille de route.",
+  "Établir un diagnostic patrimonial factuel : inventaire, cartographie, points d'attention.",
+  "Réunir les avis des professionnels habilités (notaire, avocat, conseiller fiscal) et en faciliter la lecture.",
   "Identifier, mandater et coordonner les professionnels adaptés à chaque besoin.",
-  "Préparer vos décisions : options, coûts, calendrier, points d'attention.",
+  "Organiser vos décisions : calendrier, coûts annoncés, documents à réunir.",
   "Suivre l'exécution et vous rendre compte de manière régulière.",
 ];
 const DONT = [
   "Prendre des décisions d'investissement à votre place.",
   "Vendre des produits financiers ou percevoir des commissions pour notre compte.",
   "Intervenir dans la gouvernance ou l'éducation de votre famille.",
-  "Nous substituer à vos avocats, notaires, banquiers ou experts-comptables.",
+  "Nous substituer à vos avocats, notaires, banquiers ou experts-comptables, ni vous adresser nous-mêmes des recommandations juridiques, fiscales ou d'investissement.",
 ];
 
 export default function Approche() {

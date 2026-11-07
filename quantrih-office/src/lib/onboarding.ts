@@ -9,7 +9,7 @@ export const ONBOARDING_STEPS = [
   { key: "documents", title: "Documents", owner: "Vous", description: "Déposer les pièces demandées selon votre situation : relevés, actes, statuts, contrats." },
   { key: "autorisations", title: "Autorisations et partenaires", owner: "Vous", description: "Choisir les professionnels avec qui nous pouvons échanger, et pour quelles informations." },
   { key: "revue", title: "Revue par Quantrih Office", owner: "Quantrih Office", description: "Contrôle de complétude et de conformité de votre dossier." },
-  { key: "activation", title: "Activation et audit patrimonial", owner: "Quantrih Office", description: "Ouverture de votre vision consolidée et rendez-vous de restitution de l'audit." },
+  { key: "activation", title: "Activation et restitution du diagnostic", owner: "Quantrih Office", description: "Ouverture de votre vision consolidée et rendez-vous de restitution du diagnostic." },
 ] as const;
 
 export type StepKey = (typeof ONBOARDING_STEPS)[number]["key"];

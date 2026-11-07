@@ -12,8 +12,8 @@ const PILLARS = [
 
 const STEPS = [
   ["Rendez-vous découverte", "Comprendre votre situation, vos objectifs et vos inquiétudes."],
-  ["Audit patrimonial", "Inventaire complet, diagnostic et cartographie de vos structures."],
-  ["Feuille de route", "Des priorités claires, chiffrées, et les professionnels à mobiliser."],
+  ["Diagnostic patrimonial", "Inventaire complet, cartographie de vos structures et points d'attention."],
+  ["Mise en relation", "Les professionnels habilités à vous conseiller sur chaque point, choisis avec vous."],
   ["Coordination", "Nous orchestrons l'exécution et vous rendons compte à chaque étape."],
   ["Suivi dans la durée", "Reporting consolidé, revues régulières, et un horizon de plusieurs décennies."],
 ];
@@ -24,12 +24,12 @@ export default function Home() {
       <section className="relative overflow-hidden border-b border-line/70">
         <div className="mx-auto grid max-w-6xl items-center gap-14 px-4 pb-20 pt-16 sm:px-6 md:pt-24 lg:grid-cols-[1.15fr_1fr]">
           <div>
-            <div className="eyebrow">Family office · Louvain-la-Neuve</div>
+            <div className="eyebrow">Coordination patrimoniale · Louvain-la-Neuve</div>
             <h1 className="mt-6 text-[2.9rem] leading-[1.02] md:text-[4.4rem]">
               Une vision complète de votre patrimoine. <em className="text-gold-dark">Un seul chef d&apos;orchestre.</em>
             </h1>
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-slate">
-              Quantrih Office accompagne les familles et les personnes disposant d&apos;un patrimoine important. Nous réunissons l&apos;ensemble de vos avoirs dans une vision consolidée et coordonnons les professionnels qui les servent, pour faire fructifier, préserver et transmettre.
+              Quantrih Office accompagne les familles, les entrepreneurs et les particuliers de toute la Belgique dont le patrimoine dépasse 1 million d&apos;euros. Nous réunissons l&apos;ensemble de vos avoirs dans une vision consolidée et coordonnons les professionnels qui vous conseillent : notaires, avocats, conseillers fiscaux, banques.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link href="/contact" className="btn btn-primary">

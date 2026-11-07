@@ -5,36 +5,6 @@
 
 const digits = (s: string) => s.replace(/\D/g, "");
 
-/**
- * Numéro de registre national (NISS) : 11 chiffres AAMMJJ-SSS-CC.
- * Clé = 97 − (9 premiers chiffres mod 97) ; pour les personnes nées à partir de 2000, on préfixe « 2 ».
- * Renvoie la date de naissance déduite (si le mois/jour sont connus) ou null si invalide.
- */
-export function parseNiss(input: string): { valid: true; birthDate: string | null } | { valid: false } {
-  const n = digits(input);
-  if (n.length !== 11) return { valid: false };
-  const base = n.slice(0, 9);
-  const check = Number(n.slice(9));
-  const c1900 = 97 - (Number(base) % 97);
-  const c2000 = 97 - (Number(`2${base}`) % 97);
-  const century = check === c1900 ? 1900 : check === c2000 ? 2000 : null;
-  if (!century) return { valid: false };
-  const yy = Number(n.slice(0, 2));
-  const mm = Number(n.slice(2, 4));
-  const dd = Number(n.slice(4, 6));
-  // Mois/jour à 0 ou numéros bis/ter (mois +20/+40) : date non déductible.
-  if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return { valid: true, birthDate: null };
-  const y = century + yy;
-  return { valid: true, birthDate: `${y}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}` };
-}
-
-export const formatNiss = (input: string) => {
-  const n = digits(input);
-  return n.length === 11 ? `${n.slice(0, 2)}.${n.slice(2, 4)}.${n.slice(4, 6)}-${n.slice(6, 9)}.${n.slice(9)}` : input;
-};
-/** Affichage masqué : seuls les 4 derniers chiffres. */
-export const maskNiss = (last4: string) => `••.••.••-•${last4.slice(0, 2)}.${last4.slice(2)}`;
-
 /** Numéro d'entreprise BCE (Banque-Carrefour des Entreprises) : 10 chiffres, commence par 0 ou 1, clé modulo 97. */
 export function isValidBce(input: string) {
   let n = digits(input);

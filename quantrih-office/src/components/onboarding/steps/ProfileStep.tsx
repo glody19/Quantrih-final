@@ -1,7 +1,7 @@
 import { addEntity, addPerson, deleteEntity, deletePerson, saveObjectives } from "@/actions/onboarding";
 import { Card, Empty } from "@/components/app/AppShell";
 import { ActionForm, Checks, Field, Select } from "@/components/onboarding/ActionForm";
-import { COUNTRIES, countryLabel, ENTITY_ROLES, LEGAL_FORMS, MARITAL_REGIMES, maskNiss, OBJECTIVES, PERSON_LINKS } from "@/lib/belgium";
+import { COUNTRIES, countryLabel, ENTITY_ROLES, LEGAL_FORMS, MARITAL_REGIMES, OBJECTIVES, PERSON_LINKS } from "@/lib/belgium";
 import { longDate } from "@/lib/format";
 import { getEntities, getPersons, getStepData } from "@/lib/onboarding-data";
 
@@ -25,7 +25,6 @@ export async function ProfileStep({ relationshipId }: { relationshipId: string; 
                   </div>
                   <div className="text-xs text-slate">
                     {p.birthDate ? `Né(e) le ${longDate(p.birthDate)} · ` : ""}
-                    {p.nissLast4 ? `Registre national ${maskNiss(p.nissLast4)} · ` : ""}
                     Résidence fiscale : {countryLabel(p.taxResidence)} · {label(MARITAL_REGIMES, p.maritalRegime)}
                   </div>
                 </div>
@@ -57,9 +56,6 @@ export async function ProfileStep({ relationshipId }: { relationshipId: string; 
               </Field>
               <Field label="Date de naissance">
                 <input name="birthDate" type="date" className="field" />
-              </Field>
-              <Field label="Numéro de registre national (facultatif)" hint="11 chiffres, au dos de la carte d'identité belge. Il est chiffré dès réception.">
-                <input name="niss" inputMode="numeric" placeholder="AA.MM.JJ-XXX.CC" className="field num" autoComplete="off" />
               </Field>
               <Field label="Situation familiale">
                 <Select name="maritalRegime" options={MARITAL_REGIMES} />

@@ -8,7 +8,7 @@ import QRCode from "qrcode";
 import { z } from "zod";
 import { LOCK_MINUTES, MAX_ATTEMPTS, signIn, signOut } from "@/auth";
 import { audit } from "@/lib/audit";
-import { getDb } from "@/lib/db";
+import { dbConfigured, getDb } from "@/lib/db";
 import { invitations, users } from "@/lib/db/schema";
 import { passwordProblem } from "@/lib/password";
 import { homeFor, requireSignedIn } from "@/lib/session";
@@ -31,6 +31,7 @@ const MESSAGES: Record<string, string> = {
 
 export async function login(_prev: FormState, formData: FormData): Promise<FormState> {
   const email = String(formData.get("email") ?? "");
+  if (!dbConfigured()) return { error: "L'espace client ouvre prochainement. Votre coordinateur vous enverra votre lien d'accès personnel.", email };
   const challenge = String(formData.get("challenge") ?? "");
   try {
     const fields = challenge ? { challenge, code: String(formData.get("code") ?? "") } : { email, password: formData.get("password") };
@@ -60,6 +61,7 @@ const invitationSchema = z
 
 /** Invitation valide (non utilisée, non expirée) : renvoie l'utilisateur concerné. */
 export async function findInvitation(token: string) {
+  if (!dbConfigured()) return null;
   const [row] = await getDb()
     .select({ id: invitations.id, userId: users.id, email: users.email, name: users.name })
     .from(invitations)

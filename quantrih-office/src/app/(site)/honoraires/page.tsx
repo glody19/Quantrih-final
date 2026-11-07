@@ -52,7 +52,7 @@ export default function Honoraires() {
       <Section tone="paper">
         <div className="grid gap-10 md:grid-cols-3">
           {[
-            ["Audit patrimonial", "Le premier inventaire et le diagnostic font l'objet d'un forfait annoncé avant le démarrage."],
+            ["Diagnostic patrimonial", "Le premier inventaire et le diagnostic font l'objet d'un forfait annoncé avant le démarrage."],
             ["Missions ponctuelles", "Cession d'entreprise, financement, création de holding : un honoraire fixé à l'avance, par écrit."],
             ["Sans surprise", "Aucun frais d'entrée, aucun frais de sortie. Vous pouvez mettre fin à la mission selon les termes de la lettre de mission."],
           ].map(([t, d]) => (

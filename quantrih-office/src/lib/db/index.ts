@@ -5,6 +5,9 @@ import * as schema from "./schema";
 
 const globalForDb = globalThis as unknown as { db?: PostgresJsDatabase<typeof schema> };
 
+/** Vrai si une base de données est configurée (le site public fonctionne sans, le temps de la brancher). */
+export const dbConfigured = () => !!(process.env.DATABASE_URL ?? process.env.POSTGRES_URL);
+
 /** Connexion paresseuse : le build ne nécessite pas de base de données. */
 export function getDb() {
   if (!globalForDb.db) {

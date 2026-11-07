@@ -211,7 +211,7 @@ export const settings = pgTable("settings", {
 
 /* ---------- Onboarding détaillé (phase 2) ---------- */
 
-/** Personnes de la relation. Le numéro de registre national est chiffré ; seuls les 4 derniers chiffres sont lisibles. */
+/** Personnes de la relation. Le numéro de registre national n'est jamais collecté (loi du 8 août 1983, APD). */
 export const persons = pgTable(
   "persons",
   {
@@ -223,8 +223,6 @@ export const persons = pgTable(
     lastName: text("last_name").notNull(),
     link: text("link").notNull(),
     birthDate: date("birth_date"),
-    nissEncrypted: text("niss_encrypted"),
-    nissLast4: text("niss_last4"),
     nationality: text("nationality").notNull().default("BE"),
     taxResidence: text("tax_residence").notNull().default("BE"),
     maritalRegime: text("marital_regime"),

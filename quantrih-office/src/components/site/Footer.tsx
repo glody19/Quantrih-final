@@ -9,7 +9,7 @@ export function Footer() {
         <div>
           <Logo light />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-ivory/60">
-            Family office indépendant. Une vision complète de votre patrimoine, une seule personne pour coordonner ceux qui le servent.
+            Coordination patrimoniale pour les familles et les entrepreneurs de toute la Belgique. Aucun produit vendu, aucune commission conservée.
           </p>
         </div>
         <FooterCol title="Découvrir" links={[["/approche", "Notre approche"], ["/services", "Services"], ["/pour-qui", "Pour qui"], ["/honoraires", "Honoraires"]]} />
@@ -34,6 +34,7 @@ export function Footer() {
           <div className="flex gap-5">
             <Link href="/mentions-legales" className="hover:text-ivory">Mentions légales</Link>
             <Link href="/confidentialite" className="hover:text-ivory">Confidentialité</Link>
+            <Link href="/plaintes" className="hover:text-ivory">Réclamations</Link>
           </div>
         </div>
       </div>

@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { CallToAction, PageHero, Section } from "@/components/site/ui";
 
-export const metadata: Metadata = { title: "À propos", description: "Quantrih Office, family office indépendant basé à Louvain-la-Neuve." };
+export const metadata: Metadata = { title: "À propos", description: "Quantrih Office, coordination patrimoniale à Louvain-la-Neuve, pour toute la Belgique." };
 
 export default function APropos() {
   return (
     <>
       <PageHero
         eyebrow="À propos"
-        title="Un family office indépendant, pensé pour durer."
-        lead="Quantrih Office est né d'un constat : les familles et les personnes disposant d'un patrimoine important ont besoin d'une vision d'ensemble et d'un coordinateur de confiance, sans devoir créer leur propre family office."
+        title="Un coordinateur patrimonial, pensé pour durer."
+        lead="Quantrih Office est né d'un constat : les familles et les personnes disposant d'un patrimoine important ont besoin d'une vision d'ensemble et d'un coordinateur de confiance, sans devoir créer leur propre structure."
       />
       <Section>
         <div className="grid gap-12 md:grid-cols-[1fr_1.4fr]">

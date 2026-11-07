@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { getDb } from "@/lib/db";
+import { dbConfigured, getDb } from "@/lib/db";
 import { leads } from "@/lib/db/schema";
 import { PROFILES, SERVICES, WEALTH_RANGES } from "@/lib/content";
 import { sendMail } from "@/lib/mail";
@@ -27,6 +27,7 @@ export async function submitLead(_prev: LeadState, formData: FormData): Promise<
   const parsed = leadSchema.safeParse({ ...raw, needs: formData.getAll("needs") });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Formulaire incomplet." };
   if (parsed.data.website) return { ok: true };
+  if (!dbConfigured()) return { error: "Le formulaire est momentanément indisponible. Écrivez-nous directement à bonjour@quantrih-office.be, nous vous répondrons sous 48 heures ouvrables." };
   const d = parsed.data;
   await getDb()
     .insert(leads)
