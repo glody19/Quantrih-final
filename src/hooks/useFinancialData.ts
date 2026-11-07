@@ -245,7 +245,7 @@ export function useFinancialData(initialSymbol: string) {
             const d = await profR.value.json();
             if (d && d.logo) {
               setProfile(prev => {
-                const updated = { ...prev, image: d.logo, description: prev?.description || `${d.name} operates in the ${d.finnhubIndustry} industry.` };
+                const updated = { ...prev, image: d.logo, description: prev?.description };
                 if(cache[sym]) cache[sym].profile = updated;
                 return updated;
               });

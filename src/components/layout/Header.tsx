@@ -5,7 +5,6 @@ import { cn } from "../../lib/utils";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { QuantrihLogo } from "../ui/Logo";
-import { MarketClock } from "../ui/MarketClock";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 import { doc, getDoc } from "firebase/firestore";
@@ -360,9 +359,6 @@ export function Header({
             transition={{ duration: 0.2 }}
             className="xl:hidden absolute top-full left-0 right-0 w-full bg-surface border-b border-border p-5 shadow-2xl z-[150] flex flex-col gap-2 max-h-[80vh] overflow-y-auto scroll-smooth rounded-b-3xl max-sm:[zoom:0.7]"
           >
-            <div className="mb-3 pb-3 border-b border-border flex justify-center">
-              <MarketClock />
-            </div>
             {menus.map((menu) => {
               const hasChildren = "children" in menu && !!menu.children;
               const isExpanded = !!expandedMenus[menu.id];
@@ -424,11 +420,7 @@ export function Header({
           </motion.div>
         )}
       </AnimatePresence>
-    
-      {/* Bottom Sub-Header for Market Clock */}
-      <div className="hidden lg:flex justify-end items-center border-t border-border/20 py-1.5 px-6">
-        <MarketClock />
-      </div>
+
     </header>
   );
 }

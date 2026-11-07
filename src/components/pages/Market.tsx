@@ -20,6 +20,7 @@ import { MobileZoomWrapper } from '../ui/MobileZoomWrapper';
 
 import { topETFs } from './etfData';
 import { assetClasses, majorIndices, megatrends } from './assetClassesData';
+import { MarketClock } from "../ui/MarketClock";
 import { lazyPortfolios } from './lazyPortfoliosData';
 
 const MARQUEE_SYMBOLS = [
@@ -29,57 +30,6 @@ const MARQUEE_SYMBOLS = [
  "NVO", "ASML", "SAP",
  "MC.PA", "OR.PA", "TTE.PA", "SAN.PA", "AIR.PA", "SU.PA", "BNP.PA", "RMS.PA", "AI.PA", "CS.PA",
  "SHEL.L", "AZN.L", "HSBA.L", "ULVR.L", "BP.L", "GSK.L", "BATS.L", "DGE.L", "RIO.L", "RELX.L"
-];
-
-const PRESTIGE_NEWS = [
- {
- title: "Global Markets Rally as Fed Signals Potential Rate Cuts",
- source: "Bloomberg",
- date: "2 Hours Ago",
- summary: "Equities surged across major indices today as the Federal Reserve hinted at easing monetary policy in the upcoming quarter, providing relief to global macro sectors.",
- image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=800",
- url: "https://www.bloomberg.com/markets"
- },
- {
- title: "BlackRock's iShares ETF Triggers New Institutional Wave",
- source: "BlackRock",
- date: "4 Hours Ago",
- summary: "A massive influx of institutional capital into BlackRock's flagship ETF suggests a structural shift in how pension funds approach digital asset allocations.",
- image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=800",
- url: "https://www.blackrock.com/us/individual/insights"
- },
- {
- title: "European Sovereign Debt Faces Unprecedented Pressure",
- source: "Financial Times",
- date: "5 Hours Ago",
- summary: "Bond yields hit historic highs in several Eurozone nations amid concerns over sovereign balance sheets and persistent core inflation metrics.",
- image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800",
- url: "https://www.ft.com/markets"
- },
- {
- title: "Tech Giants Propel Nasdaq to Historic Valuations",
- source: "Nasdaq",
- date: "6 Hours Ago",
- summary: "Driven by advancements in artificial intelligence hardware, major tech components of the Nasdaq-100 lifted the index past critical psychological resistance levels.",
- image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800",
- url: "https://www.nasdaq.com/news-and-insights"
- },
- {
- title: "Commodities Supercycle: Oil and Gold Hit Multi-Year Highs",
- source: "Wall Street Journal",
- date: "8 Hours Ago",
- summary: "Energy and precious metals are riding a wave of supply chain disruptions and geopolitical premiums, establishing what analysts term a new supercycle.",
- image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
- url: "https://www.wsj.com/finance"
- },
- {
- title: "Vanguard Shifts Focus Towards Emerging Market Value",
- source: "Vanguard",
- date: "12 Hours Ago",
- summary: "The passive investing giant is quietly revamping its core emerging markets strategy, placing heavier emphasis on undervalued equities in Latin America.",
- image: "https://images.unsplash.com/photo-1573164574572-cb89e39749b4?auto=format&fit=crop&q=80&w=800",
- url: "https://investor.vanguard.com/investor-resources-education/news"
- }
 ];
 
 function TickerItem({ item, tickerPrices, formatCryptoPrice, onClick }: { item: any, tickerPrices: any, formatCryptoPrice: (p: number) => string, onClick?: () => void }) {
@@ -175,7 +125,8 @@ function MarqueeItem({ symbol, data, onClick, isCrypto }: { symbol: string, data
     }
   }, [data?.price]);
 
-  const price = data?.price;
+  // Price 0 / null means no real quote received yet: never display it as a value
+  const price = typeof data?.price === 'number' && data.price > 0 ? data.price : null;
   const change = data?.changesPercentage || data?.change || 0;
   const isUp = change >= 0;
 
@@ -221,76 +172,6 @@ function MarqueeItem({ symbol, data, onClick, isCrypto }: { symbol: string, data
     </div>
   );
 }
-
-const assetManagementNews = [
- {
- title: "BlackRock expand its active ETF lineup amid rising demand",
- source: "CNBC",
- timestamp: "2 hours ago",
- summary: "The world's largest asset manager is aggressively rolling out new active ETFs, aiming to capture institutional rotation out of mutual funds and into more tax-efficient, transparent structures as fixed income yields stabilize.",
- image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Why the 60/40 portfolio is evolving in 2026",
- source: "Bloomberg",
- timestamp: "4 hours ago",
- summary: "Leading portfolio managers are increasingly advising private wealth clients to allocate towards alternative assets and private credit, fundamentally shifting the traditional 60/40 model to 50/30/20 to hedge against macroeconomic volatility.",
- image: "https://images.unsplash.com/photo-1590283603385-18ffb118b625?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Global sovereign wealth funds shift to private credit",
- source: "Financial Times",
- timestamp: "5 hours ago",
- summary: "Sovereign wealth funds from the Middle East and Asia are systematically deploying billions into direct lending and private credit markets, bypassing traditional syndicated loans and taking advantage of regulatory constraints on global banks.",
- image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Vanguard outlines new focus for emerging markets",
- source: "CNBC",
- timestamp: "12 hours ago",
- summary: "The passive investing giant is quietly revamping its core emerging markets strategy, placing heavier emphasis on India and Latin America, signaling a structural pivot that could influence trillions in benchmark-tracking capital.",
- image: "https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- }
-];
-
-const etfManagementNews = [
- {
- title: "Technology Select Sector SPDR Fund hits historic AUM milestone",
- source: "Wall Street Journal",
- timestamp: "1 hour ago",
- summary: "Driven by continuous investments in semiconductor and AI companies, XLK has reached a record assets under management level, reflecting persistent institutional bullishness in the tech sector.",
- image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Crypto ETFs see massive capital inflows post regulatory clarity",
- source: "Bloomberg",
- timestamp: "3 hours ago",
- summary: "Bitcoin and Ethereum ETFs are experiencing unprecedented volume as new regulatory frameworks globally authorize broader inclusion of crypto assets in retirement portfolios.",
- image: "https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Gold ETFs surge as investors hedge against inflation",
- source: "Financial Times",
- timestamp: "6 hours ago",
- summary: "Physical gold-backed ETFs saw their largest weekly inflow in two years as geopolitical tensions and lingering inflationary pressures drive a flight to safe-haven assets.",
- image: "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Dividend aristocrat ETFs outperform broader markets",
- source: "CNBC",
- timestamp: "8 hours ago",
- summary: "High-yield dividend ETFs have unexpectedly outpaced major indices this quarter, as investors prioritize cash flow and corporate stability over high-beta growth stocks.",
- image: "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- }
-];
 
 const labels: Record<string, Record<string, string>> = {
   en: {
@@ -627,7 +508,7 @@ const labels: Record<string, Record<string, string>> = {
 
 const watchlistHistoryCache: Record<string, any[]> = {};
 
-export function FinancialModeling() {
+export function Market() {
   const { language } = useTranslation();
   const currentLabels = labels[language] || labels["en"];
  const isMarketClosedVal = useMemo(() => {
@@ -780,6 +661,42 @@ const isEuropeanMarketOpen = () => {
    if (import.meta.env.DEV) console.warn("Market news fetch error:", e);
  })
  .finally(() => setMarketNewsLoading(false));
+ }, []);
+
+ // Major indices: performance computed from real monthly closes (no hardcoded figures)
+ const [liveIndices, setLiveIndices] = useState<Record<string, { m1: number | null; m6: number | null; y1: number | null; y5: number | null; y10: number | null }>>({});
+
+ useEffect(() => {
+ let cancelled = false;
+ const from = new Date();
+ from.setFullYear(from.getFullYear() - 11);
+ const fromStr = from.toISOString().split('T')[0];
+ const pct = (v: number | null) => (v == null || !isFinite(v) ? null : v * 100);
+ Promise.all(majorIndices.map(async (idx) => {
+ try {
+ const r = await fetch(`/api/prices/monthly/${encodeURIComponent(idx.ticker)}?from=${fromStr}`);
+ if (!r.ok) return [idx.ticker, null] as const;
+ const rows: { date: string; close: number }[] = await r.json();
+ const closes = (Array.isArray(rows) ? rows : [])
+ .filter(x => typeof x.close === 'number' && x.close > 0)
+ .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+ .map(x => x.close);
+ if (closes.length < 2) return [idx.ticker, null] as const;
+ const last = closes[closes.length - 1];
+ const back = (n: number) => (closes.length > n ? closes[closes.length - 1 - n] : null);
+ const cum = (n: number) => { const b = back(n); return b ? last / b - 1 : null; };
+ const ann = (years: number) => { const b = back(years * 12); return b ? Math.pow(last / b, 1 / years) - 1 : null; };
+ return [idx.ticker, { m1: pct(cum(1)), m6: pct(cum(6)), y1: pct(cum(12)), y5: pct(ann(5)), y10: pct(ann(10)) }] as const;
+ } catch {
+ return [idx.ticker, null] as const;
+ }
+ })).then(results => {
+ if (cancelled) return;
+ const next: Record<string, any> = {};
+ results.forEach(([t, v]) => { if (v) next[t] = v; });
+ setLiveIndices(next);
+ });
+ return () => { cancelled = true; };
  }, []);
 
  const [newCompareInput, setNewCompareInput] = useState('');
@@ -2286,7 +2203,10 @@ const isEuropeanMarketOpen = () => {
  </div>
  ) : (
  <div className="space-y-0">
- {(marketNews.length > 0 ? marketNews : PRESTIGE_NEWS).map((n, idx) => (
+ {marketNews.length === 0 && (
+ <div className="py-10 text-center text-sm font-medium text-text-3">News unavailable right now.</div>
+ )}
+ {marketNews.map((n, idx) => (
  <a 
  key={idx}
  href={n.url || '#'}
@@ -2412,18 +2332,24 @@ const isEuropeanMarketOpen = () => {
  </tr>
  </thead>
  <tbody className="divide-y divide-border/40 text-xs md:text-sm">
- {majorIndices.map((item, idx) => {
+ {majorIndices.map((idxItem, idx) => {
+ const live = liveIndices[idxItem.ticker];
+ const cell = (v: number | null | undefined, last = false) => (
+ <td className={cn(last ? "py-0 px-0.5 md:py-2 md:px-2.5" : "py-0 px-0 md:py-2 md:px-1.5", "text-right font-medium whitespace-nowrap", v == null ? "text-text-3" : v >= 0 ? "text-emerald-600" : "text-rose-600")}>
+ {v == null ? "-" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`}
+ </td>
+ );
  return (
  <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
  <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-bold text-text bg-white/50 transition-colors flex items-center gap-1 md:gap-1.5">
- {item.ticker}
+ {idxItem.ticker}
  </td>
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-medium text-text whitespace-nowrap" title={item.asset}>{item.asset}</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.m1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m1 >= 0 ? "+" : ""}{item.m1 != null ? item.m1.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.m6 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m6 >= 0 ? "+" : ""}{item.m6 != null ? item.m6.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.y1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y1 != null ? item.y1.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.y5 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y5 != null ? item.y5.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0.5 md:py-2 md:px-2.5 text-right font-medium whitespace-nowrap", item.y10 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y10 != null ? item.y10.toFixed(2) : "-"}%</td>
+ <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-medium text-text whitespace-nowrap" title={idxItem.asset}>{idxItem.asset}</td>
+ {cell(live?.m1)}
+ {cell(live?.m6)}
+ {cell(live?.y1)}
+ {cell(live?.y5)}
+ {cell(live?.y10, true)}
  </tr>
  )
  })}
@@ -2706,6 +2632,10 @@ const isEuropeanMarketOpen = () => {
   })
   )}
  </div>
+ </div>
+ {/* Stock exchange clocks (only on the Market page) */}
+ <div className="hidden md:flex items-center px-4 bg-[#0a0a0a] border-l border-slate-800 z-10 shadow-[-4px_0_10px_rgba(0,0,0,0.2)] shrink-0">
+ <MarketClock dark />
  </div>
  </div>
 

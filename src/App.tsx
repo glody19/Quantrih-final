@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from
 import { Header } from "./components/layout/Header";
 import { CommandPalette } from "./components/layout/CommandPalette";
 import { Footer } from "./components/layout/Footer";
-import { MarketClock } from "./components/ui/MarketClock";
 import { CookieConsent } from "./components/layout/CookieConsent";
 
 import { Home } from "./components/pages/Home";
@@ -15,7 +14,7 @@ import { MovingAverage } from "./components/pages/MovingAverage";
 import { DualMomentum } from "./components/pages/DualMomentum";
 import { RelativeStrength } from "./components/pages/RelativeStrength";
 import { Education } from "./components/pages/Education";
-import { FinancialModeling as MarketEquity } from "./components/pages/FinancialModeling";
+import { Market } from "./components/pages/Market";
 import { Platforms } from "./components/pages/Platforms";
 import { EtfScreener } from "./components/pages/EtfScreener";
 import { Auth } from "./components/pages/Auth";
@@ -237,7 +236,7 @@ function AppContent() {
           <Route path="/dual-momentum" element={<DualMomentum />} />
           <Route path="/relative-strength" element={<RelativeStrength />} />
           <Route path="/platforms" element={<Platforms onNavigate={handleNavigate} />} />
-          <Route path="/market" element={<MarketEquity />} />
+          <Route path="/market" element={<Market />} />
           <Route path="/etf-overview" element={<EtfScreener />} />
           <Route path="/education" element={<Education />} />
           <Route path="/donate" element={<Navigate to="/" replace />} />

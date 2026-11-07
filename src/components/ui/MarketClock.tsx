@@ -37,7 +37,7 @@ const getClockStatus = (tz: string, oH: number, oM: number, cH: number, cM: numb
   return "closed";
 };
 
-export function MarketClock() {
+export function MarketClock({ dark = false, className }: { dark?: boolean; className?: string } = {}) {
   const [times, setTimes] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function MarketClock() {
   }, []);
 
   return (
-    <div className="flex items-center gap-3 sm:gap-4 font-mono text-[10px] sm:text-[11px]">
+    <div className={cn("flex items-center gap-3 sm:gap-4 font-mono text-[10px] sm:text-[11px]", className)}>
       {CLOCK_CITIES.map((c) => {
         const status = getClockStatus(c.tz, c.open[0], c.open[1], c.close[0], c.close[1]);
         return (
@@ -71,8 +71,8 @@ export function MarketClock() {
                 status === "open" ? "bg-emerald-500" : status === "pre" ? "bg-amber-400" : "bg-rose-500/70"
               )}
             />
-            <span className="font-bold text-text-2">{c.name}</span>
-            <span className="text-text font-semibold">{times[c.id] || "--:--"}</span>
+            <span className={cn("font-bold", dark ? "text-slate-400" : "text-text-2")}>{c.name}</span>
+            <span className={cn("font-semibold", dark ? "text-white" : "text-text")}>{times[c.id] || "--:--"}</span>
           </div>
         );
       })}

@@ -1,11 +1,12 @@
+// Performance figures are computed live from real monthly closes (see Market page).
 export const majorIndices = [
-  { ticker: "^GSPC", asset: "S&P 500 Index", m1: 5.26, m3: 10.58, m6: 11.33, y1: 29.82, y3: 23.45, y5: 14.04, y10: 15.56, y30: 10.32 },
-  { ticker: "^IXIC", asset: "NASDAQ Composite", m1: 6.12, m3: 12.30, m6: 15.40, y1: 34.50, y3: 25.10, y5: 16.20, y10: 18.50, y30: 12.10 },
-  { ticker: "^DJI", asset: "Dow Jones Industrial Average", m1: 3.50, m3: 8.10, m6: 9.20, y1: 22.40, y3: 18.20, y5: 11.50, y10: 12.80, y30: 9.80 },
-  { ticker: "^STOXX50E", asset: "EURO STOXX 50", m1: 2.10, m3: 4.50, m6: 8.10, y1: 18.20, y3: 14.30, y5: 9.10, y10: 8.50, y30: 6.40 },
-  { ticker: "^FCHI", asset: "CAC 40", m1: 1.50, m3: 3.20, m6: 6.40, y1: 15.10, y3: 12.20, y5: 8.40, y10: 7.80, y30: 5.50 },
-  { ticker: "^FTSE", asset: "FTSE 100", m1: 1.20, m3: 2.30, m6: 5.40, y1: 12.50, y3: 10.10, y5: 6.20, y10: 7.10, y30: 5.20 },
-  { ticker: "^N225", asset: "Nikkei 225", m1: 4.50, m3: 9.20, m6: 14.10, y1: 28.50, y3: 19.40, y5: 12.30, y10: 11.50, y30: 3.20 },
+  { ticker: "^GSPC", asset: "S&P 500 Index" },
+  { ticker: "^IXIC", asset: "NASDAQ Composite" },
+  { ticker: "^DJI", asset: "Dow Jones Industrial Average" },
+  { ticker: "^STOXX50E", asset: "EURO STOXX 50" },
+  { ticker: "^FCHI", asset: "CAC 40" },
+  { ticker: "^FTSE", asset: "FTSE 100" },
+  { ticker: "^N225", asset: "Nikkei 225" },
 ];
 
 export const assetClasses = [

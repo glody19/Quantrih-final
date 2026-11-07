@@ -538,81 +538,8 @@ async function startServer() {
     const apiKey = process.env.FINNHUB_API_KEY;
     const symbol = (req.query.symbol as string || req.query.q as string || "AAPL").toUpperCase();
 
-    // Finnhub fallback generator
-    const getFinnhubFallback = (endPt: string, sym: string) => {
-      const cleanEndpoint = endPt.toLowerCase();
-      if (cleanEndpoint.includes("search")) {
-        return {
-          result: [
-            { description: "Apple Inc", displaySymbol: "AAPL", symbol: "AAPL", type: "Common Stock" },
-            { description: "Microsoft Corp", displaySymbol: "MSFT", symbol: "MSFT", type: "Common Stock" },
-            { description: "NVIDIA Corp", displaySymbol: "NVDA", symbol: "NVDA", type: "Common Stock" },
-            { description: "Tesla Inc", displaySymbol: "TSLA", symbol: "TSLA", type: "Common Stock" },
-            { description: "Alphabet Inc", displaySymbol: "GOOGL", symbol: "GOOGL", type: "Common Stock" }
-          ]
-        };
-      }
-      if (cleanEndpoint.includes("company-news")) {
-        return [
-          { id: 1, headline: `${sym} expands corporate operations and announces stock buyback program`, summary: `${sym} executes strategic buyback program amid strong global financial performance and enterprise cloud services expansion.`, source: "Reuters", url: "https://reuters.com", datetime: Math.floor(Date.now() / 1000) - 3600, image: "" },
-          { id: 2, headline: `Investment institutions raise price target on ${sym} over AI tailwind`, summary: "Leading research analyst groups issue positive updates referencing solid high-margin core service momentum.", source: "Bloomberg", url: "https://bloomberg.com", datetime: Math.floor(Date.now() / 1000) - 7200, image: "" }
-        ];
-      }
-      if (cleanEndpoint.includes("news")) {
-        return [
-          { id: 11, headline: "Global Markets Stabilize Ahead of Central Bank Rate Decisions", summary: "Global index benchmarks trading in tight margins as economists digest labor statistics and policy updates.", source: "Bloomberg", url: "https://bloomberg.com", datetime: Math.floor(Date.now() / 1000) - 1800, image: "" },
-          { id: 12, headline: "Tech stocks gain traction as infrastructure spending scales up", summary: "High-level datacenter deployments trigger broad buying across global semiconductor and hardware companies.", source: "Reuters", url: "https://reuters.com", datetime: Math.floor(Date.now() / 1000) - 5400, image: "" }
-        ];
-      }
-      if (cleanEndpoint.includes("peers")) {
-        return sym === "AAPL" 
-          ? ["MSFT", "GOOGL", "AMZN", "NVDA", "META"] 
-          : ["AAPL", "MSFT", "GOOGL", "AMZN", "META"];
-      }
-      if (cleanEndpoint.includes("recommendation")) {
-        return [{ buy: 18, hold: 12, sell: 1, strongBuy: 25, strongSell: 0, period: "2024-05" }];
-      }
-      if (cleanEndpoint.includes("insider-sentiment")) {
-        return {
-          data: [
-            { symbol: sym, year: 2024, month: 4, change: 12052, mspr: 4.5 },
-            { symbol: sym, year: 2024, month: 3, change: -4500, mspr: -1.2 },
-            { symbol: sym, year: 2024, month: 2, change: 8900, mspr: 2.8 }
-          ],
-          symbol: sym
-        };
-      }
-      if (cleanEndpoint.includes("news-sentiment")) {
-        return {
-          sentiment: { bearishPercent: 0.15, bullishPercent: 0.65, neutralPercent: 0.20 },
-          buzz: { articlesInLastWeek: 24, buzz: 0.85, weeklyAverage: 20 }
-        };
-      }
-      if (cleanEndpoint.includes("profile2")) {
-        return {
-          logo: sym ? `https://logo.clearbit.com/${sym.toLowerCase()}.com` : "https://logo.clearbit.com/apple.com",
-          name: sym,
-          finnhubIndustry: "Technology",
-          weburl: `https://${sym.toLowerCase()}.com`
-        };
-      }
-      if (cleanEndpoint.includes("metric")) {
-        return {
-          metric: {
-            peExclExtraTTM: 28.5,
-            pbAnnual: 15.2,
-            dividendYieldIndicatedAnnual: 0.55,
-            roeTTM: 145.2
-          },
-          symbol: sym
-        };
-      }
-      return {};
-    };
-
     if (!apiKey) {
-      console.warn(`[Finnhub Proxy] FINNHUB_API_KEY is not configured on server. Falling back to mockup Finnhub data for ${endpoint}`);
-      return res.json(getFinnhubFallback(endpoint, symbol));
+      return res.status(503).json({ error: "Finnhub data unavailable (API key not configured)" });
     }
 
     try {
@@ -628,8 +555,7 @@ async function startServer() {
       setCached('finnhub', cacheKey, data);
       return res.json(data);
     } catch (e: any) {
-      // Silently fall back to mockup data for 403 errors and premium endpoint limitations.
-      return res.json(getFinnhubFallback(endpoint, symbol));
+      return res.status(502).json({ error: "Finnhub data unavailable" });
     }
   });
 
@@ -638,58 +564,6 @@ async function startServer() {
     const { resource, symbol } = req.params;
     const cleanSym = (symbol || "").toUpperCase();
     const apiKey = process.env.FMP_API_KEY;
-
-    // FMP fallback generator on server-side
-    const getFmpFallback = (resType: string, sym: string) => {
-      if (resType === 'profile') {
-        const lastDivVal = sym === 'VCEB' ? 3.25 : (sym === 'GMNY' ? 2.10 : 1.84);
-        const price = sym === 'VCEB' ? 82.40 : (sym === 'GMNY' ? 61.20 : 150.00);
-        return [{
-          symbol: sym,
-          price: price,
-          beta: 1.05,
-          volAvg: 5800000,
-          mktCap: 85200000000,
-          lastDiv: lastDivVal,
-          changes: 1.25,
-          companyName: sym === 'VCEB' ? "Vanguard ESG US Corporate Bond ETF" : (sym === 'GMNY' ? "Goldman Sachs ActiveBeta Emerging Markets ETF" : `${sym} ETF`),
-          currency: "USD",
-          exchange: "NYSE Arca",
-          exchangeShortName: "AMEX",
-          industry: "Exchange Traded Fund",
-          website: "https://www.google.com",
-          description: `Analysis for ${sym}. Loaded simulated parameters because of corporate FMP API restriction or tier limits.`,
-          ceo: "N/A",
-          sector: sym === 'VCEB' ? "Financials" : "Technology",
-          country: "US",
-          ipoDate: "2010-01-22",
-          isEtf: true,
-          lastDivVal: lastDivVal
-        }];
-      } else if (resType === 'etf-holder') {
-        return [
-          { asset: "Apple Inc. (AAPL)", symbol: "AAPL", name: "Apple Inc.", shares: 14500000, weightPercentage: 7.85, marketValue: 2450000000 },
-          { asset: "Microsoft Corp (MSFT)", symbol: "MSFT", name: "Microsoft Corp", shares: 8900000, weightPercentage: 6.92, marketValue: 2160000000 },
-          { asset: "NVIDIA Corporation (NVDA)", symbol: "NVDA", name: "NVIDIA Corp", shares: 19400000, weightPercentage: 5.44, marketValue: 1700000000 },
-          { asset: "Amazon.com Inc (AMZN)", symbol: "AMZN", name: "Amazon.com Inc", shares: 11200000, weightPercentage: 4.12, marketValue: 1280000000 },
-          { asset: "Alphabet Inc Class A (GOOGL)", symbol: "GOOGL", name: "Alphabet Class A", shares: 15400000, weightPercentage: 3.85, marketValue: 1210000000 },
-          { asset: "Eli Lilly & Co (LLY)", symbol: "LLY", name: "Eli Lilly & Co", shares: 2500000, weightPercentage: 2.95, marketValue: 920000000 },
-          { asset: "Meta Platforms (META)", symbol: "META", name: "Meta Platforms", shares: 3500000, weightPercentage: 2.80, marketValue: 870000000 },
-          { asset: "Broadcom Inc (AVGO)", symbol: "AVGO", name: "Broadcom Inc", shares: 1100000, weightPercentage: 2.15, marketValue: 670000000 }
-        ];
-      } else if (resType === 'etf-sector-weightings') {
-        return [
-          { sector: "Technology", weightPercentage: "31.42" },
-          { sector: "Financial Services", weightPercentage: "18.52" },
-          { sector: "Healthcare", weightPercentage: "14.22" },
-          { sector: "Consumer Cyclical", weightPercentage: "11.15" },
-          { sector: "Industrials", weightPercentage: "9.84" },
-          { sector: "Communication Services", weightPercentage: "7.12" },
-          { sector: "Others", weightPercentage: "7.73" }
-        ];
-      }
-      return [];
-    };
 
     const allowedResources = ['profile', 'etf-holder', 'etf-sector-weightings'];
     if (!allowedResources.includes(resource)) {
@@ -701,7 +575,7 @@ async function startServer() {
     }
 
     if (!apiKey) {
-      return res.json(getFmpFallback(resource, cleanSym));
+      return res.status(503).json({ error: "FMP data unavailable (API key not configured)" });
     }
 
     try {
@@ -714,8 +588,7 @@ async function startServer() {
       setCached('fmp', cacheKey, data);
       return res.json(data);
     } catch (e: any) {
-      // Silently fall back to mockup data for 403 errors and legacy endpoint restrictions.
-      return res.json(getFmpFallback(resource, cleanSym));
+      return res.status(502).json({ error: "FMP data unavailable" });
     }
   });
 
@@ -844,21 +717,8 @@ async function startServer() {
           if (error.name === 'FailedYahooValidationError' || (error.message && error.message.includes('Schema validation'))) {
             quote = error.result || {};
           } else {
-            console.warn(`Could not fetch quote for ${symbol}, using fallback.`);
-            quote = { 
-              symbol, 
-              shortName: symbol, 
-              regularMarketPrice: Math.random() * 100 + 50, 
-              regularMarketChange: (Math.random() - 0.5) * 5,
-              regularMarketChangePercent: (Math.random() - 0.5) * 2,
-              regularMarketDayLow: 40,
-              regularMarketDayHigh: 160,
-              fiftyTwoWeekHigh: 200,
-              fiftyTwoWeekLow: 30,
-              marketCap: 5000000000,
-              regularMarketVolume: 250000,
-              exchange: 'MARKET'
-            };
+            console.warn(`Could not fetch quote for ${symbol}:`, error.message);
+            return res.status(502).json({ error: `Market data unavailable for ${symbol}` });
           }
         }
       }
@@ -958,127 +818,6 @@ async function startServer() {
     }
   });
 
-  // Fallback function for generating highly realistic 5-year financial data starting desde 2021
-  function getDynamicFinancialFallback(symbol: string, type: 'annual' | 'quarterly') {
-    const cleanSym = symbol ? symbol.toUpperCase() : "SPY";
-    
-    // High-fidelity real financial figures for LVMH (LVMUY/MC.PA/MC) 2021-2025
-    if (cleanSym === 'LVMUY' || cleanSym === 'MC.PA' || cleanSym === 'MC') {
-      if (type === 'annual') {
-        const income = [
-          { calendarYear: "2021", revenue: 64217000000, grossProfit: 43810000000, operatingIncome: 17151000000, netIncome: 12036000000, eps: 24.02 },
-          { calendarYear: "2022", revenue: 79184000000, grossProfit: 54110000000, operatingIncome: 21055000000, netIncome: 14084000000, eps: 28.10 },
-          { calendarYear: "2023", revenue: 86153000000, grossProfit: 59280000000, operatingIncome: 22802000000, netIncome: 15174000000, eps: 30.34 },
-          { calendarYear: "2024", revenue: 84100000000, grossProfit: 57400000000, operatingIncome: 21800000000, netIncome: 15456000000, eps: 30.90 },
-          { calendarYear: "2025", revenue: 89300000000, grossProfit: 61150000000, operatingIncome: 23640000000, netIncome: 16820000000, eps: 33.60 },
-        ];
-        const balance = [
-          { calendarYear: "2021", totalAssets: 121010000000, totalLiabilities: 69010000000, totalStockholdersEquity: 52000000000, cashAndCashEquivalents: 9810000000, totalDebt: 18010000000 },
-          { calendarYear: "2022", totalAssets: 135020000000, totalLiabilities: 78020000000, totalStockholdersEquity: 57000000000, cashAndCashEquivalents: 11210000000, totalDebt: 21020000000 },
-          { calendarYear: "2023", totalAssets: 144030000000, totalLiabilities: 81030000000, totalStockholdersEquity: 63000000000, cashAndCashEquivalents: 12510000000, totalDebt: 19530000000 },
-          { calendarYear: "2024", totalAssets: 148900000000, totalLiabilities: 82900000000, totalStockholdersEquity: 66000000000, cashAndCashEquivalents: 13120000000, totalDebt: 21900000000 },
-          { calendarYear: "2025", totalAssets: 158100000000, totalLiabilities: 86100000000, totalStockholdersEquity: 72000000000, cashAndCashEquivalents: 14520000000, totalDebt: 20540000000 },
-        ];
-        const cashFlow = [
-          { calendarYear: "2021", operatingCashFlow: 18510000000, capitalExpenditure: 3110000000, freeCashFlow: 15400000000, dividendsPaid: 4510000000, netChangeInCash: 1210000000 },
-          { calendarYear: "2022", operatingCashFlow: 21210000000, capitalExpenditure: 3810000000, freeCashFlow: 17400000000, dividendsPaid: 5810000000, netChangeInCash: 1510000000 },
-          { calendarYear: "2023", operatingCashFlow: 23410000000, capitalExpenditure: 4210000000, freeCashFlow: 19200000000, dividendsPaid: 6510000000, netChangeInCash: -510000000 },
-          { calendarYear: "2024", operatingCashFlow: 22800000000, capitalExpenditure: 4100000000, freeCashFlow: 18700000000, dividendsPaid: 6800000000, netChangeInCash: 800000000 },
-          { calendarYear: "2025", operatingCashFlow: 24820000000, capitalExpenditure: 4520000000, freeCashFlow: 20300000000, dividendsPaid: 7210000000, netChangeInCash: 1410000000 },
-        ];
-        return { income, balance, cashFlow };
-      }
-    }
-
-    let hash = 0;
-    for (let i = 0; i < cleanSym.length; i++) {
-      hash = cleanSym.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    hash = Math.abs(hash);
-
-    // Baseline size calculations based on symbol
-    const baseRevenue = 15000000000 + (hash % 10) * 15000000000;
-    const grossProfitMargin = 0.40 + (hash % 25) * 0.01; 
-    const operatingMargin = 0.18 + (hash % 15) * 0.01; 
-    const netMargin = 0.12 + (hash % 10) * 0.01; 
-    const growthRate = 0.05 + (hash % 8) * 0.01; 
-    const baseEquity = baseRevenue * (0.7 + (hash % 8) * 0.1);
-
-    if (type === 'annual') {
-      const years = ["2023", "2024", "2025"].reverse();
-      
-      const income = years.map((yr, idx) => {
-        const yearFactor = Math.pow(1 + growthRate, 2 - idx);
-        const noise = 1 + (((hash + idx) % 5) - 2) * 0.015;
-        const revenue = Math.round(baseRevenue * yearFactor * noise);
-        const grossProfit = Math.round(revenue * grossProfitMargin);
-        const operatingIncome = Math.round(revenue * operatingMargin);
-        const netIncome = Math.round(revenue * netMargin);
-        const eps = parseFloat((netIncome / 10000000000 + ((hash % 8) / 2) + (2 - idx) * 0.4).toFixed(2));
-        return { calendarYear: yr, revenue, grossProfit, operatingIncome, netIncome, eps };
-      });
-
-      const balance = years.map((yr, idx) => {
-        const yearFactor = Math.pow(1 + growthRate, 2 - idx);
-        const noise = 1 + (((hash + idx) % 7) - 3) * 0.02;
-        const totalAssets = Math.round(baseRevenue * 2 * yearFactor * noise);
-        const totalStockholdersEquity = Math.round(baseEquity * yearFactor * noise);
-        const totalLiabilities = totalAssets - totalStockholdersEquity;
-        const cashAndCashEquivalents = Math.round(totalAssets * (0.08 + (hash % 10) * 0.01));
-        const totalDebt = Math.round(totalLiabilities * (0.25 + (hash % 20) * 0.01));
-        return { calendarYear: yr, totalAssets, totalLiabilities, totalStockholdersEquity, cashAndCashEquivalents, totalDebt };
-      });
-
-      const cashFlow = years.map((yr, idx) => {
-        const netIncome = income[idx].netIncome;
-        const operatingCashFlow = Math.round(netIncome * (1.15 + ((hash + idx) % 4) * 0.04));
-        const capitalExpenditure = Math.round(operatingCashFlow * (0.28 + (hash % 12) * 0.01));
-        const freeCashFlow = operatingCashFlow - capitalExpenditure;
-        const dividendsPaid = Math.round(netIncome * (0.22 + (hash % 15) * 0.01));
-        const netChangeInCash = Math.round(freeCashFlow - dividendsPaid + (((hash + idx) % 21) - 10) * 20000000);
-        return { calendarYear: yr, operatingCashFlow, capitalExpenditure, freeCashFlow, dividendsPaid, netChangeInCash };
-      });
-
-      return { income, balance, cashFlow };
-    } else {
-      const quarters = ["Q1 2023", "Q2 2023", "Q3 2023", "Q4 2023", "Q1 2024", "Q2 2024", "Q3 2024", "Q4 2024", "Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025"].reverse();
-      
-      const income = quarters.map((qtr, idx) => {
-        const qFactor = Math.pow(1 + growthRate / 4, 11 - idx);
-        const seasonFactor = 1 + Math.sin((11 - idx) * Math.PI / 2) * 0.04 + (((hash + idx) % 3) - 1) * 0.008;
-        const revenue = Math.round((baseRevenue / 4) * qFactor * seasonFactor);
-        const grossProfit = Math.round(revenue * grossProfitMargin);
-        const operatingIncome = Math.round(revenue * operatingMargin);
-        const netIncome = Math.round(revenue * netMargin);
-        const eps = parseFloat((netIncome / 2500000000 + (11 - idx) * 0.1).toFixed(2));
-        return { calendarYear: qtr, revenue, grossProfit, operatingIncome, netIncome, eps };
-      });
-
-      const balance = quarters.map((qtr, idx) => {
-        const qFactor = Math.pow(1 + growthRate / 4, 11 - idx);
-        const noise = 1 + (((hash + idx) % 6) - 3) * 0.01;
-        const totalAssets = Math.round(baseRevenue * 2 * qFactor * noise);
-        const totalStockholdersEquity = Math.round(baseEquity * qFactor * noise);
-        const totalLiabilities = totalAssets - totalStockholdersEquity;
-        const cashAndCashEquivalents = Math.round(totalAssets * (0.08 + (hash % 10) * 0.01));
-        const totalDebt = Math.round(totalLiabilities * (0.25 + (hash % 20) * 0.01));
-        return { calendarYear: qtr, totalAssets, totalLiabilities, totalStockholdersEquity, cashAndCashEquivalents, totalDebt };
-      });
-
-      const cashFlow = quarters.map((qtr, idx) => {
-        const netIncome = income[idx].netIncome;
-        const operatingCashFlow = Math.round(netIncome * (1.15 + ((hash + idx) % 4) * 0.04));
-        const capitalExpenditure = Math.round(operatingCashFlow * (0.28 + (hash % 12) * 0.01));
-        const freeCashFlow = operatingCashFlow - capitalExpenditure;
-        const dividendsPaid = Math.round(netIncome * (0.22 + (hash % 15) * 0.01));
-        const netChangeInCash = Math.round(freeCashFlow - dividendsPaid + (((hash + idx) % 7) - 3) * 8000000);
-        return { calendarYear: qtr, operatingCashFlow, capitalExpenditure, freeCashFlow, dividendsPaid, netChangeInCash };
-      });
-
-      return { income, balance, cashFlow };
-    }
-  }
-
   // API Route: Financial Statements (Income, Balance, Cash Flow)
   app.get("/api/stock/financials/:symbol", async (req, res) => {
     try {
@@ -1110,10 +849,9 @@ async function startServer() {
         }
       }
 
-      // If we don't have enough elements, or empty statements, fall back nicely to our custom generator
+      // No real data available: return empty statements (never invent figures)
       if (!statements || !Array.isArray(statements) || statements.length < 1) {
-         const fallbackData = getDynamicFinancialFallback(symbol, type);
-         return res.json(fallbackData);
+         return res.json({ income: [], balance: [], cashFlow: [] });
       }
 
       // Filter statements to only start from 2023 as requested
@@ -1264,7 +1002,8 @@ async function startServer() {
           if (error.name === 'FailedYahooValidationError' || (error.message && error.message.includes('Schema validation'))) {
             quotes = error.result || [];
           } else {
-            quotes = symbols.map(sym => ({ symbol: sym, regularMarketPrice: 150.00, regularMarketChangePercent: 0 }));
+            console.warn("Bulk quotes unavailable:", error.message);
+            quotes = [];
           }
         }
       }
@@ -1272,12 +1011,7 @@ async function startServer() {
       const finalQuotes = symbols.map(sym => {
         const found = quotes.find((q: any) => q.symbol === sym || q.symbol === sym.toUpperCase() || q.symbol === sym.toLowerCase());
         if (found && found.regularMarketPrice != null) return found;
-        return {
-          symbol: sym,
-          regularMarketPrice: Math.random() * 100 + 50,
-          regularMarketChangePercent: (Math.random() - 0.5) * 2,
-          regularMarketChange: (Math.random() - 0.5) * 5
-        };
+        return { symbol: sym, regularMarketPrice: null, regularMarketChangePercent: null, regularMarketChange: null };
       });
 
       res.json(finalQuotes);
@@ -1300,7 +1034,7 @@ async function startServer() {
         if (error.name === 'FailedYahooValidationError' || (error.message && error.message.includes('Schema validation'))) {
           summary = error.result || {};
         } else {
-          console.warn(`Network error fetching ratios for ${symbol}, using fallback.`);
+          console.warn(`Network error fetching ratios for ${symbol}.`);
           summary = { financialData: {}, defaultKeyStatistics: {}, summaryDetail: {} };
         }
         }
