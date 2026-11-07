@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
-import { ArrowRight, Dices, Layers, LineChart as LineIcon, PieChart as PieIcon, Play, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowRight, Dices, Layers, LineChart as LineIcon, PieChart as PieIcon, Play } from "lucide-react";
 import { Area, AreaChart, Bar, BarChart, Cell, Line, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { cn } from "../../lib/utils";
@@ -111,91 +111,6 @@ const CORR = [
   [0.7, 0.1, 0.1, 1, 0.3],
   [0.4, -0.05, 0.15, 0.3, 1],
 ];
-
-// ────────────────────────────── live markets strip ──────────────────────────────
-const LIVE_SYMBOLS: { s: string; n: string }[] = [
-  { s: "^BFX", n: "BEL 20" },
-  { s: "^FCHI", n: "CAC 40" },
-  { s: "^STOXX50E", n: "Euro Stoxx 50" },
-  { s: "^GDAXI", n: "DAX" },
-  { s: "^GSPC", n: "S&P 500" },
-  { s: "VWCE.DE", n: "VWCE" },
-  { s: "IWDA.AS", n: "IWDA" },
-  { s: "GC=F", n: "Or" },
-  { s: "EURUSD=X", n: "EUR/USD" },
-  { s: "BTC-USD", n: "Bitcoin" },
-];
-
-function LiveMarkets({ label }: { label: string }) {
-  const [quotes, setQuotes] = useState<Record<string, { price: number; pct: number }>>({});
-
-  useEffect(() => {
-    let alive = true;
-    const load = async () => {
-      if (document.hidden) return;
-      try {
-        const res = await fetch(`/api/stock/bulk-quotes?quiet=1&symbols=${encodeURIComponent(LIVE_SYMBOLS.map((x) => x.s).join(","))}`);
-        if (!res.ok) return;
-        // Never show placeholder prices on the home page: hide the strip when the server flags demo data.
-        if (res.headers.get("X-Quantrih-Data") === "demo") {
-          if (alive) setQuotes({});
-          return;
-        }
-        const data = await res.json();
-        if (!alive || !Array.isArray(data)) return;
-        const next: Record<string, { price: number; pct: number }> = {};
-        data.forEach((q: any) => {
-          const price = q.regularMarketPrice ?? q.price;
-          if (q?.symbol && typeof price === "number") next[q.symbol] = { price, pct: q.regularMarketChangePercent ?? q.changesPercentage ?? 0 };
-        });
-        setQuotes(next);
-      } catch {
-        // Network issue: keep the last values.
-      }
-    };
-    load();
-    const id = setInterval(load, 60000);
-    return () => { alive = false; clearInterval(id); };
-  }, []);
-
-  const items = LIVE_SYMBOLS.filter((x) => quotes[x.s]);
-  if (items.length === 0) return null;
-
-  const row = (
-    <div className="flex items-center gap-10 pr-10 shrink-0">
-      {items.map((x) => {
-        const q = quotes[x.s];
-        const up = q.pct >= 0;
-        return (
-          <span key={x.s} className="inline-flex items-center gap-2.5 text-sm whitespace-nowrap">
-            <span className="font-semibold text-white/80">{x.n}</span>
-            <span className="font-mono text-white">{q.price.toLocaleString("fr-BE", { maximumFractionDigits: q.price < 10 ? 4 : 2 })}</span>
-            <span className={cn("font-mono font-semibold inline-flex items-center gap-0.5", up ? "text-emerald-400" : "text-rose-400")}>
-              {up ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-              {up ? "+" : ""}{q.pct.toFixed(2)} %
-            </span>
-          </span>
-        );
-      })}
-    </div>
-  );
-
-  return (
-    <div className="relative z-10 w-full border-y border-white/10 bg-white/[0.03] backdrop-blur-md">
-      <div className="page-container flex items-center gap-5 py-3.5">
-        <span className="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#B6ABF7]">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> {label}
-        </span>
-        <div className="flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]">
-          <div className="flex w-max animate-marquee" style={{ animationDuration: "50s" }}>
-            {row}
-            {row}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ──────────────────────────────── the four tools ────────────────────────────────
 const TOOL_ACCENTS = [
@@ -492,7 +407,6 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </motion.div>
       </section>
 
-      <LiveMarkets label={c.live} />
 
       <ToolsSection title={c.methodTitle} onGoPage={onGoPage} />
 

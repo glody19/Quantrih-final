@@ -99,7 +99,7 @@
     @apply text-text font-sans antialiased;
     background-color: var(--color-bg);
     background-attachment: scroll; /* Changed from fixed for better mobile performance */
-    font-size: 15px;
+    font-size: 17px; /* larger, easier to read */
     letter-spacing: -0.005em;
     font-weight: 400;
     -webkit-tap-highlight-color: transparent;
@@ -333,6 +333,13 @@ th > div > input[type="text"]:focus {
   mask-composite: exclude;
   pointer-events: none;
 }
+
+/* Site-wide: tiny fixed pixel sizes are bumped by 2px for readability. */
+.text-\[7px\] { font-size: 9px; }
+.text-\[8px\] { font-size: 10px; }
+.text-\[9px\] { font-size: 11px; }
+.text-\[10px\] { font-size: 12px; }
+.text-\[11px\] { font-size: 13px; }
 
 /* Analysis tool pages: larger, harmonised text. Many tool components use fixed pixel sizes,
    so they are bumped here rather than in each of the large page files. */

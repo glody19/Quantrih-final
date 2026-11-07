@@ -9,7 +9,8 @@ import { PageHeader } from '../ui/PageHeader';
 import { FMP_RATIOS } from '../../data/fmpRatios';
 import { useFinancialData } from '../../hooks/useFinancialData';
 import { StatCard } from '../ui/StatCard';
-import { TickerInput } from '../ui/TickerInput';
+import { StockSearchBar } from '../market/StockSearchBar';
+import { StockAnalysis } from '../market/StockAnalysis';
 import { AssetLogo } from '../ui/AssetLogo';
 import { FinancialTable } from '../ui/FinancialTable';
 import { InfoTooltip } from '../ui/InfoTooltip';
@@ -21,6 +22,7 @@ import { MobileZoomWrapper } from '../ui/MobileZoomWrapper';
 import { topETFs } from './etfData';
 import { assetClasses, majorIndices, megatrends } from './assetClassesData';
 import { lazyPortfolios } from './lazyPortfoliosData';
+import { MarketTickerBar } from '../market/MarketTickerBar';
 
 // One accent per lazy portfolio row
 const LAZY_COLORS = ['#5B4BDB', '#14B8A6', '#C9A24A', '#E5484D', '#0EA5E9', '#8B5CF6', '#F97316', '#10B981', '#EC4899', '#64748B'];
@@ -32,57 +34,6 @@ const MARQUEE_SYMBOLS = [
  "NVO", "ASML", "SAP",
  "MC.PA", "OR.PA", "TTE.PA", "SAN.PA", "AIR.PA", "SU.PA", "BNP.PA", "RMS.PA", "AI.PA", "CS.PA",
  "SHEL.L", "AZN.L", "HSBA.L", "ULVR.L", "BP.L", "GSK.L", "BATS.L", "DGE.L", "RIO.L", "RELX.L"
-];
-
-const PRESTIGE_NEWS = [
- {
- title: "Global Markets Rally as Fed Signals Potential Rate Cuts",
- source: "Bloomberg",
- date: "2 Hours Ago",
- summary: "Equities surged across major indices today as the Federal Reserve hinted at easing monetary policy in the upcoming quarter, providing relief to global macro sectors.",
- image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=800",
- url: "https://www.bloomberg.com/markets"
- },
- {
- title: "BlackRock's iShares ETF Triggers New Institutional Wave",
- source: "BlackRock",
- date: "4 Hours Ago",
- summary: "A massive influx of institutional capital into BlackRock's flagship ETF suggests a structural shift in how pension funds approach digital asset allocations.",
- image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=800",
- url: "https://www.blackrock.com/us/individual/insights"
- },
- {
- title: "European Sovereign Debt Faces Unprecedented Pressure",
- source: "Financial Times",
- date: "5 Hours Ago",
- summary: "Bond yields hit historic highs in several Eurozone nations amid concerns over sovereign balance sheets and persistent core inflation metrics.",
- image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800",
- url: "https://www.ft.com/markets"
- },
- {
- title: "Tech Giants Propel Nasdaq to Historic Valuations",
- source: "Nasdaq",
- date: "6 Hours Ago",
- summary: "Driven by advancements in artificial intelligence hardware, major tech components of the Nasdaq-100 lifted the index past critical psychological resistance levels.",
- image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800",
- url: "https://www.nasdaq.com/news-and-insights"
- },
- {
- title: "Commodities Supercycle: Oil and Gold Hit Multi-Year Highs",
- source: "Wall Street Journal",
- date: "8 Hours Ago",
- summary: "Energy and precious metals are riding a wave of supply chain disruptions and geopolitical premiums, establishing what analysts term a new supercycle.",
- image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
- url: "https://www.wsj.com/finance"
- },
- {
- title: "Vanguard Shifts Focus Towards Emerging Market Value",
- source: "Vanguard",
- date: "12 Hours Ago",
- summary: "The passive investing giant is quietly revamping its core emerging markets strategy, placing heavier emphasis on undervalued equities in Latin America.",
- image: "https://images.unsplash.com/photo-1573164574572-cb89e39749b4?auto=format&fit=crop&q=80&w=800",
- url: "https://investor.vanguard.com/investor-resources-education/news"
- }
 ];
 
 function TickerItem({ item, tickerPrices, formatCryptoPrice, onClick }: { item: any, tickerPrices: any, formatCryptoPrice: (p: number) => string, onClick?: () => void }) {
@@ -178,7 +129,8 @@ function MarqueeItem({ symbol, data, onClick, isCrypto }: { symbol: string, data
     }
   }, [data?.price]);
 
-  const price = data?.price;
+  // Price 0 / null means no real quote received yet: never display it as a value
+  const price = typeof data?.price === 'number' && data.price > 0 ? data.price : null;
   const change = data?.changesPercentage || data?.change || 0;
   const isUp = change >= 0;
 
@@ -224,76 +176,6 @@ function MarqueeItem({ symbol, data, onClick, isCrypto }: { symbol: string, data
     </div>
   );
 }
-
-const assetManagementNews = [
- {
- title: "BlackRock expand its active ETF lineup amid rising demand",
- source: "CNBC",
- timestamp: "2 hours ago",
- summary: "The world's largest asset manager is aggressively rolling out new active ETFs, aiming to capture institutional rotation out of mutual funds and into more tax-efficient, transparent structures as fixed income yields stabilize.",
- image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Why the 60/40 portfolio is evolving in 2026",
- source: "Bloomberg",
- timestamp: "4 hours ago",
- summary: "Leading portfolio managers are increasingly advising private wealth clients to allocate towards alternative assets and private credit, fundamentally shifting the traditional 60/40 model to 50/30/20 to hedge against macroeconomic volatility.",
- image: "https://images.unsplash.com/photo-1590283603385-18ffb118b625?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Global sovereign wealth funds shift to private credit",
- source: "Financial Times",
- timestamp: "5 hours ago",
- summary: "Sovereign wealth funds from the Middle East and Asia are systematically deploying billions into direct lending and private credit markets, bypassing traditional syndicated loans and taking advantage of regulatory constraints on global banks.",
- image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Vanguard outlines new focus for emerging markets",
- source: "CNBC",
- timestamp: "12 hours ago",
- summary: "The passive investing giant is quietly revamping its core emerging markets strategy, placing heavier emphasis on India and Latin America, signaling a structural pivot that could influence trillions in benchmark-tracking capital.",
- image: "https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- }
-];
-
-const etfManagementNews = [
- {
- title: "Technology Select Sector SPDR Fund hits historic AUM milestone",
- source: "Wall Street Journal",
- timestamp: "1 hour ago",
- summary: "Driven by continuous investments in semiconductor and AI companies, XLK has reached a record assets under management level, reflecting persistent institutional bullishness in the tech sector.",
- image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Crypto ETFs see massive capital inflows post regulatory clarity",
- source: "Bloomberg",
- timestamp: "3 hours ago",
- summary: "Bitcoin and Ethereum ETFs are experiencing unprecedented volume as new regulatory frameworks globally authorize broader inclusion of crypto assets in retirement portfolios.",
- image: "https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Gold ETFs surge as investors hedge against inflation",
- source: "Financial Times",
- timestamp: "6 hours ago",
- summary: "Physical gold-backed ETFs saw their largest weekly inflow in two years as geopolitical tensions and lingering inflationary pressures drive a flight to safe-haven assets.",
- image: "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- },
- {
- title: "Dividend aristocrat ETFs outperform broader markets",
- source: "CNBC",
- timestamp: "8 hours ago",
- summary: "High-yield dividend ETFs have unexpectedly outpaced major indices this quarter, as investors prioritize cash flow and corporate stability over high-beta growth stocks.",
- image: "https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?auto=format&fit=crop&q=80&w=1200",
- url: "#"
- }
-];
 
 const labels: Record<string, Record<string, string>> = {
   en: {
@@ -630,7 +512,7 @@ const labels: Record<string, Record<string, string>> = {
 
 const watchlistHistoryCache: Record<string, any[]> = {};
 
-export function FinancialModeling() {
+export function Market() {
   const { language } = useTranslation();
   const currentLabels = labels[language] || labels["en"];
  const isMarketClosedVal = useMemo(() => {
@@ -783,6 +665,42 @@ const isEuropeanMarketOpen = () => {
    if (import.meta.env.DEV) console.warn("Market news fetch error:", e);
  })
  .finally(() => setMarketNewsLoading(false));
+ }, []);
+
+ // Major indices: performance computed from real monthly closes (no hardcoded figures)
+ const [liveIndices, setLiveIndices] = useState<Record<string, { m1: number | null; m6: number | null; y1: number | null; y5: number | null; y10: number | null }>>({});
+
+ useEffect(() => {
+ let cancelled = false;
+ const from = new Date();
+ from.setFullYear(from.getFullYear() - 11);
+ const fromStr = from.toISOString().split('T')[0];
+ const pct = (v: number | null) => (v == null || !isFinite(v) ? null : v * 100);
+ Promise.all(majorIndices.map(async (idx) => {
+ try {
+ const r = await fetch(`/api/prices/monthly/${encodeURIComponent(idx.ticker)}?from=${fromStr}`);
+ if (!r.ok) return [idx.ticker, null] as const;
+ const rows: { date: string; close: number }[] = await r.json();
+ const closes = (Array.isArray(rows) ? rows : [])
+ .filter(x => typeof x.close === 'number' && x.close > 0)
+ .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+ .map(x => x.close);
+ if (closes.length < 2) return [idx.ticker, null] as const;
+ const last = closes[closes.length - 1];
+ const back = (n: number) => (closes.length > n ? closes[closes.length - 1 - n] : null);
+ const cum = (n: number) => { const b = back(n); return b ? last / b - 1 : null; };
+ const ann = (years: number) => { const b = back(years * 12); return b ? Math.pow(last / b, 1 / years) - 1 : null; };
+ return [idx.ticker, { m1: pct(cum(1)), m6: pct(cum(6)), y1: pct(cum(12)), y5: pct(ann(5)), y10: pct(ann(10)) }] as const;
+ } catch {
+ return [idx.ticker, null] as const;
+ }
+ })).then(results => {
+ if (cancelled) return;
+ const next: Record<string, any> = {};
+ results.forEach(([t, v]) => { if (v) next[t] = v; });
+ setLiveIndices(next);
+ });
+ return () => { cancelled = true; };
  }, []);
 
  const [newCompareInput, setNewCompareInput] = useState('');
@@ -1354,7 +1272,8 @@ const isEuropeanMarketOpen = () => {
  }
 
  let displayPrice = currentPrice;
- let displayChangePct = periodChangePct;
+ // No real price received: show "---" instead of a misleading 0.00%
+ let displayChangePct: number | null = (typeof currentPrice === 'number' && currentPrice > 0) ? periodChangePct : null;
 
  if (hoveredTime && activeDataPoints && activeDataPoints[sym] !== undefined) {
  // Display hovered price directly
@@ -1596,6 +1515,7 @@ const isEuropeanMarketOpen = () => {
  };
 
  return (
+  <>
     <MobileZoomWrapper scaleMobile={0.65}>
     <div className="w-full flex-1 flex flex-col min-h-0 bg-bg">
  {/* Premium Top Navigation Tabs */}
@@ -1628,41 +1548,18 @@ const isEuropeanMarketOpen = () => {
  
   {marketPageUrl === 'stocks' && (
   <div className="flex-1 min-h-0 overflow-auto">
-  {/* ULTRA COMPACT SEARCH BAR */}
-  <div ref={searchSectionRef} className="w-full px-4 md:px-8 mt-4 mb-6 max-w-[2400px] xl:px-12 mx-auto flex justify-start">
-    <div className="relative z-50 w-full max-w-[280px] group transition-all duration-300">
-      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-sky-400/20 via-blue-500/5 to-transparent blur-sm opacity-30 transition-opacity duration-300 group-focus-within:opacity-50"></div>
-      <div className="relative flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-border/60 dark:border-white/10 rounded-full shadow-sm p-0.5 transition-all duration-300 focus-within:shadow focus-within:border-sky-400/40 hover:border-sky-400/20">
-        <div className="pl-3 pr-1 text-text-4 group-focus-within:text-sky-500 transition-colors">
-          <Search size={14} strokeWidth={2} />
-        </div>
-        <TickerInput 
-          value={searchInput}
-          onChange={setSearchInput}
-          onSelect={(sym) => {
-            setSearchInput(sym);
-            fetchStockData(sym);
-          }}
-          onSubmit={(sym) => {
-            setSearchInput(sym);
-            fetchStockData(sym);
-          }}
-          placeholder={currentLabels.searchPlaceholder}
-          className="w-full bg-transparent border-none pl-1 pr-2 py-1.5 text-[14px] md:text-[12px] font-medium outline-none text-text placeholder:text-text-4/60 rounded-full focus:ring-0 shadow-none !ring-0 focus:!border-transparent"
-        />
-        <button 
-          onClick={(e) => {
-            e.preventDefault();
-            if (searchInput.trim()) {
-              fetchStockData(searchInput.trim().toUpperCase());
-            }
-          }}
-          className="mr-0.5 shrink-0 bg-surface-2 hover:bg-sky-50 text-text hover:text-sky-600 px-3 py-1 rounded-full font-medium transition-all text-[10px] border border-border/80"
-        >
-          {currentLabels.go}
-        </button>
-      </div>
-    </div>
+  {/* STOCK SEARCH BAR */}
+  <div ref={searchSectionRef} className="w-full px-4 md:px-8 mt-4 mb-8 max-w-[2400px] xl:px-12 mx-auto flex justify-start relative z-50">
+    <StockSearchBar
+      value={searchInput}
+      onChange={setSearchInput}
+      activeSymbol={activeSymbol}
+      language={language}
+      onSelect={(sym) => {
+        setSelectedLazyPortfolio(null);
+        fetchStockData(sym);
+      }}
+    />
   </div>
 
   {selectedLazyPortfolio ? (
@@ -1847,14 +1744,13 @@ const isEuropeanMarketOpen = () => {
  </div>
  
  <div className="flex flex-wrap items-center gap-2 text-[13px] font-medium text-text mt-1">
- <span className="flex items-center gap-1 md:gap-1.5 text-text bg-transparent px-0 py-0">
- Action {quote.quoteType === 'EQUITY' ? '' : `(${quote.quoteType})`}
- </span>
- <span className="px-1">•</span>
- <span className="flex items-center gap-1 md:gap-1.5 text-text bg-transparent px-0 py-0">
- 🇺🇸 États-Unis
- </span>
- <span className="px-1">•</span>
+ <span className="font-bold text-text bg-surface-2 border border-border px-2 py-0.5 rounded-md">{quote.symbol}</span>
+ {quote.quoteType && (
+ <span className="text-text-3">{quote.quoteType === 'EQUITY' ? (language === 'fr' ? 'Action' : 'Stock') : quote.quoteType}</span>
+ )}
+ {profile?.country && (<><span className="px-1">•</span><span className="text-text-3">{profile.country}</span></>)}
+ {profile?.sector && (<><span className="px-1">•</span><span className="text-text-3">{profile.sector}</span></>)}
+ {quote.fullExchangeName && <span className="px-1">•</span>}
  {quote.fullExchangeName && (
  <span className="flex items-center gap-1 md:gap-1.5 text-text bg-transparent px-0 py-0">
  {quote.fullExchangeName.replace(/NasdaqGS/gi, 'NASDAQ').replace(/NMS/gi, 'NASDAQ')}
@@ -1896,7 +1792,7 @@ const isEuropeanMarketOpen = () => {
  {new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
  </span>
  <span className="text-2xl font-semibold font-mono text-text tracking-tighter leading-none flex items-baseline">
- <span className="text-lg mr-1">$</span>
+ <span className="text-lg mr-1">{(() => { try { return new Intl.NumberFormat('en-US', { style: 'currency', currency: quote.currency || profile?.currency || 'USD' }).formatToParts(0).find(p => p.type === 'currency')?.value || '$'; } catch { return '$'; } })()}</span>
  <BlinkingPriceText price={liveQuotePrice !== null ? liveQuotePrice : (quote.price || 0)} />
  </span>
  </div>
@@ -1954,7 +1850,7 @@ const isEuropeanMarketOpen = () => {
  {/* Full Width Presentation Description */}
  {profile?.description && (
  <div className="w-full">
- <h3 className="text-sm font-medium text-text mb-2">Présentation de {quote.symbol}</h3>
+ <h3 className="text-base font-semibold text-text mb-2">{language === 'fr' ? `Présentation de ${quote.symbol}` : `About ${quote.symbol}`}</h3>
  <p className="text-sm text-text font-medium text-justify w-full">
  {profile.description}
  </p>
@@ -1978,6 +1874,23 @@ const isEuropeanMarketOpen = () => {
  </div>
  </div>
  </div>
+ </div>
+
+ {/* In-depth financial analysis (real data only) */}
+ <div className="mt-10">
+ <StockAnalysis
+ quote={quote}
+ profile={profile}
+ ratios={ratios}
+ income={income}
+ balance={balance}
+ cashFlow={cashFlow}
+ recommendation={finnhubRecommendation}
+ peers={finnhubPeers}
+ news={finnhubNews}
+ language={language}
+ onSelectSymbol={(sym) => { setSearchInput(sym); fetchStockData(sym); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+ />
  </div>
 
  {/* Navigation Tabs (Moved Below Chart and Watchlist Table) */}
@@ -2276,12 +2189,14 @@ const isEuropeanMarketOpen = () => {
               </div>
             </td>
             <td className="px-3 py-1 text-right font-mono text-xs font-semibold text-text">
-              {m.price ? "$" + m.price.toFixed(2) : "---"}
+              {typeof m.price === 'number' && m.price > 0 ? "$" + m.price.toFixed(2) : "---"}
             </td>
             <td className="px-3 py-1 text-right font-mono text-xs font-semibold">
+{typeof m.periodChangePct === 'number' && isFinite(m.periodChangePct) ? (
               <span className={cn("px-1.5 py-0.5 rounded text-[10px] font-bold", m.periodChangePct >= 0 ? "bg-green/10 text-green" : "bg-red/10 text-red")}>
                 {m.periodChangePct > 0 ? '+' : ''}{m.periodChangePct.toFixed(2)}%
               </span>
+) : <span className="text-text-3">---</span>}
             </td>
             <td className="px-3 py-1 text-right font-mono text-xs text-text-2 hidden sm:table-cell">
               {m.marketCap ? formatAggregate(m.marketCap) : "---"}
@@ -2338,7 +2253,10 @@ const isEuropeanMarketOpen = () => {
  </div>
  ) : (
  <div className="space-y-0">
- {(marketNews.length > 0 ? marketNews : PRESTIGE_NEWS).map((n, idx) => (
+ {marketNews.length === 0 && (
+ <div className="py-10 text-center text-sm font-medium text-text-3">News unavailable right now.</div>
+ )}
+ {marketNews.map((n, idx) => (
  <a 
  key={idx}
  href={n.url || '#'}
@@ -2464,18 +2382,24 @@ const isEuropeanMarketOpen = () => {
  </tr>
  </thead>
  <tbody className="divide-y divide-border/40 text-xs md:text-sm">
- {majorIndices.map((item, idx) => {
+ {majorIndices.map((idxItem, idx) => {
+ const live = liveIndices[idxItem.ticker];
+ const cell = (v: number | null | undefined, last = false) => (
+ <td className={cn(last ? "py-0 px-0.5 md:py-2 md:px-2.5" : "py-0 px-0 md:py-2 md:px-1.5", "text-right font-medium whitespace-nowrap", v == null ? "text-text-3" : v >= 0 ? "text-emerald-600" : "text-rose-600")}>
+ {v == null ? "-" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`}
+ </td>
+ );
  return (
  <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
  <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-bold text-text bg-white/50 transition-colors flex items-center gap-1 md:gap-1.5">
- {item.ticker}
+ {idxItem.ticker}
  </td>
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-medium text-text whitespace-nowrap" title={item.asset}>{item.asset}</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.m1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m1 >= 0 ? "+" : ""}{item.m1 != null ? item.m1.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.m6 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m6 >= 0 ? "+" : ""}{item.m6 != null ? item.m6.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.y1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y1 != null ? item.y1.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.y5 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y5 != null ? item.y5.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0.5 md:py-2 md:px-2.5 text-right font-medium whitespace-nowrap", item.y10 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.y10 != null ? item.y10.toFixed(2) : "-"}%</td>
+ <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-medium text-text whitespace-nowrap" title={idxItem.asset}>{idxItem.asset}</td>
+ {cell(live?.m1)}
+ {cell(live?.m6)}
+ {cell(live?.y1)}
+ {cell(live?.y5)}
+ {cell(live?.y10, true)}
  </tr>
  )
  })}
@@ -2738,5 +2662,12 @@ const isEuropeanMarketOpen = () => {
 
  </div>
   </MobileZoomWrapper>
+  {/* Scrolling market quotes + exchange hours: only on the Market page, at the bottom */}
+  <div className="h-14" aria-hidden />
+  <MarketTickerBar
+   label={language === 'fr' ? 'Marchés' : 'Markets'}
+   onSelect={(sym) => { setMarketPageUrl('stocks'); setSearchInput(sym); fetchStockData(sym); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+  />
+  </>
  );
 }

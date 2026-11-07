@@ -5,9 +5,7 @@ import './index.css';
 import { AuthProvider } from './contexts/AuthContext.tsx';
 import { LanguageProvider } from './contexts/LanguageContext.tsx';
 import { defaults } from 'chart.js';
-import { installDemoDataTracker } from './lib/demoDataTracker';
 
-installDemoDataTracker();
 
 // Disable animations globally for all charts for maximum fluidity
 defaults.animation = false;

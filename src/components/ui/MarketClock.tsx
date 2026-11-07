@@ -43,7 +43,7 @@ const getClockStatus = (tz: string, oH: number, oM: number, cH: number, cM: numb
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-export function MarketClock() {
+export function MarketClock({ dark = false }: { dark?: boolean } = {}) {
   const [, setTick] = useState(0);
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function MarketClock() {
   }, []);
 
   return (
-    <div className="flex items-center gap-4 lg:gap-5 font-mono text-[10px] whitespace-nowrap">
+    <div className="flex items-center gap-4 lg:gap-5 font-mono text-[12px] whitespace-nowrap">
       {CLOCK_CITIES.map((c) => {
         const status = getClockStatus(c.tz, c.open[0], c.open[1], c.close[0], c.close[1]);
         const time = new Date().toLocaleTimeString("en-GB", { timeZone: c.tz, hour: "2-digit", minute: "2-digit" });
@@ -68,8 +68,8 @@ export function MarketClock() {
                 status === "open" ? "bg-emerald-500" : status === "pre" ? "bg-amber-400" : "bg-rose-500/70"
               )}
             />
-            <span className="font-bold text-text-3">{c.code}</span>
-            <span className="text-text font-semibold">{time}</span>
+            <span className={cn("font-bold", dark ? "text-white/55" : "text-text-3")}>{c.code}</span>
+            <span className={cn("font-semibold", dark ? "text-white" : "text-text")}>{time}</span>
           </div>
         );
       })}

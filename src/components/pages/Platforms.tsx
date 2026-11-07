@@ -78,6 +78,17 @@ const L = {
     sources: "Sources et méthode",
     disclaimer: "Tarifs indicatifs relevés en novembre 2026 à partir des grilles publiques et des comparatifs ci-dessous. Les frais évoluent régulièrement : seule la grille tarifaire officielle de chaque établissement fait foi. Quantrih ne fournit pas de conseil en investissement. Les emplacements partenaires sont toujours signalés comme tels.",
     countryCount: "plateformes",
+    compareTitle: "Comparer côte à côte", compareHint: "Choisissez jusqu'à 3 plateformes pour les comparer.", clear: "Effacer",
+    products: "Produits", highlights: "Points forts", watchouts: "Points d'attention",
+    guideTitle: "Comment choisir sa plateforme",
+    guide: [
+      ["Coût total", "Regardez au-delà du courtage : frais de change, de garde, d'inactivité et de sortie s'additionnent avec le temps."],
+      ["Fiscalité", "Un courtier belge retient la TOB et le précompte pour vous ; un courtier étranger vous laisse déclarer vous-même (compte étranger, TOB)."],
+      ["Enveloppes", "En France, PEA et assurance-vie offrent un avantage fiscal ; vérifiez que la plateforme les propose."],
+      ["Régulation & protection", "Vérifiez le régulateur (FSMA, AMF, BaFin…) et la garantie qui couvre vos espèces et vos titres."],
+      ["Produits disponibles", "Assurez-vous que les ETF, bourses, obligations ou options dont vous avez besoin sont accessibles."],
+      ["Outils", "Graphiques, données et ordres avancés comptent pour un investisseur actif, moins pour un plan ETF mensuel."],
+    ],
   },
   en: {
     title: "Investment platforms",
@@ -93,6 +104,17 @@ const L = {
     sources: "Sources and method",
     disclaimer: "Indicative fees collected in November 2026 from public price lists and the comparisons below. Fees change regularly: only each provider's official price list prevails. Quantrih does not provide investment advice. Partner placements are always labelled as such.",
     countryCount: "platforms",
+    compareTitle: "Compare side by side", compareHint: "Pick up to 3 platforms to compare them.", clear: "Clear",
+    products: "Products", highlights: "Strengths", watchouts: "Watch-outs",
+    guideTitle: "How to choose your platform",
+    guide: [
+      ["Total cost", "Look beyond commissions: FX, custody, inactivity and exit fees add up over time."],
+      ["Taxes", "A Belgian broker withholds the stock exchange tax (TOB) and withholding tax for you; a foreign broker leaves the declaration to you."],
+      ["Tax wrappers", "In France, the PEA and assurance-vie offer tax advantages: check that the platform offers them."],
+      ["Regulation & protection", "Check the regulator (FSMA, AMF, BaFin…) and the scheme protecting your cash and securities."],
+      ["Available products", "Make sure the ETFs, exchanges, bonds or options you need are available."],
+      ["Tools", "Charts, data and advanced orders matter for active investors, less for a monthly ETF plan."],
+    ],
   },
 };
 
@@ -230,6 +252,10 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
   const [type, setType] = useState<TypeFilter>("all");
   const [view, setView] = useState<"cards" | "table">("cards");
   const [query, setQuery] = useState("");
+  const [compare, setCompare] = useState<string[]>([]);
+  const toggleCompare = (id: string) =>
+    setCompare((c) => (c.includes(id) ? c.filter((x) => x !== id) : c.length >= 3 ? c : [...c, id]));
+  const compared = compare.map((id) => INVESTMENT_PLATFORMS.find((p) => p.id === id)).filter(Boolean) as InvestmentPlatform[];
 
   const marketList = useMemo(() => {
     if (tab === "INTL") return [];
@@ -305,6 +331,70 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
           )}
         </div>
 
+        {/* Side-by-side comparison (Belgium / France platforms) */}
+        {tab !== "INTL" && (
+          <section className="mb-8 rounded-3xl border border-border bg-surface p-5">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h2 className="text-base font-bold text-text">{l.compareTitle} <span className="text-text-4 font-mono text-sm">({compared.length}/3)</span></h2>
+              {compared.length > 0 && <button onClick={() => setCompare([])} className="text-sm font-semibold text-text-3 hover:text-text">{l.clear}</button>}
+            </div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {INVESTMENT_PLATFORMS.filter((p) => p.markets.includes(tab as Market)).map((p) => {
+                const on = compare.includes(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => toggleCompare(p.id)}
+                    disabled={!on && compare.length >= 3}
+                    className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold border transition-colors disabled:opacity-40", on ? "bg-pv-blue text-white border-pv-blue" : "bg-surface text-text-2 border-border hover:border-pv-blue")}
+                  >
+                    {on && <Check size={14} />}{p.name}
+                  </button>
+                );
+              })}
+            </div>
+            {compared.length < 2 ? (
+              <p className="text-sm text-text-3">{l.compareHint}</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-sm">
+                  <thead>
+                    <tr>
+                      <th className="w-36" />
+                      {compared.map((p) => (
+                        <th key={p.id} className="text-left p-3"><div className="flex items-center gap-2.5"><Logo domain={p.domain} name={p.name} color={p.color} size={32} /><span className="font-bold text-text text-base">{p.name}</span></div></th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border align-top">
+                    {([
+                      [l.colType, (p: InvestmentPlatform) => TYPE_LABEL(p.type, l)],
+                      [l.regulator, (p: InvestmentPlatform) => p.regulator],
+                      [l.products, (p: InvestmentPlatform) => p.products.join(" · ")],
+                      [l.fees, (p: InvestmentPlatform) => p.fees[lang]],
+                      [l.tax, (p: InvestmentPlatform) => p.tax[lang]],
+                      [l.highlights, (p: InvestmentPlatform) => <ul className="space-y-1">{p.highlights[lang].map((x) => <li key={x} className="flex gap-1.5"><Check size={14} className="text-emerald-500 shrink-0 mt-0.5" />{x}</li>)}</ul>],
+                      [l.watchouts, (p: InvestmentPlatform) => <ul className="space-y-1">{p.watchouts[lang].map((x) => <li key={x} className="flex gap-1.5"><Minus size={14} className="text-rose-500 shrink-0 mt-0.5" />{x}</li>)}</ul>],
+                      [l.bestFor, (p: InvestmentPlatform) => p.bestFor[lang]],
+                    ] as [string, (p: InvestmentPlatform) => React.ReactNode][]).map(([k, f]) => (
+                      <tr key={k}>
+                        <td className="p-3 font-semibold text-text-3">{k}</td>
+                        {compared.map((p) => <td key={p.id} className="p-3 text-text-2 leading-snug">{f(p)}</td>)}
+                      </tr>
+                    ))}
+                    <tr>
+                      <td />
+                      {compared.map((p) => (
+                        <td key={p.id} className="p-3"><a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-pv-blue font-semibold">{l.official} <ExternalLink size={12} /></a></td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        )}
+
         {/* Content */}
         {tab === "INTL" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
@@ -343,6 +433,20 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
             </table>
           </div>
         )}
+
+        {/* How to choose */}
+        <section className="mt-14">
+          <h2 className="text-xl font-bold text-text mb-4">{l.guideTitle}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {l.guide.map(([title, desc], i) => (
+              <div key={title} className="rounded-3xl border border-border bg-surface p-5">
+                <div className="w-9 h-9 rounded-xl bg-pv-blue/10 text-pv-blue font-bold flex items-center justify-center mb-3">{i + 1}</div>
+                <h3 className="font-bold text-text">{title}</h3>
+                <p className="text-sm text-text-2 mt-1.5 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* Sources */}
         <section className="mt-14 rounded-3xl border border-border bg-surface p-6">
