@@ -88,6 +88,11 @@ export function LoginForm() {
         </p>
       </details>
       <p className="border-t border-line pt-5 text-sm text-slate">
+        Découvrir l&apos;espace client :{" "}
+        <Link href="/demo" className="text-navy underline">
+          voir la démonstration
+        </Link>
+        <br />
         Pas encore client ?{" "}
         <Link href="/contact" className="text-navy underline">
           Demander un rendez-vous découverte

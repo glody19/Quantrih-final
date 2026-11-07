@@ -1,9 +1,28 @@
+import Link from "next/link";
 import { logout } from "@/actions/auth";
 import { Logo } from "@/components/Logo";
 import { NavLinks, type NavItem } from "./NavLinks";
 
-export function AppShell({ nav, user, area, children }: { nav: NavItem[]; user: { name: string; email: string }; area: string; children: React.ReactNode }) {
+export function AppShell({ nav, user, area, children, demo = false }: { nav: NavItem[]; user: { name: string; email: string }; area: string; children: React.ReactNode; demo?: boolean }) {
+  const exit = demo ? (
+    <Link href="/" className="text-xs font-semibold text-slate hover:text-navy">
+      Quitter la démonstration
+    </Link>
+  ) : (
+    <form action={logout}>
+      <button className="text-xs font-semibold text-slate hover:text-navy">Se déconnecter</button>
+    </form>
+  );
   return (
+    <>
+    {demo && (
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-navy px-4 py-2 text-center text-xs text-ivory">
+        <span>Démonstration : toutes les données affichées sont fictives.</span>
+        <Link href="/contact" className="font-semibold text-gold underline-offset-4 hover:underline">
+          Demander un rendez-vous
+        </Link>
+      </div>
+    )}
     <div className="min-h-screen bg-ivory lg:grid lg:grid-cols-[260px_1fr]">
       <aside className="border-b border-line bg-paper lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:border-b-0 lg:border-r">
         <div className="flex items-center justify-between px-5 py-5">
@@ -14,20 +33,17 @@ export function AppShell({ nav, user, area, children }: { nav: NavItem[]; user: 
         <div className="mt-auto hidden border-t border-line px-5 py-4 lg:block">
           <div className="truncate text-sm font-medium">{user.name}</div>
           <div className="truncate text-xs text-slate">{user.email}</div>
-          <form action={logout} className="mt-3">
-            <button className="text-xs font-semibold text-slate hover:text-navy">Se déconnecter</button>
-          </form>
+          <div className="mt-3">{exit}</div>
         </div>
       </aside>
       <div className="min-w-0">
         <div className="flex justify-end border-b border-line bg-paper px-4 py-2 lg:hidden">
-          <form action={logout}>
-            <button className="text-xs font-semibold text-slate">Se déconnecter</button>
-          </form>
+          {exit}
         </div>
         <main className="mx-auto max-w-6xl px-4 py-8 sm:px-8 lg:py-12">{children}</main>
       </div>
     </div>
+    </>
   );
 }
 

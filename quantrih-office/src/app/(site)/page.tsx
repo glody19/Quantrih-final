@@ -137,6 +137,9 @@ export default function Home() {
             <Link href="/connexion" className="btn btn-primary mt-8">
               Accéder à mon espace
             </Link>
+            <Link href="/demo" className="btn btn-ghost mt-8 ml-3">
+              Voir la démonstration
+            </Link>
           </div>
           <ul className="grid gap-4 sm:grid-cols-2">
             {[
