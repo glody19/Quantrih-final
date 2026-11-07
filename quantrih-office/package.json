@@ -13,7 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts",
-    "vercel-build": "([ -z \"$DATABASE_URL\" ] || drizzle-kit migrate) && next build"
+    "vercel-build": "([ -z \"$DATABASE_URL\" ] || drizzle-kit migrate) && ([ -z \"$DATABASE_URL\" ] || [ -z \"$ADMIN_EMAIL\" ] || tsx scripts/seed.ts) && next build"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.2",
