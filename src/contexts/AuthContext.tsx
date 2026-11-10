@@ -12,7 +12,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAdmin: boolean;
-  login: () => Promise<void>;
+  login: () => Promise<boolean>;
   logout: () => Promise<void>;
 }
 
@@ -20,7 +20,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   isAdmin: false,
-  login: async () => {},
+  login: async () => false,
   logout: async () => {},
 });
 
@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
 
   const login = async () => {
-    await loginWithGoogle();
+    return await loginWithGoogle();
   };
 
   const logout = async () => {

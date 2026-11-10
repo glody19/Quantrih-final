@@ -4,7 +4,7 @@
 // English metadata, matching the language every visitor lands on.
 import fs from "fs";
 import path from "path";
-import { SEO_ROUTES, SITE_URL, OG_IMAGE, type SeoRoute } from "../src/seo/routes";
+import { SEO_ROUTES, SEO_SECTIONS, SITE_URL, OG_IMAGE, type SeoRoute } from "../src/seo/routes";
 
 const DIST = path.join(process.cwd(), "dist");
 const template = fs.readFileSync(path.join(DIST, "index.html"), "utf8");
@@ -57,6 +57,33 @@ function render(route: SeoRoute): string {
         primaryImageOfPage: OG_IMAGE,
       },
       ...(breadcrumb.length ? [{ "@type": "BreadcrumbList", itemListElement: breadcrumb }] : []),
+      // Free financial web application for every tool page
+      ...(route.app
+        ? [{
+            "@type": "WebApplication",
+            "@id": `${url}#app`,
+            name: m.h1,
+            url,
+            description: m.description,
+            applicationCategory: "FinanceApplication",
+            operatingSystem: "Any (web browser)",
+            isAccessibleForFree: true,
+            offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+            publisher: { "@id": `${SITE_URL}/#organization` },
+          }]
+        : []),
+      // Home page: the product demo video
+      ...(route.path === "/"
+        ? [{
+            "@type": "VideoObject",
+            name: "Quantrih portfolio backtest demo",
+            description: "Running a portfolio backtest on Quantrih and reading the results: summary, growth, risk metrics and drawdowns.",
+            thumbnailUrl: `${SITE_URL}/media/quantrih-demo-poster.jpg`,
+            contentUrl: `${SITE_URL}/media/quantrih-demo.mp4`,
+            uploadDate: "2026-11-10",
+            duration: "PT12S",
+          }]
+        : []),
     ],
   };
 
@@ -70,9 +97,11 @@ function render(route: SeoRoute): string {
   html = replaceMeta(html, /\s*<\/head>/, extraHead);
 
   // Crawlable summary and internal links, replaced by the React app on load.
-  const links = SEO_ROUTES.filter((r) => r.indexable && r.path !== route.path && r.en.summary)
-    .map((r) => `<li><a href="${r.path}">${esc(r.en.h1)}</a></li>`)
-    .join("");
+  const links = SEO_SECTIONS.map((sec) => {
+    const items = SEO_ROUTES.filter((r) => r.indexable && r.section === sec.id && r.path !== route.path);
+    if (!items.length) return "";
+    return `<li>${esc(sec.en)}<ul>${items.map((r) => `<li><a href="${r.path}">${esc(r.en.h1)}</a></li>`).join("")}</ul></li>`;
+  }).join("");
   const body = `<div id="root"><main style="max-width:880px;margin:0 auto;padding:48px 20px;font-family:system-ui,sans-serif;color:#14141A">
       <h1>${esc(m.h1)}</h1>
       ${m.summary ? `<p>${esc(m.summary)}</p>` : ""}
@@ -89,18 +118,47 @@ for (const route of SEO_ROUTES) {
   fs.writeFileSync(target, html);
 }
 
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${SEO_ROUTES.filter((r) => r.indexable)
-  .map(
-    (r) => `  <url>
+const IMAGES: Record<string, { loc: string; title: string }[]> = {
+  "/": [{ loc: OG_IMAGE, title: "Quantrih: portfolio backtesting and investment tools" }],
+  "/portfolio-backtest": [{ loc: `${SITE_URL}/media/demo-laptop.png`, title: "Backtest results: drawdowns from previous peak" }],
+};
+const ordered = SEO_SECTIONS.flatMap((sec) =>
+  SEO_ROUTES.filter((r) => r.indexable && r.section === sec.id).sort((a, b) => b.priority - a.priority)
+);
+const urlEntry = (r: SeoRoute) => {
+  const imgs = (IMAGES[r.path] || [])
+    .map((im) => `
+    <image:image>
+      <image:loc>${im.loc}</image:loc>
+      <image:title>${esc(im.title)}</image:title>
+    </image:image>`)
+    .join("");
+  const video = r.path === "/"
+    ? `
+    <video:video>
+      <video:thumbnail_loc>${SITE_URL}/media/quantrih-demo-poster.jpg</video:thumbnail_loc>
+      <video:title>Quantrih portfolio backtest demo</video:title>
+      <video:description>Running a portfolio backtest on Quantrih and reading the results: summary, growth, risk metrics and drawdowns.</video:description>
+      <video:content_loc>${SITE_URL}/media/quantrih-demo.mp4</video:content_loc>
+      <video:duration>12</video:duration>
+      <video:family_friendly>yes</video:family_friendly>
+    </video:video>`
+    : "";
+  return `  <url>
     <loc>${urlFor(r)}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${r.changefreq}</changefreq>
-    <priority>${r.priority.toFixed(1)}</priority>
-  </url>`
-  )
-  .join("\n")}
+    <priority>${r.priority.toFixed(1)}</priority>${imgs}${video}
+  </url>`;
+};
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+${SEO_SECTIONS.map((sec) => {
+  const items = ordered.filter((r) => r.section === sec.id);
+  return items.length ? `  <!-- ${sec.en} -->\n${items.map(urlEntry).join("\n")}` : "";
+}).filter(Boolean).join("\n")}
 </urlset>
 `;
 fs.writeFileSync(path.join(DIST, "sitemap.xml"), sitemap);

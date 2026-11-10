@@ -116,14 +116,21 @@ export function Footer({ onNavigate }: FooterProps) {
             className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Cookies Policy" : "Cookies Policy"}
+            {isFr ? "Politique de cookies" : "Cookies Policy"}
           </button>
           <button 
             onClick={() => handleNav('privacy')} 
             className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >
             <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Privacy Policy" : "Privacy Policy"}
+            {isFr ? "Politique de confidentialité" : "Privacy Policy"}
+          </button>
+          <button 
+            onClick={() => handleNav('sitemap')} 
+            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+          >
+            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
+            {isFr ? "Plan du site" : "Sitemap"}
           </button>
         </div>
 

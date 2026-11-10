@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "../../lib/utils";
 import { FAMOUS_ALLOCATIONS } from "../../data/famousAllocations";
 
@@ -9,6 +10,7 @@ import { FAMOUS_ALLOCATIONS } from "../../data/famousAllocations";
  * (weights set on 1 January). Portfolios with missing data are not shown.
  */
 export function AllocationsTicker({ label = "YTD" }: { label?: string }) {
+  const navigate = useNavigate();
   const [ytd, setYtd] = useState<Record<string, { ytd: number; asOf: string } | null>>({});
 
   const symbols = useMemo(() => Array.from(new Set(FAMOUS_ALLOCATIONS.flatMap((a) => a.assets.map((x) => x.symbol)))), []);
@@ -42,7 +44,13 @@ export function AllocationsTicker({ label = "YTD" }: { label?: string }) {
       {rows.map((r) => {
         const up = r.value >= 0;
         return (
-          <span key={r.id} className="inline-flex items-center gap-3 whitespace-nowrap" title={r.assets.map((x) => `${x.symbol} ${x.weight}%`).join(" · ")}>
+          <button
+            key={r.id}
+            type="button"
+            onClick={() => { navigate(`/portfolio-backtest?preset=${r.id}`); window.scrollTo({ top: 0 }); }}
+            className="inline-flex items-center gap-3 whitespace-nowrap rounded-lg px-2 py-1 -mx-2 hover:bg-pv-blue/5 transition-colors"
+            title={r.assets.map((x) => `${x.symbol} ${x.weight}%`).join(" · ")}
+          >
             <span className="font-semibold text-text">{r.name}</span>
             <span className="text-text-3 text-sm">{r.author}</span>
             <span className={cn("font-mono font-semibold inline-flex items-center gap-1", up ? "text-emerald-600" : "text-rose-600")}>
@@ -50,7 +58,7 @@ export function AllocationsTicker({ label = "YTD" }: { label?: string }) {
               {up ? "+" : ""}
               {r.value.toFixed(2)}%
             </span>
-          </span>
+          </button>
         );
       })}
     </div>

@@ -74,22 +74,20 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 
 let isPopupPending = false;
 
-export const loginWithGoogle = async () => {
-    if (isPopupPending) return;
+export const loginWithGoogle = async (): Promise<boolean> => {
+    if (isPopupPending) return false;
     try {
         isPopupPending = true;
         await signInWithPopup(auth, provider);
+        return true;
     } catch (error: any) {
         if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
             console.log("Login popup was closed or cancelled.");
-            return;
+            return false;
         }
         console.error("Login failed", error);
-        if (error?.code === 'auth/internal-error') {
-            alert(`Login failed: Internal Error.\n\nIf you are viewing this inside the AI Studio preview, your browser might be blocking third-party cookies (required for popup login inside an iframe).\n\nPlease click the "Open in new tab" icon at the top right of the preview window and try logging in from the new tab.`);
-        } else {
-            alert(`Login failed\n\n${error.message}`);
-        }
+        // Let the sign-in page show a proper message instead of a browser alert
+        throw error;
     } finally {
         isPopupPending = false;
     }

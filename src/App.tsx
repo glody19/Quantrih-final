@@ -15,6 +15,7 @@ import { DualMomentum } from "./components/pages/DualMomentum";
 import { RelativeStrength } from "./components/pages/RelativeStrength";
 import { Education } from "./components/pages/Education";
 import { Market } from "./components/pages/Market";
+import { SiteMap } from "./components/pages/SiteMap";
 import { Platforms } from "./components/pages/Platforms";
 import { EtfScreener } from "./components/pages/EtfScreener";
 import { Auth } from "./components/pages/Auth";
@@ -176,6 +177,7 @@ function AppContent() {
           <Route path="/donate" element={<Navigate to="/" replace />} />
           <Route path="/about" element={<About />} />
           <Route path="/cookies" element={<Legal page="cookies" />} />
+          <Route path="/sitemap" element={<SiteMap onNavigate={handleNavigate} />} />
           <Route path="/privacy" element={<Legal page="privacy" />} />
           <Route path="*" element={<Home onGoPage={handleNavigate} />} />
         </Routes>

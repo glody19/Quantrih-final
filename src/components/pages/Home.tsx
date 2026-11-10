@@ -7,6 +7,7 @@ import { HexBadgeOrbit } from "../ui/HexBadgeOrbit";
 import { AllocationsTicker } from "../home/AllocationsTicker";
 import { DeviceShowcase } from "../home/DeviceShowcase";
 import { PerformanceHeatmap, type HeatRow } from "../home/PerformanceHeatmap";
+import { ToolIllustration } from "../home/ToolIllustration";
 
 // ───────────────────────────── backgrounds (hybrid by section) ─────────────────────────────
 // Original hero colour plate: deep navy with a violet glow
@@ -48,6 +49,35 @@ const SECTORS: (HeatRow & { fr: string })[] = [
   { label: "Utilities", fr: "Services publics", symbol: "XLU" },
   { label: "Consumer Discretionary", fr: "Consommation discrétionnaire", symbol: "XLY" },
   { label: "Communication Services", fr: "Communication", symbol: "XLC" },
+];
+
+// European versions: UCITS ETFs listed in euros (Xetra / Euronext)
+const ASSET_CLASSES_EU: (HeatRow & { fr: string })[] = [
+  { label: "World Equities", fr: "Actions monde", symbol: "IWDA.AS" },
+  { label: "European Equities", fr: "Actions Europe", symbol: "IMEU.AS" },
+  { label: "Euro Stoxx 50", fr: "Euro Stoxx 50", symbol: "EXW1.DE" },
+  { label: "US Equities (S&P 500)", fr: "Actions US (S&P 500)", symbol: "SXR8.DE" },
+  { label: "Emerging Markets", fr: "Marchés émergents", symbol: "IS3N.DE" },
+  { label: "European Real Estate", fr: "Immobilier européen", symbol: "IPRP.AS" },
+  { label: "Euro Government Bonds", fr: "Obligations d'État euro", symbol: "EUNH.DE" },
+  { label: "Euro Corporate Bonds", fr: "Obligations d'entreprises euro", symbol: "IEAC.AS" },
+  { label: "Global Bonds (EUR hedged)", fr: "Obligations mondiales (couvertes EUR)", symbol: "EUNA.DE" },
+  { label: "Gold", fr: "Or", symbol: "4GLD.DE" },
+  { label: "Commodities", fr: "Matières premières", symbol: "EXXY.DE" },
+];
+const SECTORS_EU: (HeatRow & { fr: string })[] = [
+  { label: "Energy", fr: "Énergie", symbol: "EXH1.DE" },
+  { label: "Health Care", fr: "Santé", symbol: "EXV4.DE" },
+  { label: "Basic Resources", fr: "Matières premières", symbol: "EXV6.DE" },
+  { label: "Food & Beverage", fr: "Alimentation et boissons", symbol: "EXH3.DE" },
+  { label: "Technology", fr: "Technologie", symbol: "EXV3.DE" },
+  { label: "Banks", fr: "Banques", symbol: "EXV1.DE" },
+  { label: "Insurance", fr: "Assurance", symbol: "EXH5.DE" },
+  { label: "Real Estate", fr: "Immobilier", symbol: "EXI5.DE" },
+  { label: "Industrial Goods & Services", fr: "Biens et services industriels", symbol: "EXH4.DE" },
+  { label: "Utilities", fr: "Services publics", symbol: "EXH9.DE" },
+  { label: "Automobiles & Parts", fr: "Automobile", symbol: "EXV5.DE" },
+  { label: "Telecommunications", fr: "Télécommunications", symbol: "EXV2.DE" },
 ];
 
 // ─────────────────────────────── motion helpers ───────────────────────────────
@@ -121,10 +151,13 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   const fr = language === "fr";
   const [heroHovered, setHeroHovered] = useState(false);
   const [perf, setPerf] = useState<Record<string, any>>({});
+  const [region, setRegion] = useState<"us" | "eu">(language === "fr" ? "eu" : "us");
+  const assetRows = region === "eu" ? ASSET_CLASSES_EU : ASSET_CLASSES;
+  const sectorRows = region === "eu" ? SECTORS_EU : SECTORS;
 
   useEffect(() => {
     let alive = true;
-    const syms = [...ASSET_CLASSES, ...SECTORS].map((r) => r.symbol).join(",");
+    const syms = [...ASSET_CLASSES, ...SECTORS, ...ASSET_CLASSES_EU, ...SECTORS_EU].map((r) => r.symbol).join(",");
     fetch(`/api/stock/performance?symbols=${encodeURIComponent(syms)}`)
       .then((r) => (r.ok ? r.json() : {}))
       .then((d: any) => {
@@ -215,20 +248,36 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
 
       {/* ── Asset classes & sectors (soft plain background) ── */}
       <ZoomSection style={SOFT} className="w-full py-24">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex p-1 rounded-full bg-white border border-border shadow-sm">
+            {(["us", "eu"] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => setRegion(r)}
+                className={`relative px-5 h-10 rounded-full text-sm font-semibold transition-colors ${region === r ? "text-white" : "text-text-2 hover:text-text"}`}
+              >
+                {region === r && <motion.span layoutId="regionPill" className="absolute inset-0 rounded-full bg-pv-blue" transition={{ type: "spring", stiffness: 380, damping: 30 }} />}
+                <span className="relative">{r === "us" ? (fr ? "États-Unis (USD)" : "United States (USD)") : (fr ? "Europe (UCITS, EUR)" : "Europe (UCITS, EUR)")}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div key={region} className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 xl:grid-cols-2 gap-8">
           <PerformanceHeatmap
             title={fr ? "Performance des classes d'actifs" : "Asset Class Performance"}
             firstCol={fr ? "Classe d'actifs" : "Asset Class"}
-            rows={ASSET_CLASSES.map((r) => ({ symbol: r.symbol, label: fr ? r.fr : r.label }))}
+            rows={assetRows.map((r) => ({ symbol: r.symbol, label: fr ? r.fr : r.label }))}
             perf={perf}
             note={fr ? "Rendement total (dividendes réinvestis). 3Y et 5Y annualisés." : "Total return (dividends reinvested). 3Y and 5Y annualized."}
           />
           <PerformanceHeatmap
             title={fr ? "Performance des secteurs" : "Sector Performance"}
             firstCol={fr ? "Secteur" : "Sector"}
-            rows={SECTORS.map((r) => ({ symbol: r.symbol, label: fr ? r.fr : r.label }))}
+            rows={sectorRows.map((r) => ({ symbol: r.symbol, label: fr ? r.fr : r.label }))}
             perf={perf}
-            note={fr ? "Secteurs du S&P 500 (ETF Select Sector SPDR). 3Y et 5Y annualisés." : "S&P 500 sectors (Select Sector SPDR ETFs). 3Y and 5Y annualized."}
+            note={region === "eu"
+              ? (fr ? "Secteurs du STOXX Europe 600 (ETF iShares, Xetra). 3Y et 5Y annualisés." : "STOXX Europe 600 sectors (iShares ETFs, Xetra). 3Y and 5Y annualized.")
+              : (fr ? "Secteurs du S&P 500 (ETF Select Sector SPDR). 3Y et 5Y annualisés." : "S&P 500 sectors (Select Sector SPDR ETFs). 3Y and 5Y annualized.")}
           />
         </div>
       </ZoomSection>
@@ -252,6 +301,9 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               >
                 <TiltCard className="group relative h-full min-h-[240px] rounded-[2rem] p-7 lg:p-9 flex flex-col bg-white/[0.05] border border-white/10 backdrop-blur-md shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)] hover:border-white/25 transition-colors overflow-hidden">
                   <span className="absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-25 group-hover:opacity-50 transition-opacity duration-500" style={{ background: p.accent }} />
+                  <div className="relative mb-6" style={{ transform: "translateZ(25px)" }}>
+                    <ToolIllustration kind={i as 0 | 1 | 2 | 3} accent={p.accent} />
+                  </div>
                   <h4 className="relative text-xl lg:text-2xl font-semibold tracking-tight uppercase font-sans" style={{ color: p.accent, transform: "translateZ(30px)" }}>{p.title}</h4>
                   <p className="relative mt-3 text-white/75 text-sm lg:text-base leading-relaxed" style={{ transform: "translateZ(20px)" }}>{p.desc}</p>
                   <div className="relative mt-auto pt-7 flex justify-center" style={{ transform: "translateZ(40px)" }}>

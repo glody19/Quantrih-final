@@ -4,8 +4,24 @@
 export const SITE_URL = "https://quantrih.com";
 export const OG_IMAGE = `${SITE_URL}/og-image.png`;
 
+export type SeoSection = "home" | "tools" | "markets" | "learn" | "platforms" | "company" | "legal";
+
+/** Sections in the order they appear in sitemap.xml and on the /sitemap page. */
+export const SEO_SECTIONS: { id: SeoSection; en: string; fr: string }[] = [
+  { id: "home", en: "Home", fr: "Accueil" },
+  { id: "tools", en: "Portfolio tools", fr: "Outils de portefeuille" },
+  { id: "markets", en: "Markets and ETFs", fr: "Marchés et ETF" },
+  { id: "platforms", en: "Investment platforms", fr: "Plateformes d'investissement" },
+  { id: "learn", en: "Learn", fr: "Apprendre" },
+  { id: "company", en: "About Quantrih", fr: "À propos de Quantrih" },
+  { id: "legal", en: "Legal", fr: "Mentions légales" },
+];
+
 export interface SeoRoute {
   path: string;
+  section: SeoSection;
+  /** Free web application (adds WebApplication structured data). */
+  app?: boolean;
   /** Included in sitemap.xml and prerendered. */
   indexable: boolean;
   priority: number;
@@ -17,6 +33,7 @@ export interface SeoRoute {
 export const SEO_ROUTES: SeoRoute[] = [
   {
     path: "/",
+    section: "home",
     indexable: true,
     priority: 1.0,
     changefreq: "weekly",
@@ -39,6 +56,8 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/portfolio-backtest",
+    section: "tools",
+    app: true,
     indexable: true,
     priority: 0.9,
     changefreq: "weekly",
@@ -61,6 +80,8 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/asset-allocation",
+    section: "tools",
+    app: true,
     indexable: true,
     priority: 0.8,
     changefreq: "weekly",
@@ -83,6 +104,8 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/montecarlo",
+    section: "tools",
+    app: true,
     indexable: true,
     priority: 0.8,
     changefreq: "weekly",
@@ -105,6 +128,8 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/tactical-allocation",
+    section: "tools",
+    app: true,
     indexable: true,
     priority: 0.8,
     changefreq: "weekly",
@@ -127,6 +152,7 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/platforms",
+    section: "platforms",
     indexable: true,
     priority: 0.9,
     changefreq: "weekly",
@@ -149,6 +175,7 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/education",
+    section: "learn",
     indexable: true,
     priority: 0.7,
     changefreq: "monthly",
@@ -171,6 +198,7 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/etf-overview",
+    section: "markets",
     indexable: true,
     priority: 0.7,
     changefreq: "weekly",
@@ -191,6 +219,7 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/market",
+    section: "markets",
     indexable: true,
     priority: 0.6,
     changefreq: "daily",
@@ -211,6 +240,7 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/about",
+    section: "company",
     indexable: true,
     priority: 0.5,
     changefreq: "monthly",
@@ -228,7 +258,27 @@ export const SEO_ROUTES: SeoRoute[] = [
     },
   },
   {
+    path: "/sitemap",
+    section: "company",
+    indexable: true,
+    priority: 0.3,
+    changefreq: "monthly",
+    fr: {
+      title: "Plan du site | Quantrih",
+      description: "Toutes les pages de Quantrih classées par rubrique : outils de portefeuille, marchés et ETF, plateformes d'investissement, ressources.",
+      h1: "Plan du site",
+      summary: "Retrouvez toutes les pages de Quantrih, classées par rubrique.",
+    },
+    en: {
+      title: "Sitemap | Quantrih",
+      description: "Every Quantrih page by section: portfolio tools, markets and ETFs, investment platforms and resources.",
+      h1: "Sitemap",
+      summary: "Every Quantrih page, organised by section.",
+    },
+  },
+  {
     path: "/auth",
+    section: "company",
     indexable: false,
     priority: 0.1,
     changefreq: "yearly",
@@ -237,6 +287,7 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/privacy",
+    section: "legal",
     indexable: true,
     priority: 0.2,
     changefreq: "yearly",
@@ -245,6 +296,7 @@ export const SEO_ROUTES: SeoRoute[] = [
   },
   {
     path: "/cookies",
+    section: "legal",
     indexable: true,
     priority: 0.2,
     changefreq: "yearly",

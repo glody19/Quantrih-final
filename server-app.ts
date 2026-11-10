@@ -1040,7 +1040,7 @@ export function createApp() {
       const symbols = String(req.query.symbols || "")
         .split(",").map((x) => x.trim().toUpperCase())
         .filter((x) => /^[A-Z0-9.\-^=]{1,15}$/.test(x))
-        .slice(0, 40);
+        .slice(0, 60);
       if (symbols.length === 0) return res.json({});
       const cacheKey = symbols.slice().sort().join(",");
       const cached = getCached('perf2', cacheKey, 60 * 60_000);

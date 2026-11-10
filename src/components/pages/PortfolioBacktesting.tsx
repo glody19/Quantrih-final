@@ -161,6 +161,7 @@ interface PortfolioResult {
 
 import { PortfolioAnalysisExplication } from "./PortfolioAnalysisExplication";
 import { BacktestReport } from "../backtest/BacktestReport";
+import { FAMOUS_ALLOCATIONS } from "../../data/famousAllocations";
 import { SavedBacktestsComparison } from "../backtest/SavedBacktestsComparison";
 
 import { runBacktest as engineRunBacktest } from "../../engine";
@@ -631,6 +632,23 @@ export function PortfolioBacktesting({
       setIsRunning(false);
     }
   };
+
+  // Preset from the home page ticker: /portfolio-backtest?preset=<id> pre-fills and runs a famous allocation
+  const [autoRun, setAutoRun] = useState(false);
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("preset");
+    const preset = FAMOUS_ALLOCATIONS.find((a) => a.id === id);
+    if (!preset) return;
+    setPortfolioNames([{ id: "1", name: `${preset.name} (${preset.author})` }]);
+    setPortfolioAssets(preset.assets.map((x) => ({ symbol: x.symbol, weights: [String(x.weight)] })));
+    setAutoRun(true);
+  }, []);
+  useEffect(() => {
+    if (!autoRun) return;
+    setAutoRun(false);
+    runBacktest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRun, portfolioAssets]);
 
   const chartData = useMemo(() => {
     if (results.length === 0) return { labels: [], datasets: [] };

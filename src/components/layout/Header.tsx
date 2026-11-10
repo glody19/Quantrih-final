@@ -194,9 +194,9 @@ export function Header({
           <div className="hidden lg:flex items-center gap-2">
             <button
               onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 text-blue-500 hover:text-blue-600 rounded-lg transition-all duration-300 text-[10px] font-medium tracking-wider shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-pv-blue hover:bg-pv-blue-d text-white rounded-lg transition-all duration-300 text-xs font-semibold tracking-wide shadow-[0_6px_16px_-6px_rgba(91,75,219,0.7)]"
             >
-              <Heart size={10} className="fill-blue-500 text-blue-500 animate-[pulse_2s_ease-in-out_infinite]" />
+              <Heart size={12} className="fill-white text-white animate-[pulse_2s_ease-in-out_infinite]" />
               <span>{t("header.donate")}</span>
             </button>
             <div className="h-4 w-[1px] bg-border/50 mx-1" />
