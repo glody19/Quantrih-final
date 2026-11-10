@@ -1034,6 +1034,45 @@ export function createApp() {
     }
   });
 
+  // Trailing total returns (adjusted monthly closes): 1Y cumulative, 3Y and 5Y annualized.
+  app.get("/api/stock/performance", async (req, res) => {
+    try {
+      const symbols = String(req.query.symbols || "")
+        .split(",").map((x) => x.trim().toUpperCase())
+        .filter((x) => /^[A-Z0-9.\-^=]{1,15}$/.test(x))
+        .slice(0, 40);
+      if (symbols.length === 0) return res.json({});
+      const cacheKey = symbols.slice().sort().join(",");
+      const cached = getCached('perf', cacheKey, 60 * 60_000);
+      if (cached) return res.json(cached);
+      const start = new Date();
+      start.setUTCFullYear(start.getUTCFullYear() - 5);
+      start.setUTCMonth(start.getUTCMonth() - 2);
+      const out: Record<string, { y1: number | null; y3: number | null; y5: number | null; asOf: string } | null> = {};
+      await Promise.all(symbols.map(async (sym) => {
+        try {
+          const chart = await safeYfChart(sym, { period1: start.toISOString().split("T")[0], period2: new Date().toISOString().split("T")[0], interval: "1mo" });
+          const q = (chart?.quotes || [])
+            .filter((x: any) => x && x.date && (typeof x.adjclose === "number" || typeof x.close === "number"))
+            .map((x: any) => ({ t: new Date(x.date).getTime(), p: typeof x.adjclose === "number" ? x.adjclose : x.close }))
+            .sort((a: any, b: any) => a.t - b.t);
+          if (q.length < 13) { out[sym] = null; return; }
+          const last = q[q.length - 1];
+          const at = (months: number) => (q.length > months ? q[q.length - 1 - months].p : null);
+          const ann = (months: number) => { const b = at(months); return b ? (Math.pow(last.p / b, 12 / months) - 1) * 100 : null; };
+          const b1 = at(12);
+          out[sym] = { y1: b1 ? (last.p / b1 - 1) * 100 : null, y3: ann(36), y5: ann(60), asOf: new Date(last.t).toISOString().split("T")[0] };
+        } catch {
+          out[sym] = null;
+        }
+      }));
+      setCached('perf', cacheKey, out);
+      res.json(out);
+    } catch {
+      res.status(500).json({ error: "Failed to compute performance" });
+    }
+  });
+
   app.get("/api/stock/bulk-quotes", async (req, res) => {
     try {
       if (!req.query.symbols) return res.json([]);

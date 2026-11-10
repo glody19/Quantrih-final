@@ -89,16 +89,16 @@ export function Header({
 
   return (
     <header 
-      data-theme={undefined}
+      data-theme={currentPage === "home" ? "dark" : undefined}
       className={cn(
         "z-[100] transition-all duration-300 ease-in-out w-full border-b backdrop-blur-md",
-        false
-          ? "absolute top-0 left-0 bg-[#0B0A1F]/40 border-white/10"
+        currentPage === "home"
+          ? "absolute top-0 left-0 bg-transparent border-white/10"
           : "sticky top-0 bg-white/90 border-border shadow-[0_1px_0_rgba(17,17,24,0.02)]"
       )}
     >
       {/* Main Header Top Row: Logo + Page Nav Menu + Controls */}
-      <div className="h-14 lg:h-16 flex items-center justify-between px-4 md:px-8 max-w-full mx-auto text-xs lg:text-sm font-normal">
+      <div className="h-[68px] lg:h-16 flex items-center justify-between px-4 md:px-8 max-w-full mx-auto text-sm font-normal">
         
         {/* Left & Center: Logo + Navigation Bar */}
         <div className="flex items-center gap-3 lg:gap-6 h-full">
@@ -106,7 +106,7 @@ export function Header({
             onClick={() => onPageChange("home")}
             className="cursor-pointer flex items-center transition-all hover:opacity-80 px-2 h-10 lg:h-12 shrink-0"
           >
-            <QuantrihLogo variant="bars" size="md" className="text-blue-600 opacity-95 hover:opacity-100 transition-transform duration-300" />
+            <QuantrihLogo variant="bars" size="lg" className={cn("opacity-95 hover:opacity-100 transition-transform duration-300", currentPage === "home" ? "text-[#B6ABF7] [&>span]:!text-white" : "text-blue-600")} />
           </div>
           
           {/* Desktop Nav Bar */}
@@ -341,10 +341,10 @@ export function Header({
 
           {/* Mobile Menu Toggle */}
           <button 
-            className="xl:hidden p-3.5 sm:p-2 rounded-xl text-text hover:bg-surface-2 transition-colors ml-2 max-sm:[zoom:0.7]"
+            className="xl:hidden p-2.5 rounded-xl text-text hover:bg-surface-2 transition-colors ml-1"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X size={28} className="sm:w-[20px] sm:h-[20px]" /> : <Menu size={28} className="sm:w-[20px] sm:h-[20px]" />}
+            {mobileMenuOpen ? <X size={30} /> : <Menu size={30} />}
           </button>
         </div>
       </div>
@@ -357,7 +357,7 @@ export function Header({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="xl:hidden absolute top-full left-0 right-0 w-full bg-surface border-b border-border p-5 shadow-2xl z-[150] flex flex-col gap-2 max-h-[80vh] overflow-y-auto scroll-smooth rounded-b-3xl max-sm:[zoom:0.7]"
+            className="xl:hidden absolute top-full left-0 right-0 w-full bg-surface border-b border-border p-5 shadow-2xl z-[150] flex flex-col gap-2 max-h-[80vh] overflow-y-auto scroll-smooth rounded-b-3xl"
           >
             {menus.map((menu) => {
               const hasChildren = "children" in menu && !!menu.children;

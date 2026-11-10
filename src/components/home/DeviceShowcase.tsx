@@ -3,9 +3,10 @@ import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 
 /**
  * Desktop monitor + laptop, upright and front-facing, with a subtle 3D depth effect
- * that follows the mouse. Screens show real screenshots of Quantrih backtest results.
+ * that follows the mouse. The monitor plays a real screen recording of a Quantrih backtest;
+ * the laptop shows a real results screenshot.
  */
-export function DeviceShowcase({ desktopSrc, laptopSrc, desktopAlt, laptopAlt }: { desktopSrc: string; laptopSrc: string; desktopAlt: string; laptopAlt: string }) {
+export function DeviceShowcase({ videoMp4, videoWebm, poster, laptopSrc, desktopAlt, laptopAlt }: { videoMp4: string; videoWebm: string; poster: string; laptopSrc: string; desktopAlt: string; laptopAlt: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
@@ -32,7 +33,11 @@ export function DeviceShowcase({ desktopSrc, laptopSrc, desktopAlt, laptopAlt }:
           <div className="relative rounded-[18px] bg-gradient-to-b from-[#2A2D35] to-[#16181D] p-[1.6%] shadow-[0_40px_80px_-30px_rgba(15,23,42,0.55),0_18px_30px_-18px_rgba(15,23,42,0.4)] ring-1 ring-black/40">
             <div className="absolute inset-x-0 top-0 h-px rounded-t-[18px] bg-white/25" />
             <div className="relative overflow-hidden rounded-[6px] bg-white aspect-[16/10]">
-              <img src={desktopSrc} alt={desktopAlt} className="absolute inset-0 w-full h-full object-cover object-top" loading="lazy" />
+              {/* Real screen recording of a Quantrih backtest (12 s loop) */}
+              <video className="absolute inset-0 w-full h-full object-cover object-top" autoPlay muted loop playsInline preload="metadata" poster={poster} aria-label={desktopAlt}>
+                <source src={videoWebm} type="video/webm" />
+                <source src={videoMp4} type="video/mp4" />
+              </video>
               {/* glass reflection */}
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_38%)]" />
             </div>

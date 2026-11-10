@@ -1,154 +1,303 @@
-import React, { useState } from "react";
-import { motion } from "motion/react";
+import React, { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { AtomAnimation } from "../ui/AtomAnimation";
 import { HexBadgeOrbit } from "../ui/HexBadgeOrbit";
 import { AllocationsTicker } from "../home/AllocationsTicker";
 import { DeviceShowcase } from "../home/DeviceShowcase";
+import { PerformanceHeatmap, type HeatRow } from "../home/PerformanceHeatmap";
 
-// White background with a fine square grid ("petits carreaux")
-const GRID_BG: React.CSSProperties = {
+// ───────────────────────────── backgrounds (hybrid by section) ─────────────────────────────
+// Original hero colour plate: deep navy with a violet glow
+const HERO_PLATE: React.CSSProperties = {
+  background: "radial-gradient(ellipse 90% 70% at 50% 0%, #2B2580 0%, #15124A 38%, #0B0A24 70%, #070617 100%)",
+};
+// White with large rectangular cells
+const LARGE_GRID: React.CSSProperties = {
   backgroundColor: "#FFFFFF",
   backgroundImage:
-    "linear-gradient(to right, rgba(15,23,42,0.055) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,23,42,0.055) 1px, transparent 1px)",
-  backgroundSize: "24px 24px",
+    "linear-gradient(to right, rgba(15,23,42,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,23,42,0.06) 1px, transparent 1px)",
+  backgroundSize: "120px 64px",
 };
+const SOFT: React.CSSProperties = { background: "linear-gradient(180deg, #F7F7FB 0%, #FFFFFF 100%)" };
 
-interface PageInfo {
-  title: string;
-  id: string;
-  cta: string;
-  desc: string;
-}
+// ─────────────────────────────────── data ───────────────────────────────────
+const ASSET_CLASSES: (HeatRow & { fr: string })[] = [
+  { label: "Commodities", fr: "Matières premières", symbol: "DBC" },
+  { label: "Intl Developed Markets", fr: "Marchés développés hors US", symbol: "VEA" },
+  { label: "REIT", fr: "Immobilier coté (REIT)", symbol: "VNQ" },
+  { label: "US Stock Market", fr: "Actions américaines", symbol: "VTI" },
+  { label: "Emerging Markets", fr: "Marchés émergents", symbol: "VWO" },
+  { label: "Short Treasuries", fr: "Bons du Trésor courts", symbol: "SHY" },
+  { label: "Total Bond Market", fr: "Obligations US (total)", symbol: "BND" },
+  { label: "Intermediate Treasuries", fr: "Bons du Trésor moyens", symbol: "IEF" },
+  { label: "Gold", fr: "Or", symbol: "GLD" },
+  { label: "Global Bonds", fr: "Obligations internationales", symbol: "BNDX" },
+  { label: "Long Treasuries", fr: "Bons du Trésor longs", symbol: "TLT" },
+];
+const SECTORS: (HeatRow & { fr: string })[] = [
+  { label: "Energy", fr: "Énergie", symbol: "XLE" },
+  { label: "Health Care", fr: "Santé", symbol: "XLV" },
+  { label: "Materials", fr: "Matériaux", symbol: "XLB" },
+  { label: "Consumer Staples", fr: "Consommation de base", symbol: "XLP" },
+  { label: "Technology", fr: "Technologie", symbol: "XLK" },
+  { label: "Financial", fr: "Finance", symbol: "XLF" },
+  { label: "Real Estate", fr: "Immobilier", symbol: "XLRE" },
+  { label: "Industrial", fr: "Industrie", symbol: "XLI" },
+  { label: "Utilities", fr: "Services publics", symbol: "XLU" },
+  { label: "Consumer Discretionary", fr: "Consommation discrétionnaire", symbol: "XLY" },
+  { label: "Communication Services", fr: "Communication", symbol: "XLC" },
+];
 
-function ModuleCard({ p, i, onGoPage }: { p: PageInfo; i: number; onGoPage: (id: string) => void }) {
+// ─────────────────────────────── motion helpers ───────────────────────────────
+/** Section that zooms in as it enters the viewport and slightly out as it leaves. */
+function ZoomSection({ children, className, style, id }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; id?: string }) {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const scale = useTransform(scrollYProgress, [0, 0.3, 0.75, 1], [0.92, 1, 1, 0.95]);
+  const opacity = useTransform(scrollYProgress, [0, 0.22, 0.85, 1], [0.35, 1, 1, 0.55]);
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.35, delay: i * 0.08, ease: "easeOut" }}
-      className="group relative bg-white border border-border hover:border-pv-blue/40 rounded-[2rem] p-6 lg:p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-[0_10px_30px_-12px_rgba(15,23,42,0.12)] hover:shadow-[0_20px_40px_-16px_rgba(15,23,42,0.18)] w-full h-full min-h-[220px]"
-    >
-      <div className="flex-1 flex flex-col">
-        <h4 className="text-lg sm:text-xl lg:text-2xl font-extrabold tracking-tight mb-3 text-pv-blue uppercase font-sans">{p.title}</h4>
-        <p className="text-text-2 text-sm lg:text-base leading-relaxed">{p.desc}</p>
-      </div>
-      <div className="mt-6 flex justify-center">
-        <button
-          onClick={() => onGoPage(p.id)}
-          className="px-6 py-2.5 bg-surface-2 hover:bg-pv-blue hover:text-white border border-border hover:border-pv-blue text-text font-bold text-sm rounded-full transition-all duration-300 inline-flex items-center gap-2"
-        >
-          {p.cta}
-          <ArrowRight size={15} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
-        </button>
-      </div>
-    </motion.div>
+    <section ref={ref} id={id} className={className} style={style}>
+      <motion.div style={{ scale, opacity }} className="will-change-transform">
+        {children}
+      </motion.div>
+    </section>
   );
 }
 
+/** Card that tilts in 3D towards the cursor. */
+function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rx = useSpring(useTransform(my, [-0.5, 0.5], [7, -7]), { stiffness: 200, damping: 18 });
+  const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-9, 9]), { stiffness: 200, damping: 18 });
+  return (
+    <div className="[perspective:1200px] h-full">
+      <motion.div
+        onMouseMove={(e) => {
+          const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+          mx.set((e.clientX - r.left) / r.width - 0.5);
+          my.set((e.clientY - r.top) / r.height - 0.5);
+        }}
+        onMouseLeave={() => {
+          mx.set(0);
+          my.set(0);
+        }}
+        whileHover={{ scale: 1.03 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        style={{ rotateX: rx, rotateY: ry, transformStyle: "preserve-3d" }}
+        className={className}
+      >
+        {children}
+      </motion.div>
+    </div>
+  );
+}
+
+/** Words drop in from the top, one after the other. */
+function DropIn({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
+  return (
+    <span className={className} aria-label={text}>
+      {text.split(" ").map((w, i) => (
+        <motion.span
+          key={i}
+          aria-hidden
+          className="inline-block mr-[0.25em]"
+          initial={{ y: -140, opacity: 0, rotateX: -70 }}
+          animate={{ y: 0, opacity: 1, rotateX: 0 }}
+          transition={{ type: "spring", stiffness: 90, damping: 14, delay: delay + i * 0.09 }}
+        >
+          {w}
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
+// ─────────────────────────────────── page ───────────────────────────────────
 export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   const { language, t } = useTranslation();
-  const [heroHovered, setHeroHovered] = useState(false);
   const fr = language === "fr";
+  const [heroHovered, setHeroHovered] = useState(false);
+  const [perf, setPerf] = useState<Record<string, any>>({});
 
-  const pages: PageInfo[] = [
-    { title: t("home.pages.asset_allocation.title"), id: "asset-allocation", cta: t("home.pages.asset_allocation.cta"), desc: t("home.pages.asset_allocation.desc") },
-    { title: t("home.pages.portfolio_backtest.title"), id: "portfolio-backtest", cta: t("home.pages.portfolio_backtest.cta"), desc: t("home.pages.portfolio_backtest.desc") },
-    { title: t("home.pages.tactical_allocation.title"), id: "tactical-allocation", cta: t("home.pages.tactical_allocation.cta"), desc: t("home.pages.tactical_allocation.desc") },
-    { title: t("home.pages.montecarlo.title"), id: "montecarlo", cta: t("home.pages.montecarlo.cta"), desc: t("home.pages.montecarlo.desc") },
+  useEffect(() => {
+    let alive = true;
+    const syms = [...ASSET_CLASSES, ...SECTORS].map((r) => r.symbol).join(",");
+    fetch(`/api/stock/performance?symbols=${encodeURIComponent(syms)}`)
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((d: any) => {
+        if (alive && d && typeof d === "object") setPerf(d);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Hero parallax: atom grows as the page starts to scroll
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: heroP } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const atomScale = useTransform(heroP, [0, 1], [1, 1.35]);
+  const heroTextY = useTransform(heroP, [0, 1], [0, 120]);
+  const heroFade = useTransform(heroP, [0, 0.8], [1, 0]);
+
+  const pages = [
+    { title: t("home.pages.asset_allocation.title"), id: "asset-allocation", cta: t("home.pages.asset_allocation.cta"), desc: t("home.pages.asset_allocation.desc"), accent: "#7B6CF0" },
+    { title: t("home.pages.portfolio_backtest.title"), id: "portfolio-backtest", cta: t("home.pages.portfolio_backtest.cta"), desc: t("home.pages.portfolio_backtest.desc"), accent: "#2DD4BF" },
+    { title: t("home.pages.tactical_allocation.title"), id: "tactical-allocation", cta: t("home.pages.tactical_allocation.cta"), desc: t("home.pages.tactical_allocation.desc"), accent: "#F59E0B" },
+    { title: t("home.pages.montecarlo.title"), id: "montecarlo", cta: t("home.pages.montecarlo.cta"), desc: t("home.pages.montecarlo.desc"), accent: "#60A5FA" },
   ];
 
   return (
-    <div className="flex flex-col w-full min-h-[100dvh] relative overflow-hidden text-text" style={GRID_BG}>
-      <div className="relative z-10 w-full max-w-[1600px] flex-1 flex flex-col mx-auto">
-        {/* Hero */}
+    <div className="flex flex-col w-full overflow-hidden text-text">
+      {/* ── Hero: original colour plate ── */}
+      <div ref={heroRef} className="relative w-full min-h-[100svh] flex items-center" style={HERO_PLATE}>
+        <div className="absolute inset-0 pointer-events-none opacity-[0.35]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)", backgroundSize: "26px 26px" }} />
         <div
-          className="flex flex-col lg:flex-row w-full min-h-[70vh]"
+          className="relative z-10 w-full max-w-[1600px] mx-auto flex flex-col lg:flex-row items-center pt-28 pb-16 lg:py-0"
           onMouseEnter={() => setHeroHovered(true)}
           onMouseLeave={() => setHeroHovered(false)}
         >
-          <div className="w-full lg:w-[45%] flex flex-col justify-center px-8 lg:px-24 z-20 pt-16 lg:pt-0">
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} className="mb-10">
-              <h1 className="font-sans text-[18vw] sm:text-[10vw] md:text-8xl lg:text-[140px] whitespace-nowrap font-semibold leading-[0.85] tracking-tighter text-text">Quantrih</h1>
-              <h2 className="font-sans text-3xl lg:text-4xl font-semibold leading-none tracking-tighter mt-4 text-pv-blue">{t("home.hero.title2") + "."}</h2>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} className="max-w-xl">
-              <p className="text-text-2 font-medium text-2xl md:text-3xl leading-relaxed border-l-2 border-border-2 pl-6 py-2">{t("home.hero.subtitle")}</p>
-            </motion.div>
-          </div>
-          <div className="w-full lg:w-[55%] min-h-[40vh] lg:min-h-[70vh] relative z-10 flex items-center justify-center">
-            <AtomAnimation isHovered={heroHovered} variant="light" />
-          </div>
+          <motion.div style={{ y: heroTextY, opacity: heroFade }} className="w-full lg:w-[46%] px-6 sm:px-10 lg:pl-24 lg:pr-0 z-20 [perspective:800px]">
+            <h1 className="font-sans text-[22vw] sm:text-[13vw] lg:text-[150px] font-semibold leading-[0.85] tracking-tighter text-white">
+              <DropIn text="Quantrih" />
+            </h1>
+            <h2 className="font-sans text-4xl sm:text-5xl lg:text-[52px] font-medium leading-tight tracking-tight mt-5 text-[#B6ABF7]">
+              <DropIn text={t("home.hero.title2") + "."} delay={0.25} />
+            </h2>
+            <motion.p
+              initial={{ y: -60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 80, damping: 16, delay: 0.7 }}
+              className="mt-8 max-w-xl text-white/80 text-xl sm:text-2xl md:text-3xl leading-relaxed border-l-2 border-white/25 pl-6 py-1"
+            >
+              {t("home.hero.subtitle")}
+            </motion.p>
+          </motion.div>
+          <motion.div style={{ scale: atomScale }} className="w-full lg:w-[54%] h-[52vh] sm:h-[60vh] lg:h-[86vh] relative z-10 flex items-center justify-center mt-6 lg:mt-0">
+            <div className="w-full h-full scale-[1.45] sm:scale-[1.3] lg:scale-[1.2]">
+              <AtomAnimation isHovered={heroHovered} />
+            </div>
+          </motion.div>
         </div>
-      </div>
-
-      {/* Ten famous allocations, year-to-date (real prices) */}
-      <div className="relative z-10 w-full mt-4">
-        <AllocationsTicker label={fr ? "Allocations · depuis le 1er janv." : "Allocations · YTD"} />
-      </div>
-
-      <div className="relative z-10 w-full max-w-[1600px] flex-1 flex flex-col mx-auto">
-        {/* Why backtest */}
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="w-full px-6 lg:px-24 pt-24">
-          <div className="max-w-4xl mx-auto text-center">
-            <h3 className="text-2xl md:text-3xl font-semibold text-text mb-4">{t("home.why_backtest.title")}</h3>
-            <p className="text-text-2 text-lg leading-relaxed">{t("home.why_backtest.desc")}</p>
-          </div>
+        <motion.div
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4 }}
+        >
+          <motion.span className="w-1 h-2 rounded-full bg-white/70" animate={{ y: [0, 12, 0] }} transition={{ repeat: Infinity, duration: 1.6 }} />
         </motion.div>
+      </div>
 
-        {/* Demo: desktop + laptop showing real backtest results */}
-        <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.7, ease: "easeOut" }} className="w-full px-6 lg:px-24 pt-16">
+      {/* ── Ten famous allocations, YTD ── */}
+      <AllocationsTicker label={fr ? "Allocations · depuis le 1er janv." : "Allocations · YTD"} />
+
+      {/* ── Why backtest + demo video (large rectangular grid) ── */}
+      <ZoomSection style={LARGE_GRID} className="w-full pt-24 pb-28">
+        <div className="max-w-4xl mx-auto text-center px-6">
+          <h3 className="text-3xl md:text-[42px] font-normal tracking-tight text-text mb-5">{t("home.why_backtest.title")}</h3>
+          <p className="text-text-2 text-lg md:text-xl leading-relaxed">{t("home.why_backtest.desc")}</p>
+        </div>
+        <div className="w-full px-4 sm:px-6 lg:px-24 mt-16">
           <DeviceShowcase
-            desktopSrc="/media/demo-desktop.png"
+            videoMp4="/media/quantrih-demo.mp4"
+            videoWebm="/media/quantrih-demo.webm"
+            poster="/media/quantrih-demo-poster.jpg"
             laptopSrc="/media/demo-laptop.png"
-            desktopAlt={fr ? "Résultats d'un backtest Quantrih : synthèse et croissance du portefeuille" : "Quantrih backtest results: summary and portfolio growth"}
+            desktopAlt={fr ? "Démonstration : lancement d'un backtest Quantrih et lecture des résultats" : "Demo: running a Quantrih backtest and reading the results"}
             laptopAlt={fr ? "Résultats d'un backtest Quantrih : pertes maximales" : "Quantrih backtest results: drawdowns"}
           />
-        </motion.div>
+        </div>
+      </ZoomSection>
 
-        {/* Tools & strategies */}
-        <div className="w-full py-24 lg:py-32 px-6 lg:px-24">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.8 }} className="mb-14 text-center">
-            <h3 className="text-3xl md:text-5xl font-semibold text-text tracking-tight mb-4">{t("home.tools.title")}</h3>
-            <p className="text-text-2 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">{t("home.tools.subtitle")}</p>
-          </motion.div>
+      {/* ── Asset classes & sectors (soft plain background) ── */}
+      <ZoomSection style={SOFT} className="w-full py-24">
+        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <PerformanceHeatmap
+            title={fr ? "Performance des classes d'actifs" : "Asset Class Performance"}
+            firstCol={fr ? "Classe d'actifs" : "Asset Class"}
+            rows={ASSET_CLASSES.map((r) => ({ symbol: r.symbol, label: fr ? r.fr : r.label }))}
+            perf={perf}
+            note={fr ? "Rendement total (dividendes réinvestis). 3Y et 5Y annualisés." : "Total return (dividends reinvested). 3Y and 5Y annualized."}
+          />
+          <PerformanceHeatmap
+            title={fr ? "Performance des secteurs" : "Sector Performance"}
+            firstCol={fr ? "Secteur" : "Sector"}
+            rows={SECTORS.map((r) => ({ symbol: r.symbol, label: fr ? r.fr : r.label }))}
+            perf={perf}
+            note={fr ? "Secteurs du S&P 500 (ETF Select Sector SPDR). 3Y et 5Y annualisés." : "S&P 500 sectors (Select Sector SPDR ETFs). 3Y and 5Y annualized."}
+          />
+        </div>
+      </ZoomSection>
+
+      {/* ── Tools & strategies (hero plate again, 3D tilt cards) ── */}
+      <ZoomSection style={HERO_PLATE} className="w-full py-24 lg:py-32">
+        <div className="px-6 lg:px-24">
+          <div className="mb-14 text-center">
+            <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight mb-4">{t("home.tools.title")}</h3>
+            <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">{t("home.tools.subtitle")}</p>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 w-full max-w-[90rem] mx-auto">
             {pages.map((p, i) => (
-              <ModuleCard key={p.id} p={p} i={i} onGoPage={onGoPage} />
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 50, rotateX: 18 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full"
+              >
+                <TiltCard className="group relative h-full min-h-[240px] rounded-[2rem] p-7 lg:p-9 flex flex-col bg-white/[0.05] border border-white/10 backdrop-blur-md shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)] hover:border-white/25 transition-colors overflow-hidden">
+                  <span className="absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-25 group-hover:opacity-50 transition-opacity duration-500" style={{ background: p.accent }} />
+                  <h4 className="relative text-xl lg:text-2xl font-semibold tracking-tight uppercase font-sans" style={{ color: p.accent, transform: "translateZ(30px)" }}>{p.title}</h4>
+                  <p className="relative mt-3 text-white/75 text-sm lg:text-base leading-relaxed" style={{ transform: "translateZ(20px)" }}>{p.desc}</p>
+                  <div className="relative mt-auto pt-7 flex justify-center" style={{ transform: "translateZ(40px)" }}>
+                    <button
+                      onClick={() => onGoPage(p.id)}
+                      className="px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-white/10 border border-white/15 hover:bg-white hover:text-[#15124A] transition-all inline-flex items-center gap-2"
+                    >
+                      {p.cta}
+                      <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                </TiltCard>
+              </motion.div>
             ))}
           </div>
         </div>
+      </ZoomSection>
 
-        {/* Explore the other pages */}
-        <div className="w-full pt-8 pb-24 flex flex-col items-center justify-center">
-          <h3 className="text-text text-3xl md:text-4xl font-semibold tracking-tight mb-4">Quantrih</h3>
-          <p className="text-text-2 mb-12 text-center max-w-md px-6 leading-relaxed font-semibold">{t("home.explore_pages")}</p>
+      {/* ── Explore the other pages (large grid) ── */}
+      <ZoomSection style={LARGE_GRID} className="w-full pt-24 pb-24">
+        <div className="flex flex-col items-center">
+          <h3 className="text-text text-3xl md:text-5xl font-normal tracking-tight mb-4">Quantrih</h3>
+          <p className="text-text-2 mb-12 text-center max-w-md px-6 leading-relaxed text-lg">{t("home.explore_pages")}</p>
           <HexBadgeOrbit onNavigate={onGoPage} />
         </div>
+      </ZoomSection>
 
-        {/* Support */}
-        <div className="w-full px-6 lg:px-24 pt-8 pb-20">
-          <div className="max-w-4xl mx-auto text-center">
-            <h3 className="text-text text-xl lg:text-3xl font-semibold tracking-tight mb-4">{t("home.support.title")}</h3>
-            <p className="text-text-2 text-base lg:text-lg leading-relaxed mb-8 max-w-2xl mx-auto">{t("home.support.desc")}</p>
-            <button
-              onClick={() => window.open("https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00", "_blank", "noopener,noreferrer")}
-              className="px-10 py-4 bg-pv-blue hover:bg-pv-blue-d text-white rounded-full transition-all duration-300 text-base font-bold tracking-wide uppercase"
-            >
-              {t("home.support.button")}
-            </button>
-            <div className="text-sm text-text-3 mt-4">
-              {t("home.support.inquiry")}: <a href="mailto:contact@quantrih.com" className="text-pv-blue font-semibold underline underline-offset-4">contact@quantrih.com</a>
-            </div>
+      {/* ── Support (plain white) ── */}
+      <ZoomSection className="w-full bg-white px-6 lg:px-24 pt-20 pb-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <h3 className="text-text text-2xl lg:text-4xl font-normal tracking-tight mb-4">{t("home.support.title")}</h3>
+          <p className="text-text-2 text-base lg:text-lg leading-relaxed mb-8 max-w-2xl mx-auto">{t("home.support.desc")}</p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => window.open("https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00", "_blank", "noopener,noreferrer")}
+            className="px-10 py-4 bg-pv-blue hover:bg-pv-blue-d text-white rounded-full text-base font-bold tracking-wide uppercase shadow-[0_15px_30px_-12px_rgba(91,75,219,0.6)]"
+          >
+            {t("home.support.button")}
+          </motion.button>
+          <div className="text-sm text-text-3 mt-4">
+            {t("home.support.inquiry")}: <a href="mailto:contact@quantrih.com" className="text-pv-blue font-semibold underline underline-offset-4">contact@quantrih.com</a>
           </div>
+          <p className="text-text-3 text-xs max-w-3xl mx-auto leading-relaxed mt-14">{t("home.disclaimer")}</p>
         </div>
-
-        <div className="w-full pb-14 px-6 lg:px-24">
-          <p className="text-text-3 text-xs max-w-3xl mx-auto leading-relaxed text-center">{t("home.disclaimer")}</p>
-        </div>
-      </div>
+      </ZoomSection>
     </div>
   );
 }
