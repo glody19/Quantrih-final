@@ -997,6 +997,43 @@ export function createApp() {
     }
   });
 
+  // Year-to-date total return (adjusted closes) for a list of symbols, from real daily data.
+  // Base = last adjusted close before 1 January of the current year.
+  app.get("/api/stock/ytd", async (req, res) => {
+    try {
+      const symbols = String(req.query.symbols || "")
+        .split(",").map((x) => x.trim().toUpperCase())
+        .filter((x) => /^[A-Z0-9.\-^=]{1,15}$/.test(x))
+        .slice(0, 40);
+      if (symbols.length === 0) return res.json({});
+      const year = new Date().getUTCFullYear();
+      const cacheKey = `${year}:${symbols.slice().sort().join(",")}`;
+      const cached = getCached('ytd', cacheKey, 15 * 60_000);
+      if (cached) return res.json(cached);
+
+      const out: Record<string, { ytd: number; asOf: string } | null> = {};
+      await Promise.all(symbols.map(async (sym) => {
+        try {
+          const chart = await safeYfChart(sym, { period1: `${year - 1}-12-15`, period2: new Date().toISOString().split("T")[0], interval: "1d" });
+          const q = (chart?.quotes || []).filter((x: any) => x && x.date && (typeof x.adjclose === "number" || typeof x.close === "number"));
+          const yearStart = new Date(Date.UTC(year, 0, 1)).getTime();
+          const before = q.filter((x: any) => new Date(x.date).getTime() < yearStart);
+          const base = before[before.length - 1];
+          const last = q[q.length - 1];
+          const px = (x: any) => (typeof x.adjclose === "number" ? x.adjclose : x.close);
+          if (!base || !last || !px(base)) { out[sym] = null; return; }
+          out[sym] = { ytd: (px(last) / px(base) - 1) * 100, asOf: new Date(last.date).toISOString().split("T")[0] };
+        } catch {
+          out[sym] = null;
+        }
+      }));
+      setCached('ytd', cacheKey, out);
+      res.json(out);
+    } catch (e: any) {
+      res.status(500).json({ error: "Failed to compute YTD returns" });
+    }
+  });
+
   app.get("/api/stock/bulk-quotes", async (req, res) => {
     try {
       if (!req.query.symbols) return res.json([]);

@@ -89,10 +89,10 @@ export function Header({
 
   return (
     <header 
-      data-theme={currentPage === "home" ? "dark" : undefined}
+      data-theme={undefined}
       className={cn(
         "z-[100] transition-all duration-300 ease-in-out w-full border-b backdrop-blur-md",
-        currentPage === "home"
+        false
           ? "absolute top-0 left-0 bg-[#0B0A1F]/40 border-white/10"
           : "sticky top-0 bg-white/90 border-border shadow-[0_1px_0_rgba(17,17,24,0.02)]"
       )}
