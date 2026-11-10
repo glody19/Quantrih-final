@@ -9,7 +9,7 @@ function resolveSymbol(symbol: string): string {
   return entry?.short || symbol;
 }
 
-async function fetchRaw(symbol: string, fromDate: string, toDate: string): Promise<MonthlyPrice[]> {
+async function fetchRaw(symbol: string, fromDate: string, toDate: string, noFallback = false): Promise<MonthlyPrice[]> {
   const actualSymbol = resolveSymbol(symbol);
   let data: MonthlyPrice[];
   try {
@@ -43,27 +43,25 @@ async function fetchRaw(symbol: string, fromDate: string, toDate: string): Promi
       
       data = await res.json();
     } catch (apiError: any) {
-      console.warn(`Monthly prices fetch failed for ${actualSymbol}, trying proxy fallback. Error:`, apiError?.message || apiError);
+      // Only a documented historical proxy fund may stand in for a symbol; never substitute
+      // an unrelated asset (e.g. the S&P 500) for a ticker whose data is missing.
       const proxyInfo = SIM_PROXIES[actualSymbol];
-      const fallbackSymbol = proxyInfo ? proxyInfo.proxy : 'SPY';
-      console.warn(`Falling back from ${actualSymbol} to ${fallbackSymbol}`);
-      try {
-        data = await fetchRaw(fallbackSymbol, fromDate, toDate);
-      } catch (fallbackError) {
-        console.error(`Severe: fallback also failed for ${fallbackSymbol}`, fallbackError);
-        throw apiError;
+      if (noFallback || !proxyInfo) {
+        throw new Error(`No price data available for ${actualSymbol}.`);
       }
+      console.warn(`Monthly prices fetch failed for ${actualSymbol}, using documented proxy ${proxyInfo.proxy}.`);
+      data = await fetchRaw(proxyInfo.proxy, fromDate, toDate, true);
     }
   }
   return data;
 }
 
-export async function fetchMonthlyPrices(symbol: string, fromDate: string, toDate: string): Promise<MonthlyPrice[]> {
+export async function fetchMonthlyPrices(symbol: string, fromDate: string, toDate: string, opts: { noFallback?: boolean } = {}): Promise<MonthlyPrice[]> {
   const actualSymbol = resolveSymbol(symbol);
   const cacheKey = `${actualSymbol}_${fromDate}_${toDate}`;
   if (priceCache.has(cacheKey)) return priceCache.get(cacheKey)!;
 
-  let data = await fetchRaw(actualSymbol, fromDate, toDate);
+  let data = await fetchRaw(actualSymbol, fromDate, toDate, !!opts.noFallback);
 
   // Check if we need to apply SIM proxy
   const proxyInfo = SIM_PROXIES[actualSymbol];

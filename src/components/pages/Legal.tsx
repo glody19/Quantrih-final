@@ -68,7 +68,7 @@ export function Legal({ page }: LegalProps) {
               {current.icon}
             </div>
           )}
-          <h1 className="text-4xl font-bold tracking-tight">{current.title}</h1>
+          <h1 className="font-serif text-3xl md:text-[2.6rem] leading-tight font-semibold tracking-tight">{current.title}</h1>
         </div>
         
         <div className="bg-surface border border-border rounded-3xl p-8 md:p-12 shadow-sm">

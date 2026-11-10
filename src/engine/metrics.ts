@@ -3,7 +3,8 @@ import { EquityDataPoint, BacktestMetrics } from './types';
 export function calculateMetrics(
   equityCurve: EquityDataPoint[], 
   initialBalance: number, 
-  riskFreeRate: number = 0.04
+  riskFreeRate: number = 0.04,
+  riskFreeByMonth?: Map<string, number> | null
 ): BacktestMetrics {
   if (equityCurve.length === 0) {
     return { endBalance: initialBalance, startBalance: initialBalance, cagr: 0, irr: 0, volatility: 0, sharpeRatio: 0, sortinoRatio: 0, maxDrawdown: 0, bestYear: 0, worstYear: 0, drawdowns: [] };
@@ -46,7 +47,8 @@ export function calculateMetrics(
   const returns: number[] = [];
   const monthlyReturnsList: { date: string, value: number }[] = [];
   const downReturns: number[] = [];
-  let peak = initialBalance;
+  let peak = 1;
+  let twrIndex = 1;
   let maxDrawdown = 0;
 
   // Track yearly performance
@@ -68,8 +70,11 @@ export function calculateMetrics(
       downReturns.push(ret);
     }
     
-    if (curr > peak) peak = curr;
-    const drawdown = (peak - curr) / peak;
+    // Drawdowns are measured on the time-weighted index, so contributions/withdrawals
+    // do not create or hide drawdowns (same convention as Portfolio Visualizer).
+    twrIndex *= (1 + ret);
+    if (twrIndex > peak) peak = twrIndex;
+    const drawdown = (peak - twrIndex) / peak;
     drawdownsList.push(drawdown);
     if (drawdown > maxDrawdown) maxDrawdown = drawdown;
 
@@ -97,18 +102,26 @@ export function calculateMetrics(
   const annualizedVolatility = standardDeviation * Math.sqrt(12);
 
   // Sharpe and Sortino
-  const riskFreeMonthly = Math.pow(1 + riskFreeRate, 1/12) - 1;
-  const avgExcessReturn = returns.length ? returns.reduce((a, b) => a + (b - riskFreeMonthly), 0) / returns.length : 0;
+  const riskFreeMonthlyFixed = Math.pow(1 + riskFreeRate, 1/12) - 1;
+  // Monthly risk-free return: real T-bill series when available, fixed rate otherwise
+  const rfSeries = returns.map((_, k) => {
+    const month = equityCurve[k + 1].date.substring(0, 7);
+    const v = riskFreeByMonth?.get(month);
+    return typeof v === 'number' && Number.isFinite(v) ? v : riskFreeMonthlyFixed;
+  });
+  const riskFreeMonthly = rfSeries.length ? rfSeries.reduce((a, b) => a + b, 0) / rfSeries.length : riskFreeMonthlyFixed;
+  const excess = returns.map((r, k) => r - rfSeries[k]);
+  const avgExcessReturn = excess.length ? excess.reduce((a, b) => a + b, 0) / excess.length : 0;
   const annualizedExcessReturn = avgExcessReturn * 12; // Approximation
   
   // Accurate PV Sharpe (annualized from monthly)
-  const monthlyExcessDev = returns.length > 1 ? Math.sqrt(returns.reduce((a, b) => a + Math.pow(b - riskFreeMonthly - avgExcessReturn, 2), 0) / (returns.length - 1)) : 0;
+  const monthlyExcessDev = excess.length > 1 ? Math.sqrt(excess.reduce((a, b) => a + Math.pow(b - avgExcessReturn, 2), 0) / (excess.length - 1)) : 0;
   const sharpeRatioMonthly = monthlyExcessDev === 0 ? 0 : avgExcessReturn / monthlyExcessDev;
   const sharpeRatio = sharpeRatioMonthly * Math.sqrt(12);
   
   const downReturnsPV: number[] = [];
   for (let i = 0; i < returns.length; i++) {
-    const diff = returns[i] - riskFreeMonthly;
+    const diff = excess[i];
     if (diff < 0) downReturnsPV.push(diff);
   }
   const downsideDeviation = Math.sqrt(downReturnsPV.length ? downReturnsPV.reduce((a, b) => a + Math.pow(b, 2), 0) / returns.length : 0);
@@ -139,7 +152,66 @@ export function calculateMetrics(
   if (bestYear === -Infinity) bestYear = 0;
   if (worstYear === Infinity) worstYear = 0;
 
+  // ---- Extended statistics (Portfolio Visualizer style, monthly data) ----
+  const n = returns.length;
+  const arithMeanMonthly = avgReturn;
+  const arithMean = Math.pow(1 + arithMeanMonthly, 12) - 1;
+  const m3 = n > 2 ? returns.reduce((a, b) => a + Math.pow(b - avgReturn, 3), 0) / n : 0;
+  const m2 = n > 1 ? returns.reduce((a, b) => a + Math.pow(b - avgReturn, 2), 0) / n : 0;
+  const m4 = n > 3 ? returns.reduce((a, b) => a + Math.pow(b - avgReturn, 4), 0) / n : 0;
+  const skewness = m2 > 0 ? m3 / Math.pow(m2, 1.5) : 0;
+  const excessKurtosis = m2 > 0 ? m4 / (m2 * m2) - 3 : 0;
+  const sortedR = [...returns].sort((a, b) => a - b);
+  const q5 = n ? sortedR[Math.max(0, Math.floor(0.05 * n) - (Number.isInteger(0.05 * n) ? 1 : 0))] : 0;
+  const tail = sortedR.filter((r) => r <= q5);
+  const historicalVaR5 = n ? -q5 : 0;
+  const analyticalVaR5 = -(avgReturn - 1.6448536 * standardDeviation);
+  const conditionalVaR5 = tail.length ? -(tail.reduce((a, b) => a + b, 0) / tail.length) : 0;
+  const positiveMonths = n ? returns.filter((r) => r > 0).length / n : 0;
+  const gains = returns.filter((r) => r > 0), losses = returns.filter((r) => r < 0);
+  const gainLossRatio = gains.length && losses.length ? (gains.reduce((a, b) => a + b, 0) / gains.length) / Math.abs(losses.reduce((a, b) => a + b, 0) / losses.length) : 0;
+  const downsideDeviationAnnual = downsideDeviation * Math.sqrt(12);
+  const calmar = maxDrawdown > 0 ? geometricReturn / maxDrawdown : 0;
+  const riskFreeAnnual = Math.pow(1 + riskFreeMonthly, 12) - 1;
+
+  // Drawdown episodes on the time-weighted index
+  const drawdownEpisodes: { start: string; trough: string; end: string | null; depth: number; lengthMonths: number; recoveryMonths: number | null; underwaterMonths: number | null }[] = [];
+  {
+    let idx = 1, pk = 1, pkI = 0, inDd = false, trI = 0, depth = 0;
+    const dates = equityCurve.map((e) => e.date.substring(0, 7));
+    for (let k = 0; k < n; k++) {
+      idx *= 1 + returns[k];
+      const i = k + 1;
+      if (idx >= pk) {
+        if (inDd) {
+          drawdownEpisodes.push({ start: dates[pkI], trough: dates[trI], end: dates[i], depth, lengthMonths: trI - pkI, recoveryMonths: i - trI, underwaterMonths: i - pkI });
+          inDd = false;
+        }
+        pk = idx; pkI = i; depth = 0;
+      } else {
+        const dd = 1 - idx / pk;
+        if (!inDd) { inDd = true; trI = i; depth = dd; }
+        if (dd > depth) { depth = dd; trI = i; }
+      }
+    }
+    if (inDd) drawdownEpisodes.push({ start: dates[pkI], trough: dates[trI], end: null, depth, lengthMonths: trI - pkI, recoveryMonths: null, underwaterMonths: null });
+    drawdownEpisodes.sort((a, b) => b.depth - a.depth);
+  }
+
   return {
+    arithMean,
+    geometricMean: geometricReturn,
+    downsideDeviation: downsideDeviationAnnual,
+    skewness,
+    excessKurtosis,
+    historicalVaR5,
+    analyticalVaR5,
+    conditionalVaR5,
+    positiveMonths,
+    gainLossRatio,
+    calmar,
+    riskFreeAnnual,
+    drawdownEpisodes: drawdownEpisodes.slice(0, 10),
     startBalance: initialBalance,
     totalContributions,
     endBalance,
@@ -274,60 +346,61 @@ export function calculateRollingReturns(equityCurve: EquityDataPoint[], periodYe
 }
 
 export function calculateRelativeMetrics(
-  portfolioReturns: number[], 
+  portfolioReturns: number[],
   benchmarkReturns: number[],
   portfolioCagr: number,
   benchmarkCagr: number,
-  riskFreeRate: number = 0.04
+  riskFreeRate: number = 0.04,
+  riskFreeMonthlySeries?: number[]
 ) {
   const minLen = Math.min(portfolioReturns.length, benchmarkReturns.length);
   if (minLen < 2) return null;
 
   const pr = portfolioReturns.slice(-minLen);
   const br = benchmarkReturns.slice(-minLen);
+  const fixedRf = Math.pow(1 + riskFreeRate, 1 / 12) - 1;
+  const rf = riskFreeMonthlySeries && riskFreeMonthlySeries.length >= minLen ? riskFreeMonthlySeries.slice(-minLen) : new Array(minLen).fill(fixedRf);
 
-  const meanP = pr.reduce((a, b) => a + b, 0) / minLen;
-  const meanB = br.reduce((a, b) => a + b, 0) / minLen;
-
-  // Beta calculation
-  let numCov = 0;
-  let denVarB = 0;
+  // Regression of portfolio excess returns on benchmark excess returns (monthly)
+  const ep = pr.map((r, i) => r - rf[i]);
+  const eb = br.map((r, i) => r - rf[i]);
+  const meanEp = ep.reduce((a, b) => a + b, 0) / minLen;
+  const meanEb = eb.reduce((a, b) => a + b, 0) / minLen;
+  let cov = 0, varB = 0, varP = 0;
   for (let i = 0; i < minLen; i++) {
-    numCov += (pr[i] - meanP) * (br[i] - meanB);
-    denVarB += Math.pow(br[i] - meanB, 2);
+    cov += (ep[i] - meanEp) * (eb[i] - meanEb);
+    varB += Math.pow(eb[i] - meanEb, 2);
+    varP += Math.pow(ep[i] - meanEp, 2);
   }
-  const beta = denVarB === 0 ? 1 : numCov / denVarB;
+  const beta = varB === 0 ? 1 : cov / varB;
+  const alphaMonthly = meanEp - beta * meanEb;
+  const alpha = alphaMonthly * 12; // annualized
+  const correlation = varB === 0 || varP === 0 ? 0 : cov / Math.sqrt(varB * varP);
+  const rSquared = correlation * correlation;
 
-  // Alpha (Jensen's)
-  const alpha = portfolioCagr - (riskFreeRate + beta * (benchmarkCagr - riskFreeRate));
-
-  // Tracking Error
-  const activeReturns = pr.map((r, i) => r - br[i]);
-  const meanActive = activeReturns.reduce((a, b) => a + b, 0) / minLen;
-  const varActive = activeReturns.reduce((a, b) => a + Math.pow(b - meanActive, 2), 0) / minLen;
+  // Tracking error (sample stdev of active returns, annualized) and information ratio
+  const active = pr.map((r, i) => r - br[i]);
+  const meanActive = active.reduce((a, b) => a + b, 0) / minLen;
+  const varActive = active.reduce((a, b) => a + Math.pow(b - meanActive, 2), 0) / (minLen - 1);
   const trackingError = Math.sqrt(varActive) * Math.sqrt(12);
+  const activeReturn = portfolioCagr - benchmarkCagr;
+  const informationRatio = trackingError === 0 ? 0 : (meanActive * 12) / trackingError;
 
-  // Information Ratio
-  const informationRatio = trackingError === 0 ? 0 : (portfolioCagr - benchmarkCagr) / trackingError;
+  // Upside / downside capture: compound annualized returns in benchmark up / down months
+  const geo = (xs: number[]) => (xs.length ? Math.pow(xs.reduce((a, b) => a * (1 + b), 1), 12 / xs.length) - 1 : 0);
+  const upIdx = br.map((r, i) => (r > 0 ? i : -1)).filter((i) => i >= 0);
+  const dnIdx = br.map((r, i) => (r < 0 ? i : -1)).filter((i) => i >= 0);
+  const upB = geo(upIdx.map((i) => br[i])), upP = geo(upIdx.map((i) => pr[i]));
+  const dnB = geo(dnIdx.map((i) => br[i])), dnP = geo(dnIdx.map((i) => pr[i]));
+  const upCapture = upB === 0 ? 100 : (upP / upB) * 100;
+  const downCapture = dnB === 0 ? 100 : (dnP / dnB) * 100;
 
-  // Up/Down Capture
-  let upSumP = 0;
-  let upSumB = 0;
-  let downSumP = 0;
-  let downSumB = 0;
+  // Treynor and Modigliani (M²)
+  const rfAnnual = Math.pow(1 + rf.reduce((a, b) => a + b, 0) / minLen, 12) - 1;
+  const treynor = beta === 0 ? 0 : (portfolioCagr - rfAnnual) / beta;
+  const sdP = Math.sqrt(pr.reduce((a, b, i) => a + Math.pow(b - pr.reduce((x, y) => x + y, 0) / minLen, 2), 0) / (minLen - 1)) * Math.sqrt(12);
+  const sdB = Math.sqrt(br.reduce((a, b) => a + Math.pow(b - br.reduce((x, y) => x + y, 0) / minLen, 2), 0) / (minLen - 1)) * Math.sqrt(12);
+  const modigliani = sdP === 0 ? 0 : rfAnnual + ((portfolioCagr - rfAnnual) / sdP) * sdB;
 
-  for (let i = 0; i < minLen; i++) {
-    if (br[i] > 0) {
-      upSumP += pr[i];
-      upSumB += br[i];
-    } else if (br[i] < 0) {
-      downSumP += pr[i];
-      downSumB += br[i];
-    }
-  }
-
-  const upCapture = upSumB === 0 ? 100 : (upSumP / upSumB) * 100;
-  const downCapture = downSumB === 0 ? 100 : (downSumP / downSumB) * 100;
-
-  return { alpha, beta, trackingError, informationRatio, upCapture, downCapture };
+  return { alpha, beta, rSquared, correlation, trackingError, activeReturn, informationRatio, upCapture, downCapture, treynor, modigliani };
 }

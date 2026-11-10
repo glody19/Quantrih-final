@@ -192,7 +192,7 @@ const FieldHelp: React.FC<FieldHelpProps> = ({ titleEn, titleFr, descEn, descFr,
         className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-extrabold transition-all cursor-pointer ${
           isOpen
             ? 'bg-blue-500 text-white shadow-md shadow-blue-500/50 scale-110 ring-2 ring-blue-400/50'
-            : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-blue-400 border border-zinc-700'
+            : 'bg-surface-2 hover:bg-surface-3 text-text-3 hover:text-blue-400 border border-border'
         }`}
       >
         i
@@ -205,9 +205,9 @@ const FieldHelp: React.FC<FieldHelpProps> = ({ titleEn, titleFr, descEn, descFr,
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 left-0 sm:left-auto sm:right-0 top-6 w-72 sm:w-88 p-4 bg-zinc-900 border border-blue-500/40 rounded-2xl shadow-2xl backdrop-blur-2xl text-left"
+            className="absolute z-50 left-0 sm:left-auto sm:right-0 top-6 w-72 sm:w-88 p-4 bg-white border border-blue-500/40 rounded-2xl shadow-2xl backdrop-blur-2xl text-left"
           >
-            <div className="flex items-start justify-between gap-2 mb-2 pb-1.5 border-b border-zinc-800">
+            <div className="flex items-start justify-between gap-2 mb-2 pb-1.5 border-b border-border">
               <div className="flex items-center gap-1.5 text-blue-400 text-xs font-bold">
                 <Info className="w-3.5 h-3.5 shrink-0" />
                 <span>{isEn ? titleEn : titleFr}</span>
@@ -218,12 +218,12 @@ const FieldHelp: React.FC<FieldHelpProps> = ({ titleEn, titleFr, descEn, descFr,
                   e.stopPropagation();
                   onToggle(helpId);
                 }}
-                className="text-zinc-500 hover:text-zinc-300 p-0.5 rounded-md hover:bg-zinc-800 cursor-pointer"
+                className="text-text-3 hover:text-text-2 p-0.5 rounded-md hover:bg-surface-2 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
-            <div className="text-xs text-zinc-300 leading-relaxed whitespace-pre-line space-y-1">
+            <div className="text-xs text-text-2 leading-relaxed whitespace-pre-line space-y-1">
               {isEn ? descEn : descFr}
             </div>
           </motion.div>
@@ -571,10 +571,10 @@ export const InvestorProfileForm: React.FC = () => {
               <span className="text-xs font-semibold text-blue-400 block mb-1">
                 {isEn ? "Step 1 of 5 : Identity & contact" : "Étape 1 sur 5 : Identité et informations"}
               </span>
-              <h3 className="text-xl md:text-2xl font-black text-white tracking-tight">
+              <h3 className="text-xl md:text-2xl font-black text-text tracking-tight">
                 {isEn ? "Personal identity and tax residence" : "Identité personnelle et résidence fiscale"}
               </h3>
-              <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+              <p className="text-xs sm:text-sm text-text-3 mt-1">
                 {isEn 
                   ? "Enter your contact information and civil status to customize your file."
                   : "Renseignez vos informations de contact et d'état civil de base pour personnaliser votre dossier."}
@@ -583,12 +583,12 @@ export const InvestorProfileForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "First name" : "Prénom"}
                 </label>
                 <input 
                   type="text" 
-                  className="w-full bg-zinc-800/90 text-white placeholder-zinc-500 rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 border border-zinc-700/60 transition-all font-medium" 
+                  className="w-full bg-surface-2 text-text placeholder-text-4 rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 border border-border transition-all font-medium" 
                   value={formData.firstName || ''} 
                   onChange={(e) => handleChange('firstName', e.target.value)}
                   placeholder="Jean"
@@ -596,12 +596,12 @@ export const InvestorProfileForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "Last name" : "Nom de famille"}
                 </label>
                 <input 
                   type="text" 
-                  className="w-full bg-zinc-800/90 text-white placeholder-zinc-500 rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 border border-zinc-700/60 transition-all font-medium" 
+                  className="w-full bg-surface-2 text-text placeholder-text-4 rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 border border-border transition-all font-medium" 
                   value={formData.lastName || ''} 
                   onChange={(e) => handleChange('lastName', e.target.value)}
                   placeholder="Dupont"
@@ -609,12 +609,12 @@ export const InvestorProfileForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "Date of birth" : "Date de naissance"}
                 </label>
                 <input 
                   type="date" 
-                  className="w-full bg-zinc-800/90 text-white placeholder-zinc-500 rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 border border-zinc-700/60 transition-all font-medium" 
+                  className="w-full bg-surface-2 text-text placeholder-text-4 rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/60 border border-border transition-all font-medium" 
                   value={formData.dob || ''} 
                   onChange={(e) => handleChange('dob', e.target.value)}
                 />
@@ -623,7 +623,7 @@ export const InvestorProfileForm: React.FC = () => {
               {/* Searchable Country Selector with Flags & Help */}
               <div className="relative" ref={countryDropdownRef}>
                 <div className="flex items-center mb-2">
-                  <label className="text-xs font-semibold text-zinc-300">
+                  <label className="text-xs font-semibold text-text-2">
                     {isEn ? "Country of tax residence" : "Pays de résidence fiscale"}
                   </label>
                   <FieldHelp
@@ -642,13 +642,13 @@ export const InvestorProfileForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                  className="w-full bg-zinc-800/90 hover:bg-zinc-800 border border-zinc-700/60 text-white rounded-xl p-3.5 text-sm flex items-center justify-between transition-all outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer shadow-sm group text-left"
+                  className="w-full bg-surface-2 hover:bg-surface-2 border border-border text-text rounded-xl p-3.5 text-sm flex items-center justify-between transition-all outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer shadow-sm group text-left"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl leading-none">{currentCountryObj.flag}</span>
-                    <div className="flex items-center gap-2 font-bold text-white text-sm">
+                    <div className="flex items-center gap-2 font-bold text-text text-sm">
                       <span>{isEn ? currentCountryObj.nameEn : currentCountryObj.nameFr}</span>
-                      <span className="text-[10px] bg-zinc-700/80 text-zinc-300 px-1.5 py-0.5 rounded font-mono uppercase">
+                      <span className="text-[10px] bg-surface-3 text-text-2 px-1.5 py-0.5 rounded font-mono uppercase">
                         {currentCountryObj.code}
                       </span>
                     </div>
@@ -664,24 +664,24 @@ export const InvestorProfileForm: React.FC = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -6, scale: 0.99 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute z-50 left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700/80 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl"
+                      className="absolute z-50 left-0 right-0 mt-2 bg-white border border-border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl"
                     >
                       {/* Search Bar */}
-                      <div className="p-3 border-b border-zinc-800 bg-zinc-900/90 flex items-center gap-2">
-                        <Search className="w-4 h-4 text-zinc-400 shrink-0" />
+                      <div className="p-3 border-b border-border bg-white flex items-center gap-2">
+                        <Search className="w-4 h-4 text-text-3 shrink-0" />
                         <input
                           type="text"
                           value={countrySearch}
                           onChange={(e) => setCountrySearch(e.target.value)}
                           placeholder={isEn ? "Type country name or code (e.g. USA, France, DE)..." : "Tapez le nom du pays ou code (ex : US, France, DE)..."}
-                          className="w-full bg-transparent text-white placeholder-zinc-500 text-xs outline-none"
+                          className="w-full bg-transparent text-text placeholder-text-4 text-xs outline-none"
                           autoFocus
                         />
                         {countrySearch && (
                           <button 
                             type="button" 
                             onClick={() => setCountrySearch('')}
-                            className="text-zinc-500 hover:text-zinc-300 cursor-pointer"
+                            className="text-text-3 hover:text-text-2 cursor-pointer"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -689,7 +689,7 @@ export const InvestorProfileForm: React.FC = () => {
                       </div>
 
                       {/* Country List */}
-                      <div className="max-h-60 overflow-y-auto divide-y divide-zinc-800/40 p-1 custom-scrollbar">
+                      <div className="max-h-60 overflow-y-auto divide-y divide-border p-1 custom-scrollbar">
                         {filteredCountries.length > 0 ? (
                           filteredCountries.map((c) => {
                             const isSelected = c.code === formData.taxCountry;
@@ -700,21 +700,21 @@ export const InvestorProfileForm: React.FC = () => {
                                 onClick={() => handleSelectCountry(c)}
                                 className={`w-full text-left p-2.5 rounded-xl flex items-center justify-between transition-colors cursor-pointer ${
                                   isSelected 
-                                    ? 'bg-blue-600/20 text-white font-semibold' 
-                                    : 'hover:bg-zinc-800/80 text-zinc-200'
+                                    ? 'bg-blue-600/10 text-pv-blue font-semibold' 
+                                    : 'hover:bg-surface-2 text-text-2'
                                 }`}
                               >
                                 <div className="flex items-center gap-3">
                                   <span className="text-xl leading-none">{c.flag}</span>
                                   <span className="text-xs font-medium">{isEn ? c.nameEn : c.nameFr}</span>
-                                  <span className="text-[10px] text-zinc-500 font-mono">({c.code})</span>
+                                  <span className="text-[10px] text-text-3 font-mono">({c.code})</span>
                                 </div>
                                 {isSelected && <Check className="w-4 h-4 text-blue-400" />}
                               </button>
                             );
                           })
                         ) : (
-                          <div className="p-4 text-center text-xs text-zinc-400">
+                          <div className="p-4 text-center text-xs text-text-3">
                             {isEn ? "No country found" : "Aucun pays trouvé"}
                           </div>
                         )}
@@ -727,7 +727,7 @@ export const InvestorProfileForm: React.FC = () => {
 
             {/* State / Province Selector */}
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-2">
+              <label className="block text-xs font-semibold text-text-2 mb-2">
                 {isEn 
                   ? (currentCountryObj.statesHeaderEn || "State / region / province") 
                   : (currentCountryObj.statesHeaderFr || "État / région / province")}
@@ -736,13 +736,13 @@ export const InvestorProfileForm: React.FC = () => {
                 <CustomSelect
                   value={formData.taxState || ''}
                   onChange={(e) => handleChange('taxState', e.target.value)}
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                 >
                   <option value="">{isEn ? "-- Select state/region --" : "-- Sélectionner l'état/région --"}</option>
                   {currentCountryObj.states.map(st => {
                     const val = isEn ? st.nameEn : st.nameFr;
                     return (
-                      <option key={st.nameEn} value={val} className="bg-zinc-900 text-white">
+                      <option key={st.nameEn} value={val} className="bg-white text-text">
                         {st.code ? `[${st.code}] ` : ''}{val}
                       </option>
                     );
@@ -754,7 +754,7 @@ export const InvestorProfileForm: React.FC = () => {
                   value={formData.taxState || ''}
                   onChange={(e) => handleChange('taxState', e.target.value)}
                   placeholder={isEn ? "State or region name" : "Nom de l'état ou de la région"}
-                  className="w-full bg-zinc-800/90 text-white placeholder-zinc-500 rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text placeholder-text-4 rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                 />
               )}
             </div>
@@ -770,10 +770,10 @@ export const InvestorProfileForm: React.FC = () => {
               <span className="text-xs font-semibold text-blue-400 block mb-1 tracking-wider uppercase">
                 {isEn ? "Step 2 of 5 : Career, Income & Financial Resilience" : "Étape 2 sur 5 : Situation professionnelle, revenus & résilience financière"}
               </span>
-              <h3 className="text-xl md:text-2xl font-black text-white tracking-tight">
+              <h3 className="text-xl md:text-2xl font-black text-text tracking-tight">
                 {isEn ? "Advanced Career Profile & Income Architecture" : "Bilan professionnel approfondi et structure des flux financiers"}
               </h3>
-              <p className="text-xs sm:text-sm text-zinc-400 mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-text-3 mt-1 leading-relaxed">
                 {isEn 
                   ? "Detailed assessment of your professional status, industry sector, income stability, monthly cash flows, tax bracket, and financial cushion."
                   : "Évaluation complète de votre statut professionnel, secteur d'activité, prévisibilité des revenus, capacité d'épargne et niveau de résilience globale."}
@@ -781,13 +781,13 @@ export const InvestorProfileForm: React.FC = () => {
             </div>
 
             {/* Subsection 1: Activity & Sector */}
-            <div className="p-5 bg-zinc-900/90 shadow-2xl rounded-2xl space-y-4 border border-zinc-700/40">
-              <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider pb-1 border-b border-zinc-800">
+            <div className="p-5 bg-white shadow-2xl rounded-2xl space-y-4 border border-border">
+              <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider pb-1 border-b border-border">
                 {isEn ? "1. Professional Activity, Sector & Seniority" : "1. Statut professionnel, secteur & ancienneté"}
               </h4>
 
               <div className="space-y-3">
-                <label className="block text-xs font-semibold text-zinc-300">
+                <label className="block text-xs font-semibold text-text-2">
                   {isEn ? "Exact employment status" : "Statut professionnel exact"}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
@@ -808,7 +808,7 @@ export const InvestorProfileForm: React.FC = () => {
                       className={`p-3 rounded-xl text-left text-xs font-bold transition-all duration-150 cursor-pointer ${
                         formData.employmentStatus === item.id 
                           ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30 border border-blue-400/30' 
-                          : 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-800 hover:text-white border border-zinc-700/50'
+                          : 'bg-surface-2 text-text-2 hover:bg-surface-2 hover:text-text border border-border'
                       }`}
                     >
                       {isEn ? item.labelEn : item.labelFr}
@@ -819,11 +819,11 @@ export const InvestorProfileForm: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-text-2 mb-1.5">
                     {isEn ? "Industry / Activity Sector" : "Secteur d'activité principal"}
                   </label>
                   <CustomSelect
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.professionType || 'tech'}
                     onChange={(e) => handleChange('professionType', e.target.value)}
                   >
@@ -841,11 +841,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-text-2 mb-1.5">
                     {isEn ? "Career Seniority / Experience" : "Niveau d'expérience & Ancienneté"}
                   </label>
                   <CustomSelect
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.careerSeniority || '3_10_years'}
                     onChange={(e) => handleChange('careerSeniority', e.target.value)}
                   >
@@ -859,15 +859,15 @@ export const InvestorProfileForm: React.FC = () => {
             </div>
 
             {/* Subsection 2: Income Structure & Trajectory */}
-            <div className="p-5 bg-zinc-900/90 shadow-2xl rounded-2xl space-y-4 border border-zinc-700/40">
-              <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider pb-1 border-b border-zinc-800">
+            <div className="p-5 bg-white shadow-2xl rounded-2xl space-y-4 border border-border">
+              <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider pb-1 border-b border-border">
                 {isEn ? "2. Annual Income, Structure & Growth Expectations" : "2. Structure des revenus bruts & prévisions de croissance"}
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="flex items-center mb-1.5">
-                    <label className="text-xs font-semibold text-zinc-300">
+                    <label className="text-xs font-semibold text-text-2">
                       {isEn ? "Annual Gross Income Range" : "Revenu brut annuel global"}
                     </label>
                     <FieldHelp
@@ -882,7 +882,7 @@ export const InvestorProfileForm: React.FC = () => {
                     />
                   </div>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.annualIncomeRange || '60k-100k'}
                     onChange={(e) => handleChange('annualIncomeRange', e.target.value)}
                   >
@@ -898,7 +898,7 @@ export const InvestorProfileForm: React.FC = () => {
 
                 <div>
                   <div className="flex items-center mb-1.5">
-                    <label className="text-xs font-semibold text-zinc-300">
+                    <label className="text-xs font-semibold text-text-2">
                       {isEn ? "Income Stability & Regularity" : "Stabilité et régularité des flux"}
                     </label>
                     <FieldHelp
@@ -913,7 +913,7 @@ export const InvestorProfileForm: React.FC = () => {
                     />
                   </div>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.incomeStability || 'fixed'}
                     onChange={(e) => handleChange('incomeStability', e.target.value)}
                   >
@@ -927,11 +927,11 @@ export const InvestorProfileForm: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-text-2 mb-1.5">
                     {isEn ? "Primary Source of Personal Income" : "Source principale de revenus"}
                   </label>
                   <CustomSelect
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.mainIncomeType || 'base_salary'}
                     onChange={(e) => handleChange('mainIncomeType', e.target.value)}
                   >
@@ -944,11 +944,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-text-2 mb-1.5">
                     {isEn ? "Secondary Income Stream / Side Activity" : "Revenu secondaire / Activité complémentaire"}
                   </label>
                   <CustomSelect
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.sideHustleIncome || 'none'}
                     onChange={(e) => handleChange('sideHustleIncome', e.target.value)}
                   >
@@ -962,7 +962,7 @@ export const InvestorProfileForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                <label className="block text-xs font-semibold text-text-2 mb-1.5">
                   {isEn ? "3 to 5-Year Income Growth Trajectory" : "Perspectives d'évolution des revenus (horizon 3-5 ans)"}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -979,7 +979,7 @@ export const InvestorProfileForm: React.FC = () => {
                       className={`p-3 rounded-xl text-left transition-all duration-150 cursor-pointer ${
                         formData.expectedIncomeEvolution === evo.id 
                           ? 'bg-blue-600 text-white font-bold shadow-md' 
-                          : 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-800 border border-zinc-700/50 text-xs font-medium'
+                          : 'bg-surface-2 text-text-2 hover:bg-surface-2 border border-border text-xs font-medium'
                       }`}
                     >
                       <div className="text-xs font-bold">{isEn ? evo.labelEn : evo.labelFr}</div>
@@ -990,15 +990,15 @@ export const InvestorProfileForm: React.FC = () => {
             </div>
 
             {/* Subsection 3: Savings Capacity, Fixed Charges & Reserves */}
-            <div className="p-5 bg-zinc-900/90 shadow-2xl rounded-2xl space-y-4 border border-zinc-700/40">
-              <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider pb-1 border-b border-zinc-800">
+            <div className="p-5 bg-white shadow-2xl rounded-2xl space-y-4 border border-border">
+              <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider pb-1 border-b border-border">
                 {isEn ? "3. Cash Flow, Fixed Charges & Emergency Reserves" : "3. Capacité d'épargne, charges fixes & matelas de sécurité"}
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="flex items-center mb-1.5">
-                    <label className="text-xs font-semibold text-zinc-300">
+                    <label className="text-xs font-semibold text-text-2">
                       {isEn ? "Monthly Net Savings Capacity" : "Capacité d'épargne mensuelle nette"}
                     </label>
                     <FieldHelp
@@ -1013,7 +1013,7 @@ export const InvestorProfileForm: React.FC = () => {
                     />
                   </div>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.monthlySavingsCapacity || '1200-2500'}
                     onChange={(e) => handleChange('monthlySavingsCapacity', e.target.value)}
                   >
@@ -1029,12 +1029,12 @@ export const InvestorProfileForm: React.FC = () => {
 
                 <div>
                   <div className="flex items-center mb-1.5">
-                    <label className="text-xs font-semibold text-zinc-300">
+                    <label className="text-xs font-semibold text-text-2">
                       {isEn ? "Emergency Safety Reserve (In Months)" : "Matelas d'épargne de précaution (en mois)"}
                     </label>
                   </div>
                   <CustomSelect
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.emergencyFundMonths || '3_6_months'}
                     onChange={(e) => handleChange('emergencyFundMonths', e.target.value)}
                   >
@@ -1049,7 +1049,7 @@ export const InvestorProfileForm: React.FC = () => {
 
               <div>
                 <div className="flex items-center mb-1.5">
-                  <label className="text-xs font-semibold text-zinc-300">
+                  <label className="text-xs font-semibold text-text-2">
                     {isEn ? "Fixed Charges Ratio (% of Net Monthly Income)" : "Part des charges fixes (% du revenu net)"}
                   </label>
                   <FieldHelp
@@ -1077,7 +1077,7 @@ export const InvestorProfileForm: React.FC = () => {
                       className={`p-3 rounded-xl text-left transition-all duration-150 cursor-pointer ${
                         formData.approxFixedChargesPct === charge.id 
                           ? 'bg-blue-600 text-white shadow-md' 
-                          : 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-800 border border-zinc-700/50'
+                          : 'bg-surface-2 text-text-2 hover:bg-surface-2 border border-border'
                       }`}
                     >
                       <div className="text-xs font-bold">{charge.label}</div>
@@ -1089,18 +1089,18 @@ export const InvestorProfileForm: React.FC = () => {
             </div>
 
             {/* Subsection 4: Household, Housing & Fiscal Bracket */}
-            <div className="p-5 bg-zinc-900/90 shadow-2xl rounded-2xl space-y-4 border border-zinc-700/40">
-              <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider pb-1 border-b border-zinc-800">
+            <div className="p-5 bg-white shadow-2xl rounded-2xl space-y-4 border border-border">
+              <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider pb-1 border-b border-border">
                 {isEn ? "4. Housing Status, Family & Tax Bracket" : "4. Logement, charges familiales & tranche d'imposition"}
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-text-2 mb-1.5">
                     {isEn ? "Housing Status" : "Statut du logement principal"}
                   </label>
                   <CustomSelect
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.housingStatus || 'renting'}
                     onChange={(e) => handleChange('housingStatus', e.target.value)}
                   >
@@ -1112,11 +1112,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-text-2 mb-1.5">
                     {isEn ? "Household Dependents" : "Nombre de personnes à charge"}
                   </label>
                   <CustomSelect
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.dependentsCount || '0'}
                     onChange={(e) => handleChange('dependentsCount', e.target.value)}
                   >
@@ -1129,11 +1129,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-text-2 mb-1.5">
                     {isEn ? "Marginal Tax Bracket (TMI)" : "Tranche Marginale d'Imposition"}
                   </label>
                   <CustomSelect
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3 px-4 text-xs font-semibold outline-none border border-border"
                     value={formData.marginalTaxBracket || '30'}
                     onChange={(e) => handleChange('marginalTaxBracket', e.target.value)}
                   >
@@ -1157,10 +1157,10 @@ export const InvestorProfileForm: React.FC = () => {
               <span className="text-xs font-semibold text-blue-400 block mb-1">
                 {isEn ? "Step 3 of 5 : Wealth & funds" : "Étape 3 sur 5 : Patrimoine, liquidités et origine des fonds"}
               </span>
-              <h3 className="text-xl md:text-2xl font-black text-white tracking-tight">
+              <h3 className="text-xl md:text-2xl font-black text-text tracking-tight">
                 {isEn ? "Detailed asset structure & target capital" : "Structure du patrimoine et capital d'investissement"}
               </h3>
-              <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+              <p className="text-xs sm:text-sm text-text-3 mt-1">
                 {isEn 
                   ? "Distinguish financial, real estate, business assets, debt and target capital."
                   : "Distinguez précisément patrimoine financier, immobilier, professionnel, passif/dettes et montant à allouer."}
@@ -1169,7 +1169,7 @@ export const InvestorProfileForm: React.FC = () => {
 
             <div>
               <div className="flex items-center mb-2">
-                <label className="text-xs font-semibold text-zinc-300">
+                <label className="text-xs font-semibold text-text-2">
                   {isEn ? "1. Total estimated net worth" : "1. Patrimoine net global estimé"}
                 </label>
                 <FieldHelp
@@ -1184,7 +1184,7 @@ export const InvestorProfileForm: React.FC = () => {
                 />
               </div>
               <CustomSelect 
-                className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/50 transition-all border border-zinc-700/60"
+                className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/50 transition-all border border-border"
                 value={formData.approxNetWorth || '300k-600k'}
                 onChange={(e) => handleChange('approxNetWorth', e.target.value)}
               >
@@ -1199,18 +1199,18 @@ export const InvestorProfileForm: React.FC = () => {
               </CustomSelect>
             </div>
 
-            <div className="p-5 bg-zinc-900/90 shadow-2xl rounded-2xl space-y-4 border border-zinc-700/40">
-              <h4 className="text-xs font-semibold text-white">
+            <div className="p-5 bg-white shadow-2xl rounded-2xl space-y-4 border border-border">
+              <h4 className="text-xs font-semibold text-text">
                 {isEn ? "2. Advanced asset breakdown" : "2. Ventilation granulaire des actifs"}
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-300 mb-1">
+                  <label className="block text-[11px] font-medium text-text-2 mb-1">
                     {isEn ? "Financial assets" : "Patrimoine financier (actions, ETFs)"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800 text-white rounded-xl p-3 text-xs font-semibold outline-none border border-zinc-700/50"
+                    className="w-full bg-surface-2 text-text rounded-xl p-3 text-xs font-semibold outline-none border border-border"
                     value={formData.financialWealthEstimate || '150k-300k'}
                     onChange={(e) => handleChange('financialWealthEstimate', e.target.value)}
                   >
@@ -1226,11 +1226,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-300 mb-1">
+                  <label className="block text-[11px] font-medium text-text-2 mb-1">
                     {isEn ? "Real estate assets" : "Patrimoine immobilier"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800 text-white rounded-xl p-3 text-xs font-semibold outline-none border border-zinc-700/50"
+                    className="w-full bg-surface-2 text-text rounded-xl p-3 text-xs font-semibold outline-none border border-border"
                     value={formData.realEstateWealthEstimate || '250k-500k'}
                     onChange={(e) => handleChange('realEstateWealthEstimate', e.target.value)}
                   >
@@ -1246,11 +1246,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-300 mb-1">
+                  <label className="block text-[11px] font-medium text-text-2 mb-1">
                     {isEn ? "Business assets" : "Patrimoine professionnel"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800 text-white rounded-xl p-3 text-xs font-semibold outline-none border border-zinc-700/50"
+                    className="w-full bg-surface-2 text-text rounded-xl p-3 text-xs font-semibold outline-none border border-border"
                     value={formData.businessWealthEstimate || 'none'}
                     onChange={(e) => handleChange('businessWealthEstimate', e.target.value)}
                   >
@@ -1268,7 +1268,7 @@ export const InvestorProfileForm: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <div className="flex items-center mb-2">
-                  <label className="text-xs font-semibold text-zinc-300">
+                  <label className="text-xs font-semibold text-text-2">
                     {isEn ? "3. Available liquidity" : "3. Liquidités immédiatement disponibles"}
                   </label>
                   <FieldHelp
@@ -1283,7 +1283,7 @@ export const InvestorProfileForm: React.FC = () => {
                   />
                 </div>
                 <CustomSelect 
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                   value={formData.immediatelyAvailableLiquidity || '40k-100k'}
                   onChange={(e) => handleChange('immediatelyAvailableLiquidity', e.target.value)}
                 >
@@ -1299,7 +1299,7 @@ export const InvestorProfileForm: React.FC = () => {
 
               <div>
                 <div className="flex items-center mb-2">
-                  <label className="text-xs font-semibold text-zinc-300">
+                  <label className="text-xs font-semibold text-text-2">
                     {isEn ? "4. Target amount to invest (€)" : "4. Montant du capital à investir (€)"}
                   </label>
                   <FieldHelp
@@ -1316,7 +1316,7 @@ export const InvestorProfileForm: React.FC = () => {
                 <input 
                   type="number" 
                   step="1000"
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/50 transition-all border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/50 transition-all border border-border"
                   value={formData.amountToInvestNow || ''}
                   onChange={(e) => handleChange('amountToInvestNow', e.target.value)}
                   placeholder="50000"
@@ -1334,10 +1334,10 @@ export const InvestorProfileForm: React.FC = () => {
               <span className="text-xs font-semibold text-blue-400 block mb-1">
                 {isEn ? "Step 4 of 5 : Knowledge & Markets (Advanced Qualification)" : "Étape 4 sur 5 : Connaissance des marchés & Qualification avancée"}
               </span>
-              <h3 className="text-xl md:text-2xl font-black text-white tracking-tight">
+              <h3 className="text-xl md:text-2xl font-black text-text tracking-tight">
                 {isEn ? "Market Knowledge & Advanced Trading Practice" : "Connaissance des marchés et instruments complexes"}
               </h3>
-              <p className="text-xs sm:text-sm text-zinc-400 mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-text-3 mt-1 leading-relaxed">
                 {isEn 
                   ? "Evaluate your mastery of financial instruments, derivatives, risk mechanisms, and professional qualifications."
                   : "Évaluation avancée de votre pratique des marchés, instruments dérivés, mécanismes de risque et niveau d'expertise."}
@@ -1346,13 +1346,13 @@ export const InvestorProfileForm: React.FC = () => {
 
             {/* 1. Background & Global Expertise */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400/90 pb-1 border-b border-zinc-800">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400/90 pb-1 border-b border-border">
                 {isEn ? "1. General Experience & Professional Background" : "1. Expérience globale & Formation financière"}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <div className="flex items-center mb-2">
-                    <label className="text-xs font-semibold text-zinc-300">
+                    <label className="text-xs font-semibold text-text-2">
                       {isEn ? "Years of active trading" : "Années d'expérience active"}
                     </label>
                     <FieldHelp
@@ -1367,7 +1367,7 @@ export const InvestorProfileForm: React.FC = () => {
                     />
                   </div>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                     value={formData.overallExperienceYears || '3_7_years'}
                     onChange={(e) => handleChange('overallExperienceYears', e.target.value)}
                   >
@@ -1380,11 +1380,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                  <label className="block text-xs font-semibold text-text-2 mb-2">
                     {isEn ? "Self-assessed level" : "Niveau d'expertise auto-évalué"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                     value={formData.selfAssessedLevel || 'intermediate'}
                     onChange={(e) => handleChange('selfAssessedLevel', e.target.value)}
                   >
@@ -1396,11 +1396,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                  <label className="block text-xs font-semibold text-text-2 mb-2">
                     {isEn ? "Financial qualifications & background" : "Formation & Qualification Pro"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                     value={formData.professionalBackground || 'self_taught'}
                     onChange={(e) => handleChange('professionalBackground', e.target.value)}
                   >
@@ -1415,10 +1415,10 @@ export const InvestorProfileForm: React.FC = () => {
 
             {/* 2. Financial Instruments Traded */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400/90 pb-1 border-b border-zinc-800">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400/90 pb-1 border-b border-border">
                 {isEn ? "2. Traded Financial Instruments & Asset Classes" : "2. Instruments financiers & classes d'actifs pratiquées"}
               </h4>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-text-3">
                 {isEn ? "Select all asset classes you have actively traded or managed:" : "Sélectionnez tous les instruments et actifs que vous avez déjà négociés :"}
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
@@ -1445,11 +1445,11 @@ export const InvestorProfileForm: React.FC = () => {
                       className={`p-3 rounded-xl text-left text-xs font-bold transition-all duration-200 cursor-pointer flex items-center justify-between ${
                         active 
                           ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 border border-blue-400/30' 
-                          : 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-800 hover:text-white border border-zinc-700/50'
+                          : 'bg-surface-2 text-text-2 hover:bg-surface-2 hover:text-text border border-border'
                       }`}
                     >
                       <span className="pr-2">{isEn ? item.labelEn : item.labelFr}</span>
-                      {active && <Check className="w-3.5 h-3.5 text-white shrink-0 ml-1" />}
+                      {active && <Check className="w-3.5 h-3.5 text-text shrink-0 ml-1" />}
                     </motion.button>
                   );
                 })}
@@ -1458,16 +1458,16 @@ export const InvestorProfileForm: React.FC = () => {
 
             {/* 3. Activity, Volume & Execution */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400/90 pb-1 border-b border-zinc-800">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400/90 pb-1 border-b border-border">
                 {isEn ? "3. Trading Activity, Annual Volume & Execution" : "3. Fréquence, Volume annuel & Ordres maîtrisés"}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                  <label className="block text-xs font-semibold text-text-2 mb-2">
                     {isEn ? "Execution frequency" : "Fréquence des opérations"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                     value={formData.investmentFrequency || 'monthly'}
                     onChange={(e) => handleChange('investmentFrequency', e.target.value)}
                   >
@@ -1480,11 +1480,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                  <label className="block text-xs font-semibold text-text-2 mb-2">
                     {isEn ? "Estimated annual trading volume (€/$)" : "Volume d'opérations annuel estimé (€ / $)"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                     value={formData.annualTradingVolume || '100k-500k'}
                     onChange={(e) => handleChange('annualTradingVolume', e.target.value)}
                   >
@@ -1498,7 +1498,7 @@ export const InvestorProfileForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "Mastered order types & execution methods" : "Types d'ordres & méthodes d'exécution maîtrisées"}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -1518,7 +1518,7 @@ export const InvestorProfileForm: React.FC = () => {
                         className={`p-2.5 rounded-xl text-left text-[11px] font-bold transition-all cursor-pointer border ${
                           active 
                             ? 'bg-blue-600/30 text-blue-300 border-blue-500/50' 
-                            : 'bg-zinc-800/60 text-zinc-400 hover:text-zinc-200 border-zinc-700/40'
+                            : 'bg-surface-2 text-text-3 hover:text-text-2 border-border'
                         }`}
                       >
                         {isEn ? item.labelEn : item.labelFr}
@@ -1531,17 +1531,17 @@ export const InvestorProfileForm: React.FC = () => {
 
             {/* 4. Advanced Technical Knowledge Test */}
             <div className="space-y-4 pt-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400/90 pb-1 border-b border-zinc-800">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400/90 pb-1 border-b border-border">
                 {isEn ? "4. Advanced Risk Comprehension & Technical Verification" : "4. Évaluation théorique & pratique des risques financiers"}
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                  <label className="block text-xs font-semibold text-text-2 mb-2">
                     {isEn ? "a. Leverage & Margin Call mechanics" : "a. Effet de levier & Appels de marge (Margin Call)"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                     value={formData.understandsDerivativesLeverage || 'yes_experienced'}
                     onChange={(e) => handleChange('understandsDerivativesLeverage', e.target.value)}
                   >
@@ -1552,11 +1552,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                  <label className="block text-xs font-semibold text-text-2 mb-2">
                     {isEn ? "b. Options Sensitivity (Greeks: Delta, Gamma, Vega, Theta Decay)" : "b. Sensibilité des Options (Grecques: Delta, Gamma, Vega, Theta)"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                     value={formData.understandsOptionsGreeks || 'basic'}
                     onChange={(e) => handleChange('understandsOptionsGreeks', e.target.value)}
                   >
@@ -1567,11 +1567,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                  <label className="block text-xs font-semibold text-text-2 mb-2">
                     {isEn ? "c. Bond Yield vs Price Inverse Relationship" : "c. Relation Prix/Taux des obligations"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                     value={formData.understandsBondPriceYieldInverse || 'yes_fully'}
                     onChange={(e) => handleChange('understandsBondPriceYieldInverse', e.target.value)}
                   >
@@ -1582,11 +1582,11 @@ export const InvestorProfileForm: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                  <label className="block text-xs font-semibold text-text-2 mb-2">
                     {isEn ? "d. Unlimited liabilities on Short Selling" : "d. Pertes potentiellement illimitées en Vente à Découvert"}
                   </label>
                   <CustomSelect 
-                    className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                    className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                     value={formData.understandsShortSellingLiabilities || 'yes_fully'}
                     onChange={(e) => handleChange('understandsShortSellingLiabilities', e.target.value)}
                   >
@@ -1598,11 +1598,11 @@ export const InvestorProfileForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "e. Active portfolio behavior during major market crashes (2008, 2020, 2022)" : "e. Comportement réel lors de krachs de marché majeurs (2008, 2020, 2022)"}
                 </label>
                 <CustomSelect 
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                   value={formData.experiencedMajorMarketCrash || 'yes_managed_active'}
                   onChange={(e) => handleChange('experiencedMajorMarketCrash', e.target.value)}
                 >
@@ -1623,10 +1623,10 @@ export const InvestorProfileForm: React.FC = () => {
               <span className="text-xs font-semibold text-blue-400 block mb-1">
                 {isEn ? "Step 5 of 5 : Risk & objectives" : "Étape 5 sur 5 : Risque et objectifs"}
               </span>
-              <h3 className="text-xl md:text-2xl font-black text-white tracking-tight">
+              <h3 className="text-xl md:text-2xl font-black text-text tracking-tight">
                 {isEn ? "Risk tolerance and investment objectives" : "Tolérance au risque et objectifs d'investissement"}
               </h3>
-              <p className="text-xs sm:text-sm text-zinc-400 mt-1">
+              <p className="text-xs sm:text-sm text-text-3 mt-1">
                 {isEn 
                   ? "Define target duration, max acceptable drawdown, and growth orientation."
                   : "Définissez votre horizon temporel, votre perte maximale tolérable et votre objectif de rendement."}
@@ -1635,11 +1635,11 @@ export const InvestorProfileForm: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "1. Primary objective" : "1. Objectif principal"}
                 </label>
                 <CustomSelect 
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                   value={formData.primaryObjective || 'growth'}
                   onChange={(e) => handleChange('primaryObjective', e.target.value)}
                 >
@@ -1652,7 +1652,7 @@ export const InvestorProfileForm: React.FC = () => {
 
               <div>
                 <div className="flex items-center mb-2">
-                  <label className="text-xs font-semibold text-zinc-300">
+                  <label className="text-xs font-semibold text-text-2">
                     {isEn ? "2. Max acceptable drawdown" : "2. Perte temporaire maximale acceptable"}
                   </label>
                   <FieldHelp
@@ -1667,7 +1667,7 @@ export const InvestorProfileForm: React.FC = () => {
                   />
                 </div>
                 <CustomSelect 
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                   value={formData.maxDrawdownAcceptable || '20_pct'}
                   onChange={(e) => handleChange('maxDrawdownAcceptable', e.target.value)}
                 >
@@ -1680,11 +1680,11 @@ export const InvestorProfileForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "3. Investment horizon" : "3. Horizon d'investissement"}
                 </label>
                 <CustomSelect 
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                   value={formData.timeHorizon || '5_10_years'}
                   onChange={(e) => handleChange('timeHorizon', e.target.value)}
                 >
@@ -1697,11 +1697,11 @@ export const InvestorProfileForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "4. Risk tolerance profile" : "4. Profil de tolérance au risque"}
                 </label>
                 <CustomSelect 
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                   value={formData.riskToleranceProfile || 'balanced'}
                   onChange={(e) => handleChange('riskToleranceProfile', e.target.value)}
                 >
@@ -1714,11 +1714,11 @@ export const InvestorProfileForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "5. Reaction to a 20% market drop" : "5. Réaction à une baisse de 20%"}
                 </label>
                 <CustomSelect 
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                   value={formData.reactionToMarketCrash || 'wait'}
                   onChange={(e) => handleChange('reactionToMarketCrash', e.target.value)}
                 >
@@ -1730,11 +1730,11 @@ export const InvestorProfileForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold text-text-2 mb-2">
                   {isEn ? "6. Expected annual return" : "6. Rendement annuel espéré"}
                 </label>
                 <CustomSelect 
-                  className="w-full bg-zinc-800/90 text-white rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-zinc-700/60"
+                  className="w-full bg-surface-2 text-text rounded-xl py-3.5 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium border border-border"
                   value={formData.expectedAnnualReturn || '5_8_pct'}
                   onChange={(e) => handleChange('expectedAnnualReturn', e.target.value)}
                 >
@@ -1760,10 +1760,10 @@ export const InvestorProfileForm: React.FC = () => {
     
     <div className="w-full flex flex-col gap-4">
       {/* Subtle Auto-save status header bar */}
-        <div className="flex items-center justify-between pb-3 mb-2 border-b border-zinc-800/50">
+        <div className="flex items-center justify-between pb-3 mb-2 border-b border-border">
           <div className="flex items-center gap-2 text-[11px] font-medium">
             {cloudSyncStatus === 'offline' ? (
-              <div className="flex items-center gap-1.5 text-zinc-400">
+              <div className="flex items-center gap-1.5 text-text-3">
                 <CloudOff className="w-3.5 h-3.5" />
                 <span>{isEn ? "Local-only (Sign in to sync cloud)" : "Brouillon local (Connectez-vous pour synchroniser)"}</span>
               </div>
@@ -1777,7 +1777,7 @@ export const InvestorProfileForm: React.FC = () => {
                 <Cloud className="w-3.5 h-3.5 shrink-0" />
                 <span>{isEn ? "Saved to Cloud" : "Sauvegardé sur le Cloud"}</span>
                 {lastSavedTime && (
-                  <span className="text-zinc-500 font-mono text-[10px]">
+                  <span className="text-text-3 font-mono text-[10px]">
                     ({lastSavedTime})
                   </span>
                 )}
@@ -1792,7 +1792,7 @@ export const InvestorProfileForm: React.FC = () => {
           <button
             type="button"
             onClick={handleResetDraft}
-            className="text-[10px] text-zinc-500 hover:text-rose-400 transition-colors cursor-pointer underline"
+            className="text-[10px] text-text-3 hover:text-rose-400 transition-colors cursor-pointer underline"
           >
             {isEn ? "Reset draft" : "Réinitialiser le brouillon"}
           </button>
@@ -1803,12 +1803,12 @@ export const InvestorProfileForm: React.FC = () => {
     
       {/* Sidebar / Steps Menu - NO BORDER, NO ICONS */}
       <div className="w-full md:w-64 lg:w-72 shrink-0 space-y-4 flex flex-col">
-        <div className="bg-slate-900/90 shadow-2xl p-5 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl border border-white/10 space-y-4 flex-1">
+        <div className="bg-white shadow-2xl p-5 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl border border-border space-y-4 flex-1">
           <div className="pb-1">
             <span className="text-[11px] font-semibold text-blue-400 block mb-0.5">
               Quantrih suitability
             </span>
-            <h2 className="text-base font-black text-white tracking-tight">
+            <h2 className="text-base font-black text-text tracking-tight">
               {isEn ? "Strategy qualification" : "Qualification stratégique"}
             </h2>
           </div>
@@ -1829,8 +1829,8 @@ export const InvestorProfileForm: React.FC = () => {
                     active 
                       ? 'bg-blue-600 text-white font-bold shadow-[0_10px_25px_rgba(37,99,235,0.4)]' 
                       : completed 
-                        ? 'bg-slate-800/60 text-slate-200 font-semibold hover:bg-slate-800 hover:text-white' 
-                        : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
+                        ? 'bg-surface-2 text-text-2 font-semibold hover:bg-surface-2 hover:text-text' 
+                        : 'text-text-3 hover:bg-surface-2 hover:text-text-2'
                   }`}
                 >
                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-black transition-all ${
@@ -1838,7 +1838,7 @@ export const InvestorProfileForm: React.FC = () => {
                       ? 'bg-white text-blue-600 shadow-md' 
                       : completed 
                         ? 'bg-emerald-500/20 text-emerald-400' 
-                        : 'bg-slate-800/80 text-slate-400'
+                        : 'bg-surface-2 text-text-3'
                   }`}>
                     {step.stepNum}
                   </div>
@@ -1853,9 +1853,9 @@ export const InvestorProfileForm: React.FC = () => {
       </div>
 
       {/* Main Form Step Area - NO BORDER, NO ICONS */}
-      <div className="w-full flex-1 bg-slate-900/90 shadow-2xl p-6 sm:p-10 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] backdrop-blur-3xl border border-white/10 min-h-[700px] flex flex-col justify-between text-zinc-100 relative overflow-visible">
+      <div className="w-full flex-1 bg-white shadow-2xl p-6 sm:p-10 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.5)] backdrop-blur-3xl border border-border min-h-[700px] flex flex-col justify-between text-text-2 relative overflow-visible">
         {/* Animated Top Progress Line */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-zinc-800/60 overflow-hidden rounded-t-3xl">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-surface-2 overflow-hidden rounded-t-3xl">
           <motion.div 
             className="h-full bg-gradient-to-r from-blue-600 to-indigo-500"
             initial={{ width: '0%' }}
@@ -1879,7 +1879,7 @@ export const InvestorProfileForm: React.FC = () => {
             className={`px-6 py-3 rounded-2xl font-semibold text-xs transition-all duration-200 ${
               currentStep === 0 
                 ? 'opacity-0 pointer-events-none' 
-                : 'text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-800 cursor-pointer border border-zinc-700/50'
+                : 'text-text-2 hover:text-text bg-surface-2 hover:bg-surface-2 cursor-pointer border border-border'
             }`}
           >
             {isEn ? "Previous step" : "Étape précédente"}

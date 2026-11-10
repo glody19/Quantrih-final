@@ -35,7 +35,32 @@ export interface BacktestOptions {
   transactionFeeAmount?: number; // fixed fee per transaction (e.g. 1 EUR for DEGIRO)
 }
 
+export interface DrawdownEpisode {
+  start: string;
+  trough: string;
+  end: string | null;
+  depth: number;
+  lengthMonths: number;
+  recoveryMonths: number | null;
+  underwaterMonths: number | null;
+}
+
 export interface BacktestMetrics {
+  geometricMean?: number;
+  downsideDeviation?: number;
+  skewness?: number;
+  excessKurtosis?: number;
+  historicalVaR5?: number;
+  analyticalVaR5?: number;
+  conditionalVaR5?: number;
+  gainLossRatio?: number;
+  riskFreeAnnual?: number;
+  drawdownEpisodes?: DrawdownEpisode[];
+  rSquared?: number;
+  correlation?: number;
+  activeReturn?: number;
+  treynor?: number;
+  modigliani?: number;
   endBalance: number;
   startBalance?: number;
   cagr: number;

@@ -120,36 +120,25 @@ const TOOL_ACCENTS = [
   { icon: Dices, from: "#60A5FA", to: "#A5C8FB" },
 ];
 
-function ToolCard({ i, title, desc, cta, onClick, wide }: { i: number; title: string; desc: string; cta: string; onClick: () => void; wide: boolean }) {
+function ToolCard({ i, title, desc, cta, onClick }: { i: number; title: string; desc: string; cta: string; onClick: () => void }) {
   const a = TOOL_ACCENTS[i];
   const Icon = a.icon;
   return (
     <motion.button
       onClick={onClick}
-      initial={{ opacity: 0, y: 26 }}
+      initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.55, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-      className={cn("group relative text-left rounded-[1.75rem] p-px overflow-hidden", wide ? "lg:col-span-2" : "lg:col-span-1")}
-      style={{ background: `linear-gradient(140deg, ${a.from}66, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.04) 70%, ${a.to}40)` }}
+      transition={{ duration: 0.5, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+      className="group text-left flex flex-col px-0 lg:px-8 py-10 lg:py-4 first:lg:pl-0 last:lg:pr-0 transition-colors"
     >
-      <div className="relative h-full rounded-[calc(1.75rem-1px)] bg-[#100E2C] p-8 md:p-10 overflow-hidden transition-colors duration-300 group-hover:bg-[#141236]">
-        {/* accent glow, brighter on hover */}
-        <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-30 group-hover:opacity-60 transition-opacity duration-500" style={{ background: a.from }} />
-        <span className="absolute right-8 top-6 text-[7rem] leading-none font-bold text-white/[0.04] select-none">{String(i + 1).padStart(2, "0")}</span>
-
-        <div className="relative flex h-full flex-col">
-          <span className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(135deg, ${a.from}, ${a.to})` }}>
-            <Icon size={26} className="text-[#0B0A1F]" />
-          </span>
-          <h3 className="mt-8 text-2xl md:text-3xl font-bold tracking-tight text-white">{title}</h3>
-          <p className={cn("mt-4 text-base md:text-[17px] text-white/65 leading-relaxed", wide ? "max-w-2xl" : "")}>{desc}</p>
-          <span className="mt-auto pt-8 inline-flex items-center gap-2 text-base font-semibold" style={{ color: a.to }}>
-            {cta}
-            <span className="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center group-hover:translate-x-1 transition-transform"><ArrowRight size={15} /></span>
-          </span>
-        </div>
-      </div>
+      <Icon size={26} strokeWidth={1.6} style={{ color: a.to }} />
+      <h3 className="mt-6 font-serif text-2xl md:text-[1.7rem] font-semibold leading-snug text-white">{title}</h3>
+      <p className="mt-3 text-base text-white/60 leading-relaxed">{desc}</p>
+      <span className="mt-auto pt-8 inline-flex items-center gap-2 text-[15px] font-semibold text-white/85 group-hover:text-white">
+        <span className="border-b border-white/25 group-hover:border-white pb-0.5 transition-colors">{cta}</span>
+        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+      </span>
     </motion.button>
   );
 }
@@ -166,16 +155,15 @@ function ToolsSection({ title, onGoPage }: { title: string; onGoPage: (id: strin
     <section className="relative py-24 md:py-32">
       <div className="page-container">
         <div className="max-w-3xl">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-[1.08]">{title}</h2>
+          <h2 className="font-serif text-4xl md:text-5xl font-semibold tracking-tight text-white leading-[1.08]">{title}</h2>
           <p className="mt-5 text-lg md:text-xl text-white/65 leading-relaxed">{t("home.tools.subtitle")}</p>
         </div>
-        {/* bento layout: wide, narrow / narrow, wide */}
-        <div className="mt-14 grid gap-5 lg:grid-cols-3">
+        {/* four tools in clean columns separated by hairlines */}
+        <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-white/10 divide-y sm:divide-y-0 lg:divide-x divide-white/10">
           {tools.map((tool, i) => (
             <ToolCard
               key={tool.id}
               i={i}
-              wide={i === 0 || i === 3}
               title={t(`home.pages.${tool.key}.title`)}
               desc={t(`home.pages.${tool.key}.desc`)}
               cta={t(`home.pages.${tool.key}.cta`)}

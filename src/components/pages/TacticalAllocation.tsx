@@ -27,7 +27,6 @@ import { EfficientFrontier } from "../ui/EfficientFrontier";
 import { PortfolioAnalysisExplication } from "./PortfolioAnalysisExplication";
 import { runBacktest as engineRunBacktest } from "../../engine";
 import { downloadCSV } from "../../utils/export";
-import { ViewToggle } from "../ui/ViewToggle";
 import { Disclaimer } from "../ui/Disclaimer";
 import { ASSET_DATA } from "../../constants";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
@@ -1878,17 +1877,9 @@ export function TacticalAllocation() {
             title={t("ta.title")}
             badge={t("ta.badge")}
             description={t("ta.description")}
-            actions={
-              <ViewToggle 
-                activeView={activeMainView} 
-                onViewChange={(view) => setActiveMainView(view)} 
-                simulatorLabel={t("common.simulator")}
-                dashboardLabel={t("dashboard.saved_scenarios")}
-              />
-            }
           />
 
-          {activeMainView === "dashboard" ? renderSavedScenarios() : (
+          {(
             <div className="simulator-view space-y-8">
               <div className="flex flex-wrap gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem] border border-border/60">
                 {tabs.map((tab) => (
@@ -2648,22 +2639,7 @@ export function TacticalAllocation() {
           )}
 
           <div className="flex justify-between pt-4 items-center">
-            <CloudSaveLoad
-              pageId="tactical-allocation"
-              currentData={{
-                activeTab,
-                startYear,
-                endYear,
-                initialAmount,
-                broker,
-                customFee,
-                maPortfolioAssets,
-                adaptivePortfolioAssets,
-                resultsSummary: results ? results.map(r => ({ name: r.name, cagr: r.cagr, sharpe: r.sharpe })) : []
-              }}
-              onLoad={handleCloudLoad}
-              onListUpdate={loadSavedConfigs}
-            />
+            
             <button
               onClick={handleRunBacktest}
               disabled={isRunning}
@@ -3506,6 +3482,28 @@ export function TacticalAllocation() {
   </div>
 </div>
 </div>
+      {/* Discreet save bar + saved analyses, always at the bottom of the page */}
+      <div className="w-full max-w-[1800px] mx-auto px-4 md:px-12 pb-16">
+        <CloudSaveLoad
+          savedOpen={activeMainView === "dashboard"}
+          onToggleSaved={() => setActiveMainView(activeMainView === "dashboard" ? "simulator" : "dashboard")}
+              pageId="tactical-allocation"
+              currentData={{
+                activeTab,
+                startYear,
+                endYear,
+                initialAmount,
+                broker,
+                customFee,
+                maPortfolioAssets,
+                adaptivePortfolioAssets,
+                resultsSummary: results ? results.map(r => ({ name: r.name, cagr: r.cagr, sharpe: r.sharpe })) : []
+              }}
+              onLoad={handleCloudLoad}
+              onListUpdate={loadSavedConfigs}
+            />
+        {activeMainView === "dashboard" && <div className="mt-8">{renderSavedScenarios()}</div>}
+      </div>
     </MobileZoomWrapper>
   );
 }

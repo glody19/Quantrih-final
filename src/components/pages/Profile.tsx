@@ -307,7 +307,10 @@ export function Profile({ onBack }: { onBack: () => void }) {
 
   // Fetch initial profile values from Firestore
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setFetching(false);
+      return;
+    }
     const fetchUserData = async () => {
       try {
         const userRef = doc(db, `users/${user.uid}`);
@@ -584,514 +587,315 @@ export function Profile({ onBack }: { onBack: () => void }) {
     onBack();
   };
 
+  // Saved analyses (all tools) shown in the client area
+  const [savedItems, setSavedItems] = useState<any[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      try {
+        const snap = await getDocs(collection(db, `users/${user.uid}/backtests`));
+        const list: any[] = [];
+        snap.forEach((d) => list.push({ id: d.id, ...d.data() }));
+        list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+        setSavedItems(list);
+      } catch (e) {
+        console.error("Failed to load saved analyses:", e);
+      }
+    })();
+  }, [user]);
+
+  const TOOL_ROUTES: Record<string, { path: string; label: string }> = {
+    backtest: { path: '/portfolio-backtest', label: 'Portfolio Backtesting' },
+    'asset-allocation': { path: '/asset-allocation', label: 'Asset Allocation' },
+    allocations: { path: '/asset-allocation', label: 'Asset Allocation' },
+    tactical: { path: '/tactical-allocation', label: 'Tactical Allocation' },
+    'tactical-allocation': { path: '/tactical-allocation', label: 'Tactical Allocation' },
+    montecarlo: { path: '/montecarlo', label: 'Monte Carlo' },
+  };
+  const toolOf = (pageId?: string) => TOOL_ROUTES[pageId || 'backtest'] || { path: '/portfolio-backtest', label: pageId || 'Backtest' };
+
+  const [section, setSection] = useState<'account' | 'security' | 'saved'>('account');
+  const fieldCls = "w-full h-11 bg-white border border-border rounded-lg px-3.5 text-[15px] text-text outline-none focus:border-pv-blue focus:ring-4 focus:ring-pv-blue/10 transition-all placeholder:text-text-4";
+  const labelCls = "block text-sm font-medium text-text-2 mb-1.5";
+  const L2 = isEn || language !== 'fr'
+    ? { title: "Client area", subtitle: "Your account, security settings and saved analyses.", account: "Account", security: "Security", saved: "Saved analyses", investor: "Investor profile", investorDesc: "Experience, financial situation and risk tolerance.", open: "Open", none: "No saved analysis yet. Run a tool and use “Save this analysis” at the bottom of the page.", tool: "Tool", name: "Name", date: "Saved on", metrics: "Key results", photo: "Profile photo", change: "Change", remove: "Remove", danger: "Delete account", memberSince: "Signed in as", signInTitle: "Sign in to your client area", signInDesc: "Your account settings and saved analyses are available to signed-in members.", signIn: "Sign in or create an account", back: "Back" }
+    : { title: "Espace client", subtitle: "Votre compte, votre sécurité et vos analyses enregistrées.", account: "Compte", security: "Sécurité", saved: "Analyses enregistrées", investor: "Profil investisseur", investorDesc: "Expérience, situation financière et tolérance au risque.", open: "Ouvrir", none: "Aucune analyse enregistrée. Lancez un outil puis utilisez « Enregistrer cette analyse » en bas de page.", tool: "Outil", name: "Nom", date: "Enregistrée le", metrics: "Résultats clés", photo: "Photo de profil", change: "Modifier", remove: "Retirer", danger: "Supprimer le compte", memberSince: "Connecté en tant que", signInTitle: "Connectez-vous à votre espace client", signInDesc: "Les paramètres du compte et les analyses enregistrées sont réservés aux membres connectés.", signIn: "Se connecter ou créer un compte", back: "Retour" };
+
   if (fetching) {
     return (
-      <div 
-        className="min-h-screen flex flex-col items-center justify-center p-4 text-white bg-[#060913]"
-      >
-        <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      <div className="min-h-[60vh] flex items-center justify-center bg-white">
+        <div className="w-9 h-9 border-[3px] border-pv-blue/20 border-t-pv-blue rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div 
-        className="flex flex-col w-full min-h-[100dvh] relative overflow-hidden selection:bg-blue-500/30 pt-32 pb-16 px-4 sm:px-8 lg:px-12 font-sans text-white items-center justify-start bg-[#060913]"
-      >
-        <div className="absolute inset-0 pointer-events-none z-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
-
-        <div className="relative z-10 w-full max-w-md bg-slate-900/90 border border-slate-800/90 rounded-3xl p-7 sm:p-9 text-center shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-2xl flex flex-col items-center space-y-6">
-          <div className="space-y-2.5">
-            <h2 className="text-xl sm:text-2xl font-bold text-blue-400 drop-shadow-md tracking-tight">
-              {isEn ? "Authentication Required" : "Connexion Requise"}
-            </h2>
-            <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-sm mx-auto">
-              {isEn 
-                ? "Your account settings and profile details are accessible exclusively to registered members. Log in to manage your account."
-                : "Les paramètres de votre compte sont réservés aux membres connectés. Connectez-vous pour gérer votre compte."}
-            </p>
-          </div>
-
-          <div className="w-full pt-1 flex flex-col gap-2.5">
-            <button
-              onClick={() => navigate('/auth')}
-              className="w-full py-3.5 px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>{isEn ? "Log In / Sign Up" : "Se connecter / S'inscrire"}</span>
-            </button>
-
-            <button
-              onClick={onBack}
-              className="w-full py-2.5 px-4 bg-slate-800/70 hover:bg-slate-800 text-slate-300 hover:text-white font-medium text-xs rounded-xl transition-all border border-slate-700/50 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>{isEn ? "Back to Dashboard" : "Retour au tableau de bord"}</span>
-            </button>
-          </div>
+      <div className="min-h-[70vh] bg-white flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md border border-border rounded-2xl p-8 text-center">
+          <h1 className="font-serif text-3xl font-semibold text-text">{L2.signInTitle}</h1>
+          <p className="text-text-3 mt-3 leading-relaxed">{L2.signInDesc}</p>
+          <button onClick={() => navigate('/auth')} className="mt-6 w-full h-11 bg-pv-blue hover:bg-pv-blue-d text-white font-semibold rounded-lg inline-flex items-center justify-center gap-2">
+            <LogIn className="w-4 h-4" /> {L2.signIn}
+          </button>
+          <button onClick={onBack} className="mt-3 w-full h-11 text-text-3 hover:text-text font-medium rounded-lg inline-flex items-center justify-center gap-2">
+            <ArrowLeft className="w-4 h-4" /> {L2.back}
+          </button>
         </div>
       </div>
     );
   }
 
+  const navItems: { id: 'account' | 'security' | 'saved'; label: string; icon: React.ReactNode }[] = [
+    { id: 'account', label: L2.account, icon: <User className="w-4 h-4" /> },
+    { id: 'security', label: L2.security, icon: <Shield className="w-4 h-4" /> },
+    { id: 'saved', label: L2.saved, icon: <Save className="w-4 h-4" /> },
+  ];
+
   return (
-    <div 
-      className="flex flex-col w-full min-h-[100dvh] relative selection:bg-blue-500/30 pt-32 pb-96 px-4 sm:px-8 lg:px-12 font-sans text-white items-center justify-start bg-[#060913] overflow-x-hidden overflow-y-auto"
-    >
-      <div className="absolute inset-0 pointer-events-none z-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_100%)]" />
-
-      {/* Back button */}
-      <button 
-        onClick={onBack}
-        className="absolute top-6 left-6 md:top-10 md:left-10 w-12 h-12 bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white rounded-full flex items-center justify-center shadow-lg border border-slate-700/60 transition-all hover:scale-105 z-50 cursor-pointer"
-      >
-        <ArrowLeft className="w-5 h-5" />
-      </button>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-xl relative z-10 flex flex-col items-center my-6 transition-all duration-500"
-      >
-        {/* Avatar badge */}
-        <div className="relative mb-6 z-20 group">
-          <div 
-            className="w-24 h-24 bg-slate-900/90 rounded-full flex items-center justify-center shadow-2xl border-4 border-slate-700/60 overflow-hidden relative"
-          >
-            {photoURLState ? (
-              <img src={photoURLState} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400 font-bold text-3xl uppercase">
-                {firstName.charAt(0) || email.charAt(0) || "?"}
-              </div>
-            )}
+    <div className="w-full bg-white min-h-[80vh]">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-10 pb-24">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border">
+          <div>
+            <h1 className="font-serif text-3xl md:text-[2.6rem] leading-tight font-semibold tracking-tight text-text">{L2.title}</h1>
+            <p className="text-base md:text-lg text-text-3 mt-2">{L2.subtitle}</p>
           </div>
-
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-slate-900 transition-all hover:scale-110 cursor-pointer"
-            title="Upload profile picture"
-          >
-            <Camera className="w-4 h-4" />
-          </button>
-
-          {photoURLState && (
-            <button
-              type="button"
-              onClick={() => setPhotoURLState("")}
-              className="absolute -top-1 -right-1 w-8 h-8 bg-rose-600 hover:bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-slate-900 transition-all hover:scale-110 cursor-pointer"
-              title="Delete profile picture"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
-
-          {photoURLState && (
-            <button
-              type="button"
-              onClick={downloadProfileImage}
-              className="absolute -bottom-1 -left-1 w-8 h-8 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-900 transition-all hover:scale-110 cursor-pointer"
-              title="Download profile picture"
-            >
-              <Download className="w-4 h-4" />
-            </button>
-          )}
-
-          <input 
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*"
-            className="hidden"
-          />
+          <div className="flex items-center gap-3 text-sm text-text-3">
+            <span>{L2.memberSince} <b className="text-text font-medium">{user.email}</b></span>
+          </div>
         </div>
 
-        {/* Call to action for Investor Profile & Strategy Form */}
-        <div className="w-full mb-8 p-6 bg-blue-600/10 rounded-2xl border border-blue-500/20 backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-white tracking-wide">
-              {isEn ? "Complete your investor profile" : "Complétez votre profil investisseur"}
-            </h4>
-            <p className="text-xs text-slate-300 leading-relaxed max-w-md">
-              {isEn 
-                ? "Provide your experience, financial situation, risk tolerance, and suitability answers to establish your investor qualification."
-                : "Renseignez votre expérience, votre situation financière, votre tolérance au risque et vos réponses d'adéquation pour établir votre profil investisseur."}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate('/investor-profile')}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-md active:scale-95 whitespace-nowrap cursor-pointer"
-          >
-            {isEn ? "Go to investor profile →" : "Accéder au profil investisseur →"}
-          </button>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-[230px_1fr] gap-8 mt-8">
+          {/* Sidebar */}
+          <nav className="flex md:flex-col gap-1 overflow-x-auto no-scrollbar">
+            {navItems.map((n) => (
+              <button
+                key={n.id}
+                onClick={() => setSection(n.id)}
+                className={`flex items-center gap-2.5 px-3 h-10 rounded-lg text-[15px] whitespace-nowrap transition-colors ${section === n.id ? 'bg-surface-2 text-text font-semibold' : 'text-text-3 hover:text-text hover:bg-surface-2/60'}`}
+              >
+                {n.icon} {n.label}
+                {n.id === 'saved' && savedItems.length > 0 && <span className="ml-auto text-xs font-mono text-text-4">{savedItems.length}</span>}
+              </button>
+            ))}
+            <button onClick={() => navigate('/investor-profile')} className="flex items-center gap-2.5 px-3 h-10 rounded-lg text-[15px] whitespace-nowrap text-text-3 hover:text-text hover:bg-surface-2/60">
+              <Briefcase className="w-4 h-4" /> {L2.investor} <ChevronRight className="w-4 h-4 ml-auto" />
+            </button>
+            <div className="hidden md:block h-px bg-border my-3" />
+            <button onClick={handleLogout} className="flex items-center gap-2.5 px-3 h-10 rounded-lg text-[15px] whitespace-nowrap text-text-3 hover:text-rose-600 hover:bg-rose-50">
+              <LogOut className="w-4 h-4" /> {t.signOut}
+            </button>
+          </nav>
 
-        {/* Account Settings Container - NO HEAVY WHITE FRAME */}
-        <div className="w-full overflow-hidden relative">
-          <div className="p-0 sm:p-0">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">{t.accountSettings}</h2>
-              <p className="text-slate-300 text-sm mt-2 font-medium">{t.manageSubtitle}</p>
-            </div>
-
+          {/* Content */}
+          <div className="min-w-0">
             {message && (
-              <div className={`p-4 mb-6 rounded-2xl text-sm font-semibold text-center border flex items-center justify-center gap-2 ${
-                message.type === 'success' 
-                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' 
-                  : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-              }`}>
-                {message.type === 'success' && <CheckCircle className="w-5 h-5" />}
-                {message.type !== 'success' && <AlertTriangle className="w-5 h-5" />}
+              <div className={`mb-6 px-4 py-3 rounded-lg text-sm font-medium border flex items-center gap-2 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`}>
+                {message.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
                 {message.text}
               </div>
             )}
 
-            <form onSubmit={handleUpdateProfile} className="space-y-6">
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">{t.lastName}</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <User className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <input 
-                      type="text" 
-                      required 
-                      value={lastName} 
-                      onChange={e => setLastName(e.target.value)}
-                      placeholder="Doe"
-                      className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl py-3 pl-10 pr-4 text-sm outline-none focus:bg-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-white placeholder-slate-400 shadow-sm" 
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">{t.firstName}</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <User className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <input 
-                      type="text" 
-                      required 
-                      value={firstName} 
-                      onChange={e => setFirstName(e.target.value)}
-                      placeholder="Jane"
-                      className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl py-3 pl-10 pr-4 text-sm outline-none focus:bg-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-white placeholder-slate-400 shadow-sm" 
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">{t.emailAddress}</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Mail className="w-4 h-4 text-slate-400" />
-                  </div>
-                  <input 
-                    type="email" 
-                    required
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="jane@example.com"
-                    className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl py-3 pl-10 pr-4 text-sm outline-none focus:bg-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-white placeholder-slate-400 shadow-sm" 
-                  />
-                </div>
-              </div>
-
-              <div className="relative" ref={dropdownRef}>
-                <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">{t.countryResidence}</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-xl">
-                    <span>{selectedFlag}</span>
-                  </div>
-                  <input 
-                    type="text" 
-                    required 
-                    value={residenceCountry} 
-                    onFocus={() => {
-                      setShowCountryDropdown(true);
-                      setSearchQuery(residenceCountry);
-                    }}
-                    onChange={e => {
-                      setResidenceCountry(e.target.value);
-                      setSearchQuery(e.target.value);
-                      setShowCountryDropdown(true);
-                    }} 
-                    placeholder={t.searchCountryPlaceholder}
-                    className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl py-3 pl-11 pr-10 text-sm outline-none focus:bg-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-white placeholder-slate-400 shadow-sm" 
-                  />
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
-                </div>
-
-                <AnimatePresence>
-                  {showCountryDropdown && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute z-30 w-full mt-1 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl max-h-56 overflow-y-auto"
-                    >
-                      {filteredCountries.length > 0 ? (
-                        filteredCountries.map((c: Country) => (
-                          <button
-                            key={c.code}
-                            type="button"
-                            onClick={() => {
-                              setResidenceCountry(c.name);
-                              setShowCountryDropdown(false);
-                            }}
-                            className="w-full text-left px-4 py-2.5 hover:bg-slate-800 flex items-center gap-3 text-sm text-slate-200 transition-colors border-b border-slate-800/60 last:border-0"
-                          >
-                            <span className="text-xl">{c.flag}</span>
-                            <span className="font-medium">{c.name}</span>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-4 py-3 text-sm text-slate-400 text-center">
-                          {t.noCountryFound}
+            {section !== 'saved' && (
+              <form onSubmit={handleUpdateProfile} className="space-y-8">
+                {section === 'account' && (
+                  <>
+                    <section className="border border-border rounded-2xl p-6">
+                      <h2 className="text-xl font-semibold text-text">{L2.photo}</h2>
+                      <div className="flex items-center gap-5 mt-5">
+                        <div className="w-20 h-20 rounded-full bg-surface-2 border border-border overflow-hidden flex items-center justify-center text-2xl font-semibold text-text-3 uppercase shrink-0">
+                          {photoURLState ? <img src={photoURLState} alt="" className="w-full h-full object-cover" /> : (firstName.charAt(0) || email.charAt(0) || "?")}
                         </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">{t.accountType}</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Briefcase className="w-4 h-4 text-slate-400" />
-                  </div>
-                  <select 
-                    value={accountType} 
-                    onChange={e => setAccountType(e.target.value)}
-                    className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl py-3 pl-10 pr-4 text-sm outline-none focus:bg-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-white shadow-sm appearance-none"
-                  >
-                    <option value="Individual" className="bg-slate-900 text-white">{t.individualInvestor}</option>
-                    <option value="Joint" className="bg-slate-900 text-white">{t.jointAccount}</option>
-                    <option value="Professional" className="bg-slate-900 text-white">{t.professionalInvestor}</option>
-                    <option value="Corporate" className="bg-slate-900 text-white">{t.corporateInstitution}</option>
-                    <option value="Institutional" className="bg-slate-900 text-white">{t.institutionalClient}</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
-                </div>
-              </div>
-
-              {(accountType === 'Corporate' || accountType === 'Institutional' || accountType === 'Professional') && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">{t.companyName}</label>
-                  <input 
-                    type="text" 
-                    value={company} 
-                    onChange={e => setCompany(e.target.value)} 
-                    placeholder="Acme Corp"
-                    className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl py-3 px-4 text-sm outline-none focus:bg-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-white placeholder-slate-400 shadow-sm" 
-                  />
-                </div>
-              )}
-
-              <div className="pt-4 border-t border-slate-800/80">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">{t.securityCredentials}</h3>
-                <p className="text-xs text-slate-400 mb-4">{t.passwordLeaveBlank}</p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">{t.newPassword}</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                        <Lock className="w-4 h-4 text-slate-400" />
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button" onClick={() => fileInputRef.current?.click()} className="h-9 px-3.5 rounded-lg border border-border text-sm font-medium text-text hover:border-pv-blue inline-flex items-center gap-1.5"><Camera className="w-4 h-4" /> {L2.change}</button>
+                          {photoURLState && <button type="button" onClick={downloadProfileImage} className="h-9 px-3.5 rounded-lg border border-border text-sm font-medium text-text-2 hover:border-pv-blue inline-flex items-center gap-1.5"><Download className="w-4 h-4" /></button>}
+                          {photoURLState && <button type="button" onClick={() => setPhotoURLState("")} className="h-9 px-3.5 rounded-lg text-sm font-medium text-text-3 hover:text-rose-600">{L2.remove}</button>}
+                        </div>
+                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
                       </div>
-                      <input 
-                        type="password" 
-                        value={newPassword} 
-                        onChange={e => setNewPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl py-3 pl-10 pr-4 text-sm outline-none focus:bg-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-white placeholder-slate-400 shadow-sm" 
-                      />
-                    </div>
-                  </div>
+                    </section>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wide">{t.confirmNewPassword}</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                        <Lock className="w-4 h-4 text-slate-400" />
+                    <section className="border border-border rounded-2xl p-6">
+                      <h2 className="text-xl font-semibold text-text">{t.accountSettings}</h2>
+                      <p className="text-sm text-text-3 mt-1">{t.manageSubtitle}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-6">
+                        <div>
+                          <label className={labelCls}>{t.firstName}</label>
+                          <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={fieldCls} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>{t.lastName}</label>
+                          <input value={lastName} onChange={(e) => setLastName(e.target.value)} className={fieldCls} />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className={labelCls}>{t.emailAddress}</label>
+                          <div className="relative">
+                            <Mail className="w-4 h-4 text-text-4 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldCls + " pl-10"} />
+                          </div>
+                        </div>
+                        <div ref={dropdownRef} className="relative">
+                          <label className={labelCls}>{t.countryResidence}</label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base">{selectedFlag}</span>
+                            <input
+                              value={showCountryDropdown ? searchQuery : residenceCountry}
+                              onFocus={() => { setSearchQuery(''); setShowCountryDropdown(true); }}
+                              onChange={(e) => { setSearchQuery(e.target.value); setShowCountryDropdown(true); }}
+                              placeholder={t.searchCountryPlaceholder}
+                              className={fieldCls + " pl-10"}
+                            />
+                          </div>
+                          {showCountryDropdown && (
+                            <div className="absolute z-30 w-full mt-1 bg-white border border-border rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                              {filteredCountries.length > 0 ? filteredCountries.map((c: Country) => (
+                                <button type="button" key={c.code || c.name} onClick={() => { setResidenceCountry(c.name); setShowCountryDropdown(false); }} className="w-full text-left px-3.5 py-2 text-sm text-text hover:bg-surface-2 flex items-center gap-2">
+                                  <span>{c.flag}</span> {c.name}
+                                </button>
+                              )) : <div className="px-3.5 py-3 text-sm text-text-3">{t.noCountryFound}</div>}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <label className={labelCls}>{t.accountType}</label>
+                          <select value={accountType} onChange={(e) => setAccountType(e.target.value)} className={fieldCls}>
+                            <option value="Individual">{t.individualInvestor}</option>
+                            <option value="Joint">{t.jointAccount}</option>
+                            <option value="Corporate">{t.corporateInstitution}</option>
+                            <option value="Professional">{t.professionalInvestor}</option>
+                            <option value="Institutional">{t.institutionalClient}</option>
+                          </select>
+                        </div>
+                        {(accountType === 'Corporate' || accountType === 'Institutional' || accountType === 'Professional') && (
+                          <div className="sm:col-span-2">
+                            <label className={labelCls}>{t.companyName}</label>
+                            <input value={company} onChange={(e) => setCompany(e.target.value)} className={fieldCls} />
+                          </div>
+                        )}
                       </div>
-                      <input 
-                        type="password" 
-                        value={confirmPassword} 
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full bg-slate-800/80 border border-slate-700/60 rounded-xl py-3 pl-10 pr-4 text-sm outline-none focus:bg-slate-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-white placeholder-slate-400 shadow-sm" 
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    </section>
 
-              <div className="pt-6 flex flex-col sm:flex-row gap-4">
-                <button 
-                  type="submit" 
-                  disabled={loading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-600/30 active:scale-[0.98] disabled:opacity-50 flex justify-center items-center gap-2 cursor-pointer"
-                >
-                  {loading ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  {t.saveChanges}
-                </button>
-                <button 
-                  type="button" 
-                  onClick={handleLogout}
-                  className="flex-1 bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/60 font-bold py-3.5 rounded-xl transition-all shadow-sm active:scale-[0.98] flex justify-center items-center gap-2 cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4" />
-                  {t.signOut}
-                </button>
-              </div>
+                    <section className="border border-border rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h2 className="text-xl font-semibold text-text">{L2.investor}</h2>
+                        <p className="text-sm text-text-3 mt-1">{L2.investorDesc}</p>
+                      </div>
+                      <button type="button" onClick={() => navigate('/investor-profile')} className="h-10 px-4 rounded-lg border border-border text-sm font-medium text-text hover:border-pv-blue inline-flex items-center gap-1.5 shrink-0">{L2.open} <ChevronRight className="w-4 h-4" /></button>
+                    </section>
+                  </>
+                )}
 
+                {section === 'security' && (
+                  <>
+                    <section className="border border-border rounded-2xl p-6">
+                      <h2 className="text-xl font-semibold text-text">{t.securityCredentials}</h2>
+                      <p className="text-sm text-text-3 mt-1">{t.passwordLeaveBlank}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-6">
+                        <div>
+                          <label className={labelCls}>{t.newPassword}</label>
+                          <input type="password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={fieldCls} />
+                        </div>
+                        <div>
+                          <label className={labelCls}>{t.confirmNewPassword}</label>
+                          <input type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={fieldCls} />
+                        </div>
+                      </div>
+                    </section>
 
+                    <section className="border border-rose-200 rounded-2xl p-6">
+                      <h2 className="text-xl font-semibold text-rose-700">{L2.danger}</h2>
+                      <p className="text-sm text-text-3 mt-1">{t.deleteWarning}</p>
+                      <button type="button" onClick={handleDeleteAccountClick} className="mt-4 h-10 px-4 rounded-lg border border-rose-300 text-sm font-semibold text-rose-700 hover:bg-rose-50 inline-flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> {t.deleteMyAccount}</button>
+                    </section>
+                  </>
+                )}
 
-              <div className="pt-6 border-t border-slate-800/80">
-                <p className="text-xs text-slate-400 mb-3">{t.deleteWarning}</p>
-                
-                <button
-                  type="button"
-                  onClick={handleDeleteAccountClick}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 border border-rose-500/30 hover:border-rose-500/60 bg-rose-950/20 hover:bg-rose-900/40 px-3 py-1.5 rounded-xl transition-all cursor-pointer uppercase tracking-wider"
-                >
-                  <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                  {t.deleteMyAccount}
-                </button>
-              </div>
-
-            </form>
-          </div>
-        </div>
-      </motion.div>
-
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-800 text-white"
-            >
-              <div className="w-12 h-12 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-400 mx-auto mb-4">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-white text-center mb-2">{t.areYouSure}</h3>
-              <p className="text-slate-300 text-center text-xs leading-relaxed mb-6">
-                {t.deleteIrreversible}
-              </p>
-
-              <div className="mb-6 bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
-                <p className="text-xs text-slate-300 font-semibold mb-2.5 text-center uppercase tracking-wider">
-                  {t.typeDeleteToConfirm}
-                </p>
-                <input
-                  type="text"
-                  value={deleteConfirmText}
-                  onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  placeholder="DELETE"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-3 text-xs text-center outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/20 transition-all font-bold tracking-wider text-white"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleConfirmDelete}
-                  disabled={deleteConfirmText !== 'DELETE'}
-                  className="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 rounded-xl transition-all text-xs uppercase tracking-wider cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex justify-center items-center gap-1.5 shadow-sm"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  {t.confirmDeleteBtn}
-                </button>
-                <button
-                  onClick={handleCancelDelete}
-                  className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold py-2.5 rounded-xl transition-all text-xs uppercase tracking-wider cursor-pointer"
-                >
-                  {t.cancel}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showReauthModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-800 text-white"
-            >
-              <div className="w-12 h-12 bg-blue-600/20 rounded-full flex items-center justify-center text-blue-400 mx-auto mb-6">
-                <Lock className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-white text-center mb-2">{t.confirmPasswordTitle}</h3>
-              <p className="text-slate-300 text-center text-sm mb-6">
-                {t.reauthSubtitle}
-              </p>
-              
-              <form onSubmit={handleReauthenticate} className="space-y-6">
-                <div>
-                  <input
-                    type="password"
-                    required
-                    value={reauthPassword}
-                    onChange={e => setReauthPassword(e.target.value)}
-                    placeholder={t.enterCurrentPassword}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-white placeholder-slate-400 shadow-sm text-center"
-                  />
-                  {reauthError && (
-                    <p className="text-xs font-semibold text-rose-400 text-center mt-2">
-                      {reauthError}
-                    </p>
-                  )}
-                </div>
-                
-                <div className="flex flex-col gap-3">
-                  <button
-                    type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all cursor-pointer flex justify-center items-center"
-                  >
-                    {t.confirmProceed}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowReauthModal(false);
-                      setReauthPassword('');
-                      setReauthError(null);
-                    }}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold py-3.5 rounded-xl transition-all cursor-pointer"
-                  >
-                    {t.cancel}
+                <div className="flex justify-end">
+                  <button type="submit" disabled={loading} className="h-11 px-6 bg-pv-blue hover:bg-pv-blue-d text-white font-semibold rounded-lg inline-flex items-center gap-2 disabled:opacity-50">
+                    {loading ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                    {t.saveChanges}
                   </button>
                 </div>
               </form>
-            </motion.div>
+            )}
+
+            {section === 'saved' && (
+              <section className="border border-border rounded-2xl overflow-hidden">
+                <div className="px-6 py-5 border-b border-border">
+                  <h2 className="text-xl font-semibold text-text">{L2.saved}</h2>
+                </div>
+                {savedItems.length === 0 ? (
+                  <p className="px-6 py-10 text-center text-text-3">{L2.none}</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[720px] text-sm">
+                      <thead className="bg-surface-2 text-left text-xs uppercase tracking-wider text-text-3">
+                        <tr>
+                          <th className="px-6 py-3 font-semibold">{L2.name}</th>
+                          <th className="px-6 py-3 font-semibold">{L2.tool}</th>
+                          <th className="px-6 py-3 font-semibold">{L2.metrics}</th>
+                          <th className="px-6 py-3 font-semibold">{L2.date}</th>
+                          <th className="px-6 py-3" />
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {savedItems.map((it) => {
+                          const tool = toolOf(it.pageId);
+                          const r = Array.isArray(it.resultsSummary) ? it.resultsSummary[0] : null;
+                          return (
+                            <tr key={it.id} className="hover:bg-surface-2/50">
+                              <td className="px-6 py-3.5 font-semibold text-text">{it.name || '—'}</td>
+                              <td className="px-6 py-3.5 text-text-2">{tool.label}</td>
+                              <td className="px-6 py-3.5 font-mono text-text-2">
+                                {r ? `CAGR ${Number(r.cagr ?? 0).toFixed(2)}% · Max DD ${(-Math.abs(Number(r.maxDrawdown ?? 0))).toFixed(2)}% · Sharpe ${Number(r.sharpe ?? 0).toFixed(2)}` : '—'}
+                              </td>
+                              <td className="px-6 py-3.5 text-text-3">{it.updatedAt ? new Date(it.updatedAt).toLocaleDateString(isEn ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</td>
+                              <td className="px-6 py-3.5 text-right"><button onClick={() => navigate(tool.path)} className="text-pv-blue font-medium hover:underline">{L2.open}</button></td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            )}
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Delete confirmation */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40">
+          <div className="w-full max-w-md bg-white rounded-2xl border border-border shadow-2xl p-6">
+            <h3 className="text-xl font-semibold text-text">{t.areYouSure}</h3>
+            <p className="text-sm text-text-3 mt-2 leading-relaxed">{t.deleteIrreversible}</p>
+            <label className="block text-sm font-medium text-text-2 mt-5 mb-1.5">{t.typeDeleteToConfirm}</label>
+            <input value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} className={fieldCls} />
+            <div className="flex justify-end gap-2 mt-6">
+              <button onClick={handleCancelDelete} className="h-10 px-4 rounded-lg text-sm font-medium text-text-2 hover:bg-surface-2">{t.cancel}</button>
+              <button onClick={handleConfirmDelete} disabled={deleteConfirmText !== 'DELETE'} className="h-10 px-4 rounded-lg text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-40">{t.confirmDeleteBtn}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Re-authentication */}
+      {showReauthModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40">
+          <form onSubmit={handleReauthenticate} className="w-full max-w-md bg-white rounded-2xl border border-border shadow-2xl p-6">
+            <h3 className="text-xl font-semibold text-text flex items-center gap-2"><Lock className="w-5 h-5 text-pv-blue" /> {t.confirmPasswordTitle}</h3>
+            <p className="text-sm text-text-3 mt-2 leading-relaxed">{t.reauthSubtitle}</p>
+            {reauthError && <div className="mt-4 px-3 py-2 rounded-lg bg-rose-50 border border-rose-200 text-sm text-rose-800">{reauthError}</div>}
+            <input type="password" autoFocus value={reauthPassword} onChange={(e) => setReauthPassword(e.target.value)} placeholder={t.enterCurrentPassword} className={fieldCls + " mt-5"} />
+            <div className="flex justify-end gap-2 mt-6">
+              <button type="button" onClick={() => { setShowReauthModal(false); setReauthPassword(''); setReauthError(null); setLoading(false); }} className="h-10 px-4 rounded-lg text-sm font-medium text-text-2 hover:bg-surface-2">{t.cancel}</button>
+              <button type="submit" disabled={loading || !reauthPassword} className="h-10 px-4 rounded-lg text-sm font-semibold text-white bg-pv-blue hover:bg-pv-blue-d disabled:opacity-40">{t.confirmProceed}</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

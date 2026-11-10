@@ -12,7 +12,7 @@ import { StatCard } from '../ui/StatCard';
 import { StockSearchBar } from '../market/StockSearchBar';
 import { StockAnalysis } from '../market/StockAnalysis';
 import { AssetLogo } from '../ui/AssetLogo';
-import { FinancialTable } from '../ui/FinancialTable';
+import { FinancialStatements } from '../market/FinancialStatements';
 import { InfoTooltip } from '../ui/InfoTooltip';
 import { ASSET_DATA } from '../../constants';
 import { EtfScreener } from './EtfScreener';
@@ -1517,7 +1517,12 @@ const isEuropeanMarketOpen = () => {
  return (
   <>
     <MobileZoomWrapper scaleMobile={0.65}>
-    <div className="w-full flex-1 flex flex-col min-h-0 bg-bg">
+    <div className="w-full flex-1 flex flex-col min-h-0 bg-white">
+ {/* Page title */}
+ <div className="w-full max-w-[2400px] mx-auto px-4 md:px-8 xl:px-12 pt-8 pb-2">
+ <h1 className="font-serif text-3xl md:text-[2.6rem] leading-tight font-semibold tracking-tight text-text">{language === 'fr' ? 'Marchés' : 'Markets'}</h1>
+ <p className="text-base md:text-lg text-text-3 mt-2 max-w-3xl leading-relaxed">{language === 'fr' ? "Cours, analyse financière et états financiers des actions, ETF et indices, à partir de données de marché réelles." : 'Prices, financial analysis and financial statements for stocks, ETFs and indices, from real market data.'}</p>
+ </div>
  {/* Premium Top Navigation Tabs */}
  <div className="w-full bg-surface border-b border-border sticky top-0 z-40 shrink-0">
  <div className="max-w-7xl mx-auto px-6 md:px-12 py-3 flex gap-3 overflow-x-auto no-scrollbar items-center">
@@ -1893,179 +1898,19 @@ const isEuropeanMarketOpen = () => {
  />
  </div>
 
- {/* Navigation Tabs (Moved Below Chart and Watchlist Table) */}
- {(income.length > 0 || balance.length > 0 || cashFlow.length > 0 || ratios) && (
- <>
- <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-2 mt-12">
- <div className="flex gap-2 overflow-x-auto no-scrollbar">
- {[
- { id: 'income', label: 'Income Statement' },
- { id: 'balance', label: 'Balance Sheet' },
- { id: 'cash', label: 'Cash Flow' }
- ].map((tab) => (
- <button
- key={tab.id}
- onClick={() => setActiveTab(tab.id)}
- className={cn(
- "px-6 py-3 font-semibold text-sm transition-all border-b-2 whitespace-nowrap",
- activeTab === tab.id 
- ? "border-pv-blue text-pv-blue" 
- : "border-transparent text-text hover:text-text hover:border-text-4"
- )}
- >
- {tab.label}
- </button>
- ))}
- </div>
- {['income', 'balance', 'cash'].includes(activeTab) && (
- <div className="flex bg-surface-2 p-1 rounded-2xl border border-border shrink-0 self-start sm:self-auto">
- <button 
- onClick={() => setFinancialsType('annual')}
- className={cn("px-3 py-1 text-sm font-bold rounded-xl transition-colors", financialsType === 'annual' ? "bg-white text-pv-blue shadow-sm" : "text-text hover:text-text")}
- >Annual</button>
- <button 
- onClick={() => setFinancialsType('quarterly')}
- className={cn("px-3 py-1 text-sm font-bold rounded-xl transition-colors", financialsType === 'quarterly' ? "bg-white text-pv-blue shadow-sm" : "text-text hover:text-text")}
- >Quarterly</button>
- </div>
- )}
- </div>
-
- {/* Tab Contents */}
- <div id="report-content" className="min-h-[400px] bg-background mt-6">
- {activeTab === 'income' && (
- income.length > 0 ? (
- <div className="flex flex-col xl:flex-row gap-8 items-start">
- <div className="w-full xl:w-1/3 bg-white border border-border/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] rounded-[1.5rem] p-6 h-[500px] shrink-0">
- <div className="mb-6 flex items-center justify-between">
- <h3 className="text-lg font-semibold text-text tracking-tight">Income Analysis</h3>
- <span className="text-sm font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
- </div>
- <ResponsiveContainer width="100%" height={380}>
- <BarChart data={slicedIncome} margin={{ top: 20, right: 10, left: -20, bottom: 5 }} barGap={6} barCategoryGap="25%">
- <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
- <XAxis dataKey="calendarYear" stroke="#94a3b8" tickLine={false} axisLine={false} tick={{ fontSize: 12, fontWeight: 500, fill: '#64748B' }} dy={10} />
- <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} tickFormatter={(value) => formatAggregate(value)} tick={{ fontSize: 11, fill: '#94a3b8' }} width={50} dx={-10} />
- <Tooltip formatter={(value: any) => formatAggregate(Number(value))} cursor={{fill: 'rgba(0,0,0,0.02)'}} contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontSize: '13px', fontWeight: 500, padding: '12px' }} itemStyle={{ paddingTop: '4px' }} />
- <Legend iconType="circle" wrapperStyle={{ paddingTop: "24px", fontSize: "12px", fontWeight: "500", color: '#475569' }} verticalAlign="bottom" height={40} />
- <Bar dataKey="revenue" fill="#0EA5E9" name="Revenue" barSize={16} radius={[4, 4, 0, 0]} />
- <Bar dataKey="grossProfit" fill="#7363EA" name="Gross Profit" barSize={16} radius={[4, 4, 0, 0]} />
- <Bar dataKey="operatingIncome" fill="#6366F1" name="Operating" barSize={16} radius={[4, 4, 0, 0]} />
- <Bar dataKey="netIncome" fill="#10B981" name="Net Income" barSize={16} radius={[4, 4, 0, 0]} />
- </BarChart>
- </ResponsiveContainer>
- </div>
- <div className="w-full xl:w-2/3">
- <FinancialTable 
- title={"Income Statement (" + (financialsType === 'annual' ? 'Annual' : 'Quarterly') + ")"}
- data={income.slice(0, 5)}
- fields={[
- { key: 'calendarYear', label: 'Year' },
- { key: 'revenue', label: 'Revenue' },
- { key: 'grossProfit', label: 'Gross Profit' },
- { key: 'operatingIncome', label: 'Operating Income' },
- { key: 'netIncome', label: 'Net Income' },
- { key: 'eps', label: 'EPS' },
- ]}
+ {/* Financial statements: income statement, balance sheet, cash flow (reported data) */}
+ <div className="mt-12">
+ <FinancialStatements
+ symbol={quote.symbol}
+ income={income}
+ balance={balance}
+ cashFlow={cashFlow}
+ period={financialsType}
+ onPeriodChange={setFinancialsType}
+ currency={quote.currency || profile?.currency}
+ language={language}
  />
  </div>
- </div>
- ) : (
- <div className="p-12 text-center text-text-3 font-medium bg-white rounded-[1.5rem] border border-border/80 shadow-sm">
- Aucun compte de résultat disponible pour ce symbole.
- </div>
- )
- )}
-
- {activeTab === 'balance' && (
- balance.length > 0 ? (
- <div className="flex flex-col xl:flex-row gap-8 items-start">
- <div className="w-full xl:w-1/3 bg-white border border-border/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] rounded-[1.5rem] p-6 h-[500px] shrink-0">
- <div className="mb-6 flex items-center justify-between">
- <h3 className="text-lg font-semibold text-text tracking-tight">Balance Sheet Analysis</h3>
- <span className="text-sm font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
- </div>
- <ResponsiveContainer width="100%" height={380}>
- <BarChart data={slicedBalance} margin={{ top: 20, right: 10, left: -20, bottom: 5 }} barGap={6} barCategoryGap="25%">
- <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
- <XAxis dataKey="calendarYear" stroke="#94a3b8" tickLine={false} axisLine={false} tick={{ fontSize: 12, fontWeight: 500, fill: '#64748B' }} dy={10} />
- <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} tickFormatter={(value) => formatAggregate(value)} tick={{ fontSize: 11, fill: '#94a3b8' }} width={50} dx={-10} />
- <Tooltip formatter={(value: any) => formatAggregate(Number(value))} cursor={{fill: 'rgba(0,0,0,0.02)'}} contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontSize: '13px', fontWeight: 500, padding: '12px' }} itemStyle={{ paddingTop: '4px' }} />
- <Legend iconType="circle" wrapperStyle={{ paddingTop: "24px", fontSize: "12px", fontWeight: "500", color: '#475569' }} verticalAlign="bottom" height={40} />
- <Bar dataKey="totalAssets" fill="#0EA5E9" name="Total Assets" barSize={16} radius={[4, 4, 0, 0]} />
- <Bar dataKey="totalLiabilities" fill="#F43F5E" name="Liabilities" barSize={16} radius={[4, 4, 0, 0]} />
- <Bar dataKey="totalDebt" fill="#F59E0B" name="Total Debt" barSize={16} radius={[4, 4, 0, 0]} />
- <Bar dataKey="totalStockholdersEquity" fill="#10B981" name="Equity" barSize={16} radius={[4, 4, 0, 0]} />
- </BarChart>
- </ResponsiveContainer>
- </div>
- <div className="w-full xl:w-2/3">
- <FinancialTable 
- title={"Balance Sheet (" + (financialsType === 'annual' ? 'Annual' : 'Quarterly') + ")"}
- data={balance.slice(0, 5)}
- fields={[
- { key: 'calendarYear', label: 'Year' },
- { key: 'totalAssets', label: 'Total Assets' },
- { key: 'totalLiabilities', label: 'Total Liabilities' },
- { key: 'totalStockholdersEquity', label: 'Stockholders Eq' },
- { key: 'cashAndCashEquivalents', label: 'Cash & Eq' },
- { key: 'totalDebt', label: 'Total Debt' },
- ]}
- />
- </div>
- </div>
- ) : (
- <div className="p-12 text-center text-text-3 font-medium bg-white rounded-[1.5rem] border border-border/80 shadow-sm">
- Aucun bilan comptable disponible pour ce symbole.
- </div>
- )
- )}
-
- {activeTab === 'cash' && (
- cashFlow.length > 0 ? (
- <div className="flex flex-col xl:flex-row gap-8 items-start">
- <div className="w-full xl:w-1/3 bg-white border border-border/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] rounded-[1.5rem] p-6 h-[500px] shrink-0">
- <div className="mb-6 flex items-center justify-between">
- <h3 className="text-lg font-semibold text-text tracking-tight">Cash Flow Analysis</h3>
- <span className="text-sm font-bold text-text ">{financialsType === 'annual' ? 'Annual' : 'Quarter'}</span>
- </div>
- <ResponsiveContainer width="100%" height={380}>
- <BarChart data={slicedCashFlow} margin={{ top: 20, right: 10, left: -20, bottom: 5 }} barGap={6} barCategoryGap="25%">
- <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
- <XAxis dataKey="calendarYear" stroke="#94a3b8" tickLine={false} axisLine={false} tick={{ fontSize: 12, fontWeight: 500, fill: '#64748B' }} dy={10} />
- <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} tickFormatter={(value) => formatAggregate(value)} tick={{ fontSize: 11, fill: '#94a3b8' }} width={50} dx={-10} />
- <Tooltip formatter={(value: any) => formatAggregate(Number(value))} cursor={{fill: 'rgba(0,0,0,0.02)'}} contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontSize: '13px', fontWeight: 500, padding: '12px' }} itemStyle={{ paddingTop: '4px' }} />
- <Legend iconType="circle" wrapperStyle={{ paddingTop: "24px", fontSize: "12px", fontWeight: "500", color: '#475569' }} verticalAlign="bottom" height={40} />
- <Bar dataKey="operatingCashFlow" fill="#0EA5E9" name="Operating CF" barSize={16} radius={[4, 4, 0, 0]} />
- <Bar dataKey="capitalExpenditure" fill="#F59E0B" name="CapEx" barSize={16} radius={[4, 4, 0, 0]} />
- <Bar dataKey="freeCashFlow" fill="#10B981" name="Free CF" barSize={16} radius={[4, 4, 0, 0]} />
- </BarChart>
- </ResponsiveContainer>
- </div>
- <div className="w-full xl:w-2/3">
- <FinancialTable 
- title={"Cash Flow Statement (" + (financialsType === 'annual' ? 'Annual' : 'Quarterly') + ")"}
- data={cashFlow.slice(0, 5)}
- fields={[
- { key: 'calendarYear', label: 'Year' },
- { key: 'operatingCashFlow', label: 'Operating CF' },
- { key: 'capitalExpenditure', label: 'CapEx' },
- { key: 'freeCashFlow', label: 'Free Cash Flow' },
- { key: 'dividendsPaid', label: 'Dividends' },
- { key: 'netChangeInCash', label: 'Change in Cash' },
- ]}
- />
- </div>
- </div>
- ) : (
- <div className="p-12 text-center text-text-3 font-medium bg-white rounded-[1.5rem] border border-border/80 shadow-sm">
- Aucun flux de trésorerie disponible pour ce symbole.
- </div>
- )
- )}
- </div>
- </>
- )}
 
 {/* WATCHLIST COMPARISON SECTION */}
  <div ref={comparisonSectionRef} className="mt-6 space-y-3 border-t border-border/80 pt-4">

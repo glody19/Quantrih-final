@@ -32,20 +32,18 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-6 mb-6 text-center", className)}>
+    <div className={cn("flex flex-col gap-6 mb-8 text-left", className)}>
       {(title || description) && (
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex flex-col items-center">
-            <div className="flex items-center gap-2 justify-center">
-              <h1 className="text-xl font-bold text-text">{title || ""}</h1>
-            </div>
-            {description && (
-              <p className="text-sm text-text-3 mt-2 max-w-2xl">{description}</p>
-            )}
-          </div>
+        <div className="flex flex-col gap-3 pb-6 border-b border-border">
+          {badge && <span className="text-xs font-semibold uppercase tracking-[0.14em] text-pv-blue">{badge}</span>}
+          <h1 className="font-serif text-3xl md:text-[2.6rem] leading-tight font-semibold text-text tracking-tight">{title || ""}</h1>
+          {description && (
+            <p className="text-base md:text-lg text-text-3 max-w-3xl leading-relaxed">{description}</p>
+          )}
         </div>
       )}
 
+      {((tabs && tabs.length > 0) || actions) && (
       <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-4">
         <div className="flex-1 flex justify-center lg:justify-start">
           {/* Navigation Tabs */}
@@ -89,6 +87,7 @@ export function PageHeader({
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

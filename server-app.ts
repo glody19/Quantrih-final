@@ -229,15 +229,18 @@ export function createApp() {
     const id = req.params.seriesId;
     if (!FRED_SERIES_ALLOWED.has(id)) return res.status(400).json({ error: 'Series not allowed' });
     
-    const cached = getCached('fred', id, 3600_000);
+    // full=1 returns the whole history (needed to deflate long backtests by real CPI)
+    const full = req.query.full === '1';
+    const cacheKey = full ? `${id}:full` : id;
+    const cached = getCached('fred', cacheKey, 3600_000);
     if (cached) return res.json(cached);
     
     try {
       const apiKey = process.env.FRED_API_KEY;
       if (!apiKey) return res.status(500).json({ error: "Missing FRED API Key" });
-      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${apiKey}&file_type=json&limit=500&sort_order=desc`;
+      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${apiKey}&file_type=json&limit=${full ? 5000 : 500}&sort_order=desc`;
       const data = await fetchJson(url);
-      setCached('fred', id, data);
+      setCached('fred', cacheKey, data);
       res.json(data);
     } catch (e: any) {
       res.status(500).json({ error: e.message });
@@ -852,8 +855,11 @@ export function createApp() {
          return res.json({ income: [], balance: [], cashFlow: [] });
       }
 
-      // Filter statements to only start from 2023 as requested
-      statements = statements.filter((s: any) => new Date(s.date).getFullYear() >= 2023);
+      // Keep the most recent periods only: 5 fiscal years or 8 quarters (real reported data)
+      statements = statements
+        .filter((s: any) => s && s.date)
+        .sort((x: any, y: any) => new Date(x.date).getTime() - new Date(y.date).getTime())
+        .slice(type === 'annual' ? -5 : -8);
 
       const formatDate = (dateValue: string) => {
          if (type === 'annual') return new Date(dateValue).getFullYear().toString();
@@ -861,32 +867,60 @@ export function createApp() {
          const q = Math.floor(d.getMonth() / 3) + 1;
          return `Q${q} ${d.getFullYear()}`;
       };
+      const num = (v: any) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 
       const income = statements.map((s: any) => ({
         calendarYear: formatDate(s.date),
-        revenue: s.totalRevenue || s.operatingRevenue,
-        grossProfit: s.grossProfit,
-        operatingIncome: s.operatingIncome || s.EBIT,
-        netIncome: s.netIncome,
-        eps: s.dilutedEPS || s.basicEPS
+        date: s.date,
+        revenue: num(s.totalRevenue ?? s.operatingRevenue),
+        costOfRevenue: num(s.costOfRevenue),
+        grossProfit: num(s.grossProfit),
+        researchAndDevelopment: num(s.researchAndDevelopment),
+        sellingGeneralAndAdministration: num(s.sellingGeneralAndAdministration),
+        operatingExpense: num(s.operatingExpense),
+        operatingIncome: num(s.operatingIncome ?? s.EBIT),
+        ebitda: num(s.EBITDA ?? s.normalizedEBITDA),
+        interestExpense: num(s.interestExpense),
+        pretaxIncome: num(s.pretaxIncome),
+        taxProvision: num(s.taxProvision),
+        netIncome: num(s.netIncome ?? s.netIncomeCommonStockholders),
+        eps: num(s.dilutedEPS ?? s.basicEPS),
+        dilutedShares: num(s.dilutedAverageShares),
       }));
 
       const balance = statements.map((s: any) => ({
         calendarYear: formatDate(s.date),
-        totalAssets: s.totalAssets,
-        totalLiabilities: s.totalLiabilitiesNetMinorityInterest,
-        totalStockholdersEquity: s.stockholdersEquity || s.commonStockEquity,
-        cashAndCashEquivalents: s.cashAndCashEquivalents || s.cashEquivalents,
-        totalDebt: s.totalDebt
+        date: s.date,
+        totalAssets: num(s.totalAssets),
+        currentAssets: num(s.currentAssets),
+        cashAndCashEquivalents: num(s.cashAndCashEquivalents ?? s.cashCashEquivalentsAndShortTermInvestments),
+        accountsReceivable: num(s.accountsReceivable),
+        inventory: num(s.inventory),
+        netPPE: num(s.netPPE),
+        goodwill: num(s.goodwill),
+        totalLiabilities: num(s.totalLiabilitiesNetMinorityInterest),
+        currentLiabilities: num(s.currentLiabilities),
+        longTermDebt: num(s.longTermDebt),
+        totalDebt: num(s.totalDebt),
+        netDebt: num(s.netDebt),
+        totalStockholdersEquity: num(s.stockholdersEquity ?? s.commonStockEquity),
+        retainedEarnings: num(s.retainedEarnings),
+        workingCapital: num(s.workingCapital),
       }));
 
       const cashFlow = statements.map((s: any) => ({
         calendarYear: formatDate(s.date),
-        operatingCashFlow: s.operatingCashFlow || s.cashFlowFromContinuingOperatingActivities,
-        capitalExpenditure: s.capitalExpenditure,
-        freeCashFlow: s.freeCashFlow,
-        dividendsPaid: s.cashDividendsPaid || s.commonStockDividendPaid,
-        netChangeInCash: s.changesInCash
+        date: s.date,
+        operatingCashFlow: num(s.operatingCashFlow ?? s.cashFlowFromContinuingOperatingActivities),
+        depreciationAndAmortization: num(s.depreciationAndAmortization ?? s.depreciationAmortizationDepletion),
+        stockBasedCompensation: num(s.stockBasedCompensation),
+        capitalExpenditure: num(s.capitalExpenditure),
+        investingCashFlow: num(s.investingCashFlow ?? s.cashFlowFromContinuingInvestingActivities),
+        financingCashFlow: num(s.financingCashFlow ?? s.cashFlowFromContinuingFinancingActivities),
+        repurchaseOfCapitalStock: num(s.repurchaseOfCapitalStock),
+        dividendsPaid: num(s.cashDividendsPaid ?? s.commonStockDividendPaid),
+        freeCashFlow: num(s.freeCashFlow),
+        netChangeInCash: num(s.changesInCash),
       }));
 
       res.json({ income: income.reverse(), balance: balance.reverse(), cashFlow: cashFlow.reverse() });

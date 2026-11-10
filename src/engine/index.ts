@@ -71,6 +71,47 @@ export async function runBacktest(
     divLookup.set(sym, lookup);
   }
 
+  // 3b. Market reference series (real data, never invented):
+  //  - risk-free: 13-week US T-bill yield (^IRX), converted to a monthly return
+  //  - inflation: US CPI (FRED CPIAUCSL) when inflation adjustment is requested
+  const globalWarnings: string[] = [];
+  let riskFreeByMonth: Map<string, number> | null = null;
+  try {
+    const irx = await fetchMonthlyPrices('^IRX', options.startDate, options.endDate, { noFallback: true });
+    if (irx.length > 0) {
+      riskFreeByMonth = new Map();
+      for (const p of irx) {
+        if (typeof p.close === 'number' && Number.isFinite(p.close)) riskFreeByMonth.set(p.date.substring(0, 7), p.close / 100 / 12);
+      }
+    }
+  } catch {
+    riskFreeByMonth = null;
+  }
+  if (!riskFreeByMonth || riskFreeByMonth.size === 0) {
+    riskFreeByMonth = null;
+    globalWarnings.push(`Risk-free rate: T-bill data unavailable, a fixed ${(((options.riskFreeRate ?? 0.04)) * 100).toFixed(1)}% per year was used for Sharpe and Sortino ratios.`);
+  }
+
+  let cpiByMonth: Map<string, number> | null = null;
+  if (options.inflationAdjusted) {
+    try {
+      const res = await fetch('/api/macro/fred/CPIAUCSL?full=1');
+      if (res.ok) {
+        const data = await res.json();
+        const obs: any[] = Array.isArray(data?.observations) ? data.observations : [];
+        cpiByMonth = new Map();
+        for (const o of obs) {
+          const v = parseFloat(o.value);
+          if (o.date && Number.isFinite(v)) cpiByMonth.set(String(o.date).substring(0, 7), v);
+        }
+        if (cpiByMonth.size === 0) cpiByMonth = null;
+      }
+    } catch {
+      cpiByMonth = null;
+    }
+    if (!cpiByMonth) globalWarnings.push('Inflation: CPI data unavailable, an assumed 3% per year was used to adjust values.');
+  }
+
   // 4. Simulate each portfolio
   const results: BacktestResult[] = [];
 
@@ -271,10 +312,17 @@ export async function runBacktest(
 
     // Inflation adjustment
     if (options.inflationAdjusted) {
-      const assumedAnnualInflation = 0.03; // Simple 3% flat proxy for CPI-U
+      // Real US CPI when available (values expressed in start-date dollars), otherwise 3%/yr assumption
+      const assumedAnnualInflation = 0.03;
       const monthlyInflationRate = Math.pow(1 + assumedAnnualInflation, 1 / 12) - 1;
+      const cpi0 = cpiByMonth && equityCurve.length ? cpiByMonth.get(equityCurve[0].date.substring(0, 7)) : undefined;
+      let lastCpi = cpi0;
       for (let j = 0; j < equityCurve.length; j++) {
-         const discount = Math.pow(1 + monthlyInflationRate, j);
+         let discount = Math.pow(1 + monthlyInflationRate, j);
+         if (cpiByMonth && cpi0) {
+           const c = cpiByMonth.get(equityCurve[j].date.substring(0, 7)) ?? lastCpi;
+           if (c) { discount = c / cpi0; lastCpi = c; }
+         }
          equityCurve[j].value /= discount;
          if (equityCurve[j].cashflow) {
             equityCurve[j].cashflow /= discount;
@@ -282,7 +330,7 @@ export async function runBacktest(
       }
     }
 
-    const metrics = calculateMetrics(equityCurve, options.initialBalance, options.riskFreeRate);
+    const metrics = calculateMetrics(equityCurve, options.initialBalance, options.riskFreeRate, riskFreeByMonth);
     
     // Per-asset results for analysis (correlation, MC, etc)
     const assetResults: AssetResult[] = allocations.map(alloc => {
@@ -314,7 +362,7 @@ export async function runBacktest(
       metrics,
       equityCurve,
       assets: assetResults,
-      warnings: [...warnings]
+      warnings: [...warnings, ...globalWarnings]
     });
   }
 
@@ -322,13 +370,20 @@ export async function runBacktest(
   if (options.benchmarkId) {
     const benchmark = results.find(r => r.portfolioId === options.benchmarkId);
     if (benchmark) {
-      const benchmarkReturns = benchmark.metrics.monthlyReturns?.map(m => m.value / 100) || [];
-      const benchmarkCagr = benchmark.metrics.cagr;
 
       results.forEach(r => {
         if (r.portfolioId !== options.benchmarkId) {
-          const portfolioReturns = r.metrics.monthlyReturns?.map(m => m.value / 100) || [];
-          const rel = calculateRelativeMetrics(portfolioReturns, benchmarkReturns, r.metrics.cagr, benchmarkCagr, options.riskFreeRate);
+          // Align portfolio and benchmark returns month by month (series can end on different months)
+          const bByMonth = new Map((benchmark.metrics.monthlyReturns || []).map(m => [m.date.substring(0, 7), m.value / 100]));
+          const aligned = (r.metrics.monthlyReturns || []).filter(m => bByMonth.has(m.date.substring(0, 7)));
+          const portfolioReturns = aligned.map(m => m.value / 100);
+          const alignedBench = aligned.map(m => bByMonth.get(m.date.substring(0, 7)) as number);
+          const rfSeries = aligned.map(m => {
+            const v = riskFreeByMonth?.get(m.date.substring(0, 7));
+            return typeof v === 'number' ? v : Math.pow(1 + (options.riskFreeRate ?? 0.04), 1 / 12) - 1;
+          });
+          const geo = (xs: number[]) => (xs.length ? Math.pow(xs.reduce((a, b) => a * (1 + b), 1), 12 / xs.length) - 1 : 0);
+          const rel = calculateRelativeMetrics(portfolioReturns, alignedBench, geo(portfolioReturns), geo(alignedBench), options.riskFreeRate, rfSeries);
           if (rel) {
             r.metrics.alpha = rel.alpha;
             r.metrics.beta = rel.beta;
@@ -336,6 +391,11 @@ export async function runBacktest(
             r.metrics.informationRatio = rel.informationRatio;
             r.metrics.upCapture = rel.upCapture;
             r.metrics.downCapture = rel.downCapture;
+            r.metrics.rSquared = rel.rSquared;
+            r.metrics.correlation = rel.correlation;
+            r.metrics.activeReturn = rel.activeReturn;
+            r.metrics.treynor = rel.treynor;
+            r.metrics.modigliani = rel.modigliani;
           }
         }
       });

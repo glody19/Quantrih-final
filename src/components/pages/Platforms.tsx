@@ -286,7 +286,7 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
       <div className="page-container pb-24 mt-6 min-h-[calc(100vh-120px)] font-sans">
         {/* Header */}
         <div className="flex flex-col gap-2 mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text">{l.title}</h1>
+          <h1 className="font-serif text-3xl md:text-[2.6rem] leading-tight font-semibold tracking-tight text-text">{l.title}</h1>
           <p className="text-sm text-text-3 max-w-3xl leading-relaxed">{l.subtitle}</p>
         </div>
 

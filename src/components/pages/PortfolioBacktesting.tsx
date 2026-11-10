@@ -20,7 +20,6 @@ import { PageHeader } from "../ui/PageHeader";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { lazyPortfolios } from "./lazyPortfoliosData";
-import { ViewToggle } from "../ui/ViewToggle";
 import { Disclaimer } from "../ui/Disclaimer";
 import { calculateRollingReturns } from "../../engine/metrics";
 import { runMonteCarlo } from "../../engine/monte-carlo";
@@ -151,6 +150,8 @@ interface PortfolioResult {
   };
   monteCarlo?: any; // Legacy compatibility for data flow
   holdingsHistory: Record<string, number>[];
+  /** Full engine metrics (extended statistics, drawdown episodes, relative metrics) */
+  ext?: Record<string, any>;
   warnings?: string[];
   yearsInteger: number[];
   annualReturns: number[];
@@ -159,6 +160,8 @@ interface PortfolioResult {
 }
 
 import { PortfolioAnalysisExplication } from "./PortfolioAnalysisExplication";
+import { BacktestReport } from "../backtest/BacktestReport";
+import { SavedBacktestsComparison } from "../backtest/SavedBacktestsComparison";
 
 import { runBacktest as engineRunBacktest } from "../../engine";
 
@@ -609,6 +612,7 @@ export function PortfolioBacktesting({
             upCapture: r.metrics.upCapture,
             downCapture: r.metrics.downCapture,
           },
+          ext: r.metrics as any,
           holdingsHistory: r.equityCurve.map((e) => e.holdings || {}),
           warnings: r.warnings,
           yearsInteger,
@@ -711,519 +715,35 @@ export function PortfolioBacktesting({
   const loadConfigIntoSimulator = (config: any) => {
     handleCloudLoad(config);
     setActiveMainView("simulator");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const renderSavedScenarios = () => {
-    if (!user) {
-      return (
-        <div className="bg-surface border border-border rounded-[2rem] p-12 text-center max-w-2xl mx-auto my-12 shadow-sm flex flex-col items-center gap-6 animate-fade-in">
-          <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
-            <Database size={32} />
-          </div>
-          <h2 className="text-xl font-bold text-slate-900">{t("aa.act_saved_scen")}</h2>
-          <p className="text-sm text-slate-600 leading-relaxed">{t("aa.act_saved_scen_desc")}</p>
-          <button
-            onClick={() => {
-              window.location.href = "/auth";
-            }}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-md shadow-blue-500/10"
-          >{t("header.login")}</button>
-        </div>
-      );
-    }
-
-    if (configsLoading) {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-          <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-xs font-bold uppercase tracking-widest text-text-3">{t("aa.load_saved")}</p>
-        </div>
-      );
-    }
-
-    const configsWithResults = savedConfigs.filter(c => c.resultsSummary && c.resultsSummary.length > 0);
-
-    // Custom Date Formatter
-    const formatDate = (timestamp: any) => {
-      if (!timestamp) return "N/A";
-      const date = new Date(Number(timestamp));
-      if (isNaN(date.getTime())) return "N/A";
-      return date.toLocaleDateString("en-US", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    };
-
-    const totalCount = savedConfigs.length;
-    let bestCagr = "N/A";
-    let bestCagrName = "";
-    let bestSharpe = "N/A";
-    let bestSharpeName = "";
-
-    let maxCagrVal = -999;
-    let maxSharpeVal = -999;
-
-    configsWithResults.forEach(c => {
-      c.resultsSummary.forEach((r: any) => {
-        if (r.cagr > maxCagrVal) {
-          maxCagrVal = r.cagr;
-          bestCagr = `${r.cagr.toFixed(2)}%`;
-          bestCagrName = `${c.name} (${r.name})`;
-        }
-        if (r.sharpe > maxSharpeVal) {
-          maxSharpeVal = r.sharpe;
-          bestSharpe = r.sharpe.toFixed(2);
-          bestSharpeName = `${c.name} (${r.name})`;
-        }
-      });
-    });
-
-    const hasChartData = configsWithResults.length > 0;
-    const chartLabels = configsWithResults.map(c => c.name || "Unnamed");
-    const chartCagrData = configsWithResults.map(c => c.resultsSummary[0]?.cagr || 0);
-    const chartDrawdownData = configsWithResults.map(c => Math.abs(c.resultsSummary[0]?.maxDrawdown || 0));
-
-    const comparisonChartData = {
-      labels: chartLabels,
-      datasets: [
-        {
-          label: "CAGR (Return %)",
-          data: chartCagrData,
-          backgroundColor: "rgba(16, 185, 129, 0.8)",
-          borderColor: "rgb(16, 185, 129)",
-          borderWidth: 1,
-          borderRadius: 8,
-        },
-        {
-          label: "Max Drawdown (%)",
-          data: chartDrawdownData,
-          backgroundColor: "rgba(239, 68, 68, 0.8)",
-          borderColor: "rgb(239, 68, 68)",
-          borderWidth: 1,
-          borderRadius: 8,
-        }
-      ]
-    };
-
-    const chartOptions = {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "top" as const,
-          labels: {
-            font: {
-              weight: "bold" as const,
-              size: 11
-            }
-          }
-        },
-        title: {
-          display: true,
-          text: "Risk vs Return Comparison (First portfolio)",
-          font: {
-            size: 13,
-            weight: "bold" as const
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            callback: (value: any) => `${value}%`
-          }
-        }
-      }
-    };
-
-    const recommendations: any[] = [];
-    
-    let highEquityWarning = false;
-    savedConfigs.forEach(c => {
-      if (c.portfolioAssets && c.portfolioAssets.length > 0) {
-        const equities = ["VTI", "SPY", "QQQ", "IWM", "EEM", "VOO"];
-        const hasBondOrGold = c.portfolioAssets.some((a: any) => ["BND", "TLT", "IEF", "GLD", "IAU"].includes(a.symbol?.toUpperCase()));
-        const hasEquities = c.portfolioAssets.some((a: any) => equities.includes(a.symbol?.toUpperCase()));
-        if (hasEquities && !hasBondOrGold) {
-          highEquityWarning = true;
-        }
-      }
-    });
-
-    if (highEquityWarning) {
-      recommendations.push({
-        type: "warning",
-        title: "Optimal stock diversification advised",
-        text: "Some of your saved strategies have a high concentration in stocks without a counterbalance of bonds (BND/TLT) or gold (GLD). To mitigate volatility during crises, allocating 10% to 20% to long-term government bonds reduces the maximum drawdown by approximately 30% while preserving long-term CAGR."
-      });
-    }
-
-    let hasUnrebalanced = false;
-    savedConfigs.forEach(c => {
-      if (c.rebalancing === "none") {
-        hasUnrebalanced = true;
-      }
-    });
-
-    if (hasUnrebalanced) {
-      recommendations.push({
-        type: "tip",
-        title: "Enable automatic rebalancing",
-        text: "Some of your portfolios do not use any rebalancing. Without it, the best-performing asset eventually dominates, increasing your overall risk. Configuring an annual rebalancing is ideal to lock in profits and reinvest."
-      });
-    }
-
-    let hasInflationFalse = false;
-    savedConfigs.forEach(c => {
-      if (!c.inflationAdjusted) {
-        hasInflationFalse = true;
-      }
-    });
-
-    if (hasInflationFalse) {
-      recommendations.push({
-        type: "info",
-        title: "Inflation adjustment for real results",
-        text: "Some of your analyses do not take inflation into account. Nominal returns can give an illusion of security. Enable the 'Inflation Adjusted' option in the simulator to see real growth."
-      });
-    }
-
-    if (recommendations.length === 0) {
-      recommendations.push({
-        type: "tip",
-        title: "Start Dollar Cost Averaging (DCA)",
-        text: "Enabling recurring monthly contributions in your simulations (Cashflows: Contribute) helps mitigate market timing risk."
-      });
-    }
-
-    return (
-      <div className="space-y-8 animate-fade-in font-sans">
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <p className="text-[13px] font-semibold text-slate-700">{t("aa.conn_work")} <span className="font-bold text-slate-900">{user?.email}</span>
-            </p>
-          </div>
-          <button
-            onClick={loadSavedConfigs}
-            className="px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-lg transition-all shadow-sm"
-          >
-            Refresh
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400">{t("aa.conf_cloud")}</p>
-            <div className="mt-4">
-              <p className="text-3xl font-extrabold text-slate-900">{totalCount}</p>
-              <p className="text-[11px] text-slate-500 font-medium mt-1">{t("aa.conf_cloud")}</p>
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-500">{t("dashboard.best_cagr")}</p>
-            <div className="mt-4">
-              <p className="text-3xl font-extrabold text-emerald-600">{bestCagr}</p>
-              <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestCagrName}>
-                {bestCagrName || "No report generated"}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">{t("dashboard.best_sharpe")}</p>
-            <div className="mt-4">
-              <p className="text-3xl font-extrabold text-indigo-600">{bestSharpe}</p>
-              <p className="text-[11px] text-slate-500 font-medium truncate mt-1 animate-pulse" title={bestSharpeName}>
-                {bestSharpeName || "No report generated"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm lg:col-span-8 flex flex-col justify-center min-h-[380px]">
-            {hasChartData ? (
-              <div className="w-full h-full">
-                <Bar data={comparisonChartData} options={chartOptions} />
-              </div>
-            ) : (
-              <div className="text-center py-12 flex flex-col items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-                  <BarChart3 size={24} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">{t("aa.no_comp")}</p>
-                  <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">{t("aa.no_comp_desc")}</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm lg:col-span-4 flex flex-col gap-6">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                <Activity size={16} className="text-blue-500" />{t("dashboard.ai_analysis")}</h3>
-              <p className="text-[10px] text-slate-500 font-medium mt-1">{t("dashboard.matrix_desc")}</p>
-            </div>
-
-            <div className="space-y-4 overflow-y-auto max-h-[300px] pr-1">
-              {recommendations.map((rec, i) => (
-                <div key={i} className={cn(
-                  "p-4 rounded-2xl border text-xs leading-relaxed flex flex-col gap-1.5",
-                  rec.type === "warning" ? "bg-amber-50/50 border-amber-200 text-amber-900" :
-                  rec.type === "tip" ? "bg-emerald-50/50 border-emerald-200 text-emerald-900" :
-                  "bg-slate-50 border-slate-200 text-slate-700"
-                )}>
-                  <p className="font-extrabold flex items-center gap-1.5">
-                    {rec.type === "warning" && "⚠️"}
-                    {rec.type === "tip" && "💡"}
-                    {rec.type === "info" && "ℹ️"}
-                    {rec.title}
-                  </p>
-                  <p className="font-medium text-[11px] opacity-90">{rec.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* COMPARED HIGHLIGHTS BENTO CARDS */}
-        {configsWithResults.length > 1 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-            {/* CARD 1: PERFORMANCE ANALYTICS */}
-            <div className="p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 rounded-[2rem] shadow-sm">
-              <div className="bg-[#050508] text-white rounded-[1.8rem]  p-6 relative overflow-hidden h-full">
-                {/* Double frame contour inset */}
-                <div className="absolute inset-2 border border-white/[0.04] rounded-[1.5rem] pointer-events-none" />
-                <h4 className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4 flex items-center gap-1.5 relative z-10">{t("aa.adv_comp")}</h4>
-                <div className="space-y-4 relative z-10 text-xs">
-                  {(() => {
-                    let highestCagr = -999;
-                    let highestCagrName = "";
-                    let lowestMdd = 999;
-                    let lowestMddName = "";
-                    
-                    configsWithResults.forEach(c => {
-                      const cagr = c.resultsSummary?.[0]?.cagr || 0;
-                      const mdd = Math.abs(c.resultsSummary?.[0]?.maxDrawdown || 0);
-                      if (cagr > highestCagr) {
-                        highestCagr = cagr;
-                        highestCagrName = c.name;
-                      }
-                      if (mdd < lowestMdd) {
-                        lowestMdd = mdd;
-                        lowestMddName = c.name;
-                      }
-                    });
-
-                    return (
-                      <>
-                        <div className="p-3.5 bg-white/5  rounded-2xl">
-                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_ret")}</span>
-                          <p className="text-sm font-medium text-slate-200">
-                            <span className="text-emerald-400 font-extrabold">{highestCagrName}</span> {t("aa.leads_ret")} <span className="text-emerald-400 font-extrabold">{highestCagr.toFixed(2)}%</span>.
-                          </p>
-                        </div>
-                        <div className="p-3.5 bg-white/5  rounded-2xl">
-                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.risk_prot")}</span>
-                          <p className="text-sm font-medium text-slate-200">
-                            <span className="text-blue-400 font-extrabold">{lowestMddName}</span> {t("aa.resil_dd")} <span className="text-blue-400 font-extrabold">-{lowestMdd.toFixed(2)}%</span>.
-                          </p>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-
-            {/* CARD 2: STOCHASTIC COMPARATIVE SCORE */}
-            <div className="p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 rounded-[2rem] shadow-sm">
-              <div className="bg-[#050508] text-white rounded-[1.8rem]  p-6 relative overflow-hidden h-full">
-                <div className="absolute inset-2 border border-white/[0.04] rounded-[1.5rem] pointer-events-none" />
-                <h4 className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-4 flex items-center gap-1.5 relative z-10">{t("aa.sharpe_alloc")}</h4>
-                <div className="space-y-4 relative z-10 text-xs">
-                  {(() => {
-                    let highestSharpe = -999;
-                    let highestSharpeName = "";
-                    configsWithResults.forEach(c => {
-                      const sharpe = c.resultsSummary?.[0]?.sharpe || 0;
-                      if (sharpe > highestSharpe) {
-                        highestSharpe = sharpe;
-                        highestSharpeName = c.name;
-                      }
-                    });
-
-                    return (
-                      <>
-                        <div className="p-3.5 bg-white/5  rounded-2xl">
-                          <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_eff")}</span>
-                          <p className="text-sm font-medium text-slate-200">
-                            {t("aa.eff_port")} <span className="text-indigo-400 font-extrabold">{highestSharpeName}</span> {t("aa.with_sharpe")} <span className="text-indigo-400 font-extrabold">{highestSharpe.toFixed(2)}</span>.
-                          </p>
-                        </div>
-                        <p className="text-[10px] text-slate-400 italic leading-relaxed px-1 mt-2">{t("aa.sharpe_note")}</p>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-slate-900">{t("aa.act_cloud")}</h3>
-            <p className="text-xs text-slate-500 mt-1">{t("aa.act_cloud_desc")}</p>
-          </div>
-
-          <div className="overflow-x-auto">
-            {savedConfigs.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 text-xs font-semibold">{t("aa.no_saved")}</div>
-            ) : (
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50/50 text-slate-400 font-extrabold uppercase text-[10px] tracking-wider border-b border-slate-100">
-                    <th className="px-6 py-4">{t("aa.strat_name")}</th>
-                    <th className="px-6 py-4">{t("pb.simSpan")}</th>
-                    <th className="px-6 py-4">{t("pb.capital")}</th>
-                    <th className="px-6 py-4">{t("aa.port_assets")}</th>
-                    <th className="px-6 py-4">{t("aa.key_met")}</th>
-                    <th className="px-6 py-4 text-right">{t("pb.save")} on</th>
-                    <th className="px-6 py-4 text-right">{t("aa.actions")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-xs">
-                  {savedConfigs.map((config) => {
-                    const hasMetrics = config.resultsSummary && config.resultsSummary.length > 0;
-                    const primaryMetrics = hasMetrics ? config.resultsSummary[0] : null;
-
-                    return (
-                      <tr key={config.id} className="hover:bg-slate-50/30 transition-colors">
-                        <td className="px-6 py-4 font-bold text-slate-900">
-                          {config.name || "Unnamed Strategy"}
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-slate-600">
-                          {config.startMonth}/{config.startYear} - {config.endMonth}/{config.endYear}
-                        </td>
-                        <td className="px-6 py-4 font-mono font-bold text-slate-700">
-                          {config.initialAmount?.toLocaleString()} {baseCcy}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-wrap gap-1 max-w-[280px]">
-                            {config.portfolioAssets?.map((a: any, index: number) => {
-                              const weight = a.weights?.[0] || 0;
-                              if (Number(weight) <= 0) return null;
-                              return (
-                                <span key={index} className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-bold">
-                                  {a.symbol}: {weight}%
-                                </span>
-                              );
-                            })}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          {primaryMetrics ? (
-                            <div className="flex gap-4">
-                              <div>
-                                <span className="text-[10px] font-bold text-slate-400 block uppercase">CAGR</span>
-                                <span className="font-bold text-emerald-600">{primaryMetrics.cagr?.toFixed(2)}%</span>
-                              </div>
-                              <div>
-                                <span className="text-[10px] font-bold text-slate-400 block uppercase">Max DD</span>
-                                <span className="font-bold text-red-500">-{Math.abs(primaryMetrics.maxDrawdown || 0)?.toFixed(2)}%</span>
-                              </div>
-                              <div>
-                                <span className="text-[10px] font-bold text-slate-400 block uppercase">Sharpe</span>
-                                <span className="font-bold text-slate-700">{primaryMetrics.sharpe?.toFixed(2)}</span>
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-slate-400 font-medium italic">{t("aa.not_calc")}</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="text-[9px] uppercase tracking-wider text-slate-400 font-extrabold">{t("aa.saved_on")}</span>
-                            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/50 rounded-lg px-2.5 py-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.01)] w-fit">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span className="font-mono text-[11px] font-bold text-slate-700 tracking-tight">
-                                {formatDate(config.updatedAt || config.createdAt)}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="inline-flex items-center gap-2">
-                            <button
-                              onClick={() => loadConfigIntoSimulator(config)}
-                              className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 text-[10px] font-bold uppercase rounded-lg transition-all"
-                            >{t("aa.load")}</button>
-                            {deleteConfirmId === config.id ? (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteConfig(config.id);
-                                  setDeleteConfirmId(null);
-                                }}
-                                className="px-2 py-1 text-[10px] font-bold text-white bg-red-500 hover:bg-red-600 rounded transition-colors"
-                                title="Confirm deletion"
-                              >{t("aa.confirm")}</button>
-                            ) : (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeleteConfirmId(config.id);
-                                  setTimeout(() => setDeleteConfirmId(prev => prev === config.id ? null : prev), 3000);
-                                }}
-                                className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
-                                title="Delete"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const renderSavedScenarios = () => (
+    <SavedBacktestsComparison
+      configs={savedConfigs}
+      loading={configsLoading}
+      signedIn={!!user}
+      currency={baseCcy}
+      language={language}
+      onLoad={loadConfigIntoSimulator}
+      onDelete={deleteConfig}
+      onRefresh={loadSavedConfigs}
+    />
+  );
 
   return (
     <MobileZoomWrapper scaleMobile={0.4}>
       <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
-      <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24">
+      <div className="space-y-8 animate-fade-up w-full max-w-[1880px] mx-auto px-4 md:px-12 pb-24">
         <div className="flex flex-col gap-8">
           {/* TITLE HEADER */}
           <PageHeader
             title={t("pb.title")}
             badge={t("pb.badge")}
             description={t("pb.description")}
-            actions={
-              <ViewToggle 
-                activeView={activeMainView} 
-                onViewChange={(view) => setActiveMainView(view)} 
-                simulatorLabel={t("common.simulator")}
-                dashboardLabel={t("dashboard.saved_scenarios")}
-              />
-            }
           />
 
-          {activeMainView === "dashboard" ? (
-            renderSavedScenarios()
-          ) : (
+          {(
             <>
             <div className="bg-surface border border-border p-6 md:p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8 text-left">
               <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
@@ -1742,38 +1262,7 @@ export function PortfolioBacktesting({
               </div>
             )}
             <div className="flex justify-between pt-4 items-center">
-              <CloudSaveLoad pageId="backtest" currentData={{
-      startYear: parseInt(startYearInput),
-      endYear: parseInt(endYearInput),
-      startMonth: parseInt(startMonthInput),
-      endMonth: parseInt(endMonthInput),
-      initialAmount,
-      cashflowType,
-      cashflowAmount,
-      cashflowFreq,
-      rebalancing,
-      rebalancingBands,
-      inflationAdjusted,
-      broker,
-      customFee,
-      slippage,
-      dividendHandling,
-      includeBenchmark,
-      benchmarkSymbol,
-      portfolioNames,
-      portfolioAssets,
-      portNames: portfolioNames.map(p => p.name),
-      allocRows: portfolioAssets.map(a => ({ symbol: a.symbol, allocations: a.weights.map(w => Number(w) || 0) })),
-      resultsSummary: results && results.length > 0 ? results.map(r => ({
-        name: r.name,
-        cagr: r.cagr,
-        sharpe: r.sharpe,
-        maxDrawdown: r.maxDrawdown,
-        endBalance: r.endBalance,
-        initialAmount: r.initialAmount,
-        alloc: r.alloc
-      })) : null
-    }} onLoad={handleCloudLoad} onListUpdate={loadSavedConfigs} />
+              
               <button
                 onClick={runBacktest}
                 disabled={isRunning}
@@ -1803,9 +1292,9 @@ export function PortfolioBacktesting({
             ) : (
               <div
                 id="report-content"
-                className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
+                className="space-y-12 pb-16 transition-all duration-700 bg-white pt-10 border-t border-border mt-10"
               >
-                <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 text-base text-text font-sans">
+                <div className="w-full max-w-[1880px] mx-auto px-4 md:px-8 text-base text-text font-sans">
                   {/* Header info */}
                   <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-border pb-12">
                     <div className="space-y-2">
@@ -1866,661 +1355,14 @@ export function PortfolioBacktesting({
                     </div>
                   </div>
 
-                  {/* Portfolio Summaries (Charts + Metrics) */}
-                  <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 text-left">
-                    <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-                      <h3 className="text-base font-semibold text-text tracking-tight">
-                        {t("pb.portSummaries")}
-                      </h3>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-base font-sans border-collapse">
-                        <thead>
-                          <tr className="bg-surface-2 border-b border-border">
-                            <th className="px-6 py-4 text-left font-semibold text-text">
-                              {t("pb.portfolio")}
-                            </th>
-                            <th className="px-4 py-4 text-center font-medium text-text">
-                              {t("pb.alloc")}
-                            </th>
-                            <th className="px-4 py-4 text-center font-medium text-text">
-                              {t("pb.initialT")}
-                            </th>
-                            {results.some(
-                              (r) =>
-                                r.totalContributions !== undefined &&
-                                r.totalContributions !== r.initialAmount,
-                            ) && (
-                              <th className="px-4 py-4 text-center font-medium text-text uppercase tracking-wider text-[10px]">
-                                {t("pb.contributions")}
-                              </th>
-                            )}
-                            <th className="px-4 py-4 text-center font-medium text-text">
-                              {t("pb.finalT")}
-                            </th>
-                            <th className="px-4 py-4 text-center font-medium text-text">
-                              CAGR
-                            </th>
-                            {results.some((r) => r.irr !== undefined) && (
-                              <th className="px-4 py-4 text-center font-medium text-text uppercase tracking-wider text-[10px]">
-                                IRR
-                              </th>
-                            )}
-                            <th className="px-4 py-4 text-center font-medium text-text">
-                              {t("pb.vol")}
-                            </th>
-                            <th className="px-4 py-4 text-center font-medium text-text">
-                              {t("pb.maxDd")}
-                            </th>
-                            <th className="px-4 py-4 text-center font-medium text-text">
-                              Sharpe
-                            </th>
-                            <th className="px-4 py-4 text-center font-medium text-text">
-                              Sortino
-                            </th>
-                            {results.some(
-                              (r) => r.metrics.alpha !== undefined,
-                            ) && (
-                              <th className="px-4 py-4 text-center font-medium text-text">
-                                Alpha
-                              </th>
-                            )}
-                            {results.some(
-                              (r) => r.metrics.beta !== undefined,
-                            ) && (
-                              <th className="px-4 py-4 text-center font-medium text-text">
-                                Beta
-                              </th>
-                            )}
-                            <th className="px-4 py-4 text-center font-medium text-text">
-                              {t("pb.bestWorst")}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {results.map((r, idx) => (
-                            <tr
-                              key={idx}
-                              className="hover:bg-surface-2/50 transition-colors"
-                            >
-                              <td className="px-6 py-4">
-                                <div className="flex items-center gap-3">
-                                  <div
-                                    className="w-3 h-3 rounded-full shrink-0 shadow-sm"
-                                    style={{ backgroundColor: r.color }}
-                                  ></div>
-                                  <div>
-                                    <div className="font-semibold text-text">
-                                      {r.name}
-                                    </div>
-                                    <div className="text-base text-text-4">
-                                      {t("pb.since")} {r.startYear}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-4 py-4 text-center relative max-w-[200px]">
-                                <div className="flex flex-wrap items-center justify-center gap-1">
-                                  {Object.entries(r.alloc)
-                                    .slice(0, 3)
-                                    .map(([sym, w]) => (
-                                      <span
-                                        key={sym}
-                                        className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium"
-                                      >
-                                        {sym} {String(w)}%
-                                      </span>
-                                    ))}
-                                  {Object.keys(r.alloc).length > 3 && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium">
-                                      +{Object.keys(r.alloc).length - 3}
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-4 py-4 text-center text-text tabular-nums text-base">
-                                $
-                                {r.initialAmount.toLocaleString("en-US", {
-                                  maximumFractionDigits: 0,
-                                })}
-                              </td>
-                              {results.some(
-                                (res) =>
-                                  res.totalContributions !== undefined &&
-                                  res.totalContributions !== res.initialAmount,
-                              ) && (
-                                <td className="px-4 py-4 text-center text-text-3 tabular-nums text-base">
-                                  $
-                                  {(
-                                    r.totalContributions || r.initialAmount
-                                  ).toLocaleString("en-US", {
-                                    maximumFractionDigits: 0,
-                                  })}
-                                </td>
-                              )}
-                              <td className="px-4 py-4 text-center font-medium text-text tabular-nums text-base">
-                                $
-                                {r.endBalance.toLocaleString("en-US", {
-                                  maximumFractionDigits: 0,
-                                })}
-                              </td>
-                              <td
-                                className={cn(
-                                  "px-4 py-4 text-center font-semibold tabular-nums text-base",
-                                  r.cagr >= 0 ? "text-green" : "text-red",
-                                )}
-                              >
-                                {r.cagr >= 0 ? "+" : ""}
-                                {r.cagr.toFixed(2)}%
-                              </td>
-                              {results.some((res) => res.irr !== undefined) && (
-                                <td
-                                  className={cn(
-                                    "px-4 py-4 text-center font-semibold tabular-nums text-base",
-                                    r.irr !== undefined && r.irr >= 0
-                                      ? "text-green"
-                                      : "text-red",
-                                  )}
-                                >
-                                  {r.irr !== undefined
-                                    ? (r.irr >= 0 ? "+" : "") +
-                                      r.irr.toFixed(2) +
-                                      "%"
-                                    : "-"}
-                                </td>
-                              )}
-                              <td className="px-4 py-4 text-center text-text tabular-nums text-base">
-                                {r.stdev.toFixed(2)}%
-                              </td>
-                              <td className="px-4 py-4 text-center font-medium text-red tabular-nums text-base">
-                                -{Math.abs(r.maxDrawdown).toFixed(2)}%
-                              </td>
-                              <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
-                                {r.sharpe.toFixed(2)}
-                              </td>
-                              <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
-                                {r.sortino.toFixed(2)}
-                              </td>
-                              {results.some(
-                                (r) => r.metrics.alpha !== undefined,
-                              ) && (
-                                <td
-                                  className={cn(
-                                    "px-4 py-4 text-center tabular-nums text-base font-medium",
-                                    r.metrics.alpha !== undefined &&
-                                      r.metrics.alpha >= 0
-                                      ? "text-green"
-                                      : "text-red",
-                                  )}
-                                >
-                                  {r.metrics.alpha !== undefined
-                                    ? (r.metrics.alpha >= 0 ? "+" : "") +
-                                      (r.metrics.alpha * 100).toFixed(2) +
-                                      "%"
-                                    : "-"}
-                                </td>
-                              )}
-                              {results.some(
-                                (r) => r.metrics.beta !== undefined,
-                              ) && (
-                                <td className="px-4 py-4 text-center text-text tabular-nums text-base">
-                                  {r.metrics.beta !== undefined
-                                    ? r.metrics.beta.toFixed(2)
-                                    : "-"}
-                                </td>
-                              )}
-                              <td className="px-4 py-4 text-center tabular-nums text-base whitespace-nowrap">
-                                <span
-                                  className={cn(
-                                    "font-medium",
-                                    r.bestYear >= 0 ? "text-green" : "text-red",
-                                  )}
-                                >
-                                  {r.bestYear >= 0 ? "+" : ""}
-                                  {r.bestYear.toFixed(2)}%
-                                </span>
-                                <span className="text-text-4 mx-1.5">/</span>
-                                <span
-                                  className={cn(
-                                    "font-medium",
-                                    r.worstYear >= 0
-                                      ? "text-green"
-                                      : "text-red",
-                                  )}
-                                >
-                                  {r.worstYear > 0 ? "+" : ""}
-                                  {r.worstYear.toFixed(2)}%
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* Portfolio Growth Graph */}
-                  <div className="bg-surface border border-border rounded-3xl mb-8 text-left shadow-sm">
-                    <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-surface-2">
-                      <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-pv-blue animate-pulse"></span>{t("aa.chart.wealth")}</h3>
-                    </div>
-                    <div className="p-8">
-                      <div className="h-[400px]">
-                        <Line
-                          data={{
-                            labels: results[0].dates,
-                            datasets: results.map((r) => ({
-                              label: r.name,
-                              data: r.balances,
-                              borderColor: r.color,
-                              backgroundColor: r.color + "05",
-                              borderWidth: 3,
-                              pointRadius: 0,
-                              pointHoverRadius: 5,
-                              pointHoverBackgroundColor: r.color,
-                              pointHoverBorderColor: "#ffffff",
-                              pointHoverBorderWidth: 2,
-                              tension: 0.15,
-                              fill: false,
-                            })),
-                          }}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: { mode: "index", intersect: false },
-                            plugins: {
-                              legend: {
-                                position: "bottom",
-                                labels: {
-                                  usePointStyle: true,
-                                  pointStyle: "rectRounded",
-                                  boxWidth: 12,
-                                  boxHeight: 12,
-                                  padding: 24,
-                                  font: {
-                                    family: "sans-serif",
-                                    size: 13,
-                                    weight: "bold",
-                                  },
-                                  color: "#334155",
-                                },
-                              },
-                              tooltip: {
-                                backgroundColor: "#0f172a",
-                                titleColor: "#94a3b8",
-                                bodyColor: "#f8fafc",
-                                borderColor: "#1e293b",
-                                borderWidth: 1,
-                                padding: 14,
-                                cornerRadius: 8,
-                                displayColors: true,
-                                boxPadding: 6,
-                                usePointStyle: true,
-                                callbacks: {
-                                  label: (context) => {
-                                    let label = context.dataset.label || "";
-                                    if (label) label += ": ";
-                                    if (context.parsed.y !== null) {
-                                      label += new Intl.NumberFormat("fr-FR", {
-                                        style: "currency",
-                                        currency: "USD",
-                                        maximumFractionDigits: 0,
-                                      }).format(context.parsed.y);
-                                    }
-                                    return label;
-                                  },
-                                },
-                              },
-                            },
-                            scales: {
-                              x: {
-                                grid: { display: false },
-                                border: { display: false },
-                                ticks: {
-                                  font: { family: "sans-serif", size: 10 },
-                                  color: "#64748b",
-                                  maxTicksLimit: 52,
-                                },
-                              },
-                              y: {
-                                ticks: {
-                                  callback: (v) =>
-                                    "$" + Number(v).toLocaleString("fr-FR"),
-                                  font: { family: "sans-serif", size: 10 },
-                                  color: "#64748b",
-                                },
-                                grid: { color: "#f1f5f9" },
-                                border: { display: false, dash: [4, 4] },
-                              },
-                            },
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-12 mb-8 text-left">
-                    {/* Annual Returns Bar Chart */}
-                    <div className="bg-surface border border-border rounded-3xl shadow-sm">
-                      <div className="px-8 py-6 border-b border-border bg-surface-2">
-                        <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>{t("aa.chart.annual")}</h3>
-                      </div>
-                      <div className="p-8">
-                        <div className="h-[500px]">
-                          <Bar
-                            data={{
-                              labels: results[0].yearsInteger,
-                              datasets: results.map((r, i) => ({
-                                label: r.name,
-                                data: r.annualReturns,
-                                backgroundColor: r.annualReturns.map((val) =>
-                                  val >= 0 ? r.color : "#e11d48",
-                                ),
-                                borderRadius: 0,
-                                borderWidth: 1,
-                                borderColor: "rgba(0,0,0,0.1)",
-                                barPercentage: 0.85,
-                                categoryPercentage: 0.9,
-                              })),
-                            }}
-                            options={{
-                              responsive: true,
-                              maintainAspectRatio: false,
-                              interaction: { mode: "index", intersect: false },
-                              plugins: {
-                                legend: {
-                                  position: "bottom",
-                                  labels: {
-                                    usePointStyle: true,
-                                    pointStyle: "rectRounded",
-                                    boxWidth: 12,
-                                    boxHeight: 12,
-                                    padding: 24,
-                                    font: {
-                                      family: "sans-serif",
-                                      size: 13,
-                                      weight: "bold",
-                                    },
-                                    color: "#334155",
-                                  },
-                                },
-                                tooltip: {
-                                  backgroundColor: "#0f172a",
-                                  titleColor: "#94a3b8",
-                                  bodyColor: "#f8fafc",
-                                  borderColor: "#1e293b",
-                                  borderWidth: 1,
-                                  padding: 14,
-                                  cornerRadius: 8,
-                                  displayColors: true,
-                                  boxPadding: 6,
-                                  usePointStyle: true,
-                                  callbacks: {
-                                    label: (context) => {
-                                      let label = context.dataset.label || "";
-                                      if (label) label += ": ";
-                                      if (context.parsed.y !== null) {
-                                        label +=
-                                          context.parsed.y.toFixed(2) + "%";
-                                      }
-                                      return label;
-                                    },
-                                  },
-                                },
-                              },
-                              scales: {
-                                x: {
-                                  grid: { display: false },
-                                  border: { display: false },
-                                  ticks: {
-                                    font: { family: "sans-serif", size: 10 },
-                                    color: "#64748b",
-                                  },
-                                },
-                                y: {
-                                  ticks: {
-                                    callback: (v) => v + "%",
-                                    font: { family: "sans-serif", size: 10 },
-                                    color: "#64748b",
-                                  },
-                                  grid: { color: "#f1f5f9" },
-                                  border: { display: false, dash: [4, 4] },
-                                },
-                              },
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Drawdowns Chart */}
-                    <div className="bg-surface border border-border rounded-3xl shadow-sm">
-                      <div className="px-8 py-6 border-b border-border bg-surface-2">
-                        <h3 className="text-base font-semibold text-text flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>{t("aa.chart.drawdowns")}</h3>
-                      </div>
-                      <div className="p-8">
-                        <div className="h-[500px]">
-                          <Line
-                            data={{
-                              labels: results[0].dates,
-                              datasets: results.map((r, dIdx) => ({
-                                label: r.name,
-                                data: r.drawdowns,
-                                borderColor: r.color,
-                                backgroundColor: r.color + "08",
-                                fill: true,
-                                pointRadius: 0,
-                                pointHoverRadius: 5,
-                                borderWidth: 1,
-                                tension: 0.15,
-                              })),
-                            }}
-                            options={{
-                              responsive: true,
-                              maintainAspectRatio: false,
-                              interaction: { mode: "index", intersect: false },
-                              plugins: {
-                                legend: {
-                                  position: "bottom",
-                                  labels: {
-                                    usePointStyle: true,
-                                    pointStyle: "rectRounded",
-                                    boxWidth: 12,
-                                    boxHeight: 12,
-                                    padding: 24,
-                                    font: {
-                                      family: "sans-serif",
-                                      size: 13,
-                                      weight: "bold",
-                                    },
-                                    color: "#334155",
-                                  },
-                                },
-                                tooltip: {
-                                  backgroundColor: "#0f172a",
-                                  titleColor: "#94a3b8",
-                                  bodyColor: "#f8fafc",
-                                  borderColor: "#1e293b",
-                                  borderWidth: 1,
-                                  padding: 14,
-                                  cornerRadius: 8,
-                                  displayColors: true,
-                                  boxPadding: 6,
-                                  usePointStyle: true,
-                                  callbacks: {
-                                    label: (context) => {
-                                      let label = context.dataset.label || "";
-                                      if (label) label += ": ";
-                                      if (context.parsed.y !== null) {
-                                        label +=
-                                          context.parsed.y.toFixed(2) + "%";
-                                      }
-                                      return label;
-                                    },
-                                  },
-                                },
-                              },
-                              scales: {
-                                x: {
-                                  grid: { display: false },
-                                  border: { display: false },
-                                  ticks: {
-                                    font: { family: "sans-serif", size: 10 },
-                                    color: "#64748b",
-                                    maxTicksLimit: 52,
-                                  },
-                                },
-                                y: {
-                                  max: 0,
-                                  ticks: {
-                                    callback: (v) => v + "%",
-                                    font: { family: "sans-serif", size: 10 },
-                                    color: "#64748b",
-                                  },
-                                  grid: { color: "#f1f5f9" },
-                                  border: { display: false, dash: [4, 4] },
-                                },
-                              },
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Trailing Returns Table */}
-                  <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 text-left">
-                    <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-                      <h3 className="text-base font-semibold text-text tracking-tight">{t("aa.chart.trailing")}</h3>
-                    </div>
-                    <div className="overflow-x-auto p-6">
-                      <table className="w-full text-base border-collapse font-sans">
-                        <thead>
-                          <tr className="border-b border-border">
-                            <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {t("pb.portfolio")}
-                            </th>
-                            <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {t("aa.1yr")}
-                            </th>
-                            <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {t("aa.5yr")}
-                            </th>
-                            <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {t("aa.10yr")}
-                            </th>
-                            <th className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {t("aa.full_period")}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {results.map((r, i) => {
-                            const calcPeriod = (yearsAgo: number) => {
-                              const len = r.annualReturns.length;
-                              if (len < yearsAgo) return null;
-                              const sub = r.annualReturns.slice(-yearsAgo);
-                              let prod = 1;
-                              sub.forEach((x) => (prod *= 1 + x / 100));
-                              return (Math.pow(prod, 1 / yearsAgo) - 1) * 100;
-                            };
-                            return (
-                              <tr
-                                key={i}
-                                className="border-b border-border hover:bg-surface-2 transition-colors"
-                              >
-                                <td className="text-left py-4 px-4 font-medium flex items-center gap-3 whitespace-nowrap text-text">
-                                  <div
-                                    className="w-2.5 h-2.5 rounded-full shrink-0 "
-                                    style={{ backgroundColor: r.color }}
-                                  ></div>
-                                  {r.name}
-                                </td>
-                                <td className="text-right py-4 px-4 whitespace-nowrap font-medium tabular-nums">
-                                  {r.annualReturns[
-                                    r.annualReturns.length - 1
-                                  ]?.toFixed(2) || "N/A"}
-                                  %
-                                </td>
-                                <td className="text-right py-4 px-4 whitespace-nowrap font-medium tabular-nums">
-                                  {calcPeriod(5)?.toFixed(2) || "N/A"}
-                                  {calcPeriod(5) ? "%" : ""}
-                                </td>
-                                <td className="text-right py-4 px-4 whitespace-nowrap font-medium tabular-nums">
-                                  {calcPeriod(10)?.toFixed(2) || "N/A"}
-                                  {calcPeriod(10) ? "%" : ""}
-                                </td>
-                                <td className="text-right py-4 px-4 whitespace-nowrap font-semibold tabular-nums text-green">
-                                  {r.cagr.toFixed(2)}%
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* Annual Returns Table */}
-                  <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 text-left">
-                    <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-                      <h3 className="text-base font-semibold text-text tracking-tight">{t("aa.table.annual")}</h3>
-                    </div>
-                    <div className="overflow-x-auto p-6">
-                      <table className="w-full text-base border-collapse font-sans">
-                        <thead>
-                          <tr className="border-b border-border">
-                            <th className="text-left font-medium text-text py-3 px-4 text-base whitespace-nowrap">
-                              {t("heat.year")}
-                            </th>
-                            {results.map((r, i) => (
-                              <th
-                                key={i}
-                                className="text-right font-medium text-text py-3 px-4 text-base whitespace-nowrap"
-                              >
-                                {r.name}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {[...results[0].yearsInteger]
-                            .reverse()
-                            .map((year, yearIndex) => {
-                              const actualIdx =
-                                results[0].yearsInteger.length - 1 - yearIndex;
-                              return (
-                                <tr
-                                  key={actualIdx}
-                                  className="border-b border-border hover:bg-surface-2 transition-colors"
-                                >
-                                  <td className="text-left py-3 px-4 font-semibold text-text">
-                                    {year}
-                                  </td>
-                                  {results.map((r, i) => {
-                                    const val = r.annualReturns[actualIdx];
-                                    return (
-                                      <td
-                                        key={i}
-                                        className={`text-right py-3 px-4 whitespace-nowrap font-medium tabular-nums ${val < 0 ? "text-red" : "text-green"}`}
-                                      >
-                                        {val !== undefined
-                                          ? (val > 0 ? "+" : "") +
-                                            val.toFixed(2) +
-                                            "%"
-                                          : "-"}
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
-                              );
-                            })}
-                        </tbody>
-                      </table>
-                    </div>
+                  {/* Results report (Portfolio Visualizer style): summary, metrics, annual returns, drawdowns, rolling returns */}
+                  <div className="mb-12 text-left">
+                    <BacktestReport
+                      portfolios={results}
+                      benchmarkId={includeBenchmark ? "benchmark" : undefined}
+                      currency={baseCcy}
+                      language={language}
+                    />
                   </div>
 
                   {/* Historical Stress Scenarios Table */}
@@ -2662,6 +1504,48 @@ export function PortfolioBacktesting({
         </div>
       </div>
     </div>
+      {/* Discreet save bar + saved analyses, always at the bottom of the page */}
+      <div className="w-full max-w-[1800px] mx-auto px-4 md:px-12 pb-16">
+        <CloudSaveLoad
+          savedOpen={activeMainView === "dashboard"}
+          onToggleSaved={() => setActiveMainView(activeMainView === "dashboard" ? "simulator" : "dashboard")} pageId="backtest" currentData={{
+      startYear: parseInt(startYearInput),
+      endYear: parseInt(endYearInput),
+      startMonth: parseInt(startMonthInput),
+      endMonth: parseInt(endMonthInput),
+      initialAmount,
+      cashflowType,
+      cashflowAmount,
+      cashflowFreq,
+      rebalancing,
+      rebalancingBands,
+      inflationAdjusted,
+      broker,
+      customFee,
+      slippage,
+      dividendHandling,
+      includeBenchmark,
+      benchmarkSymbol,
+      portfolioNames,
+      portfolioAssets,
+      portNames: portfolioNames.map(p => p.name),
+      allocRows: portfolioAssets.map(a => ({ symbol: a.symbol, allocations: a.weights.map(w => Number(w) || 0) })),
+      resultsSummary: results && results.length > 0 ? results.map(r => ({
+        name: r.name,
+        cagr: r.cagr,
+        stdev: r.stdev,
+        sharpe: r.sharpe,
+        sortino: r.sortino,
+        bestYear: r.bestYear,
+        worstYear: r.worstYear,
+        maxDrawdown: r.maxDrawdown,
+        endBalance: r.endBalance,
+        initialAmount: r.initialAmount,
+        alloc: r.alloc
+      })) : null
+    }} onLoad={handleCloudLoad} onListUpdate={loadSavedConfigs} />
+        {activeMainView === "dashboard" && <div className="mt-8">{renderSavedScenarios()}</div>}
+      </div>
     </MobileZoomWrapper>
   );
 }

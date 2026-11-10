@@ -51,7 +51,6 @@ import { handleFirestoreError, OperationType } from "../../lib/firestoreUtils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { InfoTooltip } from "../ui/InfoTooltip";
 import { Disclaimer } from "../ui/Disclaimer";
-import { ViewToggle } from "../ui/ViewToggle";
 import { lazyPortfolios } from "./lazyPortfoliosData";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
@@ -373,6 +372,7 @@ export function AssetAllocations({
   const loadConfigIntoSimulator = (config: any) => {
     handleCloudLoad(config);
     setActiveMainView("simulator");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const renderSavedScenarios = () => {
@@ -1304,17 +1304,9 @@ export function AssetAllocations({
             title={t("aa.page_title")}
             badge={t("aa.badge")}
             description={t("aa.description")}
-            actions={
-              <ViewToggle 
-                activeView={activeMainView} 
-                onViewChange={(view) => setActiveMainView(view)} 
-                simulatorLabel={t("common.simulator")}
-                dashboardLabel={t("dashboard.saved_scenarios")}
-              />
-            }
           />
 
-          {activeMainView === "dashboard" ? renderSavedScenarios() : (
+          {(
             <div className="simulator-view space-y-8">
               {/* PARAMETERS HEADER - HORIZONTAL (Matched to Backtesting) */}
               <div className="bg-surface border border-border p-6 md:p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8 text-left">
@@ -1771,20 +1763,7 @@ export function AssetAllocations({
               </div>
             )}
             <div className="flex justify-between pt-4 items-center">
-              <CloudSaveLoad 
-                pageId="asset-allocation" 
-                currentData={{
-                  startYear, startMonth, endYear, endMonth, initialAmount, broker, customFee,
-                  cashflowAmount, cashflowFrequency, inflationAdjusted, benchmarkTicker,
-                  rebalancing, rebalanceThreshold, reinvestDividends, dividendTaxRate, capitalGainsTaxRate,
-                  portfolioNames, portfolioAssets,
-                  portNames: portfolioNames.map(p => p.name),
-                  allocRows: portfolioAssets.map(a => ({ symbol: a.symbol, allocations: a.weights.map(w => Number(w) || 0) })),
-                  resultsSummary: results ? results.map(r => ({ name: r.name, cagr: r.metrics.cagr, sharpe: r.metrics.sharpe, maxDrawdown: r.metrics.maxDrawdown })) : []
-                }} 
-                onLoad={handleCloudLoad}
-                onListUpdate={loadSavedConfigs}
-              />
+              
               <button
                 onClick={runBacktest}
                 disabled={isRunning}
@@ -2597,6 +2576,26 @@ export function AssetAllocations({
     </div>
   </div>
 </div>
+      {/* Discreet save bar + saved analyses, always at the bottom of the page */}
+      <div className="w-full max-w-[1800px] mx-auto px-4 md:px-12 pb-16">
+        <CloudSaveLoad
+          savedOpen={activeMainView === "dashboard"}
+          onToggleSaved={() => setActiveMainView(activeMainView === "dashboard" ? "simulator" : "dashboard")} 
+                pageId="asset-allocation" 
+                currentData={{
+                  startYear, startMonth, endYear, endMonth, initialAmount, broker, customFee,
+                  cashflowAmount, cashflowFrequency, inflationAdjusted, benchmarkTicker,
+                  rebalancing, rebalanceThreshold, reinvestDividends, dividendTaxRate, capitalGainsTaxRate,
+                  portfolioNames, portfolioAssets,
+                  portNames: portfolioNames.map(p => p.name),
+                  allocRows: portfolioAssets.map(a => ({ symbol: a.symbol, allocations: a.weights.map(w => Number(w) || 0) })),
+                  resultsSummary: results ? results.map(r => ({ name: r.name, cagr: r.metrics.cagr, sharpe: r.metrics.sharpe, maxDrawdown: r.metrics.maxDrawdown })) : []
+                }} 
+                onLoad={handleCloudLoad}
+                onListUpdate={loadSavedConfigs}
+              />
+        {activeMainView === "dashboard" && <div className="mt-8">{renderSavedScenarios()}</div>}
+      </div>
     </MobileZoomWrapper>
   );
 }

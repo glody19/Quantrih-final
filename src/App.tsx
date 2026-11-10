@@ -152,7 +152,7 @@ function AppContent() {
       />}
       <main className={cn(
         "flex-1 w-full mx-auto flex flex-col",
-        (currentPage === "home" || currentPage === "investor-profile" || currentPage === "profile" || currentPage === "auth") ? "pt-0" : "pt-4 lg:pt-6",
+        (currentPage === "home" || currentPage === "auth") ? "pt-0" : "pt-4 lg:pt-6",
         TOOL_PAGES.has(currentPage) && "tool-page"
       )}>
         <Routes>

@@ -17,7 +17,6 @@ import { PageHeader } from "../ui/PageHeader";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { lazyPortfolios } from "./lazyPortfoliosData";
-import { ViewToggle } from "../ui/ViewToggle";
 import { Disclaimer } from "../ui/Disclaimer";
 import { auth, db } from "../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -1277,17 +1276,9 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
             title={t("mc.title")}
             badge={t("mc.badge")}
             description={t("mc.description")}
-            actions={
-              <ViewToggle 
-                activeView={activeMainView} 
-                onViewChange={(view) => setActiveMainView(view)} 
-                simulatorLabel={t("common.simulator")}
-                dashboardLabel={t("dashboard.saved_scenarios")}
-              />
-            }
           />
 
-          {activeMainView === "dashboard" ? renderSavedScenarios() : (
+          {(
             <div className="simulator-view space-y-8">
           
 {/* PARAMETERS GRID */}
@@ -1729,20 +1720,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
               )}
 
               <div className="flex justify-between pt-4 items-center">
-                <CloudSaveLoad
-                  pageId="monte-carlo"
-                  currentData={{
-                    initialAmount,
-                    cashflowType,
-                    cashflowAmount,
-                    horizon,
-                    portfolioNames,
-                    portfolioAssets,
-                    resultsSummary: mcResults ? mcResults.map(r => ({ name: r.name, solvency: r.metrics.solvency })) : []
-                  }}
-                  onLoad={handleCloudLoad}
-                  onListUpdate={loadSavedConfigs}
-                />
+                
                 <button
                   onClick={handleRunSimulation}
                   disabled={isRunning}
@@ -2023,6 +2001,26 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
     </div>
   </div>
 </div>
+      {/* Discreet save bar + saved analyses, always at the bottom of the page */}
+      <div className="w-full max-w-[1800px] mx-auto px-4 md:px-12 pb-16">
+        <CloudSaveLoad
+          savedOpen={activeMainView === "dashboard"}
+          onToggleSaved={() => setActiveMainView(activeMainView === "dashboard" ? "simulator" : "dashboard")}
+                  pageId="monte-carlo"
+                  currentData={{
+                    initialAmount,
+                    cashflowType,
+                    cashflowAmount,
+                    horizon,
+                    portfolioNames,
+                    portfolioAssets,
+                    resultsSummary: mcResults ? mcResults.map(r => ({ name: r.name, solvency: r.metrics.solvency })) : []
+                  }}
+                  onLoad={handleCloudLoad}
+                  onListUpdate={loadSavedConfigs}
+                />
+        {activeMainView === "dashboard" && <div className="mt-8">{renderSavedScenarios()}</div>}
+      </div>
     </MobileZoomWrapper>
   );
 }

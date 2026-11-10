@@ -22,7 +22,7 @@ export function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0f1d] text-white pt-24 pb-32">
+    <div className="min-h-screen bg-white text-text pt-12 pb-24">
       <div className="max-w-5xl mx-auto px-6">
         
         {/* Header */}
@@ -31,8 +31,7 @@ export function About() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-4xl md:text-5xl font-semibold tracking-tighter mb-6 bg-clip-text text-transparent"
-            style={{ backgroundImage: 'linear-gradient(to right, #ffffff, #94a3b8)' }}
+            className="font-serif text-4xl md:text-5xl font-semibold tracking-tight mb-6 text-text"
           >
             Engineering the Future of <br className="hidden md:block"/> Quantitative Allocation
           </motion.h1>
@@ -40,7 +39,7 @@ export function About() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-xl text-slate-400 max-w-2xl mx-auto"
+            className="text-xl text-text-3 max-w-2xl mx-auto"
           >
             Quantrih is an advanced analytical terminal designed to bring institutional-grade backtesting and risk modeling to modern investors.
           </motion.p>
@@ -50,17 +49,17 @@ export function About() {
         <div className="grid md:grid-cols-2 gap-12 items-center mb-24">
           <div className="order-2 md:order-1">
             <h2 className="text-3xl font-semibold mb-6">Our Mission</h2>
-            <p className="text-slate-300 leading-relaxed mb-4 text-lg">
+            <p className="text-text-2 leading-relaxed mb-4 text-lg">
               We believe that robust portfolio construction shouldn't be limited to opaque hedge funds. Our goal is to democratize quantitative analysis by providing transparent, high-performance computing tools directly in your browser.
             </p>
-            <p className="text-slate-300 leading-relaxed text-lg">
+            <p className="text-text-2 leading-relaxed text-lg">
               Whether you are evaluating static asset allocation matrixes or developing dynamic momentum strategies, Quantrih provides the computational horsepower to validate your logic before risking capital.
             </p>
           </div>
-          <div className="order-1 md:order-2 bg-[#0f172a]/50 border border-slate-800/80 p-8 rounded-3xl backdrop-blur-md relative overflow-hidden min-h-[220px] flex flex-col justify-center">
-             <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-600/20 blur-[80px] rounded-full"></div>
+          <div className="order-1 md:order-2 bg-surface-2 border border-border p-8 rounded-3xl relative overflow-hidden min-h-[220px] flex flex-col justify-center">
+             
              <h3 className="text-2xl font-semibold mb-2">Empowering Precision</h3>
-             <p className="text-slate-400">Data-driven architecture for the modern quantitative allocator.</p>
+             <p className="text-text-3">Data-driven architecture for the modern quantitative allocator.</p>
           </div>
         </div>
 
@@ -68,9 +67,9 @@ export function About() {
         <h2 className="text-3xl font-semibold mb-12 text-center">Core Capabilities</h2>
         <div className="grid md:grid-cols-2 gap-6">
           {features.map((feature, i) => (
-            <div key={i} className="bg-[#0f172a]/40 border border-slate-800/60 p-8 rounded-3xl hover:bg-[#0f172a]/80 transition-colors">
+            <div key={i} className="bg-white border border-border p-8 rounded-3xl hover:border-border-2 transition-colors">
               <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-              <p className="text-slate-400 leading-relaxed">
+              <p className="text-text-3 leading-relaxed">
                 {feature.desc}
               </p>
             </div>

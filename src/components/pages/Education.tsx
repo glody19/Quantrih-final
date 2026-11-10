@@ -206,7 +206,7 @@ export function Education() {
               <span className="w-10 h-10 rounded-2xl bg-pv-blue/10 text-pv-blue flex items-center justify-center">
                 <BookOpen size={20} />
               </span>
-              <h1 className="text-2xl font-bold tracking-tight text-text">{L.library}</h1>
+              <h1 className="font-serif text-3xl md:text-[2.6rem] leading-tight font-semibold tracking-tight text-text">{L.library}</h1>
             </div>
             <span className="text-xs font-semibold bg-pv-blue/10 text-pv-blue px-3 py-1 rounded-full font-mono">
               {filtered.length} {L.books}
