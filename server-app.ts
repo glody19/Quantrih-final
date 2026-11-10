@@ -1043,7 +1043,7 @@ export function createApp() {
         .slice(0, 40);
       if (symbols.length === 0) return res.json({});
       const cacheKey = symbols.slice().sort().join(",");
-      const cached = getCached('perf', cacheKey, 60 * 60_000);
+      const cached = getCached('perf2', cacheKey, 60 * 60_000);
       if (cached) return res.json(cached);
       const start = new Date();
       start.setUTCFullYear(start.getUTCFullYear() - 5);
@@ -1055,7 +1055,15 @@ export function createApp() {
           const q = (chart?.quotes || [])
             .filter((x: any) => x && x.date && (typeof x.adjclose === "number" || typeof x.close === "number"))
             .map((x: any) => ({ t: new Date(x.date).getTime(), p: typeof x.adjclose === "number" ? x.adjclose : x.close }))
-            .sort((a: any, b: any) => a.t - b.t);
+            .sort((a: any, b: any) => a.t - b.t)
+            // Yahoo can return two points for the current month (month start + latest day):
+            // keep one point per calendar month (the latest), so "12 months back" is exact.
+            .filter((x: any, i: number, arr: any[]) => {
+              const n = arr[i + 1];
+              if (!n) return true;
+              const a = new Date(x.t), b = new Date(n.t);
+              return !(a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth());
+            });
           if (q.length < 13) { out[sym] = null; return; }
           const last = q[q.length - 1];
           const at = (months: number) => (q.length > months ? q[q.length - 1 - months].p : null);
@@ -1066,7 +1074,7 @@ export function createApp() {
           out[sym] = null;
         }
       }));
-      setCached('perf', cacheKey, out);
+      setCached('perf2', cacheKey, out);
       res.json(out);
     } catch {
       res.status(500).json({ error: "Failed to compute performance" });
