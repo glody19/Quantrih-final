@@ -2102,26 +2102,33 @@ const isEuropeanMarketOpen = () => {
  <div className="py-10 text-center text-sm font-medium text-text-3">News unavailable right now.</div>
  )}
  {marketNews.map((n, idx) => (
- <a 
- key={idx}
+ <motion.a
+ key={n.id || idx}
  href={n.url || '#'}
- target="_blank" 
+ target="_blank"
  rel="noopener noreferrer"
- className="group block py-6 border-b border-border/40 last:border-0 hover:bg-black/[0.02] transition-all duration-300 px-4 rounded-[1.5rem] relative overflow-hidden"
+ initial={{ opacity: 0, y: 16 }}
+ whileInView={{ opacity: 1, y: 0 }}
+ viewport={{ once: true }}
+ transition={{ duration: 0.4, delay: Math.min(idx, 6) * 0.05 }}
+ className={"group border-b border-border/40 last:border-0 hover:bg-black/[0.02] transition-colors px-3 rounded-2xl " + (idx === 0 && n.image ? "block py-4" : "flex gap-4 items-start py-4")}
  >
- <div className="flex flex-col gap-3 relative z-10">
- <h4 className="text-[15px] leading-[1.6] font-semibold text-text group-hover:text-pv-blue transition-colors">
+ {n.image && (
+ <span className={"block overflow-hidden rounded-xl bg-surface-3 shrink-0 " + (idx === 0 ? "w-full aspect-[16/8] mb-3" : "w-28 h-20")}>
+ <img src={n.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+ </span>
+ )}
+ <span className="flex flex-col gap-2 min-w-0">
+ <h4 className={(idx === 0 && n.image ? "text-lg " : "text-[15px] ") + "leading-snug font-semibold text-text group-hover:text-pv-blue transition-colors"}>
  {n.headline || n.summary}
  </h4>
- <div className="flex justify-start items-center text-sm font-bold mt-1 gap-3">
- <span className="text-text">
- {n.source?.toUpperCase() || 'FINANCE INC.'}
+ <span className="flex items-center text-xs font-semibold gap-2 text-text-3">
+ <span className="text-pv-blue">{n.source || 'Yahoo Finance'}</span>
+ <span>·</span>
+ <span>{n.date || ''}</span>
  </span>
- <span className="text-border">•</span>
- <span className="text-text">{n.date || 'LATEST'}</span>
- </div>
- </div>
- </a>
+ </span>
+ </motion.a>
  ))}
  </div>
  )}

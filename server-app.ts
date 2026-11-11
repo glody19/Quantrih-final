@@ -591,7 +591,7 @@ export function createApp() {
   app.get("/api/market-news", async (req, res) => {
     try {
       const q = (req.query.q as string) || "markets bloomberg reuters wsj";
-      const cached = getCached('news', q, 300_000); // 5 mins cache
+      const cached = getCached('news2', q, 300_000); // 5 mins cache
       if (cached) return res.json(cached);
 
       let newsList: any[] = [];
@@ -618,6 +618,8 @@ export function createApp() {
           url: n.link,
           datetime: d.getTime() / 1000,
           date: dateStr,
+          // widest thumbnail the publisher provides, when there is one
+          image: (n.thumbnail?.resolutions || []).slice().sort((x: any, y: any) => (y.width || 0) - (x.width || 0))[0]?.url || null,
         };
       });
 
@@ -631,7 +633,7 @@ export function createApp() {
         }
       }
 
-      setCached('news', q, uniqueNews);
+      setCached('news2', q, uniqueNews);
       res.json(uniqueNews);
     } catch (e) {
       console.error(e);

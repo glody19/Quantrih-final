@@ -625,6 +625,8 @@ export function PortfolioBacktesting({
 
       setResults(newResults);
       setHasRun(true);
+      // bring the report into view once it has rendered
+      setTimeout(() => document.getElementById("report-content")?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
     } catch (err: any) {
       console.warn(err);
       setError(err.message || "An error occurred during backtesting.");
@@ -1279,8 +1281,12 @@ export function PortfolioBacktesting({
                 {error}
               </div>
             )}
-            <div className="flex justify-between pt-4 items-center">
-              
+            <div className="flex flex-wrap gap-x-8 gap-y-3 pt-4 items-center">
+              <p className="order-2 text-sm text-text-3 max-w-2xl">
+                {language === "fr"
+                  ? "Les titres européens fonctionnent aussi : ajoutez le suffixe de la place de cotation, par exemple IWDA.AS (Amsterdam), VWCE.DE (Xetra), CW8.PA (Paris) ou ASML.AS."
+                  : "European listings work too: add the exchange suffix, for example IWDA.AS (Amsterdam), VWCE.DE (Xetra), CW8.PA (Paris) or ASML.AS."}
+              </p>
               <button
                 onClick={runBacktest}
                 disabled={isRunning}
@@ -1310,7 +1316,7 @@ export function PortfolioBacktesting({
             ) : (
               <div
                 id="report-content"
-                className="space-y-12 pb-16 transition-all duration-700 bg-white pt-10 border-t border-border mt-10"
+                className="scroll-mt-24 space-y-12 pb-16 transition-all duration-700 bg-white pt-10 border-t border-border mt-10"
               >
                 <div className="w-full max-w-[1880px] mx-auto px-4 md:px-8 text-base text-text font-sans">
                   {/* Header info */}

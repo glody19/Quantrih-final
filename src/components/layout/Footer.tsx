@@ -1,166 +1,108 @@
 import React from 'react';
-import { Mail, ChevronRight } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { useTranslation } from '../../contexts/LanguageContext';
+import { QuantrihLogo } from '../ui/Logo';
 
 interface FooterProps {
   onNavigate: (page: string) => void;
 }
 
+const DONATE_URL = 'https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00';
+
 export function Footer({ onNavigate }: FooterProps) {
   const { language } = useTranslation();
-  const isFr = language === 'fr';
+  const fr = language === 'fr';
 
-  const handleNav = (page: string) => {
+  const go = (page: string) => {
     onNavigate(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const columns: { title: string; links: { label: string; page?: string; href?: string }[] }[] = [
+    {
+      title: fr ? 'Outils' : 'Tools',
+      links: [
+        { label: 'Asset Allocation', page: 'asset-allocation' },
+        { label: 'Portfolio Backtesting', page: 'portfolio-backtest' },
+        { label: 'Tactical Allocation', page: 'tactical-allocation' },
+        { label: 'Monte Carlo', page: 'montecarlo' },
+        { label: fr ? 'Portefeuille virtuel' : 'Virtual portfolio', page: 'virtual-portfolio' },
+      ],
+    },
+    {
+      title: fr ? 'Marchés' : 'Markets',
+      links: [
+        { label: fr ? 'Marchés et analyse' : 'Markets and analysis', page: 'market' },
+        { label: fr ? 'Comparateur d\'ETF' : 'ETF screener', page: 'etf-overview' },
+        { label: 'Lazy portfolios', page: 'lazy-portfolios' },
+        { label: fr ? 'Plateformes d\'investissement' : 'Investment platforms', page: 'platforms' },
+      ],
+    },
+    {
+      title: fr ? 'Apprendre' : 'Learn',
+      links: [
+        { label: fr ? 'Bibliothèque' : 'Library', page: 'education' },
+        { label: fr ? 'À propos' : 'About us', page: 'about' },
+        { label: fr ? 'Soutenir Quantrih' : 'Support Quantrih', href: DONATE_URL },
+      ],
+    },
+    {
+      title: fr ? 'Légal' : 'Legal',
+      links: [
+        { label: fr ? 'Confidentialité' : 'Privacy policy', page: 'privacy' },
+        { label: fr ? 'Cookies' : 'Cookies policy', page: 'cookies' },
+        { label: fr ? 'Plan du site' : 'Sitemap', page: 'sitemap' },
+      ],
+    },
+  ];
+
   return (
-    <footer className="w-full bg-[#0b1329] text-slate-300 border-t border-slate-800/80 py-6 font-sans">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
-        
-        {/* Allocations & Backtesting */}
-        <div className="flex flex-col gap-1">
-          <h4 className="text-[11px] font-bold text-slate-100 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            {isFr ? "Allocations & Backtest" : "Allocations & Backtesting"}
-          </h4>
-          <button 
-            onClick={() => handleNav('asset-allocation')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Asset Allocation" : "Asset Allocation"}
-          </button>
-          <button 
-            onClick={() => handleNav('portfolio-backtest')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Portfolio Backtesting" : "Portfolio Backtesting"}
-          </button>
-          <button 
-            onClick={() => handleNav('tactical-allocation')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Tactical Allocation" : "Tactical Allocation"}
-          </button>
-          <button 
-            onClick={() => handleNav('montecarlo')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Monte Carlo" : "Monte Carlo"}
-          </button>
-        </div>
-
-        {/* Markets & Research */}
-        <div className="flex flex-col gap-1">
-          <h4 className="text-[11px] font-bold text-slate-100 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            {isFr ? "Marchés & Recherche" : "Markets & Research"}
-          </h4>
-          <button 
-            onClick={() => handleNav('market')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Marchés" : "Market"}
-          </button>
-          <button 
-            onClick={() => handleNav('etf-overview')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "ETF Overview" : "ETF Overview"}
-          </button>
-          <button 
-            onClick={() => handleNav('lazy-portfolios')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            Lazy portfolios
-          </button>
-          <button 
-            onClick={() => handleNav('virtual-portfolio')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Portefeuille virtuel" : "Virtual portfolio"}
-          </button>
-          <button 
-            onClick={() => handleNav('education')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Bibliothèque" : "Library"}
-          </button>
-          <button 
-            onClick={() => handleNav('platforms')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Plateformes d'investissement" : "Investment platforms"}
-          </button>
-        </div>
-
-        {/* Information & Legal */}
-        <div className="flex flex-col gap-1">
-          <h4 className="text-[11px] font-bold text-slate-100 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            {isFr ? "Informations & Légal" : "Information & Legal"}
-          </h4>
-          <button 
-            onClick={() => handleNav('about')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "À propos" : "About us"}
-          </button>
-          <button 
-            onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Support / Donate" : "Support / Donate"}
-          </button>
-          <button 
-            onClick={() => handleNav('cookies')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Politique de cookies" : "Cookies Policy"}
-          </button>
-          <button 
-            onClick={() => handleNav('privacy')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Politique de confidentialité" : "Privacy Policy"}
-          </button>
-          <button 
-            onClick={() => handleNav('sitemap')} 
-            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
-          >
-            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
-            {isFr ? "Plan du site" : "Sitemap"}
-          </button>
-        </div>
-
-      </div>
-      
-      {/* Bottom Bar */}
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 mt-5 pt-3 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[10px]">
-        <p>© {new Date().getFullYear()} Quantrih. {isFr ? "Tous droits réservés." : "All rights reserved."}</p>
-        <div className="flex items-center gap-4">
-          <a href="mailto:contact@quantrih.com" className="hover:text-slate-300 transition-colors flex items-center gap-1">
-            <Mail className="w-3 h-3 text-slate-500" />
-            contact@quantrih.com
+    <footer className="w-full bg-[#0A0920] text-slate-300 font-sans">
+      <div className="h-px bg-gradient-to-r from-transparent via-[#7B6CF0]/60 to-transparent" />
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-14 grid gap-12 lg:grid-cols-[1.3fr_2.7fr]">
+        <div>
+          <QuantrihLogo variant="bars" size="lg" className="text-[#B6ABF7] [&>span]:!text-white" />
+          <p className="mt-5 text-[15px] leading-relaxed text-slate-400 max-w-sm">
+            {fr
+              ? 'Backtests de portefeuilles, allocations d\'actifs et données de marché pour les investisseurs européens et américains.'
+              : 'Portfolio backtests, asset allocation and market data for European and US investors.'}
+          </p>
+          <a href="mailto:contact@quantrih.com" className="mt-5 inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors">
+            <Mail className="w-4 h-4 text-[#9283F2]" /> contact@quantrih.com
           </a>
+        </div>
+
+        <nav className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-10" aria-label="Footer">
+          {columns.map((col) => (
+            <div key={col.title}>
+              <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-white mb-4">{col.title}</h4>
+              <ul className="grid gap-2.5">
+                {col.links.map((l) => (
+                  <li key={l.label}>
+                    <button
+                      onClick={() => (l.href ? window.open(l.href, '_blank', 'noopener,noreferrer') : go(l.page!))}
+                      className="text-left text-sm text-slate-400 hover:text-white transition-colors"
+                    >
+                      {l.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </div>
+
+      <div className="border-t border-white/10">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-6 grid gap-3 text-xs text-slate-500 leading-relaxed">
+          <p>
+            {fr
+              ? 'Quantrih est un outil d\'analyse et de formation. Rien sur ce site ne constitue un conseil en investissement. Les performances passées ne préjugent pas des performances futures. Cours de marché différés, fournis par Yahoo Finance et Binance.'
+              : 'Quantrih is an analysis and learning tool. Nothing on this site is investment advice. Past performance does not predict future returns. Market prices are delayed and come from Yahoo Finance and Binance.'}
+          </p>
+          <p>© {new Date().getFullYear()} Quantrih. {fr ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
         </div>
       </div>
     </footer>
   );
 }
-
