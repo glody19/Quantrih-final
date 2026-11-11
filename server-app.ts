@@ -1081,6 +1081,44 @@ export function createApp() {
     }
   });
 
+  // Monthly total-return series (dividend-adjusted closes), one point per calendar month.
+  // Used to compute model-portfolio performance live instead of storing figures that go stale.
+  app.get("/api/stock/monthly-adj", async (req, res) => {
+    try {
+      const symbols = String(req.query.symbols || "")
+        .split(",").map((x) => x.trim().toUpperCase())
+        .filter((x) => /^[A-Z0-9.\-^=]{1,15}$/.test(x))
+        .slice(0, 40);
+      if (symbols.length === 0) return res.json({});
+      const years = Math.min(15, Math.max(1, parseInt(String(req.query.years || "6"), 10) || 6));
+      const cacheKey = `${years}:${symbols.slice().sort().join(",")}`;
+      const cached = getCached('madj', cacheKey, 6 * 60 * 60_000);
+      if (cached) return res.json(cached);
+      const start = new Date();
+      start.setUTCFullYear(start.getUTCFullYear() - years);
+      start.setUTCMonth(start.getUTCMonth() - 1);
+      const out: Record<string, [string, number][]> = {};
+      await Promise.all(symbols.map(async (sym) => {
+        try {
+          const chart = await safeYfChart(sym, { period1: start.toISOString().split("T")[0], period2: new Date().toISOString().split("T")[0], interval: "1mo" });
+          const byMonth = new Map<string, number>();
+          (chart?.quotes || []).forEach((x: any) => {
+            const p = typeof x?.adjclose === "number" ? x.adjclose : x?.close;
+            if (!x?.date || typeof p !== "number") return;
+            byMonth.set(new Date(x.date).toISOString().slice(0, 7), p); // later points of the same month win
+          });
+          out[sym] = Array.from(byMonth.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+        } catch {
+          out[sym] = [];
+        }
+      }));
+      if (Object.values(out).some((v) => v.length > 0)) setCached('madj', cacheKey, out);
+      res.json(out);
+    } catch {
+      res.status(500).json({ error: "Failed to load monthly series" });
+    }
+  });
+
   app.get("/api/stock/bulk-quotes", async (req, res) => {
     try {
       if (!req.query.symbols) return res.json([]);

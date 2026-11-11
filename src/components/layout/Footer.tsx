@@ -76,6 +76,20 @@ export function Footer({ onNavigate }: FooterProps) {
             {isFr ? "ETF Overview" : "ETF Overview"}
           </button>
           <button 
+            onClick={() => handleNav('lazy-portfolios')} 
+            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+          >
+            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
+            Lazy portfolios
+          </button>
+          <button 
+            onClick={() => handleNav('virtual-portfolio')} 
+            className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
+          >
+            <ChevronRight className="w-2.5 h-2.5 text-slate-600" />
+            {isFr ? "Portefeuille virtuel" : "Virtual portfolio"}
+          </button>
+          <button 
             onClick={() => handleNav('education')} 
             className="text-left text-[11px] text-slate-400 hover:text-sky-400 transition-colors py-0.5 flex items-center gap-1"
           >

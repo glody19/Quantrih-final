@@ -28,7 +28,7 @@ export function Header({
   setBaseCcy,
 }: HeaderProps) {
   const { user, logout } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -81,6 +81,8 @@ export function Header({
       children: [
         { id: "market", label: t("nav.markets.equity") },
         { id: "etf-overview", label: t("nav.markets.etf") },
+        { id: "lazy-portfolios", label: "Lazy portfolios" },
+        { id: "virtual-portfolio", label: language === "fr" ? "Portefeuille virtuel" : "Virtual portfolio" },
       ],
     },
     { id: "education", label: t("nav.education") },
