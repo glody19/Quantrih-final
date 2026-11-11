@@ -24,13 +24,13 @@ export const QuantrihLogo = ({ className, variant = "bars", showText = true, siz
   };
 
   const logos = {
+    // Brand mark: a "Q" whose tail is a rising trend line ending on a data point
     bars: (
       <svg viewBox="0 0 32 32" className="w-full h-full text-current" fill="none">
-        <rect x="3" y="18" width="4.5" height="10" rx="1.5" fill="currentColor" opacity="0.4" />
-        <rect x="11.5" y="12" width="4.5" height="16" rx="1.5" fill="currentColor" opacity="0.7" />
-        <rect x="20" y="6" width="4.5" height="22" rx="1.5" fill="currentColor" />
-        <path d="M3 17L11.5 11L20 5L28.5 2" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="28.5" cy="2" r="1.25" fill="currentColor" />
+        <circle cx="14.5" cy="15" r="10" stroke="currentColor" strokeWidth="3.2" />
+        <path d="M9.5 17.2 L13 13.6 L15.8 16.2 L19.6 11.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" />
+        <path d="M19.5 20 L27 27.5" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
+        <circle cx="27.6" cy="28.1" r="2.4" fill="#E2B84F" />
       </svg>
     ),
     orbit: (

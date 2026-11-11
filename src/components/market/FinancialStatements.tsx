@@ -101,7 +101,7 @@ const T = {
 };
 
 function fmtAmount(v: any) {
-  if (!isNum(v)) return "—";
+  if (!isNum(v)) return "-";
   const a = Math.abs(v);
   const s = a >= 1e12 ? (a / 1e12).toFixed(2) + "T" : a >= 1e9 ? (a / 1e9).toFixed(2) + "B" : a >= 1e6 ? (a / 1e6).toFixed(1) + "M" : a >= 1e3 ? (a / 1e3).toFixed(1) + "K" : a.toFixed(2);
   return v < 0 ? `(${s})` : s;
@@ -109,7 +109,7 @@ function fmtAmount(v: any) {
 
 function Sparkline({ values }: { values: (number | null)[] }) {
   const pts = values.map((v, i) => ({ v, i })).filter((p) => isNum(p.v)) as { v: number; i: number }[];
-  if (pts.length < 2) return <span className="text-text-4">—</span>;
+  if (pts.length < 2) return <span className="text-text-4">-</span>;
   const w = 72, h = 22;
   const min = Math.min(...pts.map((p) => p.v)), max = Math.max(...pts.map((p) => p.v));
   const span = max - min || 1;
@@ -250,9 +250,9 @@ export function FinancialStatements({ symbol, income, balance, cashFlow, period,
               return (
                 <div key={l.key} className="px-6 py-5">
                   <div className="text-sm text-text-3">{l.label[lang]}</div>
-                  <div className="mt-1 text-2xl font-semibold text-text tabular-nums">{l.perShare ? (isNum(v) ? v.toFixed(2) : "—") : fmtAmount(v)}</div>
+                  <div className="mt-1 text-2xl font-semibold text-text tabular-nums">{l.perShare ? (isNum(v) ? v.toFixed(2) : "-") : fmtAmount(v)}</div>
                   <div className={cn("mt-0.5 text-sm font-medium tabular-nums", !isNum(g) ? "text-text-4" : g >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                    {isNum(g) ? `${g >= 0 ? "▲" : "▼"} ${Math.abs(g).toFixed(1)}%` : "—"} <span className="text-text-4 font-normal">{t.yoy}</span>
+                    {isNum(g) ? `${g >= 0 ? "▲" : "▼"} ${Math.abs(g).toFixed(1)}%` : "-"} <span className="text-text-4 font-normal">{t.yoy}</span>
                   </div>
                 </div>
               );
@@ -270,7 +270,7 @@ export function FinancialStatements({ symbol, income, balance, cashFlow, period,
                 <ReferenceLine yAxisId="amt" y={0} stroke="#CBD5E1" />
                 <Tooltip
                   contentStyle={{ borderRadius: 10, border: "1px solid #E2E8F0", fontSize: 13 }}
-                  formatter={(v: any, name: any, item: any) => (String(item?.dataKey || "").startsWith("m") ? (isNum(Number(v)) ? `${Number(v).toFixed(1)}%` : "—") : fmtAmount(Number(v)))}
+                  formatter={(v: any, name: any, item: any) => (String(item?.dataKey || "").startsWith("m") ? (isNum(Number(v)) ? `${Number(v).toFixed(1)}%` : "-") : fmtAmount(Number(v)))}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 13, paddingTop: 8 }} />
                 {chart.bars.map(([k, name, color]) => (
@@ -309,7 +309,7 @@ export function FinancialStatements({ symbol, income, balance, cashFlow, period,
                         return (
                           <td key={idx} className="px-4 py-2.5 text-right tabular-nums align-top">
                             <div className={cn(l.total ? "font-semibold text-text" : l.ratio ? "italic text-text-3" : "text-text-2", isNum(v) && v < 0 && !l.ratio && "text-rose-700")}>
-                              {l.ratio ? (isNum(v) ? (l.key === "_currentRatio" ? v.toFixed(2) : `${v.toFixed(1)}%`) : "—") : l.perShare ? (isNum(v) ? v.toFixed(2) : "—") : fmtAmount(v)}
+                              {l.ratio ? (isNum(v) ? (l.key === "_currentRatio" ? v.toFixed(2) : `${v.toFixed(1)}%`) : "-") : l.perShare ? (isNum(v) ? v.toFixed(2) : "-") : fmtAmount(v)}
                             </div>
                             {isNum(g) && (
                               <div className={cn("text-[12px]", (l.outflow ? -g : g) >= 0 ? "text-emerald-600" : "text-rose-600")}>

@@ -4,8 +4,8 @@ import { ArrowDown, ArrowUp, RefreshCw, Trash2 } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 const isNum = (v: any): v is number => typeof v === "number" && Number.isFinite(v);
-const pct = (v: any) => (isNum(v) ? `${v.toFixed(2)}%` : "—");
-const num = (v: any) => (isNum(v) ? v.toFixed(2) : "—");
+const pct = (v: any) => (isNum(v) ? `${v.toFixed(2)}%` : "-");
+const num = (v: any) => (isNum(v) ? v.toFixed(2) : "-");
 const COLORS = ["#5B4BDB", "#0EA5E9", "#F59E0B", "#10B981"];
 
 interface Row {
@@ -67,14 +67,14 @@ export function SavedBacktestsComparison({
   const rows: Row[] = useMemo(() => {
     const out: Row[] = [];
     configs.forEach((c) => {
-      const period = c.startYear && c.endYear ? `${c.startMonth ? String(c.startMonth).padStart(2, "0") + "/" : ""}${c.startYear} – ${c.endMonth ? String(c.endMonth).padStart(2, "0") + "/" : ""}${c.endYear}` : "—";
+      const period = c.startYear && c.endYear ? `${c.startMonth ? String(c.startMonth).padStart(2, "0") + "/" : ""}${c.startYear} - ${c.endMonth ? String(c.endMonth).padStart(2, "0") + "/" : ""}${c.endYear}` : "-";
       const summary: any[] = Array.isArray(c.resultsSummary) ? c.resultsSummary : [];
       if (summary.length === 0) {
-        out.push({ rowId: `${c.id}:none`, configId: c.id, config: c, configName: c.name || "—", portfolio: "", period, savedAt: c.updatedAt || c.createdAt || 0 });
+        out.push({ rowId: `${c.id}:none`, configId: c.id, config: c, configName: c.name || "-", portfolio: "", period, savedAt: c.updatedAt || c.createdAt || 0 });
       } else {
         summary.forEach((r, i) =>
           out.push({
-            rowId: `${c.id}:${i}`, configId: c.id, config: c, configName: c.name || "—", portfolio: r.name || `#${i + 1}`, period, savedAt: c.updatedAt || c.createdAt || 0,
+            rowId: `${c.id}:${i}`, configId: c.id, config: c, configName: c.name || "-", portfolio: r.name || `#${i + 1}`, period, savedAt: c.updatedAt || c.createdAt || 0,
             cagr: r.cagr, stdev: r.stdev, maxDrawdown: isNum(r.maxDrawdown) ? -Math.abs(r.maxDrawdown) : undefined, sharpe: r.sharpe, sortino: r.sortino,
             bestYear: r.bestYear, worstYear: r.worstYear, endBalance: r.endBalance, initialAmount: r.initialAmount ?? c.initialAmount, alloc: r.alloc,
           })
@@ -98,7 +98,7 @@ export function SavedBacktestsComparison({
     { key: "sortino", label: l.sortino, fmt: num, hib: true },
     { key: "bestYear", label: l.best, fmt: pct, hib: true },
     { key: "worstYear", label: l.worst, fmt: pct, hib: true },
-    { key: "endBalance", label: l.final, fmt: (v) => (isNum(v) ? new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(v) : "—"), hib: true },
+    { key: "endBalance", label: l.final, fmt: (v) => (isNum(v) ? new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(v) : "-"), hib: true },
   ];
 
   const bestOf = (key: SortKey, hib?: boolean) => {
@@ -184,7 +184,7 @@ export function SavedBacktestsComparison({
                         const b = bestOf(c.key, c.hib);
                         return <td key={c.key} className={cn("px-3 py-3 text-right tabular-nums whitespace-nowrap", b !== null && isNum(v) && v === b ? "font-semibold text-emerald-700" : "text-text-2")}>{c.fmt(v)}</td>;
                       })}
-                      <td className="px-3 py-3 text-right text-text-3 whitespace-nowrap">{r.savedAt ? new Date(Number(r.savedAt)).toLocaleDateString(language === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"}</td>
+                      <td className="px-3 py-3 text-right text-text-3 whitespace-nowrap">{r.savedAt ? new Date(Number(r.savedAt)).toLocaleDateString(language === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}</td>
                       <td className="px-3 py-3 text-right whitespace-nowrap">
                         <button onClick={() => onLoad(r.config)} className="text-pv-blue font-medium hover:underline mr-3">{l.load}</button>
                         {confirmId === r.configId ? (
@@ -240,7 +240,7 @@ export function SavedBacktestsComparison({
                     </tr>
                   </thead>
                   <tbody>
-                    {[...cols, { key: "period" as any, label: l.period, fmt: (v: any) => v || "—" }].map((c: any) => {
+                    {[...cols, { key: "period" as any, label: l.period, fmt: (v: any) => v || "-" }].map((c: any) => {
                       const vals = compared.map((r) => (r as any)[c.key]);
                       const nums = vals.filter(isNum) as number[];
                       const b = c.hib === undefined || nums.length < 2 ? null : c.hib ? Math.max(...nums) : Math.min(...nums);

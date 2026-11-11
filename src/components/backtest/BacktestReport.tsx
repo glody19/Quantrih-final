@@ -27,8 +27,8 @@ export interface ReportPortfolio {
 }
 
 const isNum = (v: any): v is number => typeof v === "number" && Number.isFinite(v);
-const pct = (v: any, d = 2) => (isNum(v) ? `${v.toFixed(d)}%` : "—");
-const num = (v: any, d = 2) => (isNum(v) ? v.toFixed(d) : "—");
+const pct = (v: any, d = 2) => (isNum(v) ? `${v.toFixed(d)}%` : "-");
+const num = (v: any, d = 2) => (isNum(v) ? v.toFixed(d) : "-");
 
 const T = {
   en: {
@@ -72,7 +72,7 @@ const T = {
 type Tab = "summary" | "metrics" | "annual" | "drawdowns" | "rolling";
 
 function money(v: number, ccy: string) {
-  if (!isNum(v)) return "—";
+  if (!isNum(v)) return "-";
   try {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: ccy, maximumFractionDigits: 0 }).format(v);
   } catch {
@@ -373,7 +373,7 @@ export function BacktestReport({ portfolios, benchmarkId, currency = "USD", lang
                     {portfolios.map((p) => (
                       <React.Fragment key={p.id}>
                         <td className={cn("px-4 py-2.5 text-right tabular-nums font-medium", !isNum(row[p.id]) ? "text-text-4" : row[p.id] >= 0 ? "text-emerald-700" : "text-rose-700")}>{pct(row[p.id])}</td>
-                        <td className="px-4 py-2.5 text-right tabular-nums text-text-3">{isNum(row[`${p.id}_bal`]) ? money(row[`${p.id}_bal`], currency) : "—"}</td>
+                        <td className="px-4 py-2.5 text-right tabular-nums text-text-3">{isNum(row[`${p.id}_bal`]) ? money(row[`${p.id}_bal`], currency) : "-"}</td>
                       </React.Fragment>
                     ))}
                   </tr>
@@ -425,8 +425,8 @@ export function BacktestReport({ portfolios, benchmarkId, currency = "USD", lang
                       <td className="px-4 py-2.5 text-text">{e.trough}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums text-text-2">{e.lengthMonths} {t.months}</td>
                       <td className="px-4 py-2.5 text-text">{e.end || <span className="text-amber-700">{t.ongoing}</span>}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums text-text-2">{isNum(e.recoveryMonths) ? `${e.recoveryMonths} ${t.months}` : "—"}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums text-text-2">{isNum(e.underwaterMonths) ? `${e.underwaterMonths} ${t.months}` : "—"}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums text-text-2">{isNum(e.recoveryMonths) ? `${e.recoveryMonths} ${t.months}` : "-"}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums text-text-2">{isNum(e.underwaterMonths) ? `${e.underwaterMonths} ${t.months}` : "-"}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-rose-700">{pct(-e.depth * 100)}</td>
                     </tr>
                   ))}

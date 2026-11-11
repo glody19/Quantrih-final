@@ -8,6 +8,10 @@ import { AllocationsTicker } from "../home/AllocationsTicker";
 import { DeviceShowcase } from "../home/DeviceShowcase";
 import { PerformanceHeatmap, type HeatRow } from "../home/PerformanceHeatmap";
 import { ToolIllustration } from "../home/ToolIllustration";
+import { StockBoard } from "../home/StockBoard";
+import { CryptoBoard } from "../home/CryptoBoard";
+import { PlatformsMarquee } from "../home/PlatformsMarquee";
+import { FiberBackground } from "../home/FiberBackground";
 
 // ───────────────────────────── backgrounds (hybrid by section) ─────────────────────────────
 // Original hero colour plate: deep navy with a violet glow
@@ -85,8 +89,8 @@ const SECTORS_EU: (HeatRow & { fr: string })[] = [
 function ZoomSection({ children, className, style, id }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; id?: string }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const scale = useTransform(scrollYProgress, [0, 0.3, 0.75, 1], [0.92, 1, 1, 0.95]);
-  const opacity = useTransform(scrollYProgress, [0, 0.22, 0.85, 1], [0.35, 1, 1, 0.55]);
+  const scale = useTransform(scrollYProgress, [0, 0.28, 0.72, 1], [0.8, 1, 1, 0.88]);
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.85, 1], [0.2, 1, 1, 0.45]);
   return (
     <section ref={ref} id={id} className={className} style={style}>
       <motion.div style={{ scale, opacity }} className="will-change-transform">
@@ -172,7 +176,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   // Hero parallax: atom grows as the page starts to scroll
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: heroP } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const atomScale = useTransform(heroP, [0, 1], [1, 1.35]);
+  const atomScale = useTransform(heroP, [0, 1], [1, 1.25]);
   const heroTextY = useTransform(heroP, [0, 1], [0, 120]);
   const heroFade = useTransform(heroP, [0, 0.8], [1, 0]);
 
@@ -210,19 +214,11 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             </motion.p>
           </motion.div>
           <motion.div style={{ scale: atomScale }} className="w-full lg:w-[54%] h-[52vh] sm:h-[60vh] lg:h-[86vh] relative z-10 flex items-center justify-center mt-6 lg:mt-0">
-            <div className="w-full h-full scale-[1.45] sm:scale-[1.3] lg:scale-[1.2]">
+            <div className="w-full h-full scale-[1.2] sm:scale-[1.1] lg:scale-100">
               <AtomAnimation isHovered={heroHovered} />
             </div>
           </motion.div>
         </div>
-        <motion.div
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.4 }}
-        >
-          <motion.span className="w-1 h-2 rounded-full bg-white/70" animate={{ y: [0, 12, 0] }} transition={{ repeat: Infinity, duration: 1.6 }} />
-        </motion.div>
       </div>
 
       {/* ── Ten famous allocations, YTD ── */}
@@ -279,6 +275,45 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               ? (fr ? "Secteurs du STOXX Europe 600 (ETF iShares, Xetra). 3Y et 5Y annualisés." : "STOXX Europe 600 sectors (iShares ETFs, Xetra). 3Y and 5Y annualized.")
               : (fr ? "Secteurs du S&P 500 (ETF Select Sector SPDR). 3Y et 5Y annualisés." : "S&P 500 sectors (Select Sector SPDR ETFs). 3Y and 5Y annualized.")}
           />
+        </div>
+      </ZoomSection>
+
+      {/* ── Stocks everyone watches (live, sortable) ── */}
+      <ZoomSection style={HERO_PLATE} className="w-full py-24 lg:py-28">
+        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="mb-10 max-w-3xl">
+            <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Les actions que tout le monde regarde" : "The stocks everyone is watching"}</h3>
+            <p className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Nvidia, Apple, Google, Tesla et les poids lourds européens, comparés sur le jour, un an et cinq ans." : "Nvidia, Apple, Google, Tesla and the European heavyweights, compared over the day, one year and five years."}</p>
+          </div>
+          <StockBoard fr={fr} />
+        </div>
+      </ZoomSection>
+
+      {/* ── Crypto (live from Binance) ── */}
+      <ZoomSection className="w-full py-24 lg:py-28 bg-[#070617]">
+        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="mb-10 max-w-3xl">
+            <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Cryptomonnaies, en temps réel" : "Crypto, in real time"}</h3>
+            <p className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Les huit plus suivies, avec leur évolution sur sept jours." : "The eight most followed, with their move over seven days."}</p>
+          </div>
+          <CryptoBoard fr={fr} />
+        </div>
+      </ZoomSection>
+
+      {/* ── Investment platforms (fibre background) ── */}
+      <ZoomSection className="relative w-full py-24 lg:py-28 bg-[#0A0920] overflow-hidden">
+        <FiberBackground />
+        <div className="relative">
+          <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-3xl">
+              <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</h3>
+              <p className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."}</p>
+            </div>
+            <button onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-[#15124A] bg-white hover:bg-white/90 inline-flex items-center gap-2">
+              {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
+            </button>
+          </div>
+          <PlatformsMarquee fr={fr} />
         </div>
       </ZoomSection>
 

@@ -845,12 +845,12 @@ export function Profile({ onBack }: { onBack: () => void }) {
                           const r = Array.isArray(it.resultsSummary) ? it.resultsSummary[0] : null;
                           return (
                             <tr key={it.id} className="hover:bg-surface-2/50">
-                              <td className="px-6 py-3.5 font-semibold text-text">{it.name || '—'}</td>
+                              <td className="px-6 py-3.5 font-semibold text-text">{it.name || '-'}</td>
                               <td className="px-6 py-3.5 text-text-2">{tool.label}</td>
                               <td className="px-6 py-3.5 font-mono text-text-2">
-                                {r ? `CAGR ${Number(r.cagr ?? 0).toFixed(2)}% · Max DD ${(-Math.abs(Number(r.maxDrawdown ?? 0))).toFixed(2)}% · Sharpe ${Number(r.sharpe ?? 0).toFixed(2)}` : '—'}
+                                {r ? `CAGR ${Number(r.cagr ?? 0).toFixed(2)}% · Max DD ${(-Math.abs(Number(r.maxDrawdown ?? 0))).toFixed(2)}% · Sharpe ${Number(r.sharpe ?? 0).toFixed(2)}` : '-'}
                               </td>
-                              <td className="px-6 py-3.5 text-text-3">{it.updatedAt ? new Date(it.updatedAt).toLocaleDateString(isEn ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</td>
+                              <td className="px-6 py-3.5 text-text-3">{it.updatedAt ? new Date(it.updatedAt).toLocaleDateString(isEn ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
                               <td className="px-6 py-3.5 text-right"><button onClick={() => navigate(tool.path)} className="text-pv-blue font-medium hover:underline">{L2.open}</button></td>
                             </tr>
                           );

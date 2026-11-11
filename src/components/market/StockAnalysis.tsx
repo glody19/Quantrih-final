@@ -8,13 +8,13 @@ import {
 import { cn } from "../../lib/utils";
 
 /* ------------------------------------------------------------------ */
-/* Helpers — every value comes from real API data; missing data = "—" */
+/* Helpers - every value comes from real API data; missing data = "-" */
 /* ------------------------------------------------------------------ */
 
 const isNum = (v: any): v is number => typeof v === "number" && Number.isFinite(v);
 
 const big = (v: any) => {
-  if (!isNum(v)) return "—";
+  if (!isNum(v)) return "-";
   const a = Math.abs(v);
   if (a >= 1e12) return (v / 1e12).toFixed(2) + " T";
   if (a >= 1e9) return (v / 1e9).toFixed(2) + " B";
@@ -22,13 +22,13 @@ const big = (v: any) => {
   if (a >= 1e3) return (v / 1e3).toFixed(1) + " K";
   return v.toFixed(2);
 };
-const pct = (v: any, digits = 2) => (isNum(v) ? `${v.toFixed(digits)}%` : "—");
-const signedPct = (v: any) => (isNum(v) ? `${v >= 0 ? "+" : ""}${v.toFixed(2)}%` : "—");
-const mult = (v: any) => (isNum(v) ? `${v.toFixed(2)}x` : "—");
-const num = (v: any, d = 2) => (isNum(v) ? v.toFixed(d) : "—");
+const pct = (v: any, digits = 2) => (isNum(v) ? `${v.toFixed(digits)}%` : "-");
+const signedPct = (v: any) => (isNum(v) ? `${v >= 0 ? "+" : ""}${v.toFixed(2)}%` : "-");
+const mult = (v: any) => (isNum(v) ? `${v.toFixed(2)}x` : "-");
+const num = (v: any, d = 2) => (isNum(v) ? v.toFixed(d) : "-");
 
 const money = (v: any, ccy?: string | null) => {
-  if (!isNum(v)) return "—";
+  if (!isNum(v)) return "-";
   try {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: ccy || "USD", maximumFractionDigits: 2 }).format(v);
   } catch {
@@ -183,7 +183,7 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
   const latestBal = balance?.[0];
   const latestCf = cashFlow?.[0];
 
-  // Quality checklist — each criterion is null when the underlying data is missing
+  // Quality checklist - each criterion is null when the underlying data is missing
   const debtToEquity = isNum(r.debtEquityRatioTTM)
     ? r.debtEquityRatioTTM
     : isNum(latestBal?.totalDebt) && isNum(latestBal?.totalStockholdersEquity) && latestBal.totalStockholdersEquity > 0
@@ -310,7 +310,7 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
                         <td key={k} className="py-2.5 px-3 text-right">
                           <div className="font-mono font-semibold text-text tabular-nums">{k === "eps" ? num((row as any)[k]) : big((row as any)[k])}</div>
                           <div className={cn("text-xs font-mono", !isNum((row as any)[g]) ? "text-text-4" : (row as any)[g] >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                            {isNum((row as any)[g]) ? signedPct((row as any)[g]) : "—"}
+                            {isNum((row as any)[g]) ? signedPct((row as any)[g]) : "-"}
                           </div>
                         </td>
                       ))}
@@ -330,7 +330,7 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis dataKey="period" tick={{ fontSize: 12, fill: "#64748B" }} tickLine={false} axisLine={false} />
                 <YAxis tickFormatter={(v) => `${v}%`} tick={{ fontSize: 12, fill: "#64748B" }} tickLine={false} axisLine={false} width={48} />
-                <Tooltip formatter={(v: any) => (isNum(Number(v)) ? `${Number(v).toFixed(2)}%` : "—")} contentStyle={{ borderRadius: 12, fontSize: 13 }} />
+                <Tooltip formatter={(v: any) => (isNum(Number(v)) ? `${Number(v).toFixed(2)}%` : "-")} contentStyle={{ borderRadius: 12, fontSize: 13 }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
                 <Line type="monotone" dataKey="grossMargin" name={t.gm} stroke="#3B82F6" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
                 <Line type="monotone" dataKey="operatingMargin" name={t.om} stroke="#8B5CF6" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
@@ -372,8 +372,8 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
               <div className="grid grid-cols-2 gap-3 mb-5">
                 <Stat label={t.target} value={money(r.targetMeanPrice, ccy)} sub={isNum(r.numberOfAnalystOpinions) ? `${r.numberOfAnalystOpinions} ${t.opinions}` : undefined} />
                 <Stat label={t.upside} value={signedPct(upside)} />
-                <Stat label={t.targetRange} value={isNum(r.targetLowPrice) && isNum(r.targetHighPrice) ? `${money(r.targetLowPrice, ccy)} – ${money(r.targetHighPrice, ccy)}` : "—"} />
-                <Stat label={t.recommendation} value={r.recommendationKey ? String(r.recommendationKey).replace(/_/g, " ").toUpperCase() : "—"} sub={isNum(r.recommendationMean) ? `${r.recommendationMean.toFixed(2)} / 5` : undefined} />
+                <Stat label={t.targetRange} value={isNum(r.targetLowPrice) && isNum(r.targetHighPrice) ? `${money(r.targetLowPrice, ccy)} - ${money(r.targetHighPrice, ccy)}` : "-"} />
+                <Stat label={t.recommendation} value={r.recommendationKey ? String(r.recommendationKey).replace(/_/g, " ").toUpperCase() : "-"} sub={isNum(r.recommendationMean) ? `${r.recommendationMean.toFixed(2)} / 5` : undefined} />
               </div>
               {recTotal > 0 && (
                 <>

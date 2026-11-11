@@ -1,563 +1,223 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 
-export const AtomAnimation: React.FC<{ className?: string, fullScreen?: boolean, isHovered?: boolean, variant?: 'dark' | 'light' }> = ({ className, fullScreen, isHovered, variant = 'dark' }) => {
- const isLight = variant === 'light';
- const canvasRef = useRef<HTMLCanvasElement>(null);
- const mouseRef = useRef({ x: -1000, y: -1000, active: false });
+type RGB = [number, number, number];
 
- // Use a ref to feed isHovered into the loop cleanly
- const globalHoverRef = useRef(isHovered);
- useEffect(() => { globalHoverRef.current = isHovered; }, [isHovered]);
+// Three-colour palettes; the sphere cross-fades from one to the next and jumps on click.
+const DARK_PALETTES: [RGB, RGB, RGB][] = [
+  [[45, 212, 191], [56, 189, 248], [236, 254, 255]], // teal, sky, ice
+  [[139, 124, 246], [96, 165, 250], [240, 240, 255]], // violet, blue, white
+  [[52, 211, 153], [226, 184, 79], [255, 251, 235]], // emerald, gold, cream
+  [[244, 114, 182], [167, 139, 250], [255, 241, 250]], // pink, lilac, white
+];
+const LIGHT_PALETTES: [RGB, RGB, RGB][] = [
+  [[13, 148, 136], [37, 99, 235], [30, 41, 59]],
+  [[91, 75, 219], [14, 116, 144], [30, 27, 75]],
+  [[5, 150, 105], [180, 138, 46], [41, 37, 36]],
+  [[190, 24, 93], [109, 40, 217], [49, 46, 129]],
+];
 
- useEffect(() => {
- const canvas = canvasRef.current;
- if (!canvas) return;
+const DEPTH_LEVELS = 5;
+const SYMBOLS = ["$", "€", "%", "£", "¥"];
 
- const ctx = canvas.getContext('2d', { alpha: true });
- if (!ctx) return;
+interface Spike {
+  x: number; y: number; z: number; // unit direction
+  len: number;    // relative length
+  phase: number;  // breathing phase
+  color: 0 | 1 | 2;
+  char: string;
+  kick: number;   // extra extension from click / cursor, decays
+}
 
- 
- let animationFrameId: number;
- let width = 0;
- let height = 0;
- 
- // Scale for High-DPI screens
- const setupCanvas = () => {
- const dpr = Math.min(1.5, window.devicePixelRatio || 1);
- width = canvas.offsetWidth;
- height = canvas.offsetHeight;
- canvas.width = width * dpr;
-	canvas.height = height * dpr;
-	canvas.style.width = width + "px";
-	canvas.style.height = height + "px";
-	ctx.scale(dpr, dpr);
- };
- setupCanvas();
+/**
+ * A dense sphere of numbers carried on radial spikes (sea-urchin look) that rotates in 3D,
+ * breathes, cycles through three-colour palettes and bursts when clicked.
+ */
+export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean; isHovered?: boolean; variant?: "dark" | "light" }> = ({ className, isHovered, variant = "dark" }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hoverRef = useRef(isHovered);
+  useEffect(() => { hoverRef.current = isHovered; }, [isHovered]);
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d", { alpha: true });
+    if (!canvas || !ctx) return;
 
- class Node {
- x: number;
- y: number;
- z: number;
- baseX: number;
- baseY: number;
- baseZ: number;
- colorType: number;
- val: string;
+    const palettes = variant === "light" ? LIGHT_PALETTES : DARK_PALETTES;
+    let width = 0, height = 0, raf = 0;
+    let spikes: Spike[] = [];
+    const mouse = { x: -9999, y: -9999, active: false };
 
- constructor(x: number, y: number, z: number, colorType: number, val: string) {
- this.baseX = x;
- this.baseY = y;
- this.baseZ = z;
- this.x = x;
- this.y = y;
- this.z = z;
- this.colorType = colorType;
- this.val = val;
- }
- }
+    const setup = () => {
+      const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+      width = canvas.offsetWidth;
+      height = canvas.offsetHeight;
+      canvas.width = Math.max(1, Math.round(width * dpr));
+      canvas.height = Math.max(1, Math.round(height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
- class GravityParticle {
- x: number;
- y: number;
- z: number;
- val: string;
- speed: number;
- opacity: number;
- glow: boolean;
- color: string;
- 
- constructor(cx: number, startY: number, containerWidth: number) {
- // Spawn from the full width of the plateau (plateau is 70% of max 950px, but scaled by container width)
- const plateauWidth = Math.min(containerWidth, 950) * 0.7;
- this.x = cx + (Math.random() - 0.5) * plateauWidth * 0.9; // 90% of plateau width to not exceed
- this.y = startY + Math.random() * 20;
- this.z = (Math.random() - 0.5) * 200; // tighter depth
- 
- const isPositive = Math.random() > 0.1; // 90% green
- const randNum = Math.random();
- 
- const baseNum = (Math.random() * 15).toFixed(2);
- const twentyNum = (20 + Math.random() * 9.99).toFixed(2);
- const thirtyNum = (30 + Math.random() * 9.99).toFixed(2);
- let numberStr = baseNum;
- 
- if (isPositive) {
- if (randNum < 0.1) {
- numberStr = thirtyNum;
- } else if (randNum < 0.3) {
- numberStr = twentyNum;
- }
- }
- 
- this.val = isPositive ? `+${numberStr}%` : `-${numberStr}%`;
- this.color = isPositive ? 'rgba(34, 197, 94, ' : 'rgba(239, 68, 68, '; 
- 
- this.speed = 0.5 + Math.random() * 1.5; // Slower basic speed
- this.opacity = 0;
- this.glow = Math.random() > 0.5;
- }
- }
+      const count = Math.min(width, height) < 420 ? 800 : 1900;
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      spikes = Array.from({ length: count }, (_, i) => {
+        // Fibonacci sphere: even coverage without clumps
+        const y = 1 - (i / (count - 1)) * 2;
+        const r = Math.sqrt(1 - y * y);
+        const a = golden * i;
+        return {
+          x: Math.cos(a) * r, y, z: Math.sin(a) * r,
+          len: 0.74 + Math.random() * 0.32,
+          phase: Math.random() * Math.PI * 2,
+          color: (i % 7 === 0 ? 2 : i % 2) as 0 | 1 | 2,
+          char: String(Math.floor(Math.random() * 10)),
+          kick: 0,
+        };
+      });
+    };
 
- let nodes: Node[] = [];
- let gravityParticles: GravityParticle[] = [];
- 
- const init = () => {
- nodes = [];
- gravityParticles = [];
- const numNodes = 250;
- const radius = Math.min(width, height) * (width < 640 ? 0.34 * 1.2 : 0.48); // Dynamic scale with +20% on mobile only
- const cx = width / 2;
- 
- // Initialize Gravity Particles
- for (let i = 0; i < 10; i++) {
- gravityParticles.push(new GravityParticle(cx, height, width));
- }
+    let angleY = 0, angleX = 0.35;
+    let palette = 0, nextPalette = 1, mix = 0;
+    let burst = 0;
+    let t0 = performance.now();
 
- 
- const phi = Math.PI * (3 - Math.sqrt(5));
+    // Buckets reused every frame: [depth][colour] -> flat coordinate list
+    const lineBuckets: number[][][] = Array.from({ length: DEPTH_LEVELS }, () => [[], [], []]);
+    const textBuckets: { x: number; y: number; c: string }[][][] = Array.from({ length: DEPTH_LEVELS }, () => [[], [], []]);
 
- for (let i = 0; i < numNodes; i++) {
- const y = 1 - (i / (numNodes - 1)) * 2;
- const r = Math.sqrt(1 - y * y);
- const theta = phi * i;
+    const frame = (now: number) => {
+      const dt = Math.min(50, now - t0) / 16.67;
+      t0 = now;
+      const time = now / 1000;
+      ctx.clearRect(0, 0, width, height);
 
- const actualRadius = radius * (0.8 + Math.random() * 0.2);
+      const cx = width / 2, cy = height / 2;
+      const R = Math.min(width, height) * 0.43;
+      const inner = R * 0.56;
+      const speed = hoverRef.current ? 2.2 : 1;
+      angleY += (0.0032 + burst * 0.02) * speed * dt;
+      angleX += (0.0011 + burst * 0.008) * speed * dt;
+      burst = Math.max(0, burst - 0.018 * dt);
 
- const x = Math.cos(theta) * r * actualRadius;
- const z = Math.sin(theta) * r * actualRadius;
- const yScaled = y * actualRadius;
- 
- const colorType = i % 3;
+      mix += (0.0022 + burst * 0.03) * dt;
+      if (mix >= 1) { mix = 0; palette = nextPalette; nextPalette = (nextPalette + 1) % palettes.length; }
+      const colors = [0, 1, 2].map((i) => {
+        const a = palettes[palette][i], b = palettes[nextPalette][i];
+        return `${Math.round(a[0] + (b[0] - a[0]) * mix)},${Math.round(a[1] + (b[1] - a[1]) * mix)},${Math.round(a[2] + (b[2] - a[2]) * mix)}`;
+      });
 
- const val = Math.floor(Math.random() * 10).toString();
- nodes.push(new Node(x, yScaled, z, colorType, val));
- 
- if (Math.random() > 0.4) {
- const innerRadius = actualRadius * (0.2 + Math.random() * 0.6);
- const ix = Math.cos(theta) * r * innerRadius;
- const iz = Math.sin(theta) * r * innerRadius;
- const iy = y * innerRadius;
- nodes.push(new Node(ix, iy, iz, colorType, Math.floor(Math.random() * 10).toString()));
- }
- }
- };
+      const cosY = Math.cos(angleY), sinY = Math.sin(angleY), cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+      for (let d = 0; d < DEPTH_LEVELS; d++) for (let c = 0; c < 3; c++) { lineBuckets[d][c].length = 0; textBuckets[d][c].length = 0; }
 
- let angleY = 0;
- let angleX = 0;
+      for (const s of spikes) {
+        const x1 = s.x * cosY - s.z * sinY;
+        const z1 = s.z * cosY + s.x * sinY;
+        const y1 = s.y * cosX - z1 * sinX;
+        const z2 = z1 * cosX + s.y * sinX; // -1 (near) .. 1 (far)
 
- let quantumBurst = 0;
- const financeSymbols = ['$', '€', '£', '¥', '∞', 'Δ', 'Σ', 'Φ', '1', '0'];
+        // breathing wave + click burst + cursor push
+        const wave = 1 + 0.07 * Math.sin(time * 1.4 + s.phase) + 0.05 * Math.sin(time * 0.6 + s.x * 4 + s.y * 3);
+        const persp = 1 / (1 + z2 * 0.28);
+        const burstExt = burst * 0.5 * (0.5 + 0.5 * Math.sin(s.phase * 3));
+        if (mouse.active) {
+          const e0 = s.len * wave + s.kick + burstExt;
+          const dx = cx + x1 * R * e0 * persp - mouse.x, dy = cy + y1 * R * e0 * persp - mouse.y;
+          const dist2 = dx * dx + dy * dy;
+          if (dist2 < 150 * 150) s.kick = Math.min(0.45, s.kick + (1 - Math.sqrt(dist2) / 150) * 0.06);
+        }
+        s.kick *= 0.94;
+        const ext = s.len * wave + s.kick + burstExt;
 
- let colorIndex = 0;
- let nextColorIndex = 1;
- let colorProgress = 0;
- let hoverScale = 1;
+        const depth = Math.min(DEPTH_LEVELS - 1, Math.max(0, Math.floor(((1 - z2) / 2) * DEPTH_LEVELS))); // 0 far .. 4 near
+        lineBuckets[depth][s.color].push(cx + x1 * inner * persp, cy + y1 * inner * persp, cx + x1 * R * ext * persp, cy + y1 * R * ext * persp);
+        if (burst > 0.2 && Math.random() < burst * 0.08) s.char = SYMBOLS[(Math.random() * SYMBOLS.length) | 0];
+        else if (Math.random() < 0.002) s.char = String((Math.random() * 10) | 0);
+        textBuckets[depth][s.color].push({ x: cx + x1 * R * (ext + 0.035) * persp, y: cy + y1 * R * (ext + 0.035) * persp, c: s.char });
+      }
 
- const palettes = isLight ? [
- [ [91, 75, 219], [124, 108, 240], [20, 20, 26] ],
- [ [18, 162, 110], [13, 148, 136], [38, 38, 47] ],
- [ [201, 162, 74], [91, 75, 219], [38, 38, 47] ],
- [ [14, 116, 144], [91, 75, 219], [20, 20, 26] ],
- [ [124, 58, 237], [201, 162, 74], [38, 38, 47] ]
- ] : [
- [ [6, 182, 212], [59, 130, 246], [255, 255, 255] ],
- [ [34, 197, 94], [16, 185, 129], [255, 255, 255] ],
- [ [255, 255, 255], [200, 200, 200], [150, 150, 150] ],
- [ [59, 130, 246], [37, 99, 235], [255, 255, 255] ],
- [ [168, 85, 247], [139, 92, 246], [255, 255, 255] ]
- ];
+      // soft core glow
+      const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.75);
+      glow.addColorStop(0, `rgba(${colors[0]},${variant === "light" ? 0.1 : 0.16})`);
+      glow.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, width, height);
 
- const animate = () => {
- ctx.clearRect(0, 0, width, height);
+      // back to front: spikes then digits for each depth slice
+      ctx.lineCap = "round";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let d = 0; d < DEPTH_LEVELS; d++) {
+        const k = d / (DEPTH_LEVELS - 1); // 0 far .. 1 near
+        ctx.lineWidth = 0.6 + k * 1.9;
+        for (let c = 0; c < 3; c++) {
+          const seg = lineBuckets[d][c];
+          if (!seg.length) continue;
+          ctx.strokeStyle = `rgba(${colors[c]},${(0.14 + k * 0.5).toFixed(2)})`;
+          ctx.beginPath();
+          for (let i = 0; i < seg.length; i += 4) { ctx.moveTo(seg[i], seg[i + 1]); ctx.lineTo(seg[i + 2], seg[i + 3]); }
+          ctx.stroke();
+        }
+        ctx.font = `500 ${Math.round(7 + k * 7)}px "JetBrains Mono", ui-monospace, monospace`;
+        for (let c = 0; c < 3; c++) {
+          const items = textBuckets[d][c];
+          if (!items.length) continue;
+          // near digits use the lightest palette colour so they stand out against the spikes
+          ctx.fillStyle = `rgba(${k > 0.6 ? colors[2] : colors[c]},${(0.25 + k * 0.75).toFixed(2)})`;
+          for (const it of items) ctx.fillText(it.c, it.x, it.y);
+        }
+      }
 
- const cx = width / 2;
- const cy = height / 2;
- 
- const targetHoverScale = globalHoverRef.current ? 1.05 : 1; // Slight hover zoom
- hoverScale += (targetHoverScale - hoverScale) * 0.05;
+      if (onScreen && !document.hidden) raf = requestAnimationFrame(frame);
+      else running = false;
+    };
 
- angleY += (0.0035 + (quantumBurst * 0.005)) * (globalHoverRef.current ? 3.5 : 1);
- angleX += (0.0015 + (quantumBurst * 0.005)) * (globalHoverRef.current ? 3.5 : 1);
+    // Pause when off-screen or when the tab is hidden
+    let onScreen = true, running = false;
+    const start = () => {
+      if (running || !onScreen || document.hidden) return;
+      running = true;
+      t0 = performance.now();
+      raf = requestAnimationFrame(frame);
+    };
+    const io = new IntersectionObserver((entries) => { onScreen = entries.some((e) => e.isIntersecting); if (onScreen) start(); });
+    io.observe(canvas);
+    const onVisibility = () => { if (!document.hidden) start(); };
+    document.addEventListener("visibilitychange", onVisibility);
 
- if (quantumBurst > 0) {
- quantumBurst -= 0.02;
- if (quantumBurst < 0) quantumBurst = 0;
- }
+    const onMove = (e: MouseEvent) => {
+      const r = canvas.getBoundingClientRect();
+      // the canvas may be CSS-scaled by its parents: map back to canvas coordinates
+      mouse.x = ((e.clientX - r.left) / r.width) * width;
+      mouse.y = ((e.clientY - r.top) / r.height) * height;
+      mouse.active = true;
+    };
+    const onLeave = () => { mouse.active = false; };
+    const onClick = () => {
+      burst = 1;
+      mix = 0;
+      palette = nextPalette;
+      nextPalette = (nextPalette + 1) % palettes.length;
+    };
+    canvas.addEventListener("mousemove", onMove);
+    canvas.addEventListener("mouseleave", onLeave);
+    canvas.addEventListener("click", onClick);
 
- colorProgress += 0.003 + (quantumBurst * 0.02);
- if (colorProgress >= 1) {
- colorProgress -= 1;
- colorIndex = nextColorIndex;
- nextColorIndex = (nextColorIndex + 1) % palettes.length;
- }
+    const ro = new ResizeObserver(() => setup());
+    ro.observe(canvas);
+    setup();
+    start();
 
- const currentColors = [0, 1, 2].map(i => {
- const c1 = palettes[colorIndex][i];
- const c2 = palettes[nextColorIndex][i];
- const r = Math.round(c1[0] + (c2[0] - c1[0]) * colorProgress);
- const g = Math.round(c1[1] + (c2[1] - c1[1]) * colorProgress);
- const b = Math.round(c1[2] + (c2[2] - c1[2]) * colorProgress);
- return `${r}, ${g}, ${b}`;
- });
+    return () => {
+      cancelAnimationFrame(raf);
+      io.disconnect();
+      ro.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+      canvas.removeEventListener("mousemove", onMove);
+      canvas.removeEventListener("mouseleave", onLeave);
+      canvas.removeEventListener("click", onClick);
+    };
+  }, [variant]);
 
- 
- 
-
- const cosY = Math.cos(angleY);
- const sinY = Math.sin(angleY);
- const cosX = Math.cos(angleX);
- const sinX = Math.sin(angleX);
- const fov = 1000;
-
- const projectedNodes = nodes.map(node => {
- let x1 = node.baseX * cosY - node.baseZ * sinY;
- let z1 = node.baseZ * cosY + node.baseX * sinY;
- 
- let y1 = node.baseY * cosX - z1 * sinX;
- let z2 = z1 * cosX + node.baseY * sinX;
- 
- const scale = fov / (fov + z2);
- 
- return {
- nodeRef: node,
- x: cx + x1 * scale * hoverScale,
- y: cy + y1 * scale * hoverScale,
- scale: scale * hoverScale,
- z2: z2,
- colorType: node.colorType
- };
- });
- 
- projectedNodes.sort((a, b) => b.z2 - a.z2);
-
- const coreGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(width, height) * 0.12);
- coreGradient.addColorStop(0, `rgba(${currentColors[0]}, 0.15)`);
- coreGradient.addColorStop(1, 'transparent');
- ctx.fillStyle = coreGradient;
- ctx.fillRect(0, 0, width, height);
-
- ctx.textAlign = 'center';
- ctx.textBaseline = 'middle';
- 
- let currentFont = "";
- let currentFillStyle = "";
- let currentStrokeStyle = "";
-
- const mx = mouseRef.current.x;
- const my = mouseRef.current.y;
- const mActive = mouseRef.current.active;
-
- projectedNodes.forEach(pNode => {
- if (pNode.z2 < -fov + 50) return;
- 
- let finalX = pNode.x;
- let finalY = pNode.y;
- let interactScale = 0;
-
- // Quantum Burst Value Shift
- if (quantumBurst > 0) {
- if (Math.random() < quantumBurst) {
- pNode.nodeRef.val = financeSymbols[Math.floor(Math.random() * financeSymbols.length)];
- }
- }
-
- if (mActive) {
- const dx = finalX - mx;
- const dy = finalY - my;
- const dist = Math.sqrt(dx * dx + dy * dy);
- if (dist < 180) {
- interactScale = (180 - dist) / 180;
- // Repel effect
- finalX += (dx / dist) * interactScale * 60;
- finalY += (dy / dist) * interactScale * 60;
- 
- // Matrix glitch effect: rapidly change numbers near cursor
- if (Math.random() < 0.2) {
- pNode.nodeRef.val = Math.floor(Math.random() * 10).toString();
- }
- }
- }
-
- const rawOpacity = Math.max(0.1, Math.min(1, 1 - (pNode.z2 + 200) / 600));
- // Quantize opacity and scale to reduce CSS string generation and state changes
- const opacity = Math.round(rawOpacity * 10) / 10;
- const fontSize = Math.max(12, Math.floor(18 * pNode.scale + (interactScale * 6)));
- const rgb = currentColors[pNode.colorType];
- 
- // Draw Ray
- const rayOpacity = Math.round(opacity * (isLight ? 0.22 : 0.35) * 10) / 10;
- const newStrokeStyle = `rgba(${rgb}, ${rayOpacity})`;
- if (currentStrokeStyle !== newStrokeStyle) {
- ctx.strokeStyle = newStrokeStyle;
- currentStrokeStyle = newStrokeStyle;
- }
- ctx.lineWidth = interactScale > 0 ? 1.5 + interactScale * 2 : 0.75;
- ctx.beginPath();
- ctx.moveTo(cx, cy);
- ctx.lineTo(finalX, finalY);
- ctx.stroke();
-
- // Connect to mouse if very close
- if (mActive && interactScale > 0.4) {
- ctx.beginPath();
- ctx.moveTo(finalX, finalY);
- ctx.lineTo(mx, my);
- ctx.stroke();
- }
-
- // Draw Digit
- const textOpacity = Math.min(1, opacity + interactScale);
- const newFillStyle = `rgba(${rgb}, ${textOpacity})`;
- if (currentFillStyle !== newFillStyle) {
- ctx.fillStyle = newFillStyle;
- currentFillStyle = newFillStyle;
- }
-
- const newFont = `300 ${fontSize}px "Space Grotesk", "JetBrains Mono", monospace`;
- if (currentFont !== newFont) {
- ctx.font = newFont;
- currentFont = newFont;
- }
-
- ctx.fillText(pNode.nodeRef.val, finalX, finalY);
- });
-
- // Update and draw gravity particles
- gravityParticles.forEach(p => {
- p.y -= p.speed; // move up
- 
- const dx = cx - p.x;
- const dy = cy - p.y;
- 
- // Gravitational pull logic strongly affecting elements when they pass certain heights
- if (p.y < height * 0.9) {
- p.x += dx * (0.004 + p.speed * 0.002); // Pull horizontally towards center X in a curved manner
- p.speed += 0.015; // Accelerate upwards progressively
- }
-
- p.opacity = Math.min(1, p.opacity + 0.02);
-
- // Absorption logic (Disappear at middle point)
- if (p.y <= cy) { 
- // Reset particle at bottom
- const plateauWidth = Math.min(width, 950) * 0.7;
- p.x = cx + (Math.random() - 0.5) * plateauWidth * 0.9;
- p.y = height + Math.random() * 20;
- p.z = (Math.random() - 0.5) * 200;
- 
- const randType = Math.random();
- const randNum = Math.random();
- const baseNum = (Math.random() * 15).toFixed(2);
- let numberStr = baseNum;
- if (randType < 0.33) {
-   p.val = `+${numberStr}%`;
-   p.color = isLight ? 'rgba(14, 116, 144, ' : 'rgba(6, 182, 212, '; // Cyan
- } else if (randType < 0.66) {
-   p.val = `+${(Math.random() * 5).toFixed(2)}%`;
-   p.color = isLight ? 'rgba(91, 75, 219, ' : 'rgba(168, 85, 247, '; // Purple
- } else {
-   p.val = `-${numberStr}%`;
-   p.color = 'rgba(239, 68, 68, '; // Red
- }
- 
- p.speed = 0.5 + Math.random() * 1.5;
- p.opacity = 0;
- 
- // Minor quantum burst response on absorption
- if (p.glow) quantumBurst = Math.min(1.0, quantumBurst + 0.005);
- }
-
- // Simple projection for gravity text
- const scale = fov / (fov + Math.max(-fov/1.5, p.z));
- const projectedX = cx + (p.x - cx) * scale;
- const projectedY = cy + (p.y - cy) * scale;
-
- const baseOpacity = Math.max(0, 1 - Math.abs(p.z) / 400) * p.opacity;
- if (baseOpacity <= 0) return;
-
- const fontSize = Math.max(9, Math.floor(13 * scale));
- 
- if (p.glow) {
-            ctx.fillStyle = p.color + baseOpacity + ')';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = p.color + baseOpacity + ')';
-          } else {
-            ctx.fillStyle = p.color + (baseOpacity * 0.5) + ')';
-            ctx.shadowBlur = 0;
-          }
-
- ctx.font = `600 ${fontSize}px "Space Grotesk", monospace`;
- ctx.fillText(p.val, projectedX, projectedY);
- });
- 
- // Draw Central Sun / Core - micro and stylish
- const pulse = Math.sin(Date.now() * 0.005) * 0.5 + 0.5; // 0 to 1
- 
- // Core center - micro
- ctx.beginPath();
- ctx.arc(cx, cy, 0.4 + pulse * 0.6, 0, Math.PI * 2);
- ctx.fillStyle = isLight ? `rgba(91, 75, 219, ${0.9 + pulse * 0.1})` : `rgba(255, 255, 255, ${0.9 + pulse * 0.1})`;
- ctx.shadowBlur = 0;
- ctx.shadowColor = '#06b6d4';
- ctx.fill();
- 
- // Inner subtle glow
- ctx.beginPath();
- ctx.arc(cx, cy, 1.5 + pulse * 1.5, 0, Math.PI * 2);
- ctx.fillStyle = `rgba(6, 182, 212, ${0.4 - pulse * 0.1})`;
- ctx.shadowBlur = 0;
- ctx.fill();
- 
- // Secondary tiny orbiting quantum particles (micro stylistic rings)
- for(let j=0; j<3; j++) {
- const orbitAngle = Date.now() * (0.0015 + j*0.0005) + (j * Math.PI * 2 / 3);
- const orbitRadius = 6 + j * 2.5; // Tighter orbits
- ctx.beginPath();
- ctx.arc(cx + Math.cos(orbitAngle) * orbitRadius, cy + Math.sin(orbitAngle) * orbitRadius, 0.3 + Math.random()*0.3, 0, Math.PI * 2);
- ctx.fillStyle = j === 0 ? '#7363EA' : (j===1 ? '#a855f7' : '#06b6d4');
-            ctx.shadowBlur = 8;
- ctx.shadowColor = j === 0 ? '#7363EA' : (j===1 ? '#a855f7' : '#06b6d4');
- ctx.fill();
- }
- 
- ctx.shadowBlur = 0;
-
- if (onScreen && !document.hidden) {
- animationFrameId = requestAnimationFrame(animate);
- } else {
- running = false;
- }
- };
-
- // Pause the loop when the canvas is off-screen or the tab is hidden (saves battery on mobile).
- let onScreen = true;
- let running = false;
- const start = () => {
- if (running || !onScreen || document.hidden) return;
- running = true;
- animationFrameId = requestAnimationFrame(animate);
- };
- const visibilityObserver = new IntersectionObserver((entries) => {
- onScreen = entries.some((e) => e.isIntersecting);
- if (onScreen) start();
- });
- visibilityObserver.observe(canvas);
- const handleVisibility = () => { if (!document.hidden) start(); };
- document.addEventListener('visibilitychange', handleVisibility);
-
- const handleResize = () => {
- setupCanvas();
- init();
- };
-
- const handleMouseMove = (e: MouseEvent) => {
- const rect = canvas.getBoundingClientRect();
- mouseRef.current = {
- x: e.clientX - rect.left,
- y: e.clientY - rect.top,
- active: true
- };
- };
-
- const handleMouseLeave = () => {
- mouseRef.current.active = false;
- };
-
- const handleMouseClick = () => {
- quantumBurst = 1.0;
- 
- // Play dramatic quantum effect - force all values to finance symbols momentarily
- nodes.forEach(n => {
- if (Math.random() > 0.5) {
- n.val = financeSymbols[Math.floor(Math.random() * financeSymbols.length)];
- }
- });
- };
-
- const handleTouchStart = (e: TouchEvent) => {
-  if (e.touches.length > 0) {
-   const rect = canvas.getBoundingClientRect();
-   const touch = e.touches[0];
-   mouseRef.current = {
-    x: touch.clientX - rect.left,
-    y: touch.clientY - rect.top,
-    active: true
-   };
-   handleMouseClick();
-  }
- };
-
- const handleTouchMove = (e: TouchEvent) => {
-  if (e.touches.length > 0) {
-   e.preventDefault();
-   const rect = canvas.getBoundingClientRect();
-   const touch = e.touches[0];
-   mouseRef.current = {
-    x: touch.clientX - rect.left,
-    y: touch.clientY - rect.top,
-    active: true
-   };
-  }
- };
-
- const handleTouchEnd = () => {
-  mouseRef.current.active = false;
- };
-
- canvas.addEventListener('mousemove', handleMouseMove);
- canvas.addEventListener('mouseleave', handleMouseLeave);
- canvas.addEventListener('mousedown', handleMouseClick);
- // canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
- // canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
- // canvas.addEventListener('touchend', handleTouchEnd);
-
- const resizeObserver = new ResizeObserver((entries) => {
-  for (let entry of entries) {
-   const { width: entryWidth, height: entryHeight } = entry.contentRect;
-   if (entryWidth > 0 && entryHeight > 0) {
-    window.requestAnimationFrame(() => handleResize());
-   }
-  }
- });
- resizeObserver.observe(canvas);
-
- init();
- start();
-
- return () => {
- cancelAnimationFrame(animationFrameId);
- visibilityObserver.disconnect();
- document.removeEventListener('visibilitychange', handleVisibility);
- resizeObserver.disconnect();
- canvas.removeEventListener('mousemove', handleMouseMove);
- canvas.removeEventListener('mouseleave', handleMouseLeave);
- canvas.removeEventListener('mousedown', handleMouseClick);
- canvas.removeEventListener('touchstart', handleTouchStart);
- canvas.removeEventListener('touchmove', handleTouchMove);
- canvas.removeEventListener('touchend', handleTouchEnd);
- };
- }, []);
-
- return (
- <div className={"w-full h-full flex flex-col items-center justify-center relative max-sm:scale-[0.6] origin-center " + (className || "")}>
- {/* Ambient glowing background aura */}
- <div className={"absolute inset-0 bg-gradient-to-r from-transparent to-transparent blur-3xl pointer-events-none " + (isLight ? "via-[#5B4BDB]/10" : "via-[#06b6d4]/5")} />
- 
- {/* Interactive 3D Canvas */}
- <canvas 
- ref={canvasRef} 
- className={"w-full h-full cursor-crosshair z-10 " + (fullScreen ? "" : "lg:max-w-[700px] lg:max-h-[700px] lg:min-h-[600px] max-w-[400px] max-h-[400px] min-h-[360px]")}
- />
- {/* Flat discreet base shadow */}
- <div className="absolute -bottom-[2%] left-1/2 -translate-x-1/2 w-[60%] h-1.5 pointer-events-none z-0">
- <div className="w-full h-full rounded-[50%] opacity-20"
- style={{ 
- background: 'radial-gradient(ellipse at center, rgba(6, 182, 212, 0.4) 0%, transparent 70%)', 
- boxShadow: '0 0px 8px 0px rgba(6, 182, 212, 0.2)' 
- }} />
- </div>
- </div>
- );
+  return (
+    <div className={"relative w-full h-full flex items-center justify-center " + (className || "")}>
+      <canvas ref={canvasRef} className="w-full h-full cursor-pointer" aria-hidden="true" />
+    </div>
+  );
 };
-

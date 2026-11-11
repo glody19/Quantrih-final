@@ -92,7 +92,7 @@ export function MarketTickerBar({ label = "Markets", onSelect }: { label?: strin
             {row}
           </div>
         ) : (
-          <span className="px-4 text-sm text-white/40">—</span>
+          <span className="px-4 text-sm text-white/40">-</span>
         )}
       </div>
       <div className="hidden lg:flex items-center px-4 border-l border-white/10 overflow-x-auto no-scrollbar max-w-[55%]">
