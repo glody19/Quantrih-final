@@ -222,7 +222,7 @@ export function VirtualPortfolio() {
           ].map((c, i) => (
             <motion.div key={c.l} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} className={cn(card, c.big && "col-span-2 lg:col-span-1 bg-gradient-to-br from-pv-blue to-[#3C3199] text-white border-transparent")}>
               <span className={cn("flex items-center text-sm", c.big ? "text-white/75" : "text-text-3")}>{c.l}{c.tip && <InfoTooltip content={c.tip} />}</span>
-              <b className={cn("block mt-1.5 text-2xl font-mono tabular-nums tracking-tight", c.signed && (c.v >= 0 ? "text-green" : "text-red"))}>
+              <b className={cn("block mt-1.5 text-lg sm:text-2xl font-mono tabular-nums tracking-tighter sm:tracking-tight", c.signed && (c.v >= 0 ? "text-green" : "text-red"))}>
                 <Num value={c.v} format={(v) => (c.signed && v >= 0 ? "+" : "") + money(v)} />
               </b>
               {typeof c.pct === "number" && <span className={cn("text-sm font-mono", c.pct >= 0 ? "text-green" : "text-red")}>{c.pct >= 0 ? "+" : ""}{c.pct.toFixed(2)}%</span>}
