@@ -7,16 +7,17 @@ import { HexBadgeOrbit } from "../ui/HexBadgeOrbit";
 import { AllocationsTicker } from "../home/AllocationsTicker";
 import { DeviceShowcase } from "../home/DeviceShowcase";
 import { PerformanceHeatmap, type HeatRow } from "../home/PerformanceHeatmap";
-import { ToolIllustration } from "../home/ToolIllustration";
-import { StockBoard } from "../home/StockBoard";
-import { CryptoBoard } from "../home/CryptoBoard";
 import { PlatformsMarquee } from "../home/PlatformsMarquee";
-import { FiberBackground } from "../home/FiberBackground";
+import { CryptoTicker } from "../home/CryptoTicker";
+import { LazyPortfolios } from "./LazyPortfolios";
 
 // ───────────────────────────── backgrounds (hybrid by section) ─────────────────────────────
-// Original hero colour plate: deep navy with a violet glow
-const HERO_PLATE: React.CSSProperties = {
-  background: "radial-gradient(ellipse 90% 70% at 50% 0%, #2B2580 0%, #15124A 38%, #0B0A24 70%, #070617 100%)",
+// Dark gradient with a fine white grid
+const DARK_GRID: React.CSSProperties = {
+  backgroundColor: "#0A0920",
+  backgroundImage:
+    "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(ellipse 90% 70% at 50% 0%, #1E1A5C 0%, #100E33 45%, #0A0920 100%)",
+  backgroundSize: "64px 64px, 64px 64px, 100% 100%",
 };
 // White with large rectangular cells
 const LARGE_GRID: React.CSSProperties = {
@@ -25,7 +26,6 @@ const LARGE_GRID: React.CSSProperties = {
     "linear-gradient(to right, rgba(15,23,42,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,23,42,0.06) 1px, transparent 1px)",
   backgroundSize: "120px 64px",
 };
-const SOFT: React.CSSProperties = { background: "linear-gradient(180deg, #F7F7FB 0%, #FFFFFF 100%)" };
 
 // ─────────────────────────────────── data ───────────────────────────────────
 const ASSET_CLASSES: (HeatRow & { fr: string })[] = [
@@ -89,8 +89,8 @@ const SECTORS_EU: (HeatRow & { fr: string })[] = [
 function ZoomSection({ children, className, style, id }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; id?: string }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const scale = useTransform(scrollYProgress, [0, 0.28, 0.72, 1], [0.8, 1, 1, 0.88]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.85, 1], [0.2, 1, 1, 0.45]);
+  const scale = useTransform(scrollYProgress, [0, 0.28, 0.72, 1], [0.97, 1, 1, 0.985]);
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.85, 1], [0.5, 1, 1, 0.8]);
   return (
     <section ref={ref} id={id} className={className} style={style}>
       <motion.div style={{ scale, opacity }} className="will-change-transform">
@@ -176,8 +176,8 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   // Hero parallax: atom grows as the page starts to scroll
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: heroP } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const atomScale = useTransform(heroP, [0, 1], [1, 1.25]);
-  const heroTextY = useTransform(heroP, [0, 1], [0, 120]);
+  const atomScale = useTransform(heroP, [0, 1], [1, 1.06]);
+  const heroTextY = useTransform(heroP, [0, 1], [0, 60]);
   const heroFade = useTransform(heroP, [0, 0.8], [1, 0]);
 
   const pages = [
@@ -190,8 +190,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   return (
     <div className="flex flex-col w-full overflow-hidden text-text">
       {/* ── Hero: original colour plate ── */}
-      <div ref={heroRef} className="relative w-full min-h-[100svh] flex items-center" style={HERO_PLATE}>
-        <div className="absolute inset-0 pointer-events-none opacity-[0.35]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)", backgroundSize: "26px 26px" }} />
+      <div ref={heroRef} className="relative w-full min-h-[100svh] flex items-center" style={DARK_GRID}>
         <div
           className="relative z-10 w-full max-w-[1600px] mx-auto flex flex-col lg:flex-row items-center pt-28 pb-16 lg:py-0"
           onMouseEnter={() => setHeroHovered(true)}
@@ -213,24 +212,21 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               {t("home.hero.subtitle")}
             </motion.p>
           </motion.div>
-          <motion.div style={{ scale: atomScale }} className="w-full lg:w-[54%] h-[52vh] sm:h-[60vh] lg:h-[86vh] relative z-10 flex items-center justify-center mt-6 lg:mt-0">
-            <div className="w-full h-full scale-[1.2] sm:scale-[1.1] lg:scale-100">
+          <motion.div style={{ scale: atomScale }} className="w-full lg:w-[54%] h-[44vh] sm:h-[50vh] lg:h-[68vh] relative z-10 flex items-center justify-center mt-6 lg:mt-0">
+            <div className="w-full h-full">
               <AtomAnimation isHovered={heroHovered} />
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* ── Ten famous allocations, YTD ── */}
+      {/* ── Crypto prices and ten famous allocations, scrolling ── */}
+      <CryptoTicker />
       <AllocationsTicker label={fr ? "Allocations · depuis le 1er janv." : "Allocations · YTD"} />
 
-      {/* ── Why backtest + demo video (large rectangular grid) ── */}
-      <ZoomSection style={LARGE_GRID} className="w-full pt-24 pb-28">
-        <div className="max-w-4xl mx-auto text-center px-6">
-          <h3 className="text-3xl md:text-[42px] font-normal tracking-tight text-text mb-5">{t("home.why_backtest.title")}</h3>
-          <p className="text-text-2 text-lg md:text-xl leading-relaxed">{t("home.why_backtest.desc")}</p>
-        </div>
-        <div className="w-full px-4 sm:px-6 lg:px-24 mt-16">
+      {/* ── Why backtest: devices enter first, then the explanation, then the four tools ── */}
+      <ZoomSection style={LARGE_GRID} className="w-full pt-20 pb-24">
+        <div className="w-full px-4 sm:px-6 lg:px-24">
           <DeviceShowcase
             videoMp4="/media/quantrih-demo.mp4"
             videoWebm="/media/quantrih-demo.webm"
@@ -240,10 +236,55 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             laptopAlt={fr ? "Résultats d'un backtest Quantrih : pertes maximales" : "Quantrih backtest results: drawdowns"}
           />
         </div>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-4xl mx-auto text-center px-6 mt-14"
+        >
+          <h3 className="text-3xl md:text-[42px] font-normal tracking-tight text-text mb-5">{t("home.why_backtest.title")}</h3>
+          <p className="text-text-2 text-lg md:text-xl leading-relaxed">{t("home.why_backtest.desc")}</p>
+        </motion.div>
+
+        <div className="px-6 lg:px-24 mt-20">
+          <div className="mb-10 text-center">
+            <h3 className="text-2xl md:text-4xl font-normal text-text tracking-tight mb-3">{t("home.tools.title")}</h3>
+            <p className="text-text-2 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">{t("home.tools.subtitle")}</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6 w-full max-w-[84rem] mx-auto">
+            {pages.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.55, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full"
+              >
+                <TiltCard className="group relative h-full min-h-[220px] rounded-[1.75rem] p-7 lg:p-9 flex flex-col text-white overflow-hidden shadow-[0_24px_50px_-28px_rgba(15,23,42,0.6)]">
+                  <span className="absolute inset-0" style={{ background: `linear-gradient(140deg, ${p.accent} 0%, ${p.accent}D9 40%, #15124A 120%)` }} />
+                  <span className="absolute -right-4 -bottom-10 text-[140px] font-semibold leading-none text-white/10 select-none font-sans">{String(i + 1).padStart(2, "0")}</span>
+                  <h4 className="relative text-xl lg:text-2xl font-semibold tracking-tight uppercase font-sans" style={{ transform: "translateZ(30px)" }}>{p.title}</h4>
+                  <p className="relative mt-3 text-white/90 text-sm lg:text-base leading-relaxed max-w-xl" style={{ transform: "translateZ(20px)" }}>{p.desc}</p>
+                  <div className="relative mt-auto pt-7" style={{ transform: "translateZ(40px)" }}>
+                    <button
+                      onClick={() => onGoPage(p.id)}
+                      className="px-6 py-2.5 rounded-full text-sm font-semibold text-[#15124A] bg-white hover:bg-white/90 transition-all inline-flex items-center gap-2"
+                    >
+                      {p.cta}
+                      <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                </TiltCard>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </ZoomSection>
 
-      {/* ── Asset classes & sectors (soft plain background) ── */}
-      <ZoomSection style={SOFT} className="w-full py-24">
+      {/* ── Asset classes & sectors (white) ── */}
+      <ZoomSection className="w-full py-20 bg-white">
         <div className="flex justify-center mb-8">
           <div className="inline-flex p-1 rounded-full bg-white border border-border shadow-sm">
             {(["us", "eu"] as const).map((r) => (
@@ -258,7 +299,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             ))}
           </div>
         </div>
-        <div key={region} className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div key={region} className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 xl:grid-cols-2 gap-6">
           <PerformanceHeatmap
             title={fr ? "Performance des classes d'actifs" : "Asset Class Performance"}
             firstCol={fr ? "Classe d'actifs" : "Asset Class"}
@@ -278,83 +319,25 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </ZoomSection>
 
-      {/* ── Stocks everyone watches (live, sortable) ── */}
-      <ZoomSection style={HERO_PLATE} className="w-full py-24 lg:py-28">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-10 max-w-3xl">
-            <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Les actions que tout le monde regarde" : "The stocks everyone is watching"}</h3>
-            <p className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Nvidia, Apple, Google, Tesla et les poids lourds européens, comparés sur le jour, un an et cinq ans." : "Nvidia, Apple, Google, Tesla and the European heavyweights, compared over the day, one year and five years."}</p>
-          </div>
-          <StockBoard fr={fr} />
+      {/* ── Lazy portfolios, short table (white) ── */}
+      <ZoomSection className="w-full pb-20 pt-4 bg-white">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12">
+          <LazyPortfolios variant="compact" onNavigate={onGoPage} />
         </div>
       </ZoomSection>
 
-      {/* ── Crypto (live from Binance) ── */}
-      <ZoomSection className="w-full py-24 lg:py-28 bg-[#070617]">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="mb-10 max-w-3xl">
-            <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Cryptomonnaies, en temps réel" : "Crypto, in real time"}</h3>
-            <p className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Les huit plus suivies, avec leur évolution sur sept jours." : "The eight most followed, with their move over seven days."}</p>
+      {/* ── Investment platforms (dark grid, white profile cards) ── */}
+      <ZoomSection style={DARK_GRID} className="relative w-full py-20 lg:py-24 overflow-hidden">
+        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="max-w-3xl">
+            <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</h3>
+            <p className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."}</p>
           </div>
-          <CryptoBoard fr={fr} />
+          <button onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-[#15124A] bg-white hover:bg-white/90 inline-flex items-center gap-2">
+            {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
+          </button>
         </div>
-      </ZoomSection>
-
-      {/* ── Investment platforms (fibre background) ── */}
-      <ZoomSection className="relative w-full py-24 lg:py-28 bg-[#0A0920] overflow-hidden">
-        <FiberBackground />
-        <div className="relative">
-          <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="max-w-3xl">
-              <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</h3>
-              <p className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."}</p>
-            </div>
-            <button onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-[#15124A] bg-white hover:bg-white/90 inline-flex items-center gap-2">
-              {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
-            </button>
-          </div>
-          <PlatformsMarquee fr={fr} />
-        </div>
-      </ZoomSection>
-
-      {/* ── Tools & strategies (hero plate again, 3D tilt cards) ── */}
-      <ZoomSection style={HERO_PLATE} className="w-full py-24 lg:py-32">
-        <div className="px-6 lg:px-24">
-          <div className="mb-14 text-center">
-            <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight mb-4">{t("home.tools.title")}</h3>
-            <p className="text-white/70 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">{t("home.tools.subtitle")}</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 w-full max-w-[90rem] mx-auto">
-            {pages.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 50, rotateX: 18 }}
-                whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="h-full"
-              >
-                <TiltCard className="group relative h-full min-h-[240px] rounded-[2rem] p-7 lg:p-9 flex flex-col bg-white/[0.05] border border-white/10 backdrop-blur-md shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)] hover:border-white/25 transition-colors overflow-hidden">
-                  <span className="absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-25 group-hover:opacity-50 transition-opacity duration-500" style={{ background: p.accent }} />
-                  <div className="relative mb-6" style={{ transform: "translateZ(25px)" }}>
-                    <ToolIllustration kind={i as 0 | 1 | 2 | 3} accent={p.accent} />
-                  </div>
-                  <h4 className="relative text-xl lg:text-2xl font-semibold tracking-tight uppercase font-sans" style={{ color: p.accent, transform: "translateZ(30px)" }}>{p.title}</h4>
-                  <p className="relative mt-3 text-white/75 text-sm lg:text-base leading-relaxed" style={{ transform: "translateZ(20px)" }}>{p.desc}</p>
-                  <div className="relative mt-auto pt-7 flex justify-center" style={{ transform: "translateZ(40px)" }}>
-                    <button
-                      onClick={() => onGoPage(p.id)}
-                      className="px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-white/10 border border-white/15 hover:bg-white hover:text-[#15124A] transition-all inline-flex items-center gap-2"
-                    >
-                      {p.cta}
-                      <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-                </TiltCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        <PlatformsMarquee fr={fr} />
       </ZoomSection>
 
       {/* ── Explore the other pages (large grid) ── */}

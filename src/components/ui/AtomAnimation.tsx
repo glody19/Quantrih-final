@@ -78,6 +78,17 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
     let burst = 0;
     let t0 = performance.now();
 
+    // Percent figures that drift in from outside and sink into the nucleus.
+    // Mostly gains (green), now and then a loss (burgundy), like a real market.
+    type Flow = { a: number; b: number; d: number; txt: string; up: boolean; speed: number };
+    const flows: Flow[] = [];
+    let spawnIn = 0;
+    const spawn = () => {
+      const up = Math.random() < 0.72;
+      const v = up ? 0.2 + Math.random() * 4.8 : 0.2 + Math.random() * 3.2;
+      flows.push({ a: Math.random() * Math.PI * 2, b: (Math.random() - 0.5) * 1.4, d: 1.32, txt: (up ? "+" : "-") + v.toFixed(2) + "%", up, speed: 0.0042 + Math.random() * 0.003 });
+    };
+
     // Buckets reused every frame: [depth][colour] -> flat coordinate list
     const lineBuckets: number[][][] = Array.from({ length: DEPTH_LEVELS }, () => [[], [], []]);
     const textBuckets: { x: number; y: number; c: string }[][][] = Array.from({ length: DEPTH_LEVELS }, () => [[], [], []]);
@@ -89,7 +100,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
       ctx.clearRect(0, 0, width, height);
 
       const cx = width / 2, cy = height / 2;
-      const R = Math.min(width, height) * 0.43;
+      const R = Math.min(width, height) * 0.35;
       const inner = R * 0.56;
       const speed = hoverRef.current ? 2.2 : 1;
       angleY += (0.0032 + burst * 0.02) * speed * dt;
@@ -162,6 +173,32 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
           ctx.fillStyle = `rgba(${k > 0.6 ? colors[2] : colors[c]},${(0.25 + k * 0.75).toFixed(2)})`;
           for (const it of items) ctx.fillText(it.c, it.x, it.y);
         }
+      }
+
+      // percent figures on their way to the core
+      spawnIn -= dt;
+      if (spawnIn <= 0 && flows.length < 12) { spawn(); spawnIn = 22 + Math.random() * 26; }
+      const light = variant === "light";
+      ctx.font = `600 ${Math.max(11, Math.round(R * 0.075))}px "JetBrains Mono", ui-monospace, monospace`;
+      for (let i = flows.length - 1; i >= 0; i--) {
+        const f = flows[i];
+        f.d -= f.speed * dt;
+        f.a += 0.0015 * dt;
+        if (f.d <= 0.12) { flows.splice(i, 1); continue; }
+        const x = cx + Math.cos(f.a) * R * f.d;
+        const y = cy + Math.sin(f.a) * R * f.d * 0.82 + f.b * R * 0.15 * f.d;
+        const alpha = Math.min(1, (1.32 - f.d) * 4) * Math.min(1, (f.d - 0.12) * 2.2);
+        const col = f.up ? (light ? "5,150,105" : "52,211,153") : (light ? "159,18,57" : "225,29,72");
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.shadowColor = `rgba(${col},0.8)`;
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = `rgb(${col})`;
+        const k = 0.55 + 0.45 * f.d;
+        ctx.translate(x, y);
+        ctx.scale(k, k);
+        ctx.fillText(f.txt, 0, 0);
+        ctx.restore();
       }
 
       if (onScreen && !document.hidden) raf = requestAnimationFrame(frame);

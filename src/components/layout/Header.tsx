@@ -81,7 +81,6 @@ export function Header({
       children: [
         { id: "market", label: t("nav.markets.equity") },
         { id: "etf-overview", label: t("nav.markets.etf") },
-        { id: "lazy-portfolios", label: "Lazy portfolios" },
         { id: "virtual-portfolio", label: language === "fr" ? "Portefeuille virtuel" : "Virtual portfolio" },
       ],
     },

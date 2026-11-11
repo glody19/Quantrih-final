@@ -197,25 +197,6 @@ export const SEO_ROUTES: SeoRoute[] = [
     },
   },
   {
-    path: "/lazy-portfolios",
-    section: "markets",
-    indexable: true,
-    priority: 0.8,
-    changefreq: "weekly",
-    fr: {
-      title: "Lazy portfolios : allocations, positions et performances | Quantrih",
-      description: "Les portefeuilles passifs de référence (60/40, All Weather, Permanent, Golden Butterfly) avec leurs ETF et leurs performances sur 1, 2, 3 et 5 ans.",
-      h1: "Lazy portfolios",
-      summary: "Composition détaillée et performances mises à jour des portefeuilles passifs les plus connus, calculées à partir des cours ajustés des dividendes.",
-    },
-    en: {
-      title: "Lazy Portfolios: Holdings and Performance | Quantrih",
-      description: "Reference passive portfolios (60/40, All Weather, Permanent, Golden Butterfly) with their ETFs and 1, 2, 3 and 5 year returns.",
-      h1: "Lazy portfolios",
-      summary: "Detailed holdings and up to date returns for the best known passive portfolios, computed from dividend adjusted prices.",
-    },
-  },
-  {
     path: "/virtual-portfolio",
     section: "markets",
     indexable: true,

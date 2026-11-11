@@ -25,7 +25,7 @@ function Bar({ v, maxAbs, inView, delay }: { v: number | null; maxAbs: number; i
       className="absolute inset-y-0 rounded-md"
       style={{
         [gain ? "left" : "right"]: 0,
-        background: gain ? "linear-gradient(90deg, rgba(110,231,183,0.18), rgba(110,231,183,0.55))" : "linear-gradient(270deg, rgba(253,164,175,0.18), rgba(253,164,175,0.6))",
+        background: gain ? "linear-gradient(90deg, rgba(16,185,129,0.10), rgba(16,185,129,0.32))" : "linear-gradient(270deg, rgba(159,18,57,0.08), rgba(159,18,57,0.26))",
         originX: gain ? 0 : 1,
       } as React.CSSProperties}
       initial={{ width: 0, opacity: 0 }}
@@ -71,26 +71,24 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 40, scale: 0.97 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -4 }}
-      className="relative overflow-hidden rounded-3xl p-6 md:p-8 text-white border border-white/10 bg-[linear-gradient(160deg,#17144A_0%,#0D0B2B_60%,#0A0920_100%)] shadow-[0_30px_70px_-30px_rgba(23,20,74,0.75)]"
+            className="relative overflow-hidden rounded-2xl p-5 md:p-6 text-text border border-border bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.25)]"
     >
-      <span className="pointer-events-none absolute -top-24 -right-16 w-64 h-64 rounded-full bg-[#7B6CF0]/25 blur-3xl" />
-      <h3 className="relative text-2xl font-medium tracking-tight text-white mb-5">{title}</h3>
+      <h3 className="relative text-lg font-semibold tracking-tight text-text mb-3">{title}</h3>
       {data.length === 0 ? (
         <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-9 rounded-lg bg-white/5 animate-pulse" />
+            <div key={i} className="h-7 rounded-md bg-surface-3 animate-pulse" />
           ))}
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[460px] text-[15px] border-separate border-spacing-y-1.5">
+          <table className="w-full min-w-[420px] text-sm border-separate border-spacing-y-1">
             <thead>
-              <tr className="text-sm text-white/50">
+              <tr className="text-xs text-text-3">
                 <th className="text-left font-medium pl-3 pb-2">{firstCol}</th>
                 {["1Y", "3Y", "5Y"].map((h) => (
                   <th key={h} className="font-medium pb-2 w-[22%] text-center">{h}</th>
@@ -107,7 +105,7 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
                   className="group"
                   title={d.symbol}
                 >
-                  <td className="pl-3 pr-2 py-1 text-white/85 font-medium whitespace-nowrap group-hover:text-[#B6ABF7] transition-colors">{d.label}</td>
+                  <td className="pl-2 pr-2 py-0.5 text-text-2 font-medium whitespace-nowrap group-hover:text-pv-blue transition-colors">{d.label}</td>
                   {(["y1", "y3", "y5"] as const).map((k, col) => {
                     const v = (d.p as any)[k] as number | null;
                     const delay = col * COL_DELAY + i * ROW_DELAY;
@@ -117,10 +115,10 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
                           initial={{ opacity: 0, y: 14 }}
                           animate={inView ? { opacity: 1, y: 0 } : {}}
                           transition={{ duration: 0.5, delay, ease: "easeOut" }}
-                          className="relative mx-auto max-w-[120px] h-9 rounded-md bg-white/[0.04] overflow-hidden"
+                          className="relative mx-auto max-w-[104px] h-7 rounded-md bg-slate-50 overflow-hidden"
                         >
                           <Bar v={v} maxAbs={maxAbs[k]} inView={inView} delay={delay} />
-                          <span className={cn("relative z-10 flex h-full items-center justify-center tabular-nums font-mono text-[13px] font-semibold", !isNum(v) ? "text-white/30" : v >= 0 ? "text-emerald-100" : "text-rose-100")}>
+                          <span className={cn("relative z-10 flex h-full items-center justify-center tabular-nums font-mono text-[12px] font-semibold", !isNum(v) ? "text-text-4" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}>
                             <CountUp value={v} inView={inView} delay={delay} />
                           </span>
                         </motion.div>
@@ -133,7 +131,7 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
           </table>
         </div>
       )}
-      <p className="relative text-xs text-white/40 mt-4">
+      <p className="relative text-[11px] text-text-3 mt-3">
         {note}
         {asOf ? ` · ${asOf}` : ""}
       </p>

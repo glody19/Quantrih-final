@@ -91,7 +91,7 @@ function Donut({ p, lang }: { p: ModelPortfolio; lang: "en" | "fr" }) {
   );
 }
 
-function Detail({ p, s, lang, onClose, onNavigate }: { p: ModelPortfolio; s: ModelStats | null; lang: "en" | "fr"; onClose: () => void; onNavigate?: (page: string) => void }) {
+function Detail({ p, s, lang, onClose, onNavigate, showInvest = true }: { p: ModelPortfolio; s: ModelStats | null; lang: "en" | "fr"; onClose: () => void; onNavigate?: (page: string) => void; showInvest?: boolean }) {
   const t = T[lang];
   const maxAbs = Math.max(1, ...PERIODS.map(([k]) => Math.abs((s as any)?.[k] ?? 0)));
   const buy = () => {
@@ -174,8 +174,8 @@ function Detail({ p, s, lang, onClose, onNavigate }: { p: ModelPortfolio; s: Mod
         )}
 
         <div className="mt-8 flex flex-wrap gap-3">
-          <button onClick={buy} className="inline-flex items-center gap-2 bg-pv-blue hover:bg-pv-blue-d text-white font-semibold px-6 py-3 rounded-full">{t.invest} <ArrowRight size={16} /></button>
-          <button onClick={() => onNavigate?.("portfolio-backtest")} className="inline-flex items-center gap-2 border border-border hover:border-border-2 font-semibold px-6 py-3 rounded-full text-text">{t.backtest}</button>
+          {showInvest && <button onClick={buy} className="inline-flex items-center gap-2 bg-pv-blue hover:bg-pv-blue-d text-white font-semibold px-6 py-3 rounded-full">{t.invest} <ArrowRight size={16} /></button>}
+          <button onClick={() => onNavigate?.("portfolio-backtest")} className={showInvest ? "inline-flex items-center gap-2 border border-border hover:border-border-2 font-semibold px-6 py-3 rounded-full text-text" : "inline-flex items-center gap-2 bg-pv-blue hover:bg-pv-blue-d text-white font-semibold px-6 py-3 rounded-full"}>{t.backtest} {!showInvest && <ArrowRight size={16} />}</button>
         </div>
         <p className="mt-5 text-xs text-text-4">{t.method}</p>
       </motion.div>
@@ -183,7 +183,13 @@ function Detail({ p, s, lang, onClose, onNavigate }: { p: ModelPortfolio; s: Mod
   );
 }
 
-export function LazyPortfolios({ onNavigate }: { onNavigate?: (page: string) => void }) {
+/**
+ * page: full page. embedded: same table inside another page (h2 title).
+ * compact: short table for the home page (5 portfolios, 1Y/3Y/5Y), detail offers the backtest only.
+ */
+export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: (page: string) => void; variant?: "page" | "embedded" | "compact" }) {
+  const compact = variant === "compact";
+  const periods: readonly (typeof PERIODS)[number][] = compact ? PERIODS.filter((x) => x[0] !== "y2") : PERIODS;
   const { language } = useTranslation();
   const lang: "en" | "fr" = language === "fr" ? "fr" : "en";
   const t = T[lang];
@@ -193,15 +199,15 @@ export function LazyPortfolios({ onNavigate }: { onNavigate?: (page: string) => 
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true });
 
-  const rows = useMemo(() => [...MODEL_PORTFOLIOS].sort((a, b) => ((stats[b.id] as any)?.[sort] ?? -999) - ((stats[a.id] as any)?.[sort] ?? -999)), [stats, sort]);
+  const rows = useMemo(() => [...MODEL_PORTFOLIOS].sort((a, b) => ((stats[b.id] as any)?.[sort] ?? -999) - ((stats[a.id] as any)?.[sort] ?? -999)).slice(0, compact ? 6 : undefined), [stats, sort, compact]);
   const asOf = Object.values(stats).find((s) => s)?.asOf;
   const active = MODEL_PORTFOLIOS.find((p) => p.id === open);
 
   return (
-    <div className="page-container pb-24 pt-6">
+    <div id="lazy-portfolios" className={variant === "page" ? "page-container pb-24 pt-6" : "w-full scroll-mt-24"}>
       <div className="max-w-3xl">
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-text">{t.title}</h1>
-        <p className="mt-3 text-lg text-text-2 leading-relaxed">{t.sub}</p>
+        {variant === "page" ? <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-text">{t.title}</h1> : <h2 className={cn("font-semibold tracking-tight text-text", compact ? "text-2xl md:text-3xl" : "text-2xl md:text-3xl")}>{t.title}</h2>}
+        <p className={cn("mt-3 text-text-2 leading-relaxed", compact ? "text-base" : "text-lg")}>{t.sub}</p>
       </div>
       <p className="mt-5 inline-flex items-center gap-2 text-sm text-text-3">
         {state === "loading" && <><RefreshCw size={14} className="animate-spin" /> {t.loading}</>}
@@ -210,13 +216,13 @@ export function LazyPortfolios({ onNavigate }: { onNavigate?: (page: string) => 
       </p>
 
       <div ref={ref} className="mt-6 overflow-x-auto rounded-3xl border border-border bg-white shadow-[0_20px_50px_-35px_rgba(17,17,24,0.4)]">
-        <table className="w-full min-w-[920px] text-[15px]">
+        <table className={cn("w-full", compact ? "min-w-[640px] text-sm" : "min-w-[920px] text-[15px]")}>
           <thead>
             <tr className="text-sm text-text-3 border-b border-border">
               <th className="text-left font-medium px-6 py-4">{t.portfolio}</th>
               <th className="text-left font-medium px-3">{t.allocation}</th>
               <th className="text-left font-medium px-3">{t.risk}</th>
-              {PERIODS.map(([k, en, fr]) => (
+              {periods.map(([k, en, fr]) => (
                 <th key={k} className="text-right font-medium px-3">
                   <button onClick={() => setSort(k)} className={cn("hover:text-text", sort === k && "text-pv-blue font-semibold")}>{lang === "fr" ? fr : en}{sort === k ? " ↓" : ""}</button>
                 </th>
@@ -230,10 +236,10 @@ export function LazyPortfolios({ onNavigate }: { onNavigate?: (page: string) => 
               return (
                 <motion.tr key={p.id} layout initial={{ opacity: 0, y: 18 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ layout: { type: "spring", stiffness: 260, damping: 28 }, delay: i * 0.05 }}
                   onClick={() => setOpen(p.id)} className="border-b border-border last:border-0 cursor-pointer hover:bg-surface-3/50 transition-colors">
-                  <td className="px-6 py-4"><span className="block font-semibold text-text">{p.name}</span><span className="text-sm text-text-3">{p.author}</span></td>
+                  <td className={compact ? "px-5 py-3" : "px-6 py-4"}><span className="block font-semibold text-text">{p.name}</span><span className="text-sm text-text-3">{p.author}</span></td>
                   <td className="px-3 w-[22%]"><AllocationBar p={p} /></td>
                   <td className="px-3"><span className="flex items-center gap-1" title={t.riskLabels[p.risk - 1]}>{[1, 2, 3, 4, 5].map((k) => <span key={k} className={cn("w-1.5 h-4 rounded-sm", k <= p.risk ? "bg-pv-blue" : "bg-surface-3")} />)}</span></td>
-                  {PERIODS.map(([k], col) => (
+                  {periods.map(([k], col) => (
                     <td key={k} className="px-3 text-right font-mono tabular-nums font-semibold">
                       {state === "loading" ? <span className="inline-block w-14 h-4 rounded bg-surface-3 animate-pulse" /> : <Count value={(s as any)?.[k] ?? null} start={inView} delay={col * 0.35 + i * 0.04} />}
                     </td>
@@ -247,7 +253,7 @@ export function LazyPortfolios({ onNavigate }: { onNavigate?: (page: string) => 
       </div>
       <p className="mt-4 text-xs text-text-4 max-w-3xl">{t.method}</p>
 
-      <AnimatePresence>{active && <Detail p={active} s={stats[active.id] || null} lang={lang} onClose={() => setOpen(null)} onNavigate={onNavigate} />}</AnimatePresence>
+      <AnimatePresence>{active && <Detail p={active} s={stats[active.id] || null} lang={lang} onClose={() => setOpen(null)} onNavigate={onNavigate} showInvest={!compact} />}</AnimatePresence>
     </div>
   );
 }

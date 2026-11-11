@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'motion/react';
+import { LazyPortfolios } from './LazyPortfolios';
+import { useNavigate } from 'react-router-dom';
 import { Download, FileDown, Printer, FileText, Search, TrendingUp, DollarSign, Activity, BarChart2, Info, Sparkles, Newspaper, Filter, ChevronRight, Database, Presentation, Maximize2, Minimize2, Trash2, Plus, X, PieChart } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { TradingViewChart } from '../ui/TradingViewChart';
@@ -513,6 +515,13 @@ const labels: Record<string, Record<string, string>> = {
 const watchlistHistoryCache: Record<string, any[]> = {};
 
 export function Market() {
+ const navigate = useNavigate();
+ // Links to /market#lazy-portfolios land on the lazy portfolios table at the bottom
+ useEffect(() => {
+  if (window.location.hash !== '#lazy-portfolios') return;
+  const id = setTimeout(() => document.getElementById('lazy-portfolios')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 700);
+  return () => clearTimeout(id);
+ }, []);
   const { language } = useTranslation();
   const currentLabels = labels[language] || labels["en"];
  const isMarketClosedVal = useMemo(() => {
@@ -2514,6 +2523,12 @@ const isEuropeanMarketOpen = () => {
 
  </div>
   </MobileZoomWrapper>
+  {/* Lazy portfolios: holdings and returns, at the bottom of the Market page */}
+  <section className="w-full bg-white border-t border-border mt-10 py-14">
+   <div className="page-container">
+    <LazyPortfolios variant="embedded" onNavigate={(page) => navigate(`/${page}`)} />
+   </div>
+  </section>
   {/* Scrolling market quotes + exchange hours: only on the Market page, at the bottom */}
   <div className="h-14" aria-hidden />
   <MarketTickerBar

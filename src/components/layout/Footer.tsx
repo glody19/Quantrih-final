@@ -34,7 +34,7 @@ export function Footer({ onNavigate }: FooterProps) {
       links: [
         { label: fr ? 'Marchés et analyse' : 'Markets and analysis', page: 'market' },
         { label: fr ? 'Comparateur d\'ETF' : 'ETF screener', page: 'etf-overview' },
-        { label: 'Lazy portfolios', page: 'lazy-portfolios' },
+        { label: 'Lazy portfolios', page: 'market#lazy-portfolios' },
         { label: fr ? 'Plateformes d\'investissement' : 'Investment platforms', page: 'platforms' },
       ],
     },

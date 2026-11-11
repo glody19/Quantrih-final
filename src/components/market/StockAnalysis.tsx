@@ -286,8 +286,8 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
       </div>
 
       {/* GROWTH & MARGINS */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        <Card title={t.growthTitle} icon={<Activity size={18} />} className="xl:col-span-3">
+      <div className="grid grid-cols-1 gap-6">
+        <Card title={t.growthTitle} icon={<Activity size={18} />}>
           {rows.length === 0 ? (
             <p className="text-sm text-text-3">{t.noData}</p>
           ) : (
@@ -321,48 +321,10 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
             </div>
           )}
         </Card>
-        <Card title={t.marginsTrend} icon={<Percent size={18} />} className="xl:col-span-2">
-          {rows.length === 0 ? (
-            <p className="text-sm text-text-3">{t.noData}</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={rows} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                <XAxis dataKey="period" tick={{ fontSize: 12, fill: "#64748B" }} tickLine={false} axisLine={false} />
-                <YAxis tickFormatter={(v) => `${v}%`} tick={{ fontSize: 12, fill: "#64748B" }} tickLine={false} axisLine={false} width={48} />
-                <Tooltip formatter={(v: any) => (isNum(Number(v)) ? `${Number(v).toFixed(2)}%` : "-")} contentStyle={{ borderRadius: 12, fontSize: 13 }} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: 13 }} />
-                <Line type="monotone" dataKey="grossMargin" name={t.gm} stroke="#3B82F6" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
-                <Line type="monotone" dataKey="operatingMargin" name={t.om} stroke="#8B5CF6" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
-                <Line type="monotone" dataKey="netMargin" name={t.nm} stroke="#10B981" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </Card>
       </div>
 
-      {/* CHECKLIST + ANALYSTS */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <Card title={t.checklist} icon={<ShieldCheck size={18} />}>
-          {evaluated.length > 0 && (
-            <div className="flex items-center gap-3 mb-4">
-              <div className="text-3xl font-semibold text-text font-mono">{passed}/{evaluated.length}</div>
-              <div className="text-sm text-text-3">{t.passed}</div>
-              <div className="flex-1 h-2 bg-surface-3 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(passed / evaluated.length) * 100}%` }} />
-              </div>
-            </div>
-          )}
-          <ul className="space-y-2">
-            {checks.map((c) => (
-              <li key={c.label} className="flex items-center gap-2.5 text-sm">
-                {c.ok === null ? <MinusCircle size={18} className="text-text-4 shrink-0" /> : c.ok ? <CheckCircle2 size={18} className="text-emerald-500 shrink-0" /> : <XCircle size={18} className="text-rose-500 shrink-0" />}
-                <span className={c.ok === null ? "text-text-4" : "text-text"}>{c.label}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-text-3 mt-4">{t.disclaimer}</p>
-        </Card>
+      {/* ANALYSTS */}
+      <div className="grid grid-cols-1 gap-6">
 
         <Card title={t.analysts} icon={<Target size={18} />}>
           {!isNum(r.targetMeanPrice) && recTotal === 0 ? (

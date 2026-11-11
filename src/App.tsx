@@ -17,7 +17,6 @@ import { Education } from "./components/pages/Education";
 import { Market } from "./components/pages/Market";
 import { SiteMap } from "./components/pages/SiteMap";
 import { Platforms } from "./components/pages/Platforms";
-import { LazyPortfolios } from "./components/pages/LazyPortfolios";
 import { VirtualPortfolio } from "./components/pages/VirtualPortfolio";
 import { EtfScreener } from "./components/pages/EtfScreener";
 import { Auth } from "./components/pages/Auth";
@@ -36,7 +35,7 @@ import { findSeoRoute, SITE_URL } from "./seo/routes";
 // Analysis tools get a plain white background and larger text (see .tool-page in index.css).
 const TOOL_PAGES = new Set([
   "asset-allocation", "portfolio", "portfolio-backtest", "tactical-allocation", "montecarlo",
-  "moving-average", "dual-momentum", "relative-strength", "market", "etf-overview", "lazy-portfolios",
+  "moving-average", "dual-momentum", "relative-strength", "market", "etf-overview",
 ]);
 
 export default function App() {
@@ -175,7 +174,7 @@ function AppContent() {
           <Route path="/platforms" element={<Platforms onNavigate={handleNavigate} />} />
           <Route path="/market" element={<Market />} />
           <Route path="/etf-overview" element={<EtfScreener />} />
-          <Route path="/lazy-portfolios" element={<LazyPortfolios onNavigate={handleNavigate} />} />
+          <Route path="/lazy-portfolios" element={<Navigate to="/market#lazy-portfolios" replace />} />
           <Route path="/virtual-portfolio" element={<VirtualPortfolio />} />
           <Route path="/education" element={<Education />} />
           <Route path="/donate" element={<Navigate to="/" replace />} />
