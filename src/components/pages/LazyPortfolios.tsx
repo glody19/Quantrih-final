@@ -38,11 +38,11 @@ function Count({ value, start, delay = 0 }: { value: number | null; start: boole
   const [v, setV] = useState(0);
   useEffect(() => {
     if (!start || !isNum(value)) return;
-    const c = animate(0, value, { duration: 1, delay, ease: [0.16, 1, 0.3, 1], onUpdate: setV });
+    const c = animate(0, value, { duration: 1.2, delay, ease: [0.16, 1, 0.3, 1], onUpdate: setV });
     return () => c.stop();
   }, [value, start, delay]);
   if (!isNum(value)) return <span className="text-text-4">-</span>;
-  return <span className={v >= 0 ? "text-green" : "text-red"}>{v >= 0 ? "+" : ""}{v.toFixed(2)}%</span>;
+  return <span className={v >= 0 ? "text-emerald-600" : "text-[#9F1239]"}>{v >= 0 ? "+" : ""}{v.toFixed(2)}%</span>;
 }
 
 function buckets(p: ModelPortfolio) {
@@ -197,7 +197,7 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
   const [open, setOpen] = useState<string | null>(null);
   const [sort, setSort] = useState<(typeof PERIODS)[number][0]>("y1");
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true });
+  const inView = useInView(ref, { once: true, margin: "-80px" });
 
   const rows = useMemo(() => [...MODEL_PORTFOLIOS].sort((a, b) => ((stats[b.id] as any)?.[sort] ?? -999) - ((stats[a.id] as any)?.[sort] ?? -999)).slice(0, compact ? 6 : undefined), [stats, sort, compact]);
   const asOf = Object.values(stats).find((s) => s)?.asOf;
@@ -241,7 +241,24 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
                   <td className="px-3"><span className="flex items-center gap-1" title={t.riskLabels[p.risk - 1]}>{[1, 2, 3, 4, 5].map((k) => <span key={k} className={cn("w-1.5 h-4 rounded-sm", k <= p.risk ? "bg-pv-blue" : "bg-surface-3")} />)}</span></td>
                   {periods.map(([k], col) => (
                     <td key={k} className="px-3 text-right font-mono tabular-nums font-semibold">
-                      {state === "loading" ? <span className="inline-block w-14 h-4 rounded bg-surface-3 animate-pulse" /> : <Count value={(s as any)?.[k] ?? null} start={inView} delay={col * 0.35 + i * 0.04} />}
+                      {state === "loading" ? <span className="inline-block w-14 h-4 rounded bg-surface-3 animate-pulse" /> : (
+                        <motion.span
+                          className="inline-flex flex-col items-end gap-1"
+                          initial={{ opacity: 0, y: 14 }}
+                          animate={inView ? { opacity: 1, y: 0 } : {}}
+                          transition={{ duration: 0.5, delay: col * 0.45 + i * 0.05, ease: "easeOut" }}
+                        >
+                          <Count value={(s as any)?.[k] ?? null} start={inView} delay={col * 0.45 + i * 0.05} />
+                          {isNum((s as any)?.[k]) && (
+                            <motion.span
+                              className={cn("block h-1 rounded-full", (s as any)[k] >= 0 ? "bg-emerald-400/70" : "bg-[#9F1239]/60")}
+                              initial={{ width: 0 }}
+                              animate={inView ? { width: `${Math.min(64, 8 + Math.abs((s as any)[k]) * 3)}px` } : {}}
+                              transition={{ duration: 0.9, delay: col * 0.45 + i * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                            />
+                          )}
+                        </motion.span>
+                      )}
                     </td>
                   ))}
                   <td className="px-4 text-text-4"><ArrowRight size={16} /></td>
