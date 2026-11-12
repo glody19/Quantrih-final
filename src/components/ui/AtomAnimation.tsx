@@ -55,7 +55,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
       canvas.height = Math.max(1, Math.round(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const count = Math.min(width, height) < 420 ? 800 : 1900;
+      const count = Math.min(width, height) < 420 ? 700 : 1500;
       const golden = Math.PI * (3 - Math.sqrt(5));
       spikes = Array.from({ length: count }, (_, i) => {
         // Fibonacci sphere: even coverage without clumps

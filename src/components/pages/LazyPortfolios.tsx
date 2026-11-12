@@ -13,7 +13,7 @@ const PERIODS = [["y1", "1Y", "1 an"], ["y2", "2Y", "2 ans"], ["y3", "3Y", "3 an
 
 const T = {
   en: {
-    title: "Lazy portfolios", sub: "Ten well-known allocations you can hold with a handful of ETFs. Click one to see what is inside and how it has performed.", subHome: "Ten well-known allocations and how they have performed. Click one to see what is inside.",
+    title: "Lazy portfolios", sub: "Ten well-known allocations you can hold with a handful of ETFs. Click one to see what is inside and how it has performed.", subHome: "Here is how ten of the best known ones have performed. Click one to see what is inside.", whatIs: "A lazy portfolio is a simple mix of three to six low-cost index ETFs (shares, bonds, sometimes gold or real estate) that you set once and rebalance once or twice a year. It spreads risk without picking stocks or timing the market, which makes it a solid long-term base for most investors.",
     updated: "Computed from market data up to", method: "Total return in USD, dividends reinvested, rebalanced monthly. 2Y, 3Y and 5Y are annualised.",
     portfolio: "Portfolio", risk: "Risk", allocation: "Allocation", vol: "Volatility", dd: "Worst fall",
     volTip: "How much the portfolio moves in a typical year. Lower is calmer.", ddTip: "The largest fall from a peak to the following low over the last five years.",
@@ -23,7 +23,7 @@ const T = {
     riskLabels: ["Very low", "Low", "Medium", "High", "Very high"],
   },
   fr: {
-    title: "Lazy portfolios", sub: "Dix allocations connues, à tenir avec une poignée d'ETF. Cliquez sur l'une d'elles pour voir sa composition et sa performance.", subHome: "Dix allocations connues et leur performance. Cliquez sur l'une d'elles pour voir sa composition.",
+    title: "Lazy portfolios", sub: "Dix allocations connues, à tenir avec une poignée d'ETF. Cliquez sur l'une d'elles pour voir sa composition et sa performance.", subHome: "Voici comment dix des plus connus se sont comportés. Cliquez sur l'un d'eux pour voir sa composition.", whatIs: "Un lazy portfolio est un mélange simple de trois à six ETF indiciels peu coûteux (actions, obligations, parfois or ou immobilier) que l'on fixe une fois et qu'on rééquilibre une à deux fois par an. Il répartit le risque sans choisir d'actions ni anticiper le marché : une base solide à long terme pour la plupart des investisseurs.",
     updated: "Calculé à partir des données de marché jusqu'à", method: "Rendement total en USD, dividendes réinvestis, rééquilibrage mensuel. 2, 3 et 5 ans sont annualisés.",
     portfolio: "Portefeuille", risk: "Risque", allocation: "Allocation", vol: "Volatilité", dd: "Pire baisse",
     volTip: "L'ampleur des variations du portefeuille sur une année type. Plus c'est bas, plus c'est calme.", ddTip: "La plus forte baisse entre un sommet et le creux suivant sur les cinq dernières années.",
@@ -210,10 +210,18 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
 
   return (
     <div id="lazy-portfolios" className={variant === "page" ? "page-container pb-24 pt-6" : "w-full scroll-mt-24"}>
-      <div className="max-w-3xl">
-        {variant === "page" ? <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-text">{t.title}</h1> : <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-text">{t.title}</h2>}
-        <p className="mt-3 text-lg text-text-2 leading-relaxed">{home ? t.subHome : t.sub}</p>
-      </div>
+      {home ? (
+        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-text">{t.title}</h2>
+          <p className="mt-4 text-lg text-text-2 leading-relaxed">{t.whatIs}</p>
+          <p className="mt-3 text-base text-text-3 leading-relaxed">{t.subHome}</p>
+        </motion.div>
+      ) : (
+        <div className="max-w-3xl">
+          {variant === "page" ? <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-text">{t.title}</h1> : <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-text">{t.title}</h2>}
+          <p className="mt-3 text-lg text-text-2 leading-relaxed">{t.sub}</p>
+        </div>
+      )}
       {state !== "ready" && (
         <p className="mt-5 inline-flex items-center gap-2 text-sm text-text-3">
           {state === "loading" && <><RefreshCw size={14} className="animate-spin" /> {t.loading}</>}
@@ -221,7 +229,7 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
         </p>
       )}
 
-      <div ref={ref} className="mt-6 overflow-x-auto rounded-3xl border border-border bg-white shadow-[0_20px_50px_-35px_rgba(17,17,24,0.4)]">
+      <div ref={ref} className={cn("overflow-x-auto rounded-3xl border border-border bg-white shadow-[0_20px_50px_-35px_rgba(17,17,24,0.4)]", home ? "mt-10" : "mt-6")}>
         <table className="w-full min-w-[920px] text-[15px]">
           <thead>
             <tr className="text-sm text-text-3 border-b border-border">

@@ -12,8 +12,10 @@ type Perf = { y1: number | null; y3: number | null; y5: number | null; asOf: str
 const isNum = (v: any): v is number => typeof v === "number" && Number.isFinite(v);
 
 // Columns animate one after the other (1Y, then 3Y, then 5Y); rows ripple inside each column.
-const COL_DELAY = 0.45;
-const ROW_DELAY = 0.045;
+const COL_DELAY = 0.75;
+const ROW_DELAY = 0.07;
+// each figure flies in from a different side: left, top, right, bottom
+const FROM = [{ x: -46, y: 0 }, { x: 0, y: -30 }, { x: 46, y: 0 }, { x: 0, y: 30 }];
 
 /** Diverging bar behind the figure: mint for gains, coral for losses, width scales with magnitude. */
 function Bar({ v, maxAbs, inView, delay }: { v: number | null; maxAbs: number; inView: boolean; delay: number }) {
@@ -30,7 +32,7 @@ function Bar({ v, maxAbs, inView, delay }: { v: number | null; maxAbs: number; i
       } as React.CSSProperties}
       initial={{ width: 0, opacity: 0 }}
       animate={inView ? { width: `${Math.max(6, k * 100)}%`, opacity: 1 } : {}}
-      transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 1.6, delay, ease: [0.22, 1, 0.36, 1] }}
     />
   );
 }
@@ -39,7 +41,7 @@ function CountUp({ value, inView, delay }: { value: number | null; inView: boole
   const [shown, setShown] = useState(0);
   useEffect(() => {
     if (!inView || !isNum(value)) return;
-    const c = animate(0, value, { duration: 1.1, delay, ease: [0.16, 1, 0.3, 1], onUpdate: (v) => setShown(v) });
+    const c = animate(0, value, { duration: 2.4, delay, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => setShown(v) });
     return () => c.stop();
   }, [inView, value, delay]);
   if (!isNum(value)) return <>-</>;
@@ -77,7 +79,20 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="relative overflow-hidden rounded-2xl p-5 md:p-6 text-text border border-border bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.25)]"
     >
-      <h3 className="relative text-lg font-semibold tracking-tight text-text mb-3">{title}</h3>
+      <h3 className="relative text-center text-xl md:text-2xl font-semibold tracking-tight text-text mb-4 [perspective:600px]">
+        {title.split(" ").map((w, i) => (
+          <motion.span
+            key={i}
+            className="inline-block mr-[0.28em]"
+            initial={{ opacity: 0, y: 26, rotateX: -80 }}
+            animate={inView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
+            transition={{ type: "spring", stiffness: 120, damping: 14, delay: i * 0.12 }}
+          >
+            {w}
+          </motion.span>
+        ))}
+        <motion.span className="block mx-auto mt-2 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#5B4BDB] to-[#18B8A0]" initial={{ scaleX: 0 }} animate={inView ? { scaleX: 1 } : {}} transition={{ duration: 0.8, delay: 0.4 }} />
+      </h3>
       {data.length === 0 ? (
         <div className="space-y-2">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -86,9 +101,9 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[420px] text-sm border-separate border-spacing-y-1">
+          <table className="w-full min-w-[420px] text-[15px] border-separate border-spacing-y-[3px]">
             <thead>
-              <tr className="text-xs text-text-3">
+              <tr className="text-[13px] text-text-3">
                 <th className="text-left font-medium pl-3 pb-2">{firstCol}</th>
                 {["1Y", "3Y", "5Y"].map((h) => (
                   <th key={h} className="font-medium pb-2 w-[22%] text-center">{h}</th>
@@ -105,23 +120,24 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
                   className="group"
                   title={d.symbol}
                 >
-                  <td className="pl-2 pr-2 py-0.5 text-text-2 font-medium whitespace-nowrap group-hover:text-pv-blue transition-colors">{d.label}</td>
+                  <td className="pl-2 pr-2 py-0 text-text font-medium whitespace-nowrap group-hover:text-pv-blue transition-colors">{d.label}</td>
                   {(["y1", "y3", "y5"] as const).map((k, col) => {
                     const v = (d.p as any)[k] as number | null;
                     const delay = col * COL_DELAY + i * ROW_DELAY;
                     return (
                       <td key={k} className="px-1.5 sm:px-3">
-                        <motion.div
-                          initial={{ opacity: 0, y: 14 }}
-                          animate={inView ? { opacity: 1, y: 0 } : {}}
-                          transition={{ duration: 0.5, delay, ease: "easeOut" }}
-                          className="relative mx-auto max-w-[104px] h-7 rounded-md bg-slate-50 overflow-hidden"
-                        >
+                        <div className="relative mx-auto max-w-[112px] h-8 rounded-md bg-slate-50 overflow-hidden">
                           <Bar v={v} maxAbs={maxAbs[k]} inView={inView} delay={delay} />
-                          <span className={cn("relative z-10 flex h-full items-center justify-center tabular-nums font-mono text-[12px] font-semibold", !isNum(v) ? "text-text-4" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}>
+                          {/* only the figure moves: flies in from one side, zooms, then blinks once settled */}
+                          <motion.span
+                            className={cn("relative z-10 flex h-full items-center justify-center tabular-nums font-mono text-[14px] font-bold", !isNum(v) ? "text-text-4" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}
+                            initial={{ opacity: 0, scale: 0.3, ...FROM[(i + col) % 4] }}
+                            animate={inView ? { opacity: [0, 1, 1, 0.35, 1], scale: [0.3, 1.25, 1, 1, 1], x: 0, y: 0 } : {}}
+                            transition={{ duration: 2.6, delay, times: [0, 0.3, 0.45, 0.8, 1], ease: "easeOut" }}
+                          >
                             <CountUp value={v} inView={inView} delay={delay} />
-                          </span>
-                        </motion.div>
+                          </motion.span>
+                        </div>
                       </td>
                     );
                   })}

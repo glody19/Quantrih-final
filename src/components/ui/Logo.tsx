@@ -24,13 +24,15 @@ export const QuantrihLogo = ({ className, variant = "bars", showText = true, siz
   };
 
   const logos = {
-    // Brand mark: a "Q" whose tail is a rising trend line ending on a data point
+    // Brand mark: a Bloch sphere, the drawing of a quantum bit: sphere, equator, meridian and a state vector with a gold tip
     bars: (
       <svg viewBox="0 0 32 32" className="w-full h-full text-current" fill="none">
-        <circle cx="14.5" cy="15" r="10" stroke="currentColor" strokeWidth="3.2" />
-        <path d="M9.5 17.2 L13 13.6 L15.8 16.2 L19.6 11.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" />
-        <path d="M19.5 20 L27 27.5" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
-        <circle cx="27.6" cy="28.1" r="2.4" fill="#E2B84F" />
+        <circle cx="16" cy="16" r="12.6" stroke="currentColor" strokeWidth="2.2" />
+        <ellipse cx="16" cy="16" rx="12.6" ry="4.4" stroke="currentColor" strokeWidth="1.5" opacity="0.55" />
+        <ellipse cx="16" cy="16" rx="4.4" ry="12.6" stroke="currentColor" strokeWidth="1.2" opacity="0.3" />
+        <path d="M16 16 L23.6 7.4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+        <circle cx="16" cy="16" r="1.6" fill="currentColor" />
+        <circle cx="24.2" cy="6.7" r="3" fill="#E2B84F" />
       </svg>
     ),
     orbit: (

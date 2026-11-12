@@ -9,6 +9,7 @@ import { PerformanceHeatmap, type HeatRow } from "../home/PerformanceHeatmap";
 import { PlatformsMarquee } from "../home/PlatformsMarquee";
 import { FiberBackground } from "../home/FiberBackground";
 import { LazyPortfolios } from "./LazyPortfolios";
+import { RelativeCompare } from "../home/RelativeCompare";
 
 // ───────────────────────────── backgrounds (hybrid by section) ─────────────────────────────
 // Dark gradient with a fine white grid
@@ -84,12 +85,13 @@ const SECTORS_EU: (HeatRow & { fr: string })[] = [
 ];
 
 // ─────────────────────────────── motion helpers ───────────────────────────────
-/** Section that zooms in as it enters the viewport and slightly out as it leaves. */
+/** Section that zooms in softly as it enters the viewport and softly out as it leaves (spring-smoothed). */
 function ZoomSection({ children, className, style, id, bg }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; id?: string; bg?: React.ReactNode }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const scale = useTransform(scrollYProgress, [0, 0.28, 0.72, 1], [0.97, 1, 1, 0.985]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.85, 1], [0.5, 1, 1, 0.8]);
+  const smooth = useSpring(scrollYProgress, { stiffness: 70, damping: 22, mass: 0.8 });
+  const scale = useTransform(smooth, [0, 0.3, 0.7, 1], [0.93, 1, 1, 0.95]);
+  const opacity = useTransform(smooth, [0, 0.22, 0.85, 1], [0.35, 1, 1, 0.7]);
   return (
     <section ref={ref} id={id} className={className} style={style}>
       {bg}
@@ -125,6 +127,30 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
       >
         {children}
       </motion.div>
+    </div>
+  );
+}
+
+/** Zooms its content up as it crosses the middle of the screen, then back down. */
+function MidZoom({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const smooth = useSpring(scrollYProgress, { stiffness: 70, damping: 20 });
+  const scale = useTransform(smooth, [0, 0.5, 1], [0.86, 1.08, 0.86]);
+  return <motion.div ref={ref} style={{ scale }} className="will-change-transform">{children}</motion.div>;
+}
+
+/** Section title: words rise one by one, then an underline draws itself. */
+function SectionTitle({ text, sub, dark = false }: { text: string; sub?: string; dark?: boolean }) {
+  return (
+    <div className="text-center max-w-3xl mx-auto mb-12 [perspective:700px]">
+      <h3 className={`text-3xl md:text-5xl font-semibold tracking-tight ${dark ? "text-white" : "text-text"}`}>
+        {text.split(" ").map((w, i) => (
+          <motion.span key={i} className="inline-block mr-[0.26em]" initial={{ opacity: 0, y: 40, rotateX: -80 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ type: "spring", stiffness: 110, damping: 14, delay: i * 0.1 }}>{w}</motion.span>
+        ))}
+      </h3>
+      <motion.span className="block mx-auto mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-[#5B4BDB] to-[#3B82F6]" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.35 }} />
+      {sub && <motion.p className={`mt-5 text-base md:text-xl leading-relaxed ${dark ? "text-white/70" : "text-text-2"}`} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.45 }}>{sub}</motion.p>}
     </div>
   );
 }
@@ -243,11 +269,11 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             </motion.p>
           </motion.div>
           <motion.div style={{ scale: atomScale }} className="w-full lg:w-[48%] h-[44vh] sm:h-[50vh] lg:h-[68vh] relative z-10 flex items-center justify-center mt-6 lg:mt-0 [perspective:1100px]">
-            {/* the atom drifts a little in 3D: up, down, left, right */}
+            {/* the whole atom drifts in 3D: up, down, left, right */}
             <motion.div
               className="w-full h-full"
-              animate={{ x: [0, 16, -12, 6, 0], y: [0, -18, 8, 14, 0], rotateX: [0, 7, -5, 3, 0], rotateY: [0, -9, 8, -4, 0] }}
-              transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ x: [0, 46, -38, 22, -14, 0], y: [0, -40, 26, 36, -22, 0], rotateX: [0, 12, -9, 6, -4, 0], rotateY: [0, -16, 13, -8, 5, 0], rotateZ: [0, 3, -2, 2, -1, 0] }}
+              transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
             >
               <AtomAnimation isHovered={heroHovered} />
             </motion.div>
@@ -258,8 +284,8 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       {/* ── Twenty famous allocations, scrolling ── */}
       <AllocationsTicker label={fr ? "Allocations · depuis le 1er janv." : "Allocations · YTD"} />
 
-      {/* ── Why backtest: explanation first, then the desktop and laptop demo (white, fibres) ── */}
-      <ZoomSection className="relative w-full pt-24 pb-24 bg-white overflow-hidden" bg={<FiberBackground light side="right" className="opacity-80" />}>
+      {/* ── Why backtest: explanation first, then the desktop, laptop and tablet demo (plain white) ── */}
+      <ZoomSection className="relative w-full pt-24 pb-24 bg-white overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -283,34 +309,51 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </ZoomSection>
 
-      {/* ── Tools & strategies: dark plate, navy cards with blue titles ── */}
-      <ZoomSection className="w-full py-24 lg:py-28" style={{ background: "radial-gradient(ellipse 80% 55% at 50% 0%, #0E1B4D 0%, #060B1F 55%, #03050F 100%)" }}>
+      {/* ── Tools & strategies: white background, navy cards with blue titles ── */}
+      <ZoomSection className="w-full py-24 lg:py-28 bg-white">
         <div className="px-6 lg:px-24">
-          <div className="mb-14 text-center">
-            <h3 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-5 font-sans">{t("home.tools.title")}</h3>
-            <p className="text-slate-300 text-base md:text-xl max-w-2xl mx-auto leading-relaxed">{t("home.tools.subtitle")}</p>
-          </div>
+          <SectionTitle text={t("home.tools.title")} sub={t("home.tools.subtitle")} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-9 w-full max-w-[84rem] mx-auto">
             {pages.map((p, i) => (
               <motion.div
                 key={p.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 50, scale: 0.94 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.7, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
                 className="h-full"
               >
-                <TiltCard className="group h-full min-h-[260px] rounded-[2rem] p-7 lg:p-9 flex flex-col bg-[#111A30] border border-white/[0.08] shadow-[0_30px_60px_-30px_rgba(0,0,0,0.8)] hover:border-[#3B82F6]/50 transition-colors">
-                  <h4 className="text-xl lg:text-2xl font-extrabold tracking-tight uppercase font-sans text-[#3B82F6]" style={{ transform: "translateZ(30px)" }}>{p.title}</h4>
-                  <p className="mt-4 text-slate-200 text-sm lg:text-[15px] leading-relaxed" style={{ transform: "translateZ(20px)" }}>{p.desc}</p>
-                  <div className="mt-auto pt-8 flex justify-center" style={{ transform: "translateZ(40px)" }}>
+                <TiltCard className="group h-full min-h-[260px] rounded-[2rem] p-7 lg:p-9 flex flex-col bg-[#111A30] border border-white/[0.08] shadow-[0_30px_60px_-30px_rgba(15,23,42,0.75)] hover:border-[#3B82F6]/50 transition-colors">
+                  <motion.h4
+                    className="text-xl lg:text-2xl font-extrabold tracking-tight uppercase font-sans text-[#3B82F6] overflow-hidden"
+                    style={{ transform: "translateZ(30px)" }}
+                    initial="hidden"
+                    whileInView="shown"
+                    viewport={{ once: true }}
+                    transition={{ staggerChildren: 0.03, delayChildren: 0.25 + i * 0.12 }}
+                  >
+                    {p.title.split("").map((ch, k) => (
+                      <motion.span key={k} className="inline-block whitespace-pre" variants={{ hidden: { y: "110%", opacity: 0 }, shown: { y: 0, opacity: 1, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } } }}>{ch}</motion.span>
+                    ))}
+                  </motion.h4>
+                  <motion.p
+                    className="mt-4 text-slate-200 text-sm lg:text-[15px] leading-relaxed"
+                    style={{ transform: "translateZ(20px)" }}
+                    initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+                    whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: 0.6 + i * 0.12 }}
+                  >
+                    {p.desc}
+                  </motion.p>
+                  <motion.div className="mt-auto pt-8 flex justify-center" style={{ transform: "translateZ(40px)" }} initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 200, damping: 16, delay: 0.9 + i * 0.12 }}>
                     <button
                       onClick={() => onGoPage(p.id)}
                       className="px-7 py-2.5 rounded-full text-sm font-semibold text-slate-100 bg-[#1C2740] border border-white/10 hover:bg-[#3B82F6] hover:border-[#3B82F6] transition-all"
                     >
                       {p.cta}
                     </button>
-                  </div>
+                  </motion.div>
                 </TiltCard>
               </motion.div>
             ))}
@@ -359,8 +402,19 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </ZoomSection>
 
+      {/* ── Relative performance of the big names (white) ── */}
+      <ZoomSection className="w-full pt-10 pb-24 bg-white">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12">
+          <SectionTitle
+            text={fr ? "Performance relative comparée" : "Relative Performance Comparison"}
+            sub={fr ? "Toutes les courbes partent de zéro le même jour : on voit d'un coup d'œil qui a le plus progressé." : "Every line starts at zero on the same day, so you can see at a glance who has gained the most."}
+          />
+          <RelativeCompare fr={fr} onOpen={() => onGoPage("market")} />
+        </div>
+      </ZoomSection>
+
       {/* ── Investment platforms (dark grid, white profile cards) ── */}
-      <ZoomSection style={DARK_GRID} className="relative w-full py-20 lg:py-24 overflow-hidden">
+      <ZoomSection style={DARK_GRID} className="relative w-full py-20 lg:py-28 overflow-hidden">
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-3xl">
             <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</h3>
@@ -370,7 +424,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
           </button>
         </div>
-        <PlatformsMarquee fr={fr} />
+        <MidZoom><PlatformsMarquee fr={fr} /></MidZoom>
       </ZoomSection>
 
       {/* ── Support (plain white) ── */}

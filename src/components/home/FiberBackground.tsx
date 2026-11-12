@@ -22,7 +22,7 @@ export function FiberBackground({ className, light = false, side = "right" }: { 
       w = canvas.offsetWidth; h = canvas.offsetHeight;
       canvas.width = Math.max(1, Math.round(w * dpr)); canvas.height = Math.max(1, Math.round(h * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const n = w < 700 ? 170 : 420;
+      const n = w < 700 ? 110 : 240;
       strands = Array.from({ length: n }, () => {
         const blurred = Math.random() < 0.14;
         return {
