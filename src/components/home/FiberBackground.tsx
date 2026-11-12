@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from "react";
 
 /**
- * Floating bundle of optical fibres with glowing tips, drawn on a canvas.
- * Decorative background: pauses when off-screen or when the tab is hidden.
+ * Bundle of optical fibres: thin strands twist through a knot and fan out, each ending in a
+ * glowing blue point, with a few out-of-focus points in front and behind. Drawn on a canvas,
+ * it drifts slowly. `light` is tuned for white backgrounds. Pauses off-screen.
  */
-export function FiberBackground({ className }: { className?: string }) {
+export function FiberBackground({ className, light = false, side = "right" }: { className?: string; light?: boolean; side?: "left" | "right" }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -13,7 +14,7 @@ export function FiberBackground({ className }: { className?: string }) {
     if (!canvas || !ctx) return;
     let w = 0, h = 0, raf = 0, running = false, onScreen = true;
 
-    type Strand = { a: number; len: number; bend: number; phase: number; speed: number; hue: number; size: number; bundle: number };
+    type Strand = { fan: number; len: number; curl: number; phase: number; speed: number; hue: number; size: number; blur: number; src: number };
     let strands: Strand[] = [];
 
     const setup = () => {
@@ -21,18 +22,19 @@ export function FiberBackground({ className }: { className?: string }) {
       w = canvas.offsetWidth; h = canvas.offsetHeight;
       canvas.width = Math.max(1, Math.round(w * dpr)); canvas.height = Math.max(1, Math.round(h * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const n = w < 700 ? 150 : 320;
-      strands = Array.from({ length: n }, (_, i) => {
-        const bundle = i % 2; // two sprays leaving the knot in opposite directions
+      const n = w < 700 ? 170 : 420;
+      strands = Array.from({ length: n }, () => {
+        const blurred = Math.random() < 0.14;
         return {
-          a: (bundle ? Math.PI : 0) + (Math.random() - 0.5) * 1.5,
-          len: 0.35 + Math.random() * 0.65,
-          bend: (Math.random() - 0.5) * 0.9,
+          fan: (Math.random() - 0.5) * 2,            // position inside the fan, -1..1
+          len: 0.45 + Math.pow(Math.random(), 0.7) * 0.55,
+          curl: (Math.random() - 0.5) * 0.5,
           phase: Math.random() * Math.PI * 2,
-          speed: 0.25 + Math.random() * 0.5,
-          hue: 215 + Math.random() * 45,
-          size: 1 + Math.random() * 2.2,
-          bundle,
+          speed: 0.2 + Math.random() * 0.45,
+          hue: 218 + Math.random() * 34,              // blue to violet
+          size: blurred ? 3.5 + Math.random() * 5 : 1.1 + Math.random() * 1.7,
+          blur: blurred ? 1 : 0,
+          src: Math.random(),                         // where on the incoming rope it starts
         };
       });
     };
@@ -40,24 +42,38 @@ export function FiberBackground({ className }: { className?: string }) {
     const frame = (now: number) => {
       const t = now / 1000;
       ctx.clearRect(0, 0, w, h);
-      // the knot drifts slowly so the whole bundle floats
-      const kx = w * (0.56 + 0.05 * Math.sin(t * 0.21)), ky = h * (0.5 + 0.08 * Math.sin(t * 0.17 + 1));
-      const reach = Math.max(w, h) * 0.75;
+      const dir = side === "right" ? 1 : -1;
+      // rope enters from one edge, passes through a drifting knot, then fans out towards the other side
+      const kx = w * (side === "right" ? 0.72 : 0.28) + Math.sin(t * 0.19) * w * 0.03;
+      const ky = h * (0.48 + 0.07 * Math.sin(t * 0.15 + 1));
+      const ox = side === "right" ? w * 1.06 : -w * 0.06;
+      const oy = h * (0.9 + 0.04 * Math.sin(t * 0.2));
+      const reach = Math.max(w * 0.6, h * 0.9);
       ctx.lineCap = "round";
       for (const s of strands) {
         const sway = Math.sin(t * s.speed + s.phase);
-        const a = s.a + sway * 0.12;
-        const L = reach * s.len * (1 + 0.04 * Math.sin(t * 0.6 + s.phase));
-        const tx = kx + Math.cos(a) * L, ty = ky + Math.sin(a) * L * 0.62;
-        const cxp = kx + Math.cos(a + s.bend + sway * 0.25) * L * 0.5, cyp = ky + Math.sin(a + s.bend + sway * 0.25) * L * 0.4;
-        ctx.strokeStyle = `hsla(${s.hue - 190}, 30%, 62%, 0.16)`; // warm copper core
-        ctx.lineWidth = 0.7;
-        ctx.beginPath(); ctx.moveTo(kx, ky); ctx.quadraticCurveTo(cxp, cyp, tx, ty); ctx.stroke();
-        const pulse = 0.55 + 0.45 * Math.sin(t * 1.6 + s.phase * 2);
-        ctx.fillStyle = `hsla(${s.hue}, 90%, 68%, ${0.14 * pulse})`;
-        ctx.beginPath(); ctx.arc(tx, ty, s.size * 3.2, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = `hsla(${s.hue}, 95%, ${70 + pulse * 20}%, ${0.55 + 0.45 * pulse})`;
-        ctx.beginPath(); ctx.arc(tx, ty, s.size, 0, Math.PI * 2); ctx.fill();
+        const ang = Math.PI * (side === "right" ? 1 : 0) + dir * (s.fan * 0.95 + sway * 0.07) - 0.12;
+        const L = reach * s.len;
+        const tx = kx + Math.cos(ang) * L, ty = ky + Math.sin(ang) * L * 0.8;
+        const c1x = ox + (kx - ox) * 0.55, c1y = oy + (ky - oy) * (0.2 + s.src * 0.5);
+        const c2x = kx + Math.cos(ang + s.curl + sway * 0.18) * L * 0.45, c2y = ky + Math.sin(ang + s.curl + sway * 0.18) * L * 0.36;
+        ctx.strokeStyle = light ? `rgba(120,88,70,${s.blur ? 0.06 : 0.2})` : `rgba(196,160,140,${s.blur ? 0.05 : 0.17})`;
+        ctx.lineWidth = s.blur ? 1.2 : 0.7;
+        ctx.beginPath();
+        ctx.moveTo(ox, oy + (s.src - 0.5) * 30);
+        ctx.quadraticCurveTo(c1x, c1y, kx, ky);
+        ctx.quadraticCurveTo(c2x, c2y, tx, ty);
+        ctx.stroke();
+        const pulse = 0.6 + 0.4 * Math.sin(t * 1.5 + s.phase * 2);
+        if (s.blur) {
+          ctx.fillStyle = `hsla(${s.hue}, 85%, ${light ? 62 : 66}%, ${(light ? 0.16 : 0.2) * pulse})`;
+          ctx.beginPath(); ctx.arc(tx, ty, s.size, 0, Math.PI * 2); ctx.fill();
+        } else {
+          ctx.fillStyle = `hsla(${s.hue}, 90%, 64%, ${(light ? 0.13 : 0.16) * pulse})`;
+          ctx.beginPath(); ctx.arc(tx, ty, s.size * 3, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = `hsla(${s.hue}, 92%, ${light ? 56 + pulse * 10 : 68 + pulse * 20}%, ${0.6 + 0.4 * pulse})`;
+          ctx.beginPath(); ctx.arc(tx, ty, s.size, 0, Math.PI * 2); ctx.fill();
+        }
       }
       if (onScreen && !document.hidden) raf = requestAnimationFrame(frame); else running = false;
     };
@@ -69,7 +85,7 @@ export function FiberBackground({ className }: { className?: string }) {
     const ro = new ResizeObserver(setup); ro.observe(canvas);
     setup(); start();
     return () => { cancelAnimationFrame(raf); io.disconnect(); ro.disconnect(); document.removeEventListener("visibilitychange", vis); };
-  }, []);
+  }, [light, side]);
 
   return <canvas ref={ref} aria-hidden="true" className={"absolute inset-0 w-full h-full pointer-events-none " + (className || "")} />;
 }

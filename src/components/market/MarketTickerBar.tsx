@@ -3,7 +3,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { MarketClock } from "../ui/MarketClock";
 
-// Indices, ETFs, gold, FX and bitcoin shown in the scrolling bar at the bottom of the Market page.
+// Indices, ETFs, gold, FX and crypto shown in the scrolling bar at the bottom of the Market page.
 const LIVE_SYMBOLS: { s: string; n: string }[] = [
   { s: "^BFX", n: "BEL 20" },
   { s: "^FCHI", n: "CAC 40" },
@@ -18,6 +18,12 @@ const LIVE_SYMBOLS: { s: string; n: string }[] = [
   { s: "GC=F", n: "Gold" },
   { s: "EURUSD=X", n: "EUR/USD" },
   { s: "BTC-USD", n: "Bitcoin" },
+  { s: "ETH-USD", n: "Ethereum" },
+  { s: "SOL-USD", n: "Solana" },
+  { s: "BNB-USD", n: "BNB" },
+  { s: "XRP-USD", n: "XRP" },
+  { s: "ADA-USD", n: "Cardano" },
+  { s: "DOGE-USD", n: "Dogecoin" },
 ];
 
 /** Fixed bottom bar of the Market page: real quotes scrolling + exchange opening hours. */

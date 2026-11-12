@@ -13,7 +13,7 @@ const PERIODS = [["y1", "1Y", "1 an"], ["y2", "2Y", "2 ans"], ["y3", "3Y", "3 an
 
 const T = {
   en: {
-    title: "Lazy portfolios", sub: "Ten well-known allocations you can hold with a handful of ETFs. Click one to see what is inside and how it has performed.",
+    title: "Lazy portfolios", sub: "Ten well-known allocations you can hold with a handful of ETFs. Click one to see what is inside and how it has performed.", subHome: "Ten well-known allocations and how they have performed. Click one to see what is inside.",
     updated: "Computed from market data up to", method: "Total return in USD, dividends reinvested, rebalanced monthly. 2Y, 3Y and 5Y are annualised.",
     portfolio: "Portfolio", risk: "Risk", allocation: "Allocation", vol: "Volatility", dd: "Worst fall",
     volTip: "How much the portfolio moves in a typical year. Lower is calmer.", ddTip: "The largest fall from a peak to the following low over the last five years.",
@@ -23,7 +23,7 @@ const T = {
     riskLabels: ["Very low", "Low", "Medium", "High", "Very high"],
   },
   fr: {
-    title: "Lazy portfolios", sub: "Dix allocations connues, à tenir avec une poignée d'ETF. Cliquez sur l'une d'elles pour voir sa composition et sa performance.",
+    title: "Lazy portfolios", sub: "Dix allocations connues, à tenir avec une poignée d'ETF. Cliquez sur l'une d'elles pour voir sa composition et sa performance.", subHome: "Dix allocations connues et leur performance. Cliquez sur l'une d'elles pour voir sa composition.",
     updated: "Calculé à partir des données de marché jusqu'à", method: "Rendement total en USD, dividendes réinvestis, rééquilibrage mensuel. 2, 3 et 5 ans sont annualisés.",
     portfolio: "Portefeuille", risk: "Risque", allocation: "Allocation", vol: "Volatilité", dd: "Pire baisse",
     volTip: "L'ampleur des variations du portefeuille sur une année type. Plus c'est bas, plus c'est calme.", ddTip: "La plus forte baisse entre un sommet et le creux suivant sur les cinq dernières années.",
@@ -99,13 +99,8 @@ function Detail({ p, s, lang, onClose, onNavigate, showInvest = true }: { p: Mod
     onNavigate?.("virtual-portfolio");
   };
   return (
-    <motion.div className="fixed inset-0 z-[150] flex items-start justify-center overflow-y-auto bg-[#0B0A24]/55 backdrop-blur-sm p-3 md:p-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
-      <motion.div
-        onClick={(e) => e.stopPropagation()}
-        initial={{ y: 60, scale: 0.94, opacity: 0 }} animate={{ y: 0, scale: 1, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
-        transition={{ type: "spring", stiffness: 220, damping: 26 }}
-        className="relative w-full max-w-5xl bg-white rounded-[2rem] shadow-2xl p-6 md:p-10 my-auto"
-      >
+    <motion.div className="overflow-hidden" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
+      <div className="relative bg-surface-3/40 border-t border-border p-6 md:p-10 cursor-default whitespace-normal">
         <button onClick={onClose} aria-label="Close" className="absolute top-5 right-5 w-10 h-10 rounded-full bg-surface-3 hover:bg-border flex items-center justify-center"><X size={18} /></button>
         <p className="text-sm text-text-3">{p.author}</p>
         <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-pv-blue pr-12">{p.name}</h2>
@@ -178,18 +173,17 @@ function Detail({ p, s, lang, onClose, onNavigate, showInvest = true }: { p: Mod
           <button onClick={() => onNavigate?.("portfolio-backtest")} className={showInvest ? "inline-flex items-center gap-2 border border-border hover:border-border-2 font-semibold px-6 py-3 rounded-full text-text" : "inline-flex items-center gap-2 bg-pv-blue hover:bg-pv-blue-d text-white font-semibold px-6 py-3 rounded-full"}>{t.backtest} {!showInvest && <ArrowRight size={16} />}</button>
         </div>
         <p className="mt-5 text-xs text-text-4">{t.method}</p>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
 
 /**
- * page: full page. embedded: same table inside another page (h2 title).
- * compact: short table for the home page (5 portfolios, 1Y/3Y/5Y), detail offers the backtest only.
+ * page: full page. embedded: same table inside the Market page; a click opens the details under the row.
+ * home: full table on the home page; a click goes to the Market page with that portfolio opened.
  */
-export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: (page: string) => void; variant?: "page" | "embedded" | "compact" }) {
-  const compact = variant === "compact";
-  const periods: readonly (typeof PERIODS)[number][] = compact ? PERIODS.filter((x) => x[0] !== "y2") : PERIODS;
+export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: (page: string) => void; variant?: "page" | "embedded" | "home" }) {
+  const home = variant === "home";
   const { language } = useTranslation();
   const lang: "en" | "fr" = language === "fr" ? "fr" : "en";
   const t = T[lang];
@@ -199,30 +193,42 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
-  const rows = useMemo(() => [...MODEL_PORTFOLIOS].sort((a, b) => ((stats[b.id] as any)?.[sort] ?? -999) - ((stats[a.id] as any)?.[sort] ?? -999)).slice(0, compact ? 6 : undefined), [stats, sort, compact]);
+  const rows = useMemo(() => [...MODEL_PORTFOLIOS].sort((a, b) => ((stats[b.id] as any)?.[sort] ?? -999) - ((stats[a.id] as any)?.[sort] ?? -999)), [stats, sort]);
   const asOf = Object.values(stats).find((s) => s)?.asOf;
-  const active = MODEL_PORTFOLIOS.find((p) => p.id === open);
+
+  // /market?lazy=<id> (coming from the home page) opens that portfolio and scrolls to it
+  useEffect(() => {
+    if (home) return;
+    const id = new URLSearchParams(window.location.search).get("lazy");
+    if (!id || !MODEL_PORTFOLIOS.some((p) => p.id === id)) return;
+    setOpen(id);
+    // the page above is still loading and shifting, so aim twice
+    const go = () => document.getElementById(`lazy-${id}`)?.scrollIntoView({ behavior: "auto", block: "start" });
+    const t1 = setTimeout(go, 500), t2 = setTimeout(go, 2000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [home]);
 
   return (
     <div id="lazy-portfolios" className={variant === "page" ? "page-container pb-24 pt-6" : "w-full scroll-mt-24"}>
       <div className="max-w-3xl">
-        {variant === "page" ? <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-text">{t.title}</h1> : <h2 className={cn("font-semibold tracking-tight text-text", compact ? "text-2xl md:text-3xl" : "text-2xl md:text-3xl")}>{t.title}</h2>}
-        <p className={cn("mt-3 text-text-2 leading-relaxed", compact ? "text-base" : "text-lg")}>{t.sub}</p>
+        {variant === "page" ? <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-text">{t.title}</h1> : <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-text">{t.title}</h2>}
+        <p className="mt-3 text-lg text-text-2 leading-relaxed">{home ? t.subHome : t.sub}</p>
       </div>
-      <p className="mt-5 inline-flex items-center gap-2 text-sm text-text-3">
-        {state === "loading" && <><RefreshCw size={14} className="animate-spin" /> {t.loading}</>}
-        {state === "ready" && asOf && <><span className="w-2 h-2 rounded-full bg-green" /> {t.updated} {asOf}</>}
-        {state === "error" && <><ShieldAlert size={15} className="text-gold" /> {t.error}</>}
-      </p>
+      {state !== "ready" && (
+        <p className="mt-5 inline-flex items-center gap-2 text-sm text-text-3">
+          {state === "loading" && <><RefreshCw size={14} className="animate-spin" /> {t.loading}</>}
+          {state === "error" && <><ShieldAlert size={15} className="text-gold" /> {t.error}</>}
+        </p>
+      )}
 
       <div ref={ref} className="mt-6 overflow-x-auto rounded-3xl border border-border bg-white shadow-[0_20px_50px_-35px_rgba(17,17,24,0.4)]">
-        <table className={cn("w-full", compact ? "min-w-[640px] text-sm" : "min-w-[920px] text-[15px]")}>
+        <table className="w-full min-w-[920px] text-[15px]">
           <thead>
             <tr className="text-sm text-text-3 border-b border-border">
               <th className="text-left font-medium px-6 py-4">{t.portfolio}</th>
               <th className="text-left font-medium px-3">{t.allocation}</th>
               <th className="text-left font-medium px-3">{t.risk}</th>
-              {periods.map(([k, en, fr]) => (
+              {PERIODS.map(([k, en, fr]) => (
                 <th key={k} className="text-right font-medium px-3">
                   <button onClick={() => setSort(k)} className={cn("hover:text-text", sort === k && "text-pv-blue font-semibold")}>{lang === "fr" ? fr : en}{sort === k ? " ↓" : ""}</button>
                 </th>
@@ -234,12 +240,13 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
             {rows.map((p, i) => {
               const s = stats[p.id];
               return (
-                <motion.tr key={p.id} layout initial={{ opacity: 0, y: 18 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ layout: { type: "spring", stiffness: 260, damping: 28 }, delay: i * 0.05 }}
-                  onClick={() => setOpen(p.id)} className="border-b border-border last:border-0 cursor-pointer hover:bg-surface-3/50 transition-colors">
-                  <td className={compact ? "px-5 py-3" : "px-6 py-4"}><span className="block font-semibold text-text">{p.name}</span><span className="text-sm text-text-3">{p.author}</span></td>
+                <React.Fragment key={p.id}>
+                <motion.tr id={`lazy-${p.id}`} initial={{ opacity: 0, y: 18 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: i * 0.05 }}
+                  onClick={() => (home ? onNavigate?.(`market?lazy=${p.id}`) : setOpen(open === p.id ? null : p.id))} className={cn("border-b border-border cursor-pointer hover:bg-surface-3/50 transition-colors scroll-mt-24", open === p.id && "bg-pv-blue/[0.06]")}>
+                  <td className="px-6 py-4"><span className="block font-semibold text-text">{p.name}</span><span className="text-sm text-text-3">{p.author}</span></td>
                   <td className="px-3 w-[22%]"><AllocationBar p={p} /></td>
                   <td className="px-3"><span className="flex items-center gap-1" title={t.riskLabels[p.risk - 1]}>{[1, 2, 3, 4, 5].map((k) => <span key={k} className={cn("w-1.5 h-4 rounded-sm", k <= p.risk ? "bg-pv-blue" : "bg-surface-3")} />)}</span></td>
-                  {periods.map(([k], col) => (
+                  {PERIODS.map(([k], col) => (
                     <td key={k} className="px-3 text-right font-mono tabular-nums font-semibold">
                       {state === "loading" ? <span className="inline-block w-14 h-4 rounded bg-surface-3 animate-pulse" /> : (
                         <motion.span
@@ -261,8 +268,14 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
                       )}
                     </td>
                   ))}
-                  <td className="px-4 text-text-4"><ArrowRight size={16} /></td>
+                  <td className="px-4 text-text-4"><ArrowRight size={16} className={cn("transition-transform", open === p.id && "rotate-90 text-pv-blue")} /></td>
                 </motion.tr>
+                {!home && (
+                  <tr><td colSpan={8} className="p-0">
+                    <AnimatePresence initial={false}>{open === p.id && <Detail p={p} s={stats[p.id] || null} lang={lang} onClose={() => setOpen(null)} onNavigate={onNavigate} />}</AnimatePresence>
+                  </td></tr>
+                )}
+                </React.Fragment>
               );
             })}
           </tbody>
@@ -270,7 +283,6 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
       </div>
       <p className="mt-4 text-xs text-text-4 max-w-3xl">{t.method}</p>
 
-      <AnimatePresence>{active && <Detail p={active} s={stats[active.id] || null} lang={lang} onClose={() => setOpen(null)} onNavigate={onNavigate} showInvest={!compact} />}</AnimatePresence>
     </div>
   );
 }

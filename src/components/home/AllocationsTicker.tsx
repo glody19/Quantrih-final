@@ -5,7 +5,7 @@ import { cn } from "../../lib/utils";
 import { FAMOUS_ALLOCATIONS } from "../../data/famousAllocations";
 
 /**
- * Scrolling strip with the year-to-date return of ten famous allocations.
+ * Scrolling strip with the year-to-date return of twenty famous allocations.
  * Each portfolio return = weighted sum of its ETFs' real YTD total returns
  * (weights set on 1 January). Portfolios with missing data are not shown.
  */
@@ -65,14 +65,14 @@ export function AllocationsTicker({ label = "YTD" }: { label?: string }) {
   );
 
   return (
-    <div className="w-full border-y border-border bg-white/80 backdrop-blur-sm">
+    <div className="w-full border-y border-border bg-white">
       <div className="flex items-stretch">
         <div className="shrink-0 flex flex-col justify-center px-5 border-r border-border bg-white">
-          <span className="text-xs font-bold uppercase tracking-wider text-pv-blue">{label}</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-text">{label}</span>
           {asOf && <span className="text-[11px] text-text-4">{asOf}</span>}
         </div>
-        <div className="flex-1 overflow-hidden py-4 [mask-image:linear-gradient(90deg,transparent,black_4%,black_96%,transparent)]">
-          <div className="flex w-max animate-marquee hover:[animation-play-state:paused]" style={{ animationDuration: "55s" }}>
+        <div className="flex-1 overflow-hidden py-4">
+          <div className="flex w-max animate-marquee hover:[animation-play-state:paused]" style={{ animationDuration: `${Math.max(20, rows.length * 2.6)}s` }}>
             {row}
             {row}
           </div>
