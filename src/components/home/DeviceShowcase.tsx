@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
+import { QuantrihLogo } from "../ui/Logo";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const VIEW = { once: true, margin: "-120px" } as const;
@@ -15,12 +16,53 @@ const PowerOn = ({ delay }: { delay: number }) => (
   </>
 );
 
+/** Screen of the future mobile app: the four tools and the platforms, as the app will show them. */
+function PhoneScreen({ fr }: { fr: boolean }) {
+  const tools = [
+    { t: "Asset Allocation", c: "#5B4BDB" },
+    { t: "Portfolio Backtesting", c: "#18B8A0" },
+    { t: "Tactical Allocation", c: "#E0B341" },
+    { t: "Monte Carlo", c: "#3B82F6" },
+  ];
+  return (
+    <div className="absolute inset-0 bg-[#0B0A24] text-white flex flex-col px-[7%] pt-[16%] pb-[6%] gap-[4%] text-[7px] leading-tight">
+      <div className="flex items-center justify-between">
+        <QuantrihLogo variant="bars" size="sm" className="text-[#B6ABF7] [&>span]:!text-white" />
+        <span className="w-4 h-4 rounded-full bg-white/10" />
+      </div>
+      <div className="rounded-lg bg-white/[0.06] p-[6%]">
+        <p className="text-white/60 uppercase tracking-wider text-[5.5px]">{fr ? "Mon portefeuille" : "My portfolio"}</p>
+        <svg viewBox="0 0 100 34" className="w-full mt-1">
+          <motion.path d="M0 28 L12 24 L22 26 L34 18 L46 20 L58 12 L70 15 L82 8 L100 4" fill="none" stroke="#18B8A0" strokeWidth="2.2" strokeLinecap="round"
+            initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={VIEW} transition={{ duration: 1.6, delay: 1.6 }} />
+        </svg>
+      </div>
+      <p className="text-white/60 uppercase tracking-wider text-[5.5px]">{fr ? "Outils" : "Tools"}</p>
+      <div className="grid grid-cols-2 gap-[5px]">
+        {tools.map((x, i) => (
+          <motion.div key={x.t} className="rounded-md p-[6px] font-semibold" style={{ background: `${x.c}33` }}
+            initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={VIEW} transition={{ delay: 1.8 + i * 0.12 }}>
+            <span className="block w-2 h-2 rounded-full mb-1" style={{ background: x.c }} />{x.t}
+          </motion.div>
+        ))}
+      </div>
+      <p className="text-white/60 uppercase tracking-wider text-[5.5px]">{fr ? "Plateformes" : "Platforms"}</p>
+      <div className="flex gap-[5px]">
+        {["#00AEEF", "#E3007E", "#FF6200", "#1E2A78", "#00A3E0"].map((c) => <span key={c} className="w-[14px] h-[14px] rounded-full bg-white flex items-center justify-center"><span className="w-[7px] h-[7px] rounded-full" style={{ background: c }} /></span>)}
+      </div>
+      <div className="mt-auto flex justify-around pt-[4%] border-t border-white/10">
+        {[0, 1, 2, 3].map((i) => <span key={i} className={`w-3 h-1 rounded-full ${i === 0 ? "bg-[#B6ABF7]" : "bg-white/20"}`} />)}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Desktop display in the middle playing the demo, a laptop on the right and a tablet on the left.
  * They rise in one after the other with springs, the screens power on, then everything floats.
  * The scene leans towards the cursor and drifts gently with the scroll.
  */
-export function DeviceShowcase({ videoMp4, videoWebm, poster, laptopSrc, tabletSrc = "/media/backtest-results.jpg", desktopAlt, laptopAlt }: { videoMp4: string; videoWebm: string; poster: string; laptopSrc: string; tabletSrc?: string; desktopAlt: string; laptopAlt: string; fr?: boolean }) {
+export function DeviceShowcase({ videoMp4, videoWebm, poster, laptopSrc, tabletSrc = "/media/quantrih-demo-poster.jpg", desktopAlt, laptopAlt, fr = false }: { videoMp4: string; videoWebm: string; poster: string; laptopSrc: string; tabletSrc?: string; desktopAlt: string; laptopAlt: string; fr?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
@@ -131,6 +173,28 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, laptopSrc, tabletS
               <div className="relative h-[6px] mx-[6%] bg-[#2A2D35]" />
               <div className="relative h-[16px] rounded-b-[14px] bg-[linear-gradient(180deg,#EEF0F3_0%,#CDD1D7_55%,#9AA0A9_100%)] [clip-path:polygon(0_0,100%_0,98.5%_100%,1.5%_100%)] shadow-[0_24px_30px_-14px_rgba(15,23,42,0.6)]">
                 <span className="absolute left-1/2 top-0 -translate-x-1/2 h-[5px] w-[14%] rounded-b-md bg-[#B8BDC5]" />
+              </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+        {/* ── Smartphone (front, between the display and the laptop) ── */}
+        <motion.div style={{ y: sideY }} className="absolute right-[30%] -bottom-2 w-[13%] hidden md:block z-30">
+          <motion.div
+            initial={{ opacity: 0, y: 160, rotateZ: 10, scale: 0.8 }}
+            whileInView={{ opacity: 1, y: 0, rotateZ: 4, scale: 1 }}
+            viewport={VIEW}
+            transition={{ type: "spring", stiffness: 70, damping: 13, delay: 0.75 }}
+          >
+            <motion.div animate={{ y: [0, -14, 0], rotateZ: [0, -1.2, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.8 }}>
+              <div className="relative rounded-[22%/11%] p-[3px] bg-[linear-gradient(160deg,#F4F5F7,#9CA2AB)] shadow-[0_40px_60px_-24px_rgba(15,23,42,0.8)]">
+                <div className="relative rounded-[20%/10%] bg-[#07080C] p-[5%]">
+                  <div className="relative overflow-hidden rounded-[16%/8%] aspect-[9/19.5]">
+                    <PhoneScreen fr={fr} />
+                    <span className="absolute left-1/2 top-[2.5%] -translate-x-1/2 w-[32%] h-[3.2%] rounded-full bg-black z-10" />
+                    <PowerOn delay={1.3} />
+                    <Glare />
+                  </div>
+                </div>
               </div>
             </motion.div>
           </motion.div>

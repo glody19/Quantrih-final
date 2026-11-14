@@ -7,7 +7,7 @@ import { AllocationsTicker } from "../home/AllocationsTicker";
 import { DeviceShowcase } from "../home/DeviceShowcase";
 import { PerformanceHeatmap, type HeatRow } from "../home/PerformanceHeatmap";
 import { PlatformsMarquee } from "../home/PlatformsMarquee";
-import { FiberBackground } from "../home/FiberBackground";
+import { TopEtfs } from "../home/TopEtfs";
 import { LazyPortfolios } from "./LazyPortfolios";
 import { RelativeCompare } from "../home/RelativeCompare";
 
@@ -23,8 +23,9 @@ const DARK_GRID: React.CSSProperties = {
 const LARGE_GRID: React.CSSProperties = {
   backgroundColor: "#FFFFFF",
   backgroundImage:
-    "linear-gradient(to right, rgba(15,23,42,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,23,42,0.06) 1px, transparent 1px)",
-  backgroundSize: "120px 64px",
+    "linear-gradient(to right, rgba(15,23,42,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,23,42,0.07) 1px, transparent 1px)",
+  backgroundSize: "112px 112px",
+  backgroundPosition: "center top",
 };
 
 // ─────────────────────────────────── data ───────────────────────────────────
@@ -85,17 +86,20 @@ const SECTORS_EU: (HeatRow & { fr: string })[] = [
 ];
 
 // ─────────────────────────────── motion helpers ───────────────────────────────
-/** Section that zooms in softly as it enters the viewport and softly out as it leaves (spring-smoothed). */
-function ZoomSection({ children, className, style, id, bg }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; id?: string; bg?: React.ReactNode }) {
-  const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 70, damping: 22, mass: 0.8 });
-  const scale = useTransform(smooth, [0, 0.3, 0.7, 1], [0.93, 1, 1, 0.95]);
-  const opacity = useTransform(smooth, [0, 0.22, 0.85, 1], [0.35, 1, 1, 0.7]);
+/**
+ * Page section that fades and rises in once when it reaches the screen.
+ * No scroll-linked scaling: transforming whole sections on every scroll frame made the page stutter.
+ */
+function ZoomSection({ children, className, style, id }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; id?: string }) {
   return (
-    <section ref={ref} id={id} className={className} style={style}>
-      {bg}
-      <motion.div style={{ scale, opacity }} className="relative will-change-transform">
+    <section id={id} className={className} style={style}>
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="relative"
+      >
         {children}
       </motion.div>
     </section>
@@ -129,15 +133,6 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
       </motion.div>
     </div>
   );
-}
-
-/** Zooms its content up as it crosses the middle of the screen, then back down. */
-function MidZoom({ children }: { children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 70, damping: 20 });
-  const scale = useTransform(smooth, [0, 0.5, 1], [0.86, 1.08, 0.86]);
-  return <motion.div ref={ref} style={{ scale }} className="will-change-transform">{children}</motion.div>;
 }
 
 /** Section title: words rise one by one, then an underline draws itself. */
@@ -284,8 +279,8 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       {/* ── Twenty famous allocations, scrolling ── */}
       <AllocationsTicker label={fr ? "Allocations · depuis le 1er janv." : "Allocations · YTD"} />
 
-      {/* ── Why backtest: explanation first, then the desktop, laptop and tablet demo (plain white) ── */}
-      <ZoomSection className="relative w-full pt-24 pb-24 bg-white overflow-hidden">
+      {/* ── Why backtest: explanation first, then the desktop, laptop, tablet and phone demo (white, large squares) ── */}
+      <ZoomSection style={LARGE_GRID} className="relative w-full pt-24 pb-28 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -362,7 +357,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       </ZoomSection>
 
       {/* ── Asset classes & sectors (white) ── */}
-      <ZoomSection className="relative w-full pt-20 pb-20 bg-white overflow-hidden" bg={<div className="absolute inset-x-0 top-0 h-[880px] [mask-image:linear-gradient(180deg,black_75%,transparent)]"><FiberBackground light side="left" className="opacity-70" /></div>}>
+      <ZoomSection className="relative w-full pt-20 pb-20 bg-white">
         <div className="flex justify-center mb-8">
           <div className="inline-flex p-1 rounded-full bg-white border border-border shadow-sm">
             {(["us", "eu"] as const).map((r) => (
@@ -377,7 +372,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             ))}
           </div>
         </div>
-        <div key={region} className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div key={region} className="max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-10 grid grid-cols-1 xl:grid-cols-2 gap-5">
           <PerformanceHeatmap
             title={fr ? "Performance des classes d'actifs" : "Asset Class Performance"}
             firstCol={fr ? "Classe d'actifs" : "Asset Class"}
@@ -394,6 +389,15 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               ? (fr ? "Secteurs du STOXX Europe 600 (ETF iShares, Xetra). 3Y et 5Y annualisés." : "STOXX Europe 600 sectors (iShares ETFs, Xetra). 3Y and 5Y annualized.")
               : (fr ? "Secteurs du S&P 500 (ETF Select Sector SPDR). 3Y et 5Y annualisés." : "S&P 500 sectors (Select Sector SPDR ETFs). 3Y and 5Y annualized.")}
           />
+        </div>
+
+        {/* Best ETFs over 6 months, 1, 3 and 5 years */}
+        <div className="max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-10 mt-20">
+          <SectionTitle
+            text={fr ? "Les meilleurs ETF" : "Top performing ETFs"}
+            sub={fr ? "Les sept ETF qui ont le plus progressé, sur 6 mois, 1 an, 3 ans ou 5 ans. Cliquez sur une période pour changer le classement." : "The seven ETFs that gained the most over 6 months, 1, 3 or 5 years. Click a period to re-rank them."}
+          />
+          <TopEtfs fr={fr} />
         </div>
 
         {/* Lazy portfolios: who performed; a click opens the details on the Market page */}
@@ -424,7 +428,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
           </button>
         </div>
-        <MidZoom><PlatformsMarquee fr={fr} /></MidZoom>
+        <PlatformsMarquee fr={fr} />
       </ZoomSection>
 
       {/* ── Support (plain white) ── */}

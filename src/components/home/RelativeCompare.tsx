@@ -4,14 +4,19 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 const SERIES = [
-  { s: "NVDA", n: "Nvidia", c: "#5B4BDB" },
-  { s: "AAPL", n: "Apple", c: "#18B8A0" },
-  { s: "MSFT", n: "Microsoft", c: "#E0B341" },
-  { s: "GOOGL", n: "Alphabet", c: "#F08A5D" },
-  { s: "AMZN", n: "Amazon", c: "#4C8DFF" },
-  { s: "TSLA", n: "Tesla", c: "#C2587C" },
-  { s: "SPY", n: "S&P 500", c: "#94A3B8" },
+  { s: "NVDA", n: "Nvidia", c: "#5B4BDB", d: "nvidia.com" },
+  { s: "AAPL", n: "Apple", c: "#18B8A0", d: "apple.com" },
+  { s: "MSFT", n: "Microsoft", c: "#E0B341", d: "microsoft.com" },
+  { s: "GOOGL", n: "Alphabet", c: "#F08A5D", d: "abc.xyz" },
+  { s: "AMZN", n: "Amazon", c: "#4C8DFF", d: "amazon.com" },
+  { s: "TSLA", n: "Tesla", c: "#C2587C", d: "tesla.com" },
+  { s: "SPY", n: "S&P 500", c: "#94A3B8", d: "ssga.com" },
 ];
+
+type Quote = { price: number; ccy: string; day: number | null; cap: number | null; vol: number | null; avgVol: number | null; lo: number | null; hi: number | null; div: number | null; pe: number | null; ipo: number | null; exch: string | null };
+const num = (v: any) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+const big = (v: number | null) => v == null ? "-" : v >= 1e12 ? `${(v / 1e12).toFixed(2)} T` : v >= 1e9 ? `${(v / 1e9).toFixed(1)} B` : v >= 1e6 ? `${(v / 1e6).toFixed(1)} M` : v.toLocaleString("en-US");
+const ipoMs = (v: any) => { if (v == null) return null; const t = typeof v === "number" ? v : new Date(v).getTime(); return Number.isFinite(t) ? t : null; };
 const PERIODS = [
   { k: "6mo", l: "6M", i: "1d" },
   { k: "1y", l: "1Y", i: "1d" },
@@ -32,6 +37,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [hover, setHover] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
+  const [quotes, setQuotes] = useState<Record<string, Quote>>({});
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-120px" });
 
@@ -61,6 +67,30 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
     });
     return () => { alive = false; };
   }, [period]);
+
+  // live quote details for the table under the chart
+  useEffect(() => {
+    let alive = true;
+    const load = () => fetch(`/api/stock/bulk-quotes?quiet=1&symbols=${SERIES.map((x) => x.s).join(",")}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((arr: any[]) => {
+        if (!alive || !Array.isArray(arr)) return;
+        const o: Record<string, Quote> = {};
+        arr.forEach((q) => {
+          const price = num(q?.regularMarketPrice);
+          if (!q?.symbol || price == null) return;
+          o[q.symbol] = {
+            price, ccy: q.currency || "USD", day: num(q.regularMarketChangePercent), cap: num(q.marketCap), vol: num(q.regularMarketVolume), avgVol: num(q.averageDailyVolume3Month),
+            lo: num(q.fiftyTwoWeekLow), hi: num(q.fiftyTwoWeekHigh), div: num(q.dividendYield), pe: num(q.trailingPE), ipo: ipoMs(q.firstTradeDateMilliseconds), exch: q.fullExchangeName || null,
+          };
+        });
+        setQuotes(o);
+      })
+      .catch(() => {});
+    load();
+    const id = setInterval(() => { if (!document.hidden) load(); }, 60000);
+    return () => { alive = false; clearInterval(id); };
+  }, []);
 
   const shown = SERIES.filter((x) => data[x.s] && !hidden.has(x.s));
   const geo = useMemo(() => {
@@ -194,6 +224,65 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
           </button>
         </div>
       </div>
+
+      {/* details, same figures as the Market comparison */}
+      {Object.keys(quotes).length > 0 && (
+        <div className="mt-8 overflow-x-auto rounded-2xl border border-slate-200">
+          <table className="w-full min-w-[980px] text-[14px]">
+            <thead className="bg-slate-50 text-[11px] uppercase tracking-[0.12em] text-slate-500">
+              <tr>
+                <th className="text-left font-semibold px-4 py-3">{fr ? "Actif" : "Asset"}</th>
+                <th className="text-right font-semibold px-3">{fr ? "Prix" : "Price"}</th>
+                <th className="text-right font-semibold px-3">{fr ? "Jour" : "Day"}</th>
+                <th className="text-right font-semibold px-3">{period.l}</th>
+                <th className="text-right font-semibold px-3">{fr ? "Capitalisation" : "Market cap"}</th>
+                <th className="text-right font-semibold px-3">Volume</th>
+                <th className="text-center font-semibold px-3">{fr ? "Fourchette 52 sem." : "52-week range"}</th>
+                <th className="text-right font-semibold px-3">{fr ? "Div." : "Div."}</th>
+                <th className="text-right font-semibold px-4">{fr ? "Cotée depuis" : "Listed since"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SERIES.filter((x) => quotes[x.s]).map((x, i) => {
+                const q = quotes[x.s];
+                const per = data[x.s]?.[data[x.s].length - 1]?.v ?? null;
+                const pos = q.lo != null && q.hi != null && q.hi > q.lo ? Math.min(1, Math.max(0, (q.price - q.lo) / (q.hi - q.lo))) : null;
+                return (
+                  <motion.tr key={x.s} initial={{ opacity: 0, x: -24 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 0.4 + i * 0.07, duration: 0.5 }} className="border-t border-slate-100 hover:bg-slate-50/70">
+                    <td className="px-4 py-3">
+                      <span className="flex items-center gap-3">
+                        <span className="relative w-8 h-8 rounded-full bg-white ring-1 ring-slate-200 flex items-center justify-center text-xs font-bold overflow-hidden" style={{ color: x.c }}>
+                          {x.n.charAt(0)}
+                          <img src={`https://www.google.com/s2/favicons?domain=${x.d}&sz=64`} alt="" className="absolute inset-0 m-auto w-5 h-5 bg-white" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                        </span>
+                        <span><b className="block font-semibold text-slate-900">{x.n}</b><span className="text-xs text-slate-500 font-mono">{x.s}{q.exch ? ` · ${q.exch}` : ""}</span></span>
+                      </span>
+                    </td>
+                    <td className="text-right px-3 font-mono tabular-nums font-semibold text-slate-900">{q.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[11px] text-slate-400">{q.ccy}</span></td>
+                    <td className={cn("text-right px-3 font-mono tabular-nums", q.day == null ? "text-slate-400" : q.day >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{q.day == null ? "-" : `${q.day >= 0 ? "+" : ""}${q.day.toFixed(2)}%`}</td>
+                    <td className={cn("text-right px-3 font-mono tabular-nums font-semibold", per == null ? "text-slate-400" : per >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{per == null ? "-" : `${per >= 0 ? "+" : ""}${per.toFixed(1)}%`}</td>
+                    <td className="text-right px-3 font-mono tabular-nums text-slate-700">{big(q.cap)}</td>
+                    <td className="text-right px-3 font-mono tabular-nums text-slate-700" title={q.avgVol ? `${fr ? "Moyenne 3 mois" : "3-month average"}: ${big(q.avgVol)}` : undefined}>{big(q.vol)}</td>
+                    <td className="px-3">
+                      {pos == null ? <span className="block text-center text-slate-400">-</span> : (
+                        <span className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
+                          {q.lo!.toFixed(0)}
+                          <span className="relative flex-1 h-1.5 rounded-full bg-slate-100 min-w-[70px]">
+                            <motion.span className="absolute top-1/2 w-3 h-3 -mt-1.5 -ml-1.5 rounded-full ring-2 ring-white shadow" style={{ background: x.c }} initial={{ left: "0%" }} animate={inView ? { left: `${pos * 100}%` } : {}} transition={{ duration: 1.4, delay: 0.8 + i * 0.07, ease: [0.16, 1, 0.3, 1] }} />
+                          </span>
+                          {q.hi!.toFixed(0)}
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-right px-3 font-mono tabular-nums text-slate-700">{q.div == null ? "-" : `${q.div.toFixed(2)}%`}</td>
+                    <td className="text-right px-4 font-mono tabular-nums text-slate-700">{q.ipo == null ? "-" : new Date(q.ipo).toLocaleDateString(fr ? "fr-BE" : "en-GB", { year: "numeric", month: "short" })}</td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

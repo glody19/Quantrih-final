@@ -1045,12 +1045,12 @@ export function createApp() {
         .slice(0, 60);
       if (symbols.length === 0) return res.json({});
       const cacheKey = symbols.slice().sort().join(",");
-      const cached = getCached('perf2', cacheKey, 60 * 60_000);
+      const cached = getCached('perf3', cacheKey, 60 * 60_000);
       if (cached) return res.json(cached);
       const start = new Date();
       start.setUTCFullYear(start.getUTCFullYear() - 5);
       start.setUTCMonth(start.getUTCMonth() - 2);
-      const out: Record<string, { y1: number | null; y3: number | null; y5: number | null; asOf: string } | null> = {};
+      const out: Record<string, { m6: number | null; y1: number | null; y3: number | null; y5: number | null; asOf: string } | null> = {};
       await Promise.all(symbols.map(async (sym) => {
         try {
           const chart = await safeYfChart(sym, { period1: start.toISOString().split("T")[0], period2: new Date().toISOString().split("T")[0], interval: "1mo" });
@@ -1071,12 +1071,13 @@ export function createApp() {
           const at = (months: number) => (q.length > months ? q[q.length - 1 - months].p : null);
           const ann = (months: number) => { const b = at(months); return b ? (Math.pow(last.p / b, 12 / months) - 1) * 100 : null; };
           const b1 = at(12);
-          out[sym] = { y1: b1 ? (last.p / b1 - 1) * 100 : null, y3: ann(36), y5: ann(60), asOf: new Date(last.t).toISOString().split("T")[0] };
+          const b6 = at(6);
+          out[sym] = { m6: b6 ? (last.p / b6 - 1) * 100 : null, y1: b1 ? (last.p / b1 - 1) * 100 : null, y3: ann(36), y5: ann(60), asOf: new Date(last.t).toISOString().split("T")[0] };
         } catch {
           out[sym] = null;
         }
       }));
-      setCached('perf2', cacheKey, out);
+      setCached('perf3', cacheKey, out);
       res.json(out);
     } catch {
       res.status(500).json({ error: "Failed to compute performance" });
@@ -1142,7 +1143,14 @@ export function createApp() {
                 regularMarketPrice: q.price,
                 regularMarketChange: q.change,
                 regularMarketChangePercent: q.changesPercentage,
-                marketCap: q.marketCap
+                marketCap: q.marketCap,
+                regularMarketVolume: q.volume,
+                averageDailyVolume3Month: q.avgVolume,
+                fiftyTwoWeekLow: q.yearLow,
+                fiftyTwoWeekHigh: q.yearHigh,
+                trailingPE: q.pe,
+                shortName: q.name,
+                fullExchangeName: q.exchange,
               }));
             }
           }

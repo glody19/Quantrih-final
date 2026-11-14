@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { Header } from "./components/layout/Header";
 import { CommandPalette } from "./components/layout/CommandPalette";
@@ -6,24 +6,25 @@ import { Footer } from "./components/layout/Footer";
 import { CookieConsent } from "./components/layout/CookieConsent";
 
 import { Home } from "./components/pages/Home";
-import { AssetAllocations } from "./components/pages/AssetAllocations";
-import { MonteCarlo } from "./components/pages/MonteCarlo";
-import { Portfolio } from "./components/pages/Portfolio";
-import { TacticalAllocation } from "./components/pages/TacticalAllocation";
-import { MovingAverage } from "./components/pages/MovingAverage";
-import { DualMomentum } from "./components/pages/DualMomentum";
-import { RelativeStrength } from "./components/pages/RelativeStrength";
-import { Education } from "./components/pages/Education";
-import { Market } from "./components/pages/Market";
-import { SiteMap } from "./components/pages/SiteMap";
-import { Platforms } from "./components/pages/Platforms";
-import { VirtualPortfolio } from "./components/pages/VirtualPortfolio";
-import { EtfScreener } from "./components/pages/EtfScreener";
-import { Auth } from "./components/pages/Auth";
-import { Profile } from "./components/pages/Profile";
-import { InvestorProfilePage } from "./components/pages/InvestorProfilePage";
-import { About } from "./components/pages/About";
-import { Legal } from "./components/pages/Legal";
+// Every page except Home is loaded on demand, so the home page only downloads its own code.
+const AssetAllocations = lazy(() => import("./components/pages/AssetAllocations").then((m) => ({ default: m.AssetAllocations })));
+const MonteCarlo = lazy(() => import("./components/pages/MonteCarlo").then((m) => ({ default: m.MonteCarlo })));
+const Portfolio = lazy(() => import("./components/pages/Portfolio").then((m) => ({ default: m.Portfolio })));
+const TacticalAllocation = lazy(() => import("./components/pages/TacticalAllocation").then((m) => ({ default: m.TacticalAllocation })));
+const MovingAverage = lazy(() => import("./components/pages/MovingAverage").then((m) => ({ default: m.MovingAverage })));
+const DualMomentum = lazy(() => import("./components/pages/DualMomentum").then((m) => ({ default: m.DualMomentum })));
+const RelativeStrength = lazy(() => import("./components/pages/RelativeStrength").then((m) => ({ default: m.RelativeStrength })));
+const Education = lazy(() => import("./components/pages/Education").then((m) => ({ default: m.Education })));
+const Market = lazy(() => import("./components/pages/Market").then((m) => ({ default: m.Market })));
+const SiteMap = lazy(() => import("./components/pages/SiteMap").then((m) => ({ default: m.SiteMap })));
+const Platforms = lazy(() => import("./components/pages/Platforms").then((m) => ({ default: m.Platforms })));
+const VirtualPortfolio = lazy(() => import("./components/pages/VirtualPortfolio").then((m) => ({ default: m.VirtualPortfolio })));
+const EtfScreener = lazy(() => import("./components/pages/EtfScreener").then((m) => ({ default: m.EtfScreener })));
+const Auth = lazy(() => import("./components/pages/Auth").then((m) => ({ default: m.Auth })));
+const Profile = lazy(() => import("./components/pages/Profile").then((m) => ({ default: m.Profile })));
+const InvestorProfilePage = lazy(() => import("./components/pages/InvestorProfilePage").then((m) => ({ default: m.InvestorProfilePage })));
+const About = lazy(() => import("./components/pages/About").then((m) => ({ default: m.About })));
+const Legal = lazy(() => import("./components/pages/Legal").then((m) => ({ default: m.Legal })));
 import { cn } from "./lib/utils";
 import { useTranslation } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -157,6 +158,7 @@ function AppContent() {
         currentPage === "auth" || currentPage === "home" ? "pt-0" : "pt-4 lg:pt-6",
         TOOL_PAGES.has(currentPage) && "tool-page"
       )}>
+        <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center"><span className="w-8 h-8 rounded-full border-2 border-pv-blue/20 border-t-pv-blue animate-spin" /></div>}>
         <Routes>
           <Route path="/" element={<Home onGoPage={handleNavigate} />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
@@ -184,6 +186,7 @@ function AppContent() {
           <Route path="/privacy" element={<Legal page="privacy" />} />
           <Route path="*" element={<Home onGoPage={handleNavigate} />} />
         </Routes>
+        </Suspense>
       </main>
 
       <CommandPalette
