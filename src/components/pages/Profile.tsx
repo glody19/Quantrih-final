@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../contexts/LanguageContext';
+import { loadPrefs, savePrefs, type Preferences } from '../../lib/preferences';
 import { auth, db, serverTimestamp } from '../../firebase';
 import { 
   signOut, 
@@ -14,6 +15,10 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { 
+  LayoutDashboard,
+  SlidersHorizontal,
+  Bell,
+  Database,
   ArrowLeft, 
   User, 
   Mail, 
@@ -257,7 +262,7 @@ const profileLabels: Record<string, Record<string, string>> = {
 export function Profile({ onBack }: { onBack: () => void }) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { language } = useTranslation();
+  const { language, setLanguage } = useTranslation();
   const t = profileLabels[language] || profileLabels['en'];
   const isEn = language === 'en';
   
@@ -614,7 +619,44 @@ export function Profile({ onBack }: { onBack: () => void }) {
   };
   const toolOf = (pageId?: string) => TOOL_ROUTES[pageId || 'backtest'] || { path: '/portfolio-backtest', label: pageId || 'Backtest' };
 
-  const [section, setSection] = useState<'account' | 'security' | 'saved'>('account');
+  type Section = 'overview' | 'account' | 'security' | 'preferences' | 'notifications' | 'saved' | 'privacy';
+  const [section, setSection] = useState<Section>('overview');
+  const [prefs, setPrefs] = useState<Preferences>(() => loadPrefs());
+  const [investorDone, setInvestorDone] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    getDoc(doc(db, `users/${user.uid}`)).then((d) => {
+      const data: any = d.exists() ? d.data() : {};
+      setInvestorDone(!!(data.investorProfile || data.riskProfile || data.investorProfileCompleted));
+      if (data.preferences) { const merged = { ...loadPrefs(), ...data.preferences, notify: { ...loadPrefs().notify, ...(data.preferences.notify || {}) } }; setPrefs(merged); savePrefs(merged); }
+    }).catch(() => setInvestorDone(null));
+  }, [user]);
+  // Preferences apply at once on this device and are copied to the account
+  const updatePrefs = async (patch: Partial<Preferences>) => {
+    const next = { ...prefs, ...patch, notify: { ...prefs.notify, ...(patch.notify || {}) } };
+    setPrefs(next);
+    savePrefs(next);
+    if (user) {
+      try { await setDoc(doc(db, `users/${user.uid}`), { preferences: next }, { merge: true }); }
+      catch { setMessage({ text: isFr ? "Préférence appliquée sur cet appareil, mais non enregistrée sur le compte." : "Preference applied on this device but not saved to your account.", type: 'error' }); return; }
+    }
+    setMessage({ text: isFr ? "Préférence enregistrée." : "Preference saved.", type: 'success' });
+  };
+  // Download everything we hold about the user: profile, preferences, saved analyses, virtual portfolio
+  const exportData = async () => {
+    if (!user) return;
+    let profile: any = {};
+    try { const d = await getDoc(doc(db, `users/${user.uid}`)); profile = d.exists() ? d.data() : {}; } catch { /* offline */ }
+    let virtualPortfolio: any = null;
+    try { virtualPortfolio = JSON.parse(localStorage.getItem('quantrih_vp_v1') || 'null'); } catch { /* storage unavailable */ }
+    const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), account: { uid: user.uid, email: user.email, createdAt: user.metadata.creationTime, lastSignIn: user.metadata.lastSignInTime, providers: user.providerData.map((p) => p.providerId) }, profile, preferences: prefs, savedAnalyses: savedItems, virtualPortfolio }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `quantrih-data-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  const isFr = language === 'fr';
   const fieldCls = "w-full h-11 bg-white border border-border rounded-lg px-3.5 text-[15px] text-text outline-none focus:border-pv-blue focus:ring-4 focus:ring-pv-blue/10 transition-all placeholder:text-text-4";
   const labelCls = "block text-sm font-medium text-text-2 mb-1.5";
   const L2 = isEn || language !== 'fr'
@@ -646,10 +688,20 @@ export function Profile({ onBack }: { onBack: () => void }) {
     );
   }
 
-  const navItems: { id: 'account' | 'security' | 'saved'; label: string; icon: React.ReactNode }[] = [
-    { id: 'account', label: L2.account, icon: <User className="w-4 h-4" /> },
-    { id: 'security', label: L2.security, icon: <Shield className="w-4 h-4" /> },
-    { id: 'saved', label: L2.saved, icon: <Save className="w-4 h-4" /> },
+  const navGroups: { title: string; items: { id: Section; label: string; icon: React.ReactNode }[] }[] = [
+    { title: isFr ? 'Paramètres utilisateur' : 'User settings', items: [
+      { id: 'overview', label: isFr ? "Vue d'ensemble" : 'Overview', icon: <LayoutDashboard className="w-4 h-4" /> },
+      { id: 'account', label: L2.account, icon: <User className="w-4 h-4" /> },
+      { id: 'security', label: L2.security, icon: <Shield className="w-4 h-4" /> },
+    ] },
+    { title: isFr ? 'Paramètres du compte' : 'Account settings', items: [
+      { id: 'preferences', label: isFr ? 'Préférences' : 'Preferences', icon: <SlidersHorizontal className="w-4 h-4" /> },
+      { id: 'notifications', label: isFr ? 'Communications' : 'Communications', icon: <Bell className="w-4 h-4" /> },
+    ] },
+    { title: isFr ? 'Données' : 'Data', items: [
+      { id: 'saved', label: L2.saved, icon: <Save className="w-4 h-4" /> },
+      { id: 'privacy', label: isFr ? 'Données et confidentialité' : 'Data and privacy', icon: <Database className="w-4 h-4" /> },
+    ] },
   ];
 
   return (
@@ -668,16 +720,22 @@ export function Profile({ onBack }: { onBack: () => void }) {
 
         <div className="grid grid-cols-1 md:grid-cols-[230px_1fr] gap-8 mt-8">
           {/* Sidebar */}
-          <nav className="flex md:flex-col gap-1 overflow-x-auto no-scrollbar">
-            {navItems.map((n) => (
-              <button
-                key={n.id}
-                onClick={() => setSection(n.id)}
-                className={`flex items-center gap-2.5 px-3 h-10 rounded-lg text-[15px] whitespace-nowrap transition-colors ${section === n.id ? 'bg-surface-2 text-text font-semibold' : 'text-text-3 hover:text-text hover:bg-surface-2/60'}`}
-              >
-                {n.icon} {n.label}
-                {n.id === 'saved' && savedItems.length > 0 && <span className="ml-auto text-xs font-mono text-text-4">{savedItems.length}</span>}
-              </button>
+          <nav className="flex md:flex-col gap-1 overflow-x-auto no-scrollbar md:sticky md:top-24 md:self-start">
+            {navGroups.map((g) => (
+              <div key={g.title} className="flex md:flex-col gap-1 md:mb-4">
+                <p className="hidden md:block px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-text-4">{g.title}</p>
+                {g.items.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => { setSection(n.id); setMessage(null); }}
+                    className={`relative flex items-center gap-2.5 px-3 h-10 rounded-lg text-[15px] whitespace-nowrap transition-colors ${section === n.id ? 'bg-pv-blue/[0.08] text-pv-blue font-semibold' : 'text-text-3 hover:text-text hover:bg-surface-2/60'}`}
+                  >
+                    {section === n.id && <span className="hidden md:block absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-pv-blue" />}
+                    {n.icon} {n.label}
+                    {n.id === 'saved' && savedItems.length > 0 && <span className="ml-auto text-xs font-mono text-text-4">{savedItems.length}</span>}
+                  </button>
+                ))}
+              </div>
             ))}
             <button onClick={() => navigate('/investor-profile')} className="flex items-center gap-2.5 px-3 h-10 rounded-lg text-[15px] whitespace-nowrap text-text-3 hover:text-text hover:bg-surface-2/60">
               <Briefcase className="w-4 h-4" /> {L2.investor} <ChevronRight className="w-4 h-4 ml-auto" />
@@ -697,7 +755,127 @@ export function Profile({ onBack }: { onBack: () => void }) {
               </div>
             )}
 
-            {section !== 'saved' && (
+            {section === 'overview' && (() => {
+              const providers = user.providerData.map((p) => p.providerId);
+              const tiles = [
+                { k: isFr ? 'Statut du compte' : 'Account status', v: isFr ? 'Actif' : 'Active', ok: true, go: 'account' as Section },
+                { k: isFr ? 'Adresse e-mail' : 'Email address', v: user.emailVerified ? (isFr ? 'Vérifiée' : 'Verified') : (isFr ? 'Non vérifiée' : 'Not verified'), ok: user.emailVerified, go: 'account' as Section },
+                { k: isFr ? 'Connexion' : 'Sign-in method', v: providers.includes('google.com') ? 'Google' : (isFr ? 'E-mail et mot de passe' : 'Email and password'), ok: true, go: 'security' as Section },
+                { k: isFr ? 'Profil investisseur' : 'Investor profile', v: investorDone == null ? '-' : investorDone ? (isFr ? 'Complété' : 'Completed') : (isFr ? 'À compléter' : 'To complete'), ok: !!investorDone, go: null },
+                { k: isFr ? 'Analyses enregistrées' : 'Saved analyses', v: String(savedItems.length), ok: true, go: 'saved' as Section },
+                { k: isFr ? 'Devise de base' : 'Base currency', v: prefs.baseCcy, ok: true, go: 'preferences' as Section },
+              ];
+              return (
+                <div className="space-y-6">
+                  <section className="rounded-2xl p-6 text-white bg-[radial-gradient(ellipse_at_0%_0%,#2B2580_0%,#15124A_55%,#0B0A24_100%)]">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-white/10 overflow-hidden flex items-center justify-center text-xl font-semibold uppercase">
+                        {photoURLState ? <img src={photoURLState} alt="" className="w-full h-full object-cover" /> : (firstName.charAt(0) || email.charAt(0) || '?')}
+                      </div>
+                      <div>
+                        <p className="text-xl font-semibold">{[firstName, lastName].filter(Boolean).join(' ') || user.email}</p>
+                        <p className="text-sm text-white/65">{isFr ? 'Membre depuis' : 'Member since'} {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString(isFr ? 'fr-BE' : 'en-GB', { month: 'long', year: 'numeric' }) : '-'}{residenceCountry ? ` · ${residenceCountry}` : ''}</p>
+                      </div>
+                    </div>
+                  </section>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {tiles.map((x) => (
+                      <button key={x.k} type="button" onClick={() => (x.go ? setSection(x.go) : navigate('/investor-profile'))} className="text-left border border-border rounded-2xl p-5 hover:border-pv-blue/50 hover:shadow-sm transition-all">
+                        <p className="text-sm text-text-3">{x.k}</p>
+                        <p className="mt-1.5 flex items-center gap-2 text-lg font-semibold text-text">
+                          <span className={`w-2 h-2 rounded-full ${x.ok ? 'bg-emerald-500' : 'bg-amber-500'}`} />{x.v}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                  <section className="border border-border rounded-2xl p-6">
+                    <h2 className="text-lg font-semibold text-text">{isFr ? 'Accès rapides' : 'Quick links'}</h2>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {[['/portfolio-backtest', 'Portfolio Backtesting'], ['/virtual-portfolio', isFr ? 'Portefeuille virtuel' : 'Virtual portfolio'], ['/market', isFr ? 'Marchés' : 'Markets'], ['/platforms', isFr ? "Plateformes d'investissement" : 'Investment platforms']].map(([path, label]) => (
+                        <button key={path} type="button" onClick={() => navigate(path)} className="h-9 px-4 rounded-full border border-border text-sm font-medium text-text hover:border-pv-blue hover:text-pv-blue">{label}</button>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+              );
+            })()}
+
+            {section === 'preferences' && (
+              <div className="space-y-6">
+                <section className="border border-border rounded-2xl divide-y divide-border">
+                  <div className="p-6"><h2 className="text-xl font-semibold text-text">{isFr ? 'Préférences' : 'Preferences'}</h2><p className="text-sm text-text-3 mt-1">{isFr ? "Appliquées immédiatement sur cet appareil et enregistrées sur votre compte." : 'Applied at once on this device and saved to your account.'}</p></div>
+                  {[
+                    { k: isFr ? 'Langue du site' : 'Site language', d: isFr ? 'Langue des menus, des textes et des rapports.' : 'Language of menus, texts and reports.', c: (
+                      <select value={language} onChange={(e) => { setLanguage(e.target.value as any); setMessage({ text: isFr ? 'Langue modifiée.' : 'Language changed.', type: 'success' }); }} className={fieldCls + ' sm:w-56'}>
+                        <option value="en">English</option><option value="fr">Français</option><option value="nl">Nederlands</option><option value="de">Deutsch</option><option value="es">Español</option>
+                      </select>) },
+                    { k: isFr ? 'Devise de base' : 'Base currency', d: isFr ? 'Devise utilisée par défaut dans les backtests et allocations.' : 'Default currency of backtests and allocations.', c: (
+                      <select value={prefs.baseCcy} onChange={(e) => updatePrefs({ baseCcy: e.target.value as Preferences['baseCcy'] })} className={fieldCls + ' sm:w-56'}>
+                        {['EUR', 'USD', 'GBP', 'CHF'].map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>) },
+                    { k: isFr ? 'Animations' : 'Animations', d: isFr ? 'Réduisez les animations si elles vous gênent ou pour économiser la batterie.' : 'Reduce animations if they bother you or to save battery.', c: (
+                      <select value={prefs.motion} onChange={(e) => updatePrefs({ motion: e.target.value as Preferences['motion'] })} className={fieldCls + ' sm:w-56'}>
+                        <option value="system">{isFr ? "Comme l'appareil" : 'Follow device'}</option><option value="reduced">{isFr ? 'Réduites' : 'Reduced'}</option><option value="full">{isFr ? 'Toujours' : 'Always on'}</option>
+                      </select>) },
+                    { k: isFr ? 'Thème du portefeuille virtuel' : 'Virtual portfolio theme', d: isFr ? 'Affichage sombre ou clair du portefeuille virtuel.' : 'Dark or light display of the virtual portfolio.', c: (
+                      <select value={prefs.vpTheme} onChange={(e) => updatePrefs({ vpTheme: e.target.value as Preferences['vpTheme'] })} className={fieldCls + ' sm:w-56'}>
+                        <option value="dark">{isFr ? 'Sombre' : 'Dark'}</option><option value="light">{isFr ? 'Clair' : 'Light'}</option>
+                      </select>) },
+                  ].map((row) => (
+                    <div key={row.k} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div><p className="font-semibold text-text">{row.k}</p><p className="text-sm text-text-3 mt-0.5">{row.d}</p></div>
+                      {row.c}
+                    </div>
+                  ))}
+                </section>
+              </div>
+            )}
+
+            {section === 'notifications' && (
+              <section className="border border-border rounded-2xl divide-y divide-border">
+                <div className="p-6"><h2 className="text-xl font-semibold text-text">{isFr ? 'Communications' : 'Communications'}</h2><p className="text-sm text-text-3 mt-1">{isFr ? `Choisissez les e-mails que vous acceptez de recevoir à l'adresse ${user.email}. Nous respecterons ces choix pour tout envoi.` : `Choose which emails you agree to receive at ${user.email}. We will follow these choices for anything we send.`}</p></div>
+                {([
+                  ['monthlyReport', isFr ? 'Rapport mensuel' : 'Monthly report', isFr ? 'Performance des lazy portfolios et des classes d’actifs du mois.' : 'Monthly performance of lazy portfolios and asset classes.'],
+                  ['priceAlerts', isFr ? 'Alertes de marché' : 'Market alerts', isFr ? 'Fortes variations des marchés que vous suivez.' : 'Large moves in the markets you follow.'],
+                  ['productNews', isFr ? 'Nouveautés Quantrih' : 'Quantrih news', isFr ? 'Nouveaux outils, application mobile et améliorations.' : 'New tools, the mobile app and improvements.'],
+                ] as const).map(([key, title, desc]) => (
+                  <label key={key} className="p-6 flex items-center justify-between gap-4 cursor-pointer">
+                    <span><span className="block font-semibold text-text">{title}</span><span className="block text-sm text-text-3 mt-0.5">{desc}</span></span>
+                    <span className="relative inline-flex shrink-0">
+                      <input type="checkbox" className="peer sr-only" checked={prefs.notify[key]} onChange={(e) => updatePrefs({ notify: { ...prefs.notify, [key]: e.target.checked } })} />
+                      <span className="w-11 h-6 rounded-full bg-surface-3 peer-checked:bg-pv-blue transition-colors" />
+                      <span className="absolute left-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+                    </span>
+                  </label>
+                ))}
+              </section>
+            )}
+
+            {section === 'privacy' && (
+              <div className="space-y-6">
+                <section className="border border-border rounded-2xl p-6">
+                  <h2 className="text-xl font-semibold text-text">{isFr ? 'Télécharger mes données' : 'Download my data'}</h2>
+                  <p className="text-sm text-text-3 mt-1">{isFr ? 'Un fichier JSON avec votre profil, vos préférences, vos analyses enregistrées et votre portefeuille virtuel (RGPD, article 20).' : 'A JSON file with your profile, preferences, saved analyses and virtual portfolio (GDPR, article 20).'}</p>
+                  <button type="button" onClick={exportData} className="mt-4 h-10 px-4 rounded-lg border border-border text-sm font-semibold text-text hover:border-pv-blue inline-flex items-center gap-1.5"><Download className="w-4 h-4" /> {isFr ? 'Télécharger' : 'Download'}</button>
+                </section>
+                <section className="border border-border rounded-2xl p-6">
+                  <h2 className="text-xl font-semibold text-text">{isFr ? 'Ce que nous conservons' : 'What we keep'}</h2>
+                  <ul className="mt-3 space-y-1.5 text-sm text-text-2 list-disc pl-5">
+                    <li>{isFr ? 'Votre compte (e-mail, nom, pays) et vos préférences, sur Firebase (Google Cloud, Europe).' : 'Your account (email, name, country) and preferences, on Firebase (Google Cloud).'}</li>
+                    <li>{isFr ? 'Les analyses que vous enregistrez vous-même.' : 'The analyses you choose to save.'}</li>
+                    <li>{isFr ? 'Le portefeuille virtuel reste dans ce navigateur.' : 'The virtual portfolio stays in this browser.'}</li>
+                  </ul>
+                  <button type="button" onClick={() => navigate('/privacy')} className="mt-4 text-sm font-semibold text-pv-blue hover:underline">{isFr ? 'Politique de confidentialité' : 'Privacy policy'}</button>
+                </section>
+                <section className="border border-rose-200 rounded-2xl p-6">
+                  <h2 className="text-xl font-semibold text-rose-700">{L2.danger}</h2>
+                  <p className="text-sm text-text-3 mt-1">{t.deleteWarning}</p>
+                  <button type="button" onClick={handleDeleteAccountClick} className="mt-4 h-10 px-4 rounded-lg border border-rose-300 text-sm font-semibold text-rose-700 hover:bg-rose-50 inline-flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> {t.deleteMyAccount}</button>
+                </section>
+              </div>
+            )}
+
+            {(section === 'account' || section === 'security') && (
               <form onSubmit={handleUpdateProfile} className="space-y-8">
                 {section === 'account' && (
                   <>
@@ -803,10 +981,16 @@ export function Profile({ onBack }: { onBack: () => void }) {
                       </div>
                     </section>
 
-                    <section className="border border-rose-200 rounded-2xl p-6">
-                      <h2 className="text-xl font-semibold text-rose-700">{L2.danger}</h2>
-                      <p className="text-sm text-text-3 mt-1">{t.deleteWarning}</p>
-                      <button type="button" onClick={handleDeleteAccountClick} className="mt-4 h-10 px-4 rounded-lg border border-rose-300 text-sm font-semibold text-rose-700 hover:bg-rose-50 inline-flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> {t.deleteMyAccount}</button>
+                    <section className="border border-border rounded-2xl divide-y divide-border">
+                      <div className="p-6"><h2 className="text-xl font-semibold text-text">{isFr ? 'Activité de connexion' : 'Sign-in activity'}</h2></div>
+                      {[
+                        [isFr ? 'Méthodes de connexion' : 'Sign-in methods', user.providerData.map((p) => (p.providerId === 'google.com' ? 'Google' : p.providerId === 'password' ? (isFr ? 'E-mail et mot de passe' : 'Email and password') : p.providerId)).join(', ') || '-'],
+                        [isFr ? 'Dernière connexion' : 'Last sign-in', user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleString(isFr ? 'fr-BE' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '-'],
+                        [isFr ? 'Compte créé le' : 'Account created', user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString(isFr ? 'fr-BE' : 'en-GB', { dateStyle: 'medium' }) : '-'],
+                        [isFr ? 'E-mail vérifié' : 'Email verified', user.emailVerified ? (isFr ? 'Oui' : 'Yes') : (isFr ? 'Non' : 'No')],
+                      ].map(([k, v]) => (
+                        <div key={k} className="px-6 py-4 flex items-center justify-between gap-4 text-[15px]"><span className="text-text-3">{k}</span><span className="font-medium text-text text-right">{v}</span></div>
+                      ))}
                     </section>
                   </>
                 )}

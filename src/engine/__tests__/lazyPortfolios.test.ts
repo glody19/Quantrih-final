@@ -1,4 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+// Deterministic monthly prices (2020-01 to 2023-12) so the test never depends on the network.
+vi.mock('../data', () => {
+  const series = (drift: number) => {
+    const out: { date: string; close: number; volume: number }[] = [];
+    let p = 100;
+    for (let y = 2020; y <= 2023; y++) {
+      for (let m = 1; m <= 12; m++) {
+        out.push({ date: `${y}-${String(m).padStart(2, '0')}-01T00:00:00Z`, close: p, volume: 1000 });
+        p *= 1 + drift + 0.02 * Math.sin(y * 12 + m);
+      }
+    }
+    return out;
+  };
+  return {
+    fetchMonthlyPrices: vi.fn(async (sym: string) => series(0.002 + (sym.charCodeAt(0) % 5) * 0.001)),
+    fetchDividends: vi.fn(async () => []),
+  };
+});
 import { LAZY_PORTFOLIOS } from '../../data/lazyPortfolios';
 import { runBacktest } from '../index';
 import { Portfolio } from '../types';
@@ -26,26 +45,15 @@ describe('Lazy Portfolios Data and Engine', () => {
       allocations: lp.holdings.map(h => ({ symbol: h.ticker, weight: h.weight / 100 }))
     };
 
-    // We mock the fetch or assume cached data is available for test tickers (VTI, TLT, IEF, GLD, DBC)
-    // In a real environment, we'd mock the price data.
-    // Assuming the engine handles empty data gracefully or we have test data.
-    try {
-      const results = await runBacktest([portfolio], {
-        initialBalance: 10000,
-        startDate: '2020-01-01',
-        endDate: '2023-12-31',
-        rebalanceFrequency: 'annually'
-      });
-      expect(results.length).toBe(1);
-      expect(results[0].metrics.endBalance).toBeGreaterThan(0);
-    } catch (e) {
-      // If it throws "No historical data found", it might be expected in some test environments
-      // but for this task we aim for a successful execution if possible.
-      if ((e as Error).message.includes("Aucune donnée historique trouvée")) {
-        console.warn("Skipping engine check due to missing test data");
-      } else {
-        throw e;
-      }
-    }
+    const results = await runBacktest([portfolio], {
+      initialBalance: 10000,
+      startDate: '2020-01-01',
+      endDate: '2023-12-31',
+      rebalanceFrequency: 'annually'
+    });
+    expect(results.length).toBe(1);
+    expect(results[0].equityCurve.length).toBe(48);
+    expect(results[0].equityCurve[0].value).toBe(10000);
+    expect(results[0].metrics.endBalance).toBeGreaterThan(0);
   });
 });

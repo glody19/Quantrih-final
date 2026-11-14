@@ -3,9 +3,10 @@ import { runBacktest } from '../index';
 import * as dataFetcher from '../data';
 import { Portfolio, BacktestOptions } from '../types';
 
-// Mock the network requests
+// Mock the network requests: prices come from the test, no dividends
 vi.mock('../data', () => ({
   fetchMonthlyPrices: vi.fn(),
+  fetchDividends: vi.fn().mockResolvedValue([]),
 }));
 
 describe('Backtesting Engine', () => {

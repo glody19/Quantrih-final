@@ -19,7 +19,7 @@ function AssetIcon({ symbol }: { symbol: string }) {
  
  let url = `https://eodhd.com/img/logos/US/${symbol}.png`;
  if (errorLevel === 1) {
- url = `https://logo.clearbit.com/${target}.com?size=${size}`;
+ url = `/api/logo?domain=${target}.com?size=${size}&sz=128`;
  } else if (errorLevel >= 2) {
  url = `https://ui-avatars.com/api/?name=${symbol}&background=random&color=fff&size=${size}&font-size=0.4`;
  }

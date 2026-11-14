@@ -279,7 +279,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       {/* ── Twenty famous allocations, scrolling ── */}
       <AllocationsTicker label={fr ? "Allocations · depuis le 1er janv." : "Allocations · YTD"} />
 
-      {/* ── Why backtest: explanation first, then the desktop, laptop, tablet and phone demo (white, large squares) ── */}
+      {/* ── Why backtest: explanation first, then the tablet, desktop and phone demo (white, large squares) ── */}
       <ZoomSection style={LARGE_GRID} className="relative w-full pt-24 pb-28 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -297,9 +297,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             videoMp4="/media/quantrih-demo.mp4"
             videoWebm="/media/quantrih-demo.webm"
             poster="/media/quantrih-demo-poster.jpg"
-            laptopSrc="/media/demo-laptop.png"
             desktopAlt={fr ? "Démonstration : lancement d'un backtest Quantrih et lecture des résultats" : "Demo: running a Quantrih backtest and reading the results"}
-            laptopAlt={fr ? "Résultats d'un backtest Quantrih : pertes maximales" : "Quantrih backtest results: drawdowns"}
           />
         </div>
       </ZoomSection>

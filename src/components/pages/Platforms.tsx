@@ -121,7 +121,7 @@ const L = {
 const TYPE_LABEL = (t: PlatformType, l: typeof L.fr) => (t === "broker" ? l.typeBroker : t === "bank" ? l.typeBank : l.typeNeobank);
 
 function Logo({ domain, name, color, fallbackSrc, size = 48 }: { domain?: string; name: string; color: string; fallbackSrc?: string; size?: number }) {
-  const sources = [domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : "", fallbackSrc || ""].filter(Boolean);
+  const sources = [domain ? `/api/logo?domain=${domain}&sz=128` : "", fallbackSrc || ""].filter(Boolean);
   const [i, setI] = useState(0);
   const initials = name.replace(/\(.*\)/, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
   return (

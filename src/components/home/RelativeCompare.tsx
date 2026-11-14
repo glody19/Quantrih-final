@@ -253,7 +253,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
                       <span className="flex items-center gap-3">
                         <span className="relative w-8 h-8 rounded-full bg-white ring-1 ring-slate-200 flex items-center justify-center text-xs font-bold overflow-hidden" style={{ color: x.c }}>
                           {x.n.charAt(0)}
-                          <img src={`https://www.google.com/s2/favicons?domain=${x.d}&sz=64`} alt="" className="absolute inset-0 m-auto w-5 h-5 bg-white" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                          <img src={`/api/logo?domain=${x.d}&sz=64`} alt="" className="absolute inset-0 m-auto w-5 h-5 bg-white" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                         </span>
                         <span><b className="block font-semibold text-slate-900">{x.n}</b><span className="text-xs text-slate-500 font-mono">{x.s}{q.exch ? ` · ${q.exch}` : ""}</span></span>
                       </span>

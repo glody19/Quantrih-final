@@ -146,7 +146,7 @@ export function useFinancialData(initialSymbol: string) {
 
       const formattedProfile = {
         ...quoteData.profile,
-        image: `https://logo.clearbit.com/${quoteData.profile?.website?.replace(/^https?:\/\//, '') || ''}`,
+        image: `/api/logo?domain=${quoteData.profile?.website?.replace(/^https?:\/\//, '') || ''}&sz=128`,
       };
 
       const formattedHistory = (Array.isArray(historyData) ? historyData : []).map((d: any) => ({

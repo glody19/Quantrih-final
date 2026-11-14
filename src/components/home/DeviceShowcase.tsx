@@ -88,7 +88,7 @@ function PhoneScreen({ fr }: { fr: boolean }) {
  * side without covering each other. They rise in one after the other, the screens power on, the
  * display and the tablet play the demo recording, the phone runs an animated app screen.
  */
-export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = false }: { videoMp4: string; videoWebm: string; poster: string; laptopSrc?: string; desktopAlt: string; laptopAlt?: string; fr?: boolean }) {
+export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = false }: { videoMp4: string; videoWebm: string; poster: string; desktopAlt: string; fr?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const p = useSpring(scrollYProgress, { stiffness: 80, damping: 24, mass: 0.7 });

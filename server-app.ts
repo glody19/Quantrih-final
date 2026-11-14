@@ -1122,6 +1122,42 @@ export function createApp() {
     }
   });
 
+  // Company / broker logos served from our own domain. Fetched once from public favicon services,
+  // kept in memory and cached by the CDN for a week, so pages never depend on a third-party host.
+  const logoCache = new Map<string, { type: string; body: Buffer; at: number }>();
+  app.get("/api/logo", async (req, res) => {
+    const domain = String(req.query.domain || "").toLowerCase().trim();
+    const sz = [32, 64, 128].includes(Number(req.query.sz)) ? Number(req.query.sz) : 128;
+    if (!/^[a-z0-9][a-z0-9.-]{1,80}\.[a-z]{2,24}$/.test(domain)) return res.status(400).end();
+    const key = `${domain}:${sz}`;
+    const send = (v: { type: string; body: Buffer }) => {
+      res.set("Content-Type", v.type);
+      res.set("Cache-Control", "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400");
+      res.send(v.body);
+    };
+    const hit = logoCache.get(key);
+    if (hit && Date.now() - hit.at < 7 * 86400_000) return send(hit);
+    const sources = [
+      `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=${sz}`,
+      `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`,
+    ];
+    for (const url of sources) {
+      try {
+        const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        const type = r.headers.get("content-type") || "";
+        if (!r.ok || !type.startsWith("image/")) continue;
+        const body = Buffer.from(await r.arrayBuffer());
+        if (body.length < 120) continue; // empty placeholder icon
+        const v = { type, body, at: Date.now() };
+        if (logoCache.size > 500) logoCache.clear();
+        logoCache.set(key, v);
+        return send(v);
+      } catch { /* try the next source */ }
+    }
+    res.set("Cache-Control", "public, max-age=3600");
+    res.status(404).end();
+  });
+
   app.get("/api/stock/bulk-quotes", async (req, res) => {
     try {
       if (!req.query.symbols) return res.json([]);

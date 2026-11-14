@@ -54,7 +54,7 @@ export function AssetLogo({ ticker, name, isCrypto, className }: { ticker: strin
   }
 
   if (WATCHLIST_DOMAINS[cleanTicker]) {
-   return `https://logo.clearbit.com/${WATCHLIST_DOMAINS[cleanTicker]}?size=80`;
+   return `/api/logo?domain=${WATCHLIST_DOMAINS[cleanTicker]}&sz=128`;
   }
   
   // Attempt modern FinancialModelingPrep symbol CDN first
@@ -70,7 +70,7 @@ export function AssetLogo({ ticker, name, isCrypto, className }: { ticker: strin
   } else if (errorCount === 1) {
    // Fallback 2: Clearbit
    const domain = WATCHLIST_DOMAINS[cleanTicker] || (cleanName + '.com');
-   setImgSrc(`https://logo.clearbit.com/${domain}?size=80`);
+   setImgSrc(`/api/logo?domain=${domain}&sz=128`);
   } else if (errorCount === 2) {
    // Fallback 3: EODHD
    setImgSrc(`https://eodhd.com/img/logos/US/${cleanTicker}.png`);

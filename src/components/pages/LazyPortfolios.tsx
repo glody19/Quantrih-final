@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
+
+const LazyGrowthChart = lazy(() => import("./LazyGrowthChart"));
 import { AnimatePresence, animate, motion, useInView } from "motion/react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ArrowRight, RefreshCw, ShieldAlert, X } from "lucide-react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { InfoTooltip } from "../ui/InfoTooltip";
@@ -155,15 +156,7 @@ function Detail({ p, s, lang, onClose, onNavigate, showInvest = true }: { p: Mod
           <div className="mt-8">
             <h3 className="mb-3 text-lg font-semibold text-text">{t.growth}</h3>
             <div className="h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={s.growth} margin={{ top: 5, right: 5, bottom: 0, left: -18 }}>
-                  <defs><linearGradient id="lzg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#6D5AE6" stopOpacity={0.35} /><stop offset="100%" stopColor="#6D5AE6" stopOpacity={0} /></linearGradient></defs>
-                  <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#858899" }} axisLine={false} tickLine={false} interval={11} />
-                  <YAxis tick={{ fontSize: 11, fill: "#858899" }} axisLine={false} tickLine={false} domain={["auto", "auto"]} />
-                  <Tooltip contentStyle={{ borderRadius: 12, fontSize: 13 }} />
-                  <Area type="monotone" dataKey="v" stroke="#6D5AE6" strokeWidth={2.5} fill="url(#lzg)" animationDuration={1400} name={p.name} />
-                </AreaChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<div className="h-full rounded-xl bg-surface-3 animate-pulse" />}><LazyGrowthChart data={s.growth} name={p.name} /></Suspense>
             </div>
           </div>
         )}

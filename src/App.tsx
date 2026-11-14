@@ -26,6 +26,8 @@ const InvestorProfilePage = lazy(() => import("./components/pages/InvestorProfil
 const About = lazy(() => import("./components/pages/About").then((m) => ({ default: m.About })));
 const Legal = lazy(() => import("./components/pages/Legal").then((m) => ({ default: m.Legal })));
 import { cn } from "./lib/utils";
+import { MotionConfig } from "motion/react";
+import { loadPrefs, type Preferences } from "./lib/preferences";
 import { useTranslation } from "./contexts/LanguageContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ASSET_DATA } from "./constants";
@@ -77,7 +79,14 @@ function AppContent() {
   const currentPage = location.pathname === "/" ? "home" : location.pathname.substring(1);
 
   const [theme, setTheme] = useState("light");
-  const [baseCcy, setBaseCcy] = useState("EUR");
+  const [baseCcy, setBaseCcy] = useState<string>(() => loadPrefs().baseCcy);
+  const [motionPref, setMotionPref] = useState(() => loadPrefs().motion);
+  // Settings page changes apply at once
+  useEffect(() => {
+    const on = (e: Event) => { const p = (e as CustomEvent<Preferences>).detail; setBaseCcy(p.baseCcy); setMotionPref(p.motion); };
+    window.addEventListener("quantrih-prefs", on);
+    return () => window.removeEventListener("quantrih-prefs", on);
+  }, []);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
 
   useEffect(() => {
@@ -144,6 +153,8 @@ function AppContent() {
   };
 
   return (
+    // "system" follows the device's reduce-motion setting; the settings page can force it on or off
+    <MotionConfig reducedMotion={motionPref === "reduced" ? "always" : motionPref === "full" ? "never" : "user"}>
     <div className="relative min-h-screen flex flex-col font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       {currentPage !== "auth" && <Header
         currentPage={currentPage}
@@ -202,5 +213,6 @@ function AppContent() {
       
       <CookieConsent />
     </div>
+    </MotionConfig>
   );
 }
