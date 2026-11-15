@@ -81,15 +81,14 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
     >
       <h3 className="relative text-center text-xl md:text-2xl font-semibold tracking-tight text-text mb-4 [perspective:600px]">
         {title.split(" ").map((w, i) => (
-          <motion.span
-            key={i}
-            className="inline-block mr-[0.28em]"
+          <React.Fragment key={i}>{i > 0 && " "}<motion.span
+            className="inline-block"
             initial={{ opacity: 0, y: 26, rotateX: -80 }}
             animate={inView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
             transition={{ type: "spring", stiffness: 120, damping: 14, delay: i * 0.12 }}
           >
             {w}
-          </motion.span>
+          </motion.span></React.Fragment>
         ))}
         <motion.span className="block mx-auto mt-2 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#18B8A0]" initial={{ scaleX: 0 }} animate={inView ? { scaleX: 1 } : {}} transition={{ duration: 0.8, delay: 0.4 }} />
       </h3>

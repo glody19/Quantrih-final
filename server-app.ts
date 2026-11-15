@@ -1128,8 +1128,10 @@ export function createApp() {
   app.get("/api/logo", async (req, res) => {
     const domain = String(req.query.domain || "").toLowerCase().trim();
     const sz = [32, 64, 128].includes(Number(req.query.sz)) ? Number(req.query.sz) : 128;
+    // full=1: an edge-to-edge icon (the site's own apple-touch icon, made to fill a tile), for round logos
+    const full = req.query.full === "1";
     if (!/^[a-z0-9][a-z0-9.-]{1,80}\.[a-z]{2,24}$/.test(domain)) return res.status(400).end();
-    const key = `${domain}:${sz}`;
+    const key = `${domain}:${sz}:${full ? "f" : "s"}`;
     const send = (v: { type: string; body: Buffer }) => {
       res.set("Content-Type", v.type);
       res.set("Cache-Control", "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400");
@@ -1137,8 +1139,10 @@ export function createApp() {
     };
     const hit = logoCache.get(key);
     if (hit && Date.now() - hit.at < 7 * 86400_000) return send(hit);
+    const host = encodeURIComponent(domain);
     const sources = [
-      `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=${sz}`,
+      ...(full ? [`https://${host}/apple-touch-icon.png`, `https://www.${host}/apple-touch-icon.png`, `https://${host}/apple-touch-icon-precomposed.png`] : []),
+      `https://www.google.com/s2/favicons?domain=${host}&sz=${sz}`,
       `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`,
     ];
     for (const url of sources) {
@@ -1147,7 +1151,7 @@ export function createApp() {
         const type = r.headers.get("content-type") || "";
         if (!r.ok || !type.startsWith("image/")) continue;
         const body = Buffer.from(await r.arrayBuffer());
-        if (body.length < 120) continue; // empty placeholder icon
+        if (body.length < (full ? 600 : 120)) continue; // empty or tiny placeholder icon
         const v = { type, body, at: Date.now() };
         if (logoCache.size > 500) logoCache.clear();
         logoCache.set(key, v);

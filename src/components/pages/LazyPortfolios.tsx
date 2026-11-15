@@ -198,9 +198,10 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
     <div id="lazy-portfolios" className={variant === "page" ? "page-container pb-24 pt-6" : "w-full scroll-mt-24"}>
       {home ? (
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-text">{t.title}</h2>
-          <p className="mt-4 text-lg text-text-2 leading-relaxed">{t.whatIs}</p>
-          <p className="mt-3 text-base text-text-3 leading-relaxed">{t.subHome}</p>
+          <h2 className="text-3xl md:text-5xl font-semibold tracking-tight text-text">{t.title}</h2>
+          <span className="block mx-auto mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]" />
+          <p className="mt-5 text-base md:text-xl text-text-2 leading-relaxed">{t.whatIs}</p>
+          <p className="mt-3 text-base md:text-xl text-text-2 leading-relaxed">{t.subHome}</p>
         </motion.div>
       ) : (
         <div className="max-w-3xl">

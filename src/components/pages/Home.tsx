@@ -19,6 +19,13 @@ const DARK_GRID: React.CSSProperties = {
     "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(ellipse 90% 70% at 50% 0%, #123247 0%, #0A1B27 45%, #06111A 100%)",
   backgroundSize: "64px 64px, 64px 64px, 100% 100%",
 };
+// One continuous three-step gradient behind "Where to invest" and "Support", ending in the footer colour
+const NAVY_TRIPLE: React.CSSProperties = {
+  backgroundColor: "#06111A",
+  backgroundImage:
+    "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(180deg, #0B2233 0%, #14466B 42%, #0C2638 72%, #06111A 100%)",
+  backgroundSize: "64px 64px, 64px 64px, 100% 100%",
+};
 // White with large rectangular cells
 const LARGE_GRID: React.CSSProperties = {
   backgroundColor: "#FFFFFF",
@@ -150,7 +157,10 @@ function SectionTitle({ text, sub, dark = false }: { text: string; sub?: string;
     <div className="text-center max-w-3xl mx-auto mb-12 [perspective:700px]">
       <h3 className={`text-3xl md:text-5xl font-semibold tracking-tight ${dark ? "text-white" : "text-text"}`}>
         {text.split(" ").map((w, i) => (
-          <motion.span key={i} className="inline-block mr-[0.26em]" initial={{ opacity: 0, y: 40, rotateX: -80 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ type: "spring", stiffness: 110, damping: 14, delay: i * 0.1 }}>{w}</motion.span>
+          <React.Fragment key={i}>
+            {i > 0 && " "}
+            <motion.span className="inline-block" initial={{ opacity: 0, y: 40, rotateX: -80 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ type: "spring", stiffness: 110, damping: 14, delay: i * 0.1 }}>{w}</motion.span>
+          </React.Fragment>
         ))}
       </h3>
       <motion.span className="block mx-auto mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.35 }} />
@@ -164,16 +174,15 @@ function DropIn({ text, className, delay = 0 }: { text: string; className?: stri
   return (
     <span className={className} aria-label={text}>
       {text.split(" ").map((w, i) => (
-        <motion.span
-          key={i}
+        <React.Fragment key={i}>{i > 0 && " "}<motion.span
           aria-hidden
-          className="inline-block mr-[0.25em]"
+          className="inline-block"
           initial={{ y: -140, opacity: 0, rotateX: -70 }}
           animate={{ y: 0, opacity: 1, rotateX: 0 }}
           transition={{ type: "spring", stiffness: 90, damping: 14, delay: delay + i * 0.09 }}
         >
           {w}
-        </motion.span>
+        </motion.span></React.Fragment>
       ))}
     </span>
   );
@@ -290,11 +299,8 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
 
       {/* ── Why backtest: explanation first, then the tablet, desktop and phone demo (white, large squares) ── */}
       <ZoomSection style={LARGE_GRID} className="relative w-full pt-24 pb-28 overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center px-6">
-          <motion.h3 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-3xl md:text-[42px] font-normal tracking-tight text-text mb-5">{t("home.why_backtest.title")}</motion.h3>
-          <motion.p initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.9, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-text-2 text-lg md:text-xl leading-relaxed">{t("home.why_backtest.desc")}</motion.p>
+        <div className="px-6">
+          <SectionTitle text={t("home.why_backtest.title")} sub={t("home.why_backtest.desc")} />
         </div>
         <div className="w-full px-4 sm:px-6 lg:px-24 mt-16">
           <DeviceShowcase
@@ -420,28 +426,23 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </ZoomSection>
 
-      {/* ── Investment platforms (navy grid): title, then subtitle, then the logos ── */}
-      <ZoomSection style={DARK_GRID} className="relative w-full py-20 lg:py-28 overflow-hidden">
-        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="max-w-3xl">
-            <motion.h3 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</motion.h3>
-            <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.8, delay: 0.9 }}
-              className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."}</motion.p>
-          </div>
-          <motion.button initial={{ opacity: 0, scale: 0.85 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 200, damping: 16, delay: 1.6 }}
-            onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-[#0C2233] bg-white hover:bg-white/90 inline-flex items-center gap-2">
-            {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
-          </motion.button>
+      {/* ── Where to invest + Support: one block on the same three-step navy gradient ── */}
+      <div style={NAVY_TRIPLE}>
+      <ZoomSection className="relative w-full pt-20 lg:pt-28 pb-12 overflow-hidden">
+        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-6">
+          <SectionTitle dark text={fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"} sub={fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."} />
+          <motion.div className="flex justify-center -mt-4" initial={{ opacity: 0, scale: 0.85 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 200, damping: 16, delay: 1.7 }}>
+            <button onClick={() => onGoPage("platforms")} className="px-6 py-3 rounded-full text-sm font-semibold text-[#0C2233] bg-white hover:bg-white/90 inline-flex items-center gap-2">
+              {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
+            </button>
+          </motion.div>
         </div>
         <ScrollZoom amount={0.12}><PlatformsMarquee fr={fr} /></ScrollZoom>
       </ZoomSection>
 
-      {/* ── Support: same dark gradient with squares as the section before it ── */}
-      <ZoomSection style={DARK_GRID} className="w-full px-6 lg:px-24 pt-20 pb-10">
+      <ZoomSection className="w-full px-6 lg:px-24 pt-16 pb-10">
         <div className="max-w-4xl mx-auto text-center">
-          <h3 className="text-white text-2xl lg:text-4xl font-normal tracking-tight mb-4">{t("home.support.title")}</h3>
-          <p className="text-white/70 text-base lg:text-lg leading-relaxed mb-8 max-w-2xl mx-auto">{t("home.support.desc")}</p>
+          <SectionTitle dark text={t("home.support.title")} sub={t("home.support.desc")} />
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
@@ -456,6 +457,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
           <p className="text-white/45 text-xs max-w-3xl mx-auto leading-relaxed mt-14">{fr ? "Quantrih est un outil d'analyse et de formation. Rien sur ce site ne constitue un conseil en investissement. " : "Quantrih is an analysis and learning tool. Nothing on this site is investment advice. "}{t("home.disclaimer")}</p>
         </div>
       </ZoomSection>
+      </div>
     </div>
   );
 }
