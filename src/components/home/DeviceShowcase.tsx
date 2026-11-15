@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
-import { motion, useMotionValue, useScroll, useSpring, useTransform } from "motion/react";
+import { motion, useInView, useScroll, useSpring, useTransform } from "motion/react";
 import { QuantrihLogo } from "../ui/Logo";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
-const VIEW = { once: true, margin: "-120px" } as const;
+const VIEW = { once: true, margin: "0px 0px -120px 0px" } as const; // only the bottom edge: devices that start off to the side still trigger
 
 /** Glass reflection laid over every screen. */
 const Glare = () => <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(118deg,rgba(255,255,255,0.20)_0%,rgba(255,255,255,0.04)_30%,rgba(255,255,255,0)_44%)]" />;
@@ -93,38 +93,30 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = f
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const p = useSpring(scrollYProgress, { stiffness: 80, damping: 24, mass: 0.7 });
   const sideY = useTransform(p, [0, 1], [30, -30]);
+  // the side devices start off-screen, so they follow the whole scene entering the view (not their own position)
+  const sceneIn = useInView(ref, { once: true, margin: "0px 0px -120px 0px" });
 
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const rotY = useSpring(useTransform(mx, [-0.5, 0.5], [-5, 5]), { stiffness: 110, damping: 18 });
-  const rotX = useSpring(useTransform(my, [-0.5, 0.5], [3, -3]), { stiffness: 110, damping: 18 });
 
   return (
     <div
       ref={ref}
-      onMouseMove={(e) => {
-        const r = ref.current?.getBoundingClientRect();
-        if (!r) return;
-        mx.set((e.clientX - r.left) / r.width - 0.5);
-        my.set((e.clientY - r.top) / r.height - 0.5);
-      }}
-      onMouseLeave={() => { mx.set(0); my.set(0); }}
       className="relative w-full max-w-[1240px] mx-auto [perspective:2000px] select-none"
     >
-      <motion.div style={{ rotateX: rotX, rotateY: rotY }} className="relative flex items-end justify-center gap-[3%] pb-10">
+      <div className="relative flex items-end justify-center gap-[3%] pb-10 [perspective:1600px]">
         {/* shadow on the desk */}
         <motion.div initial={{ opacity: 0, scaleX: 0.3 }} whileInView={{ opacity: 1, scaleX: 1 }} viewport={VIEW} transition={{ duration: 1.4, delay: 0.2, ease: EASE }}
           className="absolute left-[2%] right-[2%] bottom-2 h-20 rounded-[50%] bg-[radial-gradient(ellipse,rgba(21,18,74,0.26),transparent_70%)] blur-2xl" />
 
         {/* ── Tablet ── */}
         <motion.div style={{ y: sideY }} className="relative w-[21%] hidden md:block mb-[1.5%]">
-          <motion.div initial={{ opacity: 0, x: -120, rotateY: 35 }} whileInView={{ opacity: 1, x: 0, rotateY: 10 }} viewport={VIEW} transition={{ type: "spring", stiffness: 60, damping: 14, delay: 0.45 }}>
+          <motion.div initial={{ opacity: 0, x: -260, rotateY: 75, rotateZ: -14, scale: 0.7 }} animate={sceneIn ? { opacity: 1, x: 0, rotateY: 0, rotateZ: 0, scale: 1 } : undefined}
+            transition={{ opacity: { duration: 0.4, delay: 0.9 }, default: { type: "spring", stiffness: 55, damping: 13, delay: 0.9 } }}>
             <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 1.4 }}>
               <div className="relative rounded-[24px] p-[2.5px] bg-[linear-gradient(160deg,#F3F4F6,#A3A9B2)] shadow-[0_40px_70px_-30px_rgba(15,23,42,0.7)]">
                 <div className="relative rounded-[22px] bg-[#07080C] p-[4.5%]">
                   <div className="relative overflow-hidden rounded-[13px] bg-white aspect-[3/4]">
                     <Demo mp4={videoMp4} webm={videoWebm} poster={poster} label={desktopAlt} position="0% 62%" />
-                    <PowerOn delay={1} />
+                    <PowerOn delay={1.6} />
                     <Glare />
                   </div>
                   <span className="absolute left-1/2 top-[1.8%] -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#1E2128]" />
@@ -156,7 +148,8 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = f
 
         {/* ── Smartphone: thin even bezels, titanium frame, punch-hole camera, side buttons ── */}
         <motion.div style={{ y: sideY }} className="relative w-[12.5%] hidden md:block mb-[1.5%]">
-          <motion.div initial={{ opacity: 0, x: 120, rotateY: -35 }} whileInView={{ opacity: 1, x: 0, rotateY: -10 }} viewport={VIEW} transition={{ type: "spring", stiffness: 60, damping: 14, delay: 0.7 }}>
+          <motion.div initial={{ opacity: 0, x: 240, y: -60, rotateY: -360, rotateZ: 18, scale: 0.6 }} animate={sceneIn ? { opacity: 1, x: 0, y: 0, rotateY: 0, rotateZ: 0, scale: 1 } : undefined}
+            transition={{ opacity: { duration: 0.3, delay: 1.35 }, rotateY: { duration: 1.5, delay: 1.35, ease: [0.22, 1, 0.36, 1] }, default: { type: "spring", stiffness: 55, damping: 12, delay: 1.35 } }}>
             <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.8 }}>
               <div className="relative rounded-[18%/8.5%] p-[2.5px] bg-[linear-gradient(150deg,#E9EAEE_0%,#8E949D_45%,#D8DADF_70%,#7C828B_100%)] shadow-[0_40px_60px_-22px_rgba(15,23,42,0.8)]">
                 <span className="absolute -right-[2.5px] top-[22%] w-[2.5px] h-[9%] rounded-r bg-[#9AA0A9]" />
@@ -166,7 +159,7 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = f
                   <div className="relative overflow-hidden rounded-[14%/6.6%] aspect-[9/19.5]">
                     <PhoneScreen fr={fr} />
                     <span className="absolute left-1/2 top-[1.6%] -translate-x-1/2 w-[6%] aspect-square rounded-full bg-black ring-1 ring-white/10 z-10" />
-                    <PowerOn delay={1.3} />
+                    <PowerOn delay={2.4} />
                     <Glare />
                   </div>
                 </div>
@@ -174,7 +167,7 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = f
             </motion.div>
           </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }

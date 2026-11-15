@@ -48,14 +48,15 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
     const mouse = { x: -9999, y: -9999, active: false };
 
     const setup = () => {
-      const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+      // full screen resolution (phones are ~3x): a lower backing store looks blurry on high-density screens
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
       width = canvas.offsetWidth;
       height = canvas.offsetHeight;
       canvas.width = Math.max(1, Math.round(width * dpr));
       canvas.height = Math.max(1, Math.round(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const count = Math.min(width, height) < 420 ? 700 : 1500;
+      const count = 1500; // same density on phones and computers
       const golden = Math.PI * (3 - Math.sqrt(5));
       spikes = Array.from({ length: count }, (_, i) => {
         // Fibonacci sphere: even coverage without clumps
@@ -101,6 +102,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
 
       const cx = width / 2, cy = height / 2;
       const R = Math.min(width, height) * 0.35;
+      const fs = Math.min(1.15, Math.max(0.62, R / 210)); // digits and spikes scale with the sphere, so a small atom is not crowded
       const inner = R * 0.56;
       const speed = hoverRef.current ? 2.2 : 1;
       angleY += (0.0032 + burst * 0.02) * speed * dt;
@@ -156,7 +158,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
       ctx.textBaseline = "middle";
       for (let d = 0; d < DEPTH_LEVELS; d++) {
         const k = d / (DEPTH_LEVELS - 1); // 0 far .. 1 near
-        ctx.lineWidth = 0.6 + k * 1.9;
+        ctx.lineWidth = (0.6 + k * 1.9) * fs;
         for (let c = 0; c < 3; c++) {
           const seg = lineBuckets[d][c];
           if (!seg.length) continue;
@@ -165,7 +167,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
           for (let i = 0; i < seg.length; i += 4) { ctx.moveTo(seg[i], seg[i + 1]); ctx.lineTo(seg[i + 2], seg[i + 3]); }
           ctx.stroke();
         }
-        ctx.font = `500 ${Math.round(7 + k * 7)}px "JetBrains Mono", ui-monospace, monospace`;
+        ctx.font = `500 ${((7 + k * 7) * fs).toFixed(1)}px "JetBrains Mono", ui-monospace, monospace`;
         for (let c = 0; c < 3; c++) {
           const items = textBuckets[d][c];
           if (!items.length) continue;

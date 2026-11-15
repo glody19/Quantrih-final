@@ -371,3 +371,8 @@ th > div > input[type="text"]:focus {
   .tool-page .text-\[13px\] { font-size: 13px; }
   .tool-page .text-\[14px\] { font-size: 13.5px; }
 }
+
+/* Home page on phones: the content is shown at 80% (the header and its menu stay at full size) */
+@media (max-width: 640px) {
+  .home-zoom { zoom: 0.8; }
+}

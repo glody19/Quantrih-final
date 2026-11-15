@@ -23,7 +23,7 @@ const PERIODS = [
   { k: "5y", l: "5Y", i: "1wk" },
 ] as const;
 
-type Pt = { t: number; v: number };
+type Pt = { t: number; v: number; c: number }; // time, % since start, close price
 const W = 1000, H = 380, PAD = { l: 8, r: 92, t: 18, b: 26 };
 
 /**
@@ -54,7 +54,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
               .sort((a, b) => a.t - b.t);
             if (pts.length < 2) return [x.s, []] as const;
             const base = pts[0].c;
-            return [x.s, pts.map((d) => ({ t: d.t, v: (d.c / base - 1) * 100 }))] as const;
+            return [x.s, pts.map((d) => ({ t: d.t, v: (d.c / base - 1) * 100, c: d.c }))] as const;
           })
           .catch(() => [x.s, []] as const)
       )
@@ -116,6 +116,19 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
   };
   const ranking = shown.map((x) => ({ ...x, last: data[x.s][data[x.s].length - 1].v })).sort((a, b) => b.last - a.last);
   const hoverT = geo && hover !== null ? geo.t0 + ((hover - PAD.l) / (W - PAD.l - PAD.r)) * (geo.t1 - geo.t0) : null;
+  const hoverLabel = hoverT !== null ? new Date(hoverT).toLocaleDateString(fr ? "fr-BE" : "en-GB", { day: "numeric", month: "short", year: "numeric" }) : null;
+  // Figures shown in the table: today's quote, or the close at the date under the cursor
+  const figures = (sym: string, q: Quote) => {
+    const pts = data[sym];
+    const lastPer = pts?.[pts.length - 1]?.v ?? null;
+    if (hoverT === null || !pts?.length) return { price: q.price, day: q.day, per: lastPer };
+    let i = 0;
+    for (let k = 0; k < pts.length; k++) { if (pts[k].t <= hoverT) i = k; else break; }
+    const prev = pts[i - 1];
+    return { price: pts[i].c, day: prev ? (pts[i].c / prev.c - 1) * 100 : null, per: pts[i].v };
+  };
+  // pointer or finger on the chart moves the cursor
+  const track = (clientX: number, el: Element) => { const r = el.getBoundingClientRect(); const x = ((clientX - r.left) / r.width) * W; setHover(x >= PAD.l && x <= W - PAD.r ? x : null); };
 
   return (
     <div ref={ref} className="rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_70px_-45px_rgba(23,20,74,0.45)] p-3.5 sm:p-5 md:p-8">
@@ -146,7 +159,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_250px] gap-6 items-stretch">
+      <div>
         <div className="relative">
           {!geo ? (
             <div className="aspect-[1000/380] rounded-2xl bg-slate-50 animate-pulse" />
@@ -154,8 +167,12 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
             <svg
               viewBox={`0 0 ${W} ${H}`}
               className="w-full h-auto overflow-visible"
-              onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * W; setHover(x >= PAD.l && x <= W - PAD.r ? x : null); }}
+              onMouseMove={(e) => track(e.clientX, e.currentTarget)}
               onMouseLeave={() => setHover(null)}
+              onTouchStart={(e) => track(e.touches[0].clientX, e.currentTarget)}
+              onTouchMove={(e) => track(e.touches[0].clientX, e.currentTarget)}
+              onTouchEnd={() => setTimeout(() => setHover(null), 1500)}
+              style={{ touchAction: "pan-y" }}
             >
               {geo.ticks.map((v) => (
                 <g key={v}>
@@ -198,41 +215,28 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
                     const v = valueAt(data[x.s], hoverT);
                     return <circle key={x.s} cx={hover!} cy={geo.Y(v)} r="4" fill={x.c} stroke="#fff" strokeWidth="1.5" />;
                   })}
-                  <text x={Math.min(hover! + 8, W - PAD.r - 90)} y={H - 6} fontSize="12" fill="#64748B">{new Date(hoverT).toLocaleDateString(fr ? "fr-BE" : "en-GB", { day: "numeric", month: "short", year: "numeric" })}</text>
+                  <text x={Math.min(hover! + 8, W - PAD.r - 90)} y={H - 6} fontSize="12" fill="#64748B">{hoverLabel}</text>
                 </g>
               )}
             </svg>
           )}
         </div>
 
-        {/* ranking: returns over the period, or at the hovered date */}
-        <div className="flex flex-col">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 mb-3">{hoverT !== null ? (fr ? "À cette date" : "At this date") : (fr ? "Sur la période" : "Over the period")}</p>
-          <ul className="grid gap-1.5">
-            {ranking.map((x, i) => {
-              const v = hoverT !== null ? valueAt(data[x.s], hoverT) : x.last;
-              return (
-                <motion.li key={x.s} layout initial={{ opacity: 0, x: 20 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 1.6 + i * 0.1 }} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 hover:bg-slate-50">
-                  <span className="flex items-center gap-2.5 text-[15px] text-slate-700"><span className="w-1.5 h-5 rounded-full" style={{ background: x.c }} />{x.n}</span>
-                  <b className={cn("font-mono tabular-nums text-[15px]", v >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{v >= 0 ? "+" : ""}{v.toFixed(1)}%</b>
-                </motion.li>
-              );
-            })}
-          </ul>
-          <button onClick={onOpen} className="mt-auto pt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#5B4BDB] hover:gap-3 transition-all">
-            {fr ? "Comparer d'autres titres dans Marchés" : "Compare other assets in Markets"} <ArrowRight size={15} />
-          </button>
-        </div>
       </div>
 
-      {/* details, same figures as the Market comparison */}
+      {/* details under the chart, linked to the cursor: prices and changes follow the hovered date */}
       {Object.keys(quotes).length > 0 && (
         <>
+        <div className="mt-5 flex items-center justify-between gap-3 text-xs">
+          <span className={cn("font-semibold uppercase tracking-[0.14em]", hoverLabel ? "text-[#5B4BDB]" : "text-slate-500")}>{hoverLabel ? `${fr ? "Au" : "On"} ${hoverLabel}` : (fr ? "Aujourd'hui" : "Today")}</span>
+          <span className="text-slate-400 hidden sm:inline">{fr ? "Passez la souris sur le graphique pour voir les prix à une date" : "Move over the chart to see prices on any date"}</span>
+        </div>
         {/* phones: one card per asset */}
-        <div className="sm:hidden mt-6 grid gap-2.5">
+        <div className="sm:hidden mt-3 grid gap-2.5">
           {SERIES.filter((x) => quotes[x.s]).map((x) => {
             const q = quotes[x.s];
-            const per = data[x.s]?.[data[x.s].length - 1]?.v ?? null;
+            const f = figures(x.s, q);
+            const per = f.per;
             const cell = (k: string, v: React.ReactNode) => <span className="flex flex-col"><span className="text-[10px] uppercase tracking-wider text-slate-400">{k}</span><span className="font-mono tabular-nums text-[12px] text-slate-800">{v}</span></span>;
             return (
               <div key={x.s} className="rounded-xl border border-slate-200 p-3">
@@ -245,8 +249,8 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
                     <span className="leading-tight"><b className="block text-[13px] text-slate-900">{x.n}</b><span className="text-[11px] font-mono text-slate-500">{x.s}</span></span>
                   </span>
                   <span className="text-right leading-tight">
-                    <b className="block font-mono text-[13px] text-slate-900">{q.price.toFixed(2)} <span className="text-[10px] text-slate-400">{q.ccy}</span></b>
-                    <span className={cn("font-mono text-[11px]", q.day == null ? "text-slate-400" : q.day >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{q.day == null ? "-" : `${q.day >= 0 ? "+" : ""}${q.day.toFixed(2)}%`}</span>
+                    <b className="block font-mono text-[13px] text-slate-900">{f.price.toFixed(2)} <span className="text-[10px] text-slate-400">{q.ccy}</span></b>
+                    <span className={cn("font-mono text-[11px]", f.day == null ? "text-slate-400" : f.day >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{f.day == null ? "-" : `${f.day >= 0 ? "+" : ""}${f.day.toFixed(2)}%`}</span>
                   </span>
                 </div>
                 <div className="mt-2.5 grid grid-cols-4 gap-2">
@@ -259,7 +263,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
             );
           })}
         </div>
-        <div className="hidden sm:block mt-8 overflow-x-auto rounded-2xl border border-slate-200">
+        <div className="hidden sm:block mt-3 overflow-x-auto rounded-2xl border border-slate-200">
           <table className="w-full min-w-[980px] text-[14px]">
             <thead className="bg-slate-50 text-[11px] uppercase tracking-[0.12em] text-slate-500">
               <tr>
@@ -277,8 +281,9 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
             <tbody>
               {SERIES.filter((x) => quotes[x.s]).map((x, i) => {
                 const q = quotes[x.s];
-                const per = data[x.s]?.[data[x.s].length - 1]?.v ?? null;
-                const pos = q.lo != null && q.hi != null && q.hi > q.lo ? Math.min(1, Math.max(0, (q.price - q.lo) / (q.hi - q.lo))) : null;
+                const f = figures(x.s, q);
+                const per = f.per;
+                const pos = q.lo != null && q.hi != null && q.hi > q.lo ? Math.min(1, Math.max(0, (f.price - q.lo) / (q.hi - q.lo))) : null;
                 return (
                   <motion.tr key={x.s} initial={{ opacity: 0, x: -24 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 0.4 + i * 0.07, duration: 0.5 }} className="border-t border-slate-100 hover:bg-slate-50/70">
                     <td className="px-4 py-3">
@@ -290,9 +295,9 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
                         <span><b className="block font-semibold text-slate-900">{x.n}</b><span className="text-xs text-slate-500 font-mono">{x.s}{q.exch ? ` · ${q.exch}` : ""}</span></span>
                       </span>
                     </td>
-                    <td className="text-right px-3 font-mono tabular-nums font-semibold text-slate-900">{q.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[11px] text-slate-400">{q.ccy}</span></td>
-                    <td className={cn("text-right px-3 font-mono tabular-nums", q.day == null ? "text-slate-400" : q.day >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{q.day == null ? "-" : `${q.day >= 0 ? "+" : ""}${q.day.toFixed(2)}%`}</td>
-                    <td className={cn("text-right px-3 font-mono tabular-nums font-semibold", per == null ? "text-slate-400" : per >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{per == null ? "-" : `${per >= 0 ? "+" : ""}${per.toFixed(1)}%`}</td>
+                    <td className={cn("text-right px-3 font-mono tabular-nums font-semibold text-slate-900 transition-colors", hoverLabel && "bg-[#5B4BDB]/[0.05]")}>{f.price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[11px] text-slate-400">{q.ccy}</span></td>
+                    <td className={cn("text-right px-3 font-mono tabular-nums transition-colors", hoverLabel && "bg-[#5B4BDB]/[0.05]", f.day == null ? "text-slate-400" : f.day >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{f.day == null ? "-" : `${f.day >= 0 ? "+" : ""}${f.day.toFixed(2)}%`}</td>
+                    <td className={cn("text-right px-3 font-mono tabular-nums font-semibold transition-colors", hoverLabel && "bg-[#5B4BDB]/[0.05]", per == null ? "text-slate-400" : per >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{per == null ? "-" : `${per >= 0 ? "+" : ""}${per.toFixed(1)}%`}</td>
                     <td className="text-right px-3 font-mono tabular-nums text-slate-700">{big(q.cap)}</td>
                     <td className="text-right px-3 font-mono tabular-nums text-slate-700" title={q.avgVol ? `${fr ? "Moyenne 3 mois" : "3-month average"}: ${big(q.avgVol)}` : undefined}>{big(q.vol)}</td>
                     <td className="px-3">
@@ -300,7 +305,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
                         <span className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
                           {q.lo!.toFixed(0)}
                           <span className="relative flex-1 h-1.5 rounded-full bg-slate-100 min-w-[70px]">
-                            <motion.span className="absolute top-1/2 w-3 h-3 -mt-1.5 -ml-1.5 rounded-full ring-2 ring-white shadow" style={{ background: x.c }} initial={{ left: "0%" }} animate={inView ? { left: `${pos * 100}%` } : {}} transition={{ duration: 1.4, delay: 0.8 + i * 0.07, ease: [0.16, 1, 0.3, 1] }} />
+                            <motion.span className="absolute top-1/2 w-3 h-3 -mt-1.5 -ml-1.5 rounded-full ring-2 ring-white shadow" style={{ background: x.c }} initial={{ left: "0%" }} animate={inView ? { left: `${pos * 100}%` } : {}} transition={hoverLabel ? { duration: 0.15 } : { duration: 1.4, delay: 0.8 + i * 0.07, ease: [0.16, 1, 0.3, 1] }} />
                           </span>
                           {q.hi!.toFixed(0)}
                         </span>
@@ -316,6 +321,9 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
         </div>
         </>
       )}
+      <button onClick={onOpen} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#5B4BDB] hover:gap-3 transition-all">
+        {fr ? "Comparer d'autres titres dans Marchés" : "Compare other assets in Markets"} <ArrowRight size={15} />
+      </button>
     </div>
   );
 }

@@ -223,7 +223,6 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   // Hero parallax: atom grows as the page starts to scroll
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: heroP } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const atomScale = useTransform(heroP, [0, 1], [1, 1.06]);
   const heroTextY = useTransform(heroP, [0, 1], [0, 60]);
   const heroFade = useTransform(heroP, [0, 0.8], [1, 0]);
 
@@ -235,7 +234,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   ];
 
   return (
-    <div className="flex flex-col w-full overflow-hidden text-text">
+    <div className="home-zoom flex flex-col w-full overflow-hidden text-text">
       {/* ── Hero: original colour plate ── */}
       <div ref={heroRef} className="relative w-full min-h-[100svh] flex items-center" style={DARK_GRID}>
         <div
@@ -263,16 +262,17 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               {t("home.hero.subtitle")}
             </motion.p>
           </motion.div>
-          <motion.div style={{ scale: atomScale }} className="w-full lg:w-[48%] h-[44vh] sm:h-[50vh] lg:h-[68vh] relative z-10 flex items-center justify-center mt-6 lg:mt-0 [perspective:1100px]">
-            {/* the whole atom drifts in 3D: up, down, left, right */}
+          <div className="w-[124%] -mx-[12%] lg:mx-0 lg:w-[48%] h-[58vh] sm:h-[56vh] lg:h-[68vh] relative z-10 flex items-center justify-center mt-2 lg:mt-0">
+            {/* the whole atom drifts up, down, left and right; the sphere itself turns in 3D inside the canvas.
+                No CSS scale or 3D tilt here: they resample the canvas and make it blurry */}
             <motion.div
               className="w-full h-full"
-              animate={{ x: [0, 46, -38, 22, -14, 0], y: [0, -40, 26, 36, -22, 0], rotateX: [0, 12, -9, 6, -4, 0], rotateY: [0, -16, 13, -8, 5, 0], rotateZ: [0, 3, -2, 2, -1, 0] }}
+              animate={{ x: [0, 46, -38, 22, -14, 0], y: [0, -40, 26, 36, -22, 0] }}
               transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
             >
               <AtomAnimation isHovered={heroHovered} />
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
