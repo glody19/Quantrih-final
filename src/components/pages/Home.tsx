@@ -425,13 +425,13 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       </ZoomSection>
 
       {/* ── Investment platforms (dark grid, white profile cards) ── */}
-      <ZoomSection style={DARK_GRID} className="relative w-full py-20 lg:py-28 overflow-hidden">
+      <ZoomSection className="relative w-full py-20 lg:py-28 overflow-hidden bg-white">
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-3xl">
-            <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</h3>
-            <p className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."}</p>
+            <h3 className="text-3xl md:text-5xl font-normal text-text tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</h3>
+            <p className="mt-4 text-text-2 text-lg leading-relaxed">{fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."}</p>
           </div>
-          <button onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-[#0C2233] bg-white hover:bg-white/90 inline-flex items-center gap-2">
+          <button onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-white bg-pv-blue hover:bg-pv-blue-d inline-flex items-center gap-2">
             {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
           </button>
         </div>
@@ -439,7 +439,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       </ZoomSection>
 
       {/* ── Support: same dark gradient with squares as the section before it ── */}
-      <ZoomSection style={DARK_GRID} className="w-full px-6 lg:px-24 pt-20 pb-16 border-t border-white/10">
+      <ZoomSection style={DARK_GRID} className="w-full px-6 lg:px-24 pt-20 pb-10">
         <div className="max-w-4xl mx-auto text-center">
           <h3 className="text-white text-2xl lg:text-4xl font-normal tracking-tight mb-4">{t("home.support.title")}</h3>
           <p className="text-white/70 text-base lg:text-lg leading-relaxed mb-8 max-w-2xl mx-auto">{t("home.support.desc")}</p>
@@ -454,7 +454,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
           <div className="text-sm text-white/60 mt-4">
             {t("home.support.inquiry")}: <a href="mailto:contact@quantrih.com" className="text-[#A9C8EA] font-semibold underline underline-offset-4">contact@quantrih.com</a>
           </div>
-          <p className="text-white/45 text-xs max-w-3xl mx-auto leading-relaxed mt-14">{t("home.disclaimer")}</p>
+          <p className="text-white/45 text-xs max-w-3xl mx-auto leading-relaxed mt-14">{fr ? "Quantrih est un outil d'analyse et de formation. Rien sur ce site ne constitue un conseil en investissement. " : "Quantrih is an analysis and learning tool. Nothing on this site is investment advice. "}{t("home.disclaimer")}</p>
         </div>
       </ZoomSection>
     </div>

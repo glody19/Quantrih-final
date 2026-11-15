@@ -4,17 +4,41 @@ import { INVESTMENT_PLATFORMS, type InvestmentPlatform } from "../../data/invest
 const COUNTRY = { BE: { fr: "Belgique", en: "Belgium" }, FR: { fr: "France", en: "France" } } as const;
 const MAX_ZOOM = 0.16; // the logo at the very centre is 16% larger
 
-/** Round logo in the same frame for every platform, then its name, what it offers and its country. */
+/** Lighter version of a brand colour, for the end of the pill gradient. */
+function lighten(hex: string, k: number) {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const ch = (v: number) => Math.round(v + (255 - v) * k);
+  return `rgb(${ch((n >> 16) & 255)}, ${ch((n >> 8) & 255)}, ${ch(n & 255)})`;
+}
+
+/**
+ * A white 3D sphere holding the logo, docked on a rounded pill in the platform's colours
+ * with its name, what it offers and its country.
+ */
 function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
   return (
-    <div className="shrink-0 w-[190px] flex flex-col items-center text-center" title={p.name}>
-      <span data-zoom className="relative flex w-24 h-24 rounded-full bg-white ring-4 ring-white/10 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.7)] items-center justify-center text-3xl font-bold overflow-hidden will-change-transform" style={{ color: p.color }}>
+    <div className="shrink-0 relative flex items-center w-[330px] h-[112px]" title={p.name}>
+      <div
+        className="absolute left-[46px] right-0 inset-y-[10px] rounded-full pl-[74px] pr-6 flex flex-col justify-center text-white shadow-[0_18px_30px_-18px_rgba(15,23,42,0.55)]"
+        style={{ background: `linear-gradient(105deg, ${p.color} 0%, ${lighten(p.color, 0.25)} 100%)` }}
+      >
+        <span className="text-[15px] font-bold uppercase tracking-wide truncate">{p.name}</span>
+        <span className="mt-0.5 text-[12px] leading-snug text-white/85 line-clamp-2">{fr ? p.bestFor.fr : p.bestFor.en}</span>
+        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">{p.markets.map((m) => COUNTRY[m][fr ? "fr" : "en"]).join(" · ")}</span>
+      </div>
+      {/* white sphere: soft highlight top-left, shade bottom-right, drop shadow */}
+      <span
+        data-zoom
+        className="relative z-10 flex w-[104px] h-[104px] rounded-full items-center justify-center text-3xl font-bold will-change-transform"
+        style={{
+          color: p.color,
+          background: "radial-gradient(circle at 34% 28%, #FFFFFF 0%, #F7F8FA 38%, #E6E9EF 72%, #CDD2DB 100%)",
+          boxShadow: "0 16px 26px -10px rgba(15,23,42,0.45), inset -6px -9px 16px rgba(15,23,42,0.10), inset 4px 5px 10px rgba(255,255,255,0.9)",
+        }}
+      >
         {p.name.charAt(0)}
-        <img src={`/api/logo?domain=${p.domain}&sz=128`} alt={p.name} className="absolute inset-0 m-auto w-14 h-14 object-contain bg-white" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+        <img src={`/api/logo?domain=${p.domain}&sz=128`} alt={p.name} className="absolute inset-0 m-auto w-[50px] h-[50px] object-contain rounded-lg" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = "none"; }} />
       </span>
-      <span className="mt-4 text-[15px] font-semibold text-white">{p.name}</span>
-      <span className="mt-1 text-[13px] leading-snug text-white/65 line-clamp-2 min-h-[2.6em]">{fr ? p.bestFor.fr : p.bestFor.en}</span>
-      <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#A9C8EA]">{p.markets.map((m) => COUNTRY[m][fr ? "fr" : "en"]).join(" · ")}</span>
     </div>
   );
 }
@@ -53,8 +77,8 @@ export function PlatformsMarquee({ fr }: { fr: boolean }) {
   }, []);
 
   return (
-    <div ref={ref} className="overflow-hidden group py-5">
-      <div className="flex w-max gap-8 animate-marquee group-hover:[animation-play-state:paused]" style={{ animationDuration: `${list.length * 3.6}s` }}>
+    <div ref={ref} className="overflow-hidden group py-8">
+      <div className="flex w-max gap-6 animate-marquee group-hover:[animation-play-state:paused]" style={{ animationDuration: `${list.length * 3.6}s` }}>
         {[...list, ...list].map((p, k) => <Badge key={p.id + k} p={p} fr={fr} />)}
       </div>
     </div>

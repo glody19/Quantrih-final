@@ -57,8 +57,11 @@ export function Footer({ onNavigate }: FooterProps) {
   ];
 
   return (
-    <footer className="w-full bg-[#06111A] text-slate-300 font-sans">
-      <div className="h-px bg-gradient-to-r from-transparent via-[#3D6FB0]/60 to-transparent" />
+    <footer
+      className="w-full text-slate-300 font-sans"
+      // same dark grid as the support section above it on the home page, so the two read as one block
+      style={{ backgroundColor: "#06111A", backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "64px 64px" }}
+    >
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-14 grid gap-12 lg:grid-cols-[1.3fr_2.7fr]">
         <div>
           <QuantrihLogo variant="bars" size="lg" className="text-[#A9C8EA] [&>span]:!text-white" />
@@ -93,15 +96,8 @@ export function Footer({ onNavigate }: FooterProps) {
         </nav>
       </div>
 
-      <div className="border-t border-white/10">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-6 grid gap-3 text-xs text-slate-500 leading-relaxed">
-          <p>
-            {fr
-              ? 'Quantrih est un outil d\'analyse et de formation. Rien sur ce site ne constitue un conseil en investissement. Les performances passées ne préjugent pas des performances futures.'
-              : 'Quantrih is an analysis and learning tool. Nothing on this site is investment advice. Past performance does not predict future returns.'}
-          </p>
-          <p>© {new Date().getFullYear()} Quantrih. {fr ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
-        </div>
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-10 pb-8 text-xs text-slate-500">
+        <p>© {new Date().getFullYear()} Quantrih. {fr ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
       </div>
     </footer>
   );
