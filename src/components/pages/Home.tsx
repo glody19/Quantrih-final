@@ -154,7 +154,7 @@ function SectionTitle({ text, sub, dark = false }: { text: string; sub?: string;
         ))}
       </h3>
       <motion.span className="block mx-auto mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.35 }} />
-      {sub && <motion.p className={`mt-5 text-base md:text-xl leading-relaxed ${dark ? "text-white/70" : "text-text-2"}`} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.45 }}>{sub}</motion.p>}
+      {sub && <motion.p className={`mt-5 text-base md:text-xl leading-relaxed ${dark ? "text-white/70" : "text-text-2"}`} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 1.1 }}>{sub}</motion.p>}
     </div>
   );
 }
@@ -257,15 +257,15 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             </h1>
             <motion.h2
               animate={{ y: [0, -7, 0] }}
-              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 3 }}
               className="font-sans text-4xl sm:text-5xl lg:text-[56px] font-medium leading-tight tracking-tight mt-6 text-[#A9C8EA]"
             >
-              <DropIn text={t("home.hero.title2") + "."} delay={0.9} />
+              <DropIn text={t("home.hero.title2") + "."} delay={1.6} />
             </motion.h2>
             <motion.p
               initial={{ y: -60, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 80, damping: 16, delay: 1.3 }}
+              transition={{ type: "spring", stiffness: 80, damping: 16, delay: 2.6 }}
               className="mt-8 max-w-xl text-white/80 text-xl sm:text-2xl md:text-3xl leading-relaxed border-l-2 border-white/25 pl-6 py-1"
             >
               {t("home.hero.subtitle")}
@@ -290,16 +290,12 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
 
       {/* ── Why backtest: explanation first, then the tablet, desktop and phone demo (white, large squares) ── */}
       <ZoomSection style={LARGE_GRID} className="relative w-full pt-24 pb-28 overflow-hidden">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-4xl mx-auto text-center px-6"
-        >
-          <h3 className="text-3xl md:text-[42px] font-normal tracking-tight text-text mb-5">{t("home.why_backtest.title")}</h3>
-          <p className="text-text-2 text-lg md:text-xl leading-relaxed">{t("home.why_backtest.desc")}</p>
-        </motion.div>
+        <div className="max-w-4xl mx-auto text-center px-6">
+          <motion.h3 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-3xl md:text-[42px] font-normal tracking-tight text-text mb-5">{t("home.why_backtest.title")}</motion.h3>
+          <motion.p initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.9, delay: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="text-text-2 text-lg md:text-xl leading-relaxed">{t("home.why_backtest.desc")}</motion.p>
+        </div>
         <div className="w-full px-4 sm:px-6 lg:px-24 mt-16">
           <DeviceShowcase
             fr={fr}
@@ -424,16 +420,19 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </ZoomSection>
 
-      {/* ── Investment platforms (dark grid, white profile cards) ── */}
-      <ZoomSection className="relative w-full py-20 lg:py-28 overflow-hidden bg-white">
+      {/* ── Investment platforms (navy grid): title, then subtitle, then the logos ── */}
+      <ZoomSection style={DARK_GRID} className="relative w-full py-20 lg:py-28 overflow-hidden">
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-3xl">
-            <h3 className="text-3xl md:text-5xl font-normal text-text tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</h3>
-            <p className="mt-4 text-text-2 text-lg leading-relaxed">{fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."}</p>
+            <motion.h3 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</motion.h3>
+            <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.8, delay: 0.9 }}
+              className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."}</motion.p>
           </div>
-          <button onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-white bg-pv-blue hover:bg-pv-blue-d inline-flex items-center gap-2">
+          <motion.button initial={{ opacity: 0, scale: 0.85 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 200, damping: 16, delay: 1.6 }}
+            onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-[#0C2233] bg-white hover:bg-white/90 inline-flex items-center gap-2">
             {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
-          </button>
+          </motion.button>
         </div>
         <ScrollZoom amount={0.12}><PlatformsMarquee fr={fr} /></ScrollZoom>
       </ZoomSection>

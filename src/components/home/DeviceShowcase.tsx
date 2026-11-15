@@ -136,7 +136,7 @@ function MarketScreen({ fr, run }: { fr: boolean; run: boolean }) {
 
 /**
  * Tablet (Monte Carlo) on the left, desktop display (backtest recording) in the middle, smartphone
- * (stock analysis) on the right, all standing on one white stage. The display rises first, the tablet
+ * (stock analysis) on the right. The display rises first, the tablet
  * turns in, the phone spins in, the screens power on, then the display moves forward so the backtest
  * can be read. Everything ends flat (no lasting 3D tilt) so the screens stay sharp.
  */
@@ -150,7 +150,7 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = f
 
   return (
     <div ref={ref} className="relative w-full max-w-[1240px] mx-auto select-none">
-      <div className="relative z-10 flex items-end justify-center gap-[3.5%] pb-[4.2%] [perspective:1600px]">
+      <div className="relative z-10 flex items-end justify-center gap-[3.5%] pb-6 [perspective:1600px]">
         {/* ── Tablet on its stand: Monte Carlo ── */}
         <motion.div style={{ y: sideY }} className="relative w-[20%] hidden md:block z-10">
           <motion.div
@@ -232,22 +232,6 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = f
         </motion.div>
       </div>
 
-      {/* ── White stage the three devices stand on (behind them) ── */}
-      <motion.div
-        initial={{ opacity: 0, scaleX: 0.4 }}
-        animate={run ? { opacity: 1, scaleX: 1 } : undefined}
-        transition={{ duration: 1.2, delay: 0.2, ease: EASE }}
-        className="absolute z-0 left-[1%] right-[1%] bottom-0"
-      >
-        {/* top surface */}
-        <div className="relative h-[52px] md:h-[78px] rounded-[50%] bg-[radial-gradient(ellipse_at_50%_35%,#FFFFFF_0%,#F6F7FA_40%,#E3E6EE_80%,#D3D7E1_100%)] shadow-[inset_0_2px_0_rgba(255,255,255,1),inset_0_-6px_14px_rgba(27,63,114,0.08)] ring-1 ring-slate-200/70">
-          <span className="absolute inset-x-[18%] top-[55%] h-[2px] rounded-full bg-gradient-to-r from-transparent via-[#3D6FB0]/45 to-transparent blur-[1px]" />
-        </div>
-        {/* front edge with depth */}
-        <div className="relative -mt-[26px] md:-mt-[39px] h-[46px] md:h-[62px] rounded-b-[50%] bg-[linear-gradient(180deg,#E4E7EE_0%,#C3C8D4_55%,#A9AFBD_100%)] -z-10" />
-        {/* shadow on the floor */}
-        <div className="absolute left-[4%] right-[4%] -bottom-8 h-12 rounded-[50%] bg-[radial-gradient(ellipse,rgba(6,18,27,0.30),transparent_70%)] blur-xl -z-20" />
-      </motion.div>
     </div>
   );
 }
