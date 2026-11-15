@@ -97,8 +97,8 @@ export function Footer({ onNavigate }: FooterProps) {
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-6 grid gap-3 text-xs text-slate-500 leading-relaxed">
           <p>
             {fr
-              ? 'Quantrih est un outil d\'analyse et de formation. Rien sur ce site ne constitue un conseil en investissement. Les performances passées ne préjugent pas des performances futures. Cours de marché différés, fournis par Yahoo Finance et Binance.'
-              : 'Quantrih is an analysis and learning tool. Nothing on this site is investment advice. Past performance does not predict future returns. Market prices are delayed and come from Yahoo Finance and Binance.'}
+              ? 'Quantrih est un outil d\'analyse et de formation. Rien sur ce site ne constitue un conseil en investissement. Les performances passées ne préjugent pas des performances futures.'
+              : 'Quantrih is an analysis and learning tool. Nothing on this site is investment advice. Past performance does not predict future returns.'}
           </p>
           <p>© {new Date().getFullYear()} Quantrih. {fr ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
         </div>

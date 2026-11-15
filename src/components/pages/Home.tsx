@@ -315,7 +315,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       <ZoomSection className="w-full py-24 lg:py-28 bg-white">
         <div className="px-6 lg:px-24">
           <SectionTitle text={t("home.tools.title")} sub={t("home.tools.subtitle")} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-9 w-full max-w-[84rem] mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 w-full max-w-[72rem] mx-auto">
             {pages.map((p, i) => (
               <motion.div
                 key={p.id}
@@ -325,7 +325,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                 transition={{ duration: 0.7, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
                 className="h-full"
               >
-                <TiltCard className="group h-full min-h-[260px] rounded-[2rem] p-7 lg:p-9 flex flex-col bg-[#111A30] border border-white/[0.08] shadow-[0_30px_60px_-30px_rgba(15,23,42,0.75)] hover:border-[#3B82F6]/50 transition-colors">
+                <TiltCard className="group h-full rounded-[1.75rem] px-6 py-6 lg:px-8 lg:py-7 flex flex-col items-center text-center bg-[#111A30] border border-white/[0.08] shadow-[0_30px_60px_-30px_rgba(15,23,42,0.75)] hover:border-[#3B82F6]/50 transition-colors">
                   <motion.h4
                     className="text-xl lg:text-2xl font-extrabold tracking-tight uppercase font-sans text-[#3B82F6] overflow-hidden"
                     style={{ transform: "translateZ(30px)" }}
@@ -339,7 +339,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                     ))}
                   </motion.h4>
                   <motion.p
-                    className="mt-4 text-slate-200 text-sm lg:text-[15px] leading-relaxed"
+                    className="mt-3 text-slate-200 text-sm lg:text-[15px] leading-relaxed max-w-xl"
                     style={{ transform: "translateZ(20px)" }}
                     initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
                     whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -348,7 +348,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                   >
                     {p.desc}
                   </motion.p>
-                  <motion.div className="mt-auto pt-8 flex justify-center" style={{ transform: "translateZ(40px)" }} initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 200, damping: 16, delay: 0.9 + i * 0.12 }}>
+                  <motion.div className="mt-auto pt-5 flex justify-center" style={{ transform: "translateZ(40px)" }} initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 200, damping: 16, delay: 0.9 + i * 0.12 }}>
                     <button
                       onClick={() => onGoPage(p.id)}
                       className="px-7 py-2.5 rounded-full text-sm font-semibold text-slate-100 bg-[#1C2740] border border-white/10 hover:bg-[#3B82F6] hover:border-[#3B82F6] transition-all"
@@ -438,23 +438,23 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         <ScrollZoom amount={0.12}><PlatformsMarquee fr={fr} /></ScrollZoom>
       </ZoomSection>
 
-      {/* ── Support (plain white) ── */}
-      <ZoomSection className="w-full bg-white px-6 lg:px-24 pt-20 pb-16">
+      {/* ── Support: same dark gradient with squares as the section before it ── */}
+      <ZoomSection style={DARK_GRID} className="w-full px-6 lg:px-24 pt-20 pb-16 border-t border-white/10">
         <div className="max-w-4xl mx-auto text-center">
-          <h3 className="text-text text-2xl lg:text-4xl font-normal tracking-tight mb-4">{t("home.support.title")}</h3>
-          <p className="text-text-2 text-base lg:text-lg leading-relaxed mb-8 max-w-2xl mx-auto">{t("home.support.desc")}</p>
+          <h3 className="text-white text-2xl lg:text-4xl font-normal tracking-tight mb-4">{t("home.support.title")}</h3>
+          <p className="text-white/70 text-base lg:text-lg leading-relaxed mb-8 max-w-2xl mx-auto">{t("home.support.desc")}</p>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => window.open("https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00", "_blank", "noopener,noreferrer")}
-            className="px-10 py-4 bg-pv-blue hover:bg-pv-blue-d text-white rounded-full text-base font-bold tracking-wide uppercase shadow-[0_15px_30px_-12px_rgba(27,63,114,0.6)]"
+            className="px-10 py-4 bg-white hover:bg-white/90 text-[#0C2233] rounded-full text-base font-bold tracking-wide uppercase shadow-[0_15px_30px_-12px_rgba(0,0,0,0.6)]"
           >
             {t("home.support.button")}
           </motion.button>
-          <div className="text-sm text-text-3 mt-4">
-            {t("home.support.inquiry")}: <a href="mailto:contact@quantrih.com" className="text-pv-blue font-semibold underline underline-offset-4">contact@quantrih.com</a>
+          <div className="text-sm text-white/60 mt-4">
+            {t("home.support.inquiry")}: <a href="mailto:contact@quantrih.com" className="text-[#A9C8EA] font-semibold underline underline-offset-4">contact@quantrih.com</a>
           </div>
-          <p className="text-text-3 text-xs max-w-3xl mx-auto leading-relaxed mt-14">{t("home.disclaimer")}</p>
+          <p className="text-white/45 text-xs max-w-3xl mx-auto leading-relaxed mt-14">{t("home.disclaimer")}</p>
         </div>
       </ZoomSection>
     </div>
