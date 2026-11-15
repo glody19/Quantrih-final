@@ -373,3 +373,10 @@ th > div > input[type="text"]:focus {
 }
 
 
+
+/* ── Phones shown at 50% (see index.html): text a little larger, header and menu back to full size ── */
+html.phone-desktop { font-size: 19px; }
+html.phone-desktop body { font-size: 19px; }
+html.phone-desktop header { transform: scale(var(--hdr, 1.5)); transform-origin: top left; width: calc(100% / var(--hdr, 1.5)) !important; }
+html.phone-desktop header.sticky { margin-bottom: calc(84px * (var(--hdr, 1.5) - 1)); } /* room for the enlarged bar on pages where it is in the flow */
+html.phone-desktop header .h-\[calc\(100dvh-84px\)\] { height: calc(100dvh / var(--hdr, 1.5) - 84px); }
