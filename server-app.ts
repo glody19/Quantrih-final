@@ -1140,8 +1140,30 @@ export function createApp() {
     const hit = logoCache.get(key);
     if (hit && Date.now() - hit.at < 7 * 86400_000) return send(hit);
     const host = encodeURIComponent(domain);
+    // full: look for the largest icon the site itself declares (apple-touch-icon or sized icons)
+    const declared: string[] = [];
+    if (full) {
+      for (const home of [`https://${host}/`, `https://www.${host}/`]) {
+        try {
+          const r = await fetch(home, { signal: AbortSignal.timeout(5000), headers: { "User-Agent": "Mozilla/5.0 (compatible; QuantrihLogoBot/1.0)" } });
+          if (!r.ok) continue;
+          const html = (await r.text()).slice(0, 200_000);
+          const found: { url: string; size: number }[] = [];
+          for (const tag of html.match(/<link\b[^>]*>/gi) || []) {
+            const rel = (tag.match(/rel=["']([^"']+)["']/i) || [])[1]?.toLowerCase() || "";
+            const href = (tag.match(/href=["']([^"']+)["']/i) || [])[1];
+            if (!href || !/(apple-touch-icon|icon)/.test(rel) || /mask-icon/.test(rel) || /\.svg(\?|$)/i.test(href)) continue;
+            const sz = parseInt((tag.match(/sizes=["'](\d+)x\d+["']/i) || [])[1] || (rel.includes("apple-touch") ? "180" : "32"), 10);
+            try { found.push({ url: new URL(href, r.url).toString(), size: sz }); } catch { /* bad href */ }
+          }
+          found.sort((a, b) => b.size - a.size).filter((f) => f.size >= 96).forEach((f) => declared.push(f.url));
+          if (declared.length) break;
+        } catch { /* site unreachable: try the next way */ }
+      }
+    }
     const sources = [
-      ...(full ? [`https://${host}/apple-touch-icon.png`, `https://www.${host}/apple-touch-icon.png`, `https://${host}/apple-touch-icon-precomposed.png`] : []),
+      ...declared,
+      ...(full ? [`https://${host}/apple-touch-icon.png`, `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${host}&size=256`] : []),
       `https://www.google.com/s2/favicons?domain=${host}&sz=${sz}`,
       `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`,
     ];
