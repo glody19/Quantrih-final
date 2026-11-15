@@ -42,6 +42,18 @@ function compute(p: ModelPortfolio, data: Series): ModelStats | null {
   return { asOf: months[months.length - 1], y1: g1 === null ? null : (g1 - 1) * 100, y2: ann(24), y3: ann(36), y5: ann(60), vol, maxDd: maxDd * 100, growth };
 }
 
+// One request per page load, shared by every component that shows model portfolios
+let seriesPromise: Promise<Series> | null = null;
+function loadSeries(): Promise<Series> {
+  if (!seriesPromise) {
+    const symbols = Array.from(new Set(MODEL_PORTFOLIOS.flatMap((p) => p.holdings.map((h) => h.symbol))));
+    seriesPromise = fetch(`/api/stock/monthly-adj?years=6&symbols=${encodeURIComponent(symbols.join(","))}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .catch((e) => { seriesPromise = null; throw e; });
+  }
+  return seriesPromise;
+}
+
 /** Live statistics for every model portfolio, recomputed from monthly total-return data on each visit. */
 export function useModelPerformance() {
   const [stats, setStats] = useState<Record<string, ModelStats | null>>({});
@@ -49,9 +61,7 @@ export function useModelPerformance() {
 
   useEffect(() => {
     let alive = true;
-    const symbols = Array.from(new Set(MODEL_PORTFOLIOS.flatMap((p) => p.holdings.map((h) => h.symbol))));
-    fetch(`/api/stock/monthly-adj?years=6&symbols=${encodeURIComponent(symbols.join(","))}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+    loadSeries()
       .then((data: Series) => {
         if (!alive) return;
         const out: Record<string, ModelStats | null> = {};

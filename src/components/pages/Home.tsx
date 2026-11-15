@@ -3,7 +3,7 @@ import { motion, useMotionValue, useScroll, useSpring, useTransform } from "moti
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { AtomAnimation } from "../ui/AtomAnimation";
-import { AllocationsTicker } from "../home/AllocationsTicker";
+import { MarketTickers } from "../home/MarketTickers";
 import { DeviceShowcase } from "../home/DeviceShowcase";
 import { PerformanceHeatmap, type HeatRow } from "../home/PerformanceHeatmap";
 import { PlatformsMarquee } from "../home/PlatformsMarquee";
@@ -133,6 +133,15 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
       </motion.div>
     </div>
   );
+}
+
+/** Grows as it reaches the middle of the screen and shrinks as it leaves, smoothed by a spring. */
+function ScrollZoom({ children, amount = 0.08 }: { children: React.ReactNode; amount?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const smooth = useSpring(scrollYProgress, { stiffness: 70, damping: 22 });
+  const scale = useTransform(smooth, [0, 0.5, 1], [1 - amount, 1 + amount / 3, 1 - amount]);
+  return <motion.div ref={ref} style={{ scale }} className="will-change-transform">{children}</motion.div>;
 }
 
 /** Section title: words rise one by one, then an underline draws itself. */
@@ -276,8 +285,8 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </div>
 
-      {/* ── Twenty famous allocations, scrolling ── */}
-      <AllocationsTicker label={fr ? "Allocations · depuis le 1er janv." : "Allocations · YTD"} />
+      {/* ── Three scrolling rows: allocations YTD, lazy portfolios 1Y, cryptocurrencies 1Y ── */}
+      <MarketTickers fr={fr} />
 
       {/* ── Why backtest: explanation first, then the tablet, desktop and phone demo (white, large squares) ── */}
       <ZoomSection style={LARGE_GRID} className="relative w-full pt-24 pb-28 overflow-hidden">
@@ -395,12 +404,12 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             text={fr ? "Les meilleurs ETF" : "Top performing ETFs"}
             sub={fr ? "Les sept ETF qui ont le plus progressé, sur 6 mois, 1 an, 3 ans ou 5 ans. Cliquez sur une période pour changer le classement." : "The seven ETFs that gained the most over 6 months, 1, 3 or 5 years. Click a period to re-rank them."}
           />
-          <TopEtfs fr={fr} />
+          <ScrollZoom><TopEtfs fr={fr} /></ScrollZoom>
         </div>
 
         {/* Lazy portfolios: who performed; a click opens the details on the Market page */}
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 mt-16">
-          <LazyPortfolios variant="home" onNavigate={onGoPage} />
+          <ScrollZoom amount={0.05}><LazyPortfolios variant="home" onNavigate={onGoPage} /></ScrollZoom>
         </div>
       </ZoomSection>
 
@@ -426,7 +435,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
           </button>
         </div>
-        <PlatformsMarquee fr={fr} />
+        <ScrollZoom amount={0.12}><PlatformsMarquee fr={fr} /></ScrollZoom>
       </ZoomSection>
 
       {/* ── Support (plain white) ── */}
