@@ -82,16 +82,16 @@ export function TopEtfs({ fr }: { fr: boolean }) {
   const loading = Object.keys(perf).length === 0;
 
   return (
-    <div ref={ref} className="rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_24px_60px_-40px_rgba(23,20,74,0.45)] p-5 md:p-7">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-[15px] border-separate border-spacing-y-[3px]">
+    <div ref={ref} className="rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_24px_60px_-40px_rgba(23,20,74,0.45)] p-3 sm:p-5 md:p-7">
+      <div className="sm:overflow-x-auto">
+        <table className="w-full w-full sm:min-w-[640px] text-[12px] sm:text-[15px] border-separate border-spacing-y-[3px]">
           <thead>
             <tr className="text-[13px] text-slate-500">
-              <th className="text-left font-medium pl-2 pb-2 w-10">#</th>
+              <th className="hidden sm:table-cell text-left font-medium pl-2 pb-2 w-10">#</th>
               <th className="text-left font-medium pb-2">ETF</th>
               {COLS.map(([k, en, frl]) => (
-                <th key={k} className="pb-2 w-[15%] text-center">
-                  <button onClick={() => setSort(k)} className={cn("px-2 py-0.5 rounded-full font-semibold transition-colors", sort === k ? "bg-[#15124A] text-white" : "hover:text-slate-800")}>{fr ? frl : en}</button>
+                <th key={k} className="pb-2 w-[16%] sm:w-[15%] text-center">
+                  <button onClick={() => setSort(k)} className={cn("px-1.5 sm:px-2 py-0.5 rounded-full font-semibold transition-colors text-[11px] sm:text-[13px]", sort === k ? "bg-[#15124A] text-white" : "hover:text-slate-800")}>{fr ? frl : en}</button>
                 </th>
               ))}
             </tr>
@@ -101,18 +101,18 @@ export function TopEtfs({ fr }: { fr: boolean }) {
               ? Array.from({ length: 7 }).map((_, i) => <tr key={i}><td colSpan={6}><div className="h-11 rounded-lg bg-slate-50 animate-pulse" /></td></tr>)
               : rows.map((r, i) => (
                   <motion.tr key={r.s + sort} layout initial={{ opacity: 0, x: -30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.5, delay: i * 0.08 }}>
-                    <td className="pl-2"><span className={cn("inline-flex w-7 h-7 rounded-full items-center justify-center text-[13px] font-bold", i === 0 ? "bg-[#E0B341] text-white" : i < 3 ? "bg-[#5B4BDB]/10 text-[#5B4BDB]" : "bg-slate-100 text-slate-500")}>{i + 1}</span></td>
-                    <td className="py-1.5 pr-3">
-                      <b className="font-semibold text-slate-900">{r.n}</b>
-                      <span className="ml-2 font-mono text-xs text-slate-500">{r.s}</span>
-                      <span className="block text-xs text-[#5B4BDB]">{fr ? r.tag.fr : r.tag.en}</span>
+                    <td className="hidden sm:table-cell pl-2"><span className={cn("inline-flex w-7 h-7 rounded-full items-center justify-center text-[13px] font-bold", i === 0 ? "bg-[#E0B341] text-white" : i < 3 ? "bg-[#5B4BDB]/10 text-[#5B4BDB]" : "bg-slate-100 text-slate-500")}>{i + 1}</span></td>
+                    <td className="py-1.5 pr-1 sm:pr-3 leading-tight">
+                      <b className="font-mono sm:font-sans font-semibold text-slate-900"><span className="sm:hidden">{i + 1}. </span><span className="hidden sm:inline">{r.n}</span><span className="sm:hidden">{r.s}</span></b>
+                      <span className="hidden sm:inline ml-2 font-mono text-xs text-slate-500">{r.s}</span>
+                      <span className="block text-[11px] sm:text-xs text-[#5B4BDB]">{fr ? r.tag.fr : r.tag.en}</span>
                     </td>
                     {COLS.map(([k], col) => {
                       const v = perf[r.s]?.[k];
                       const delay = col * 0.75 + i * 0.07;
                       return (
-                        <td key={k} className="px-1.5">
-                          <div className={cn("relative mx-auto max-w-[118px] h-9 rounded-md overflow-hidden", sort === k ? "bg-[#5B4BDB]/[0.06]" : "bg-slate-50")}>
+                        <td key={k} className="px-0.5 sm:px-1.5">
+                          <div className={cn("relative mx-auto max-w-[118px] h-8 sm:h-9 rounded-md overflow-hidden", sort === k ? "bg-[#5B4BDB]/[0.06]" : "bg-slate-50")}>
                             {isNum(v) && (
                               <motion.span
                                 className="absolute inset-y-0 rounded-md"
@@ -122,7 +122,7 @@ export function TopEtfs({ fr }: { fr: boolean }) {
                               />
                             )}
                             <motion.span
-                              className={cn("relative z-10 flex h-full items-center justify-center font-mono tabular-nums text-[14px] font-bold", !isNum(v) ? "text-slate-300" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}
+                              className={cn("relative z-10 flex h-full items-center justify-center font-mono tabular-nums text-[11px] sm:text-[14px] font-bold", !isNum(v) ? "text-slate-300" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}
                               initial={{ opacity: 0, scale: 0.3, ...FROM[(i + col) % 4] }}
                               animate={inView ? { opacity: [0, 1, 1, 0.35, 1], scale: [0.3, 1.25, 1, 1, 1], x: 0, y: 0 } : {}}
                               transition={{ duration: 2.6, delay, times: [0, 0.3, 0.45, 0.8, 1], ease: "easeOut" }}

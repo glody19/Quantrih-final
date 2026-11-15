@@ -54,7 +54,7 @@ function buckets(p: ModelPortfolio) {
 
 function AllocationBar({ p }: { p: ModelPortfolio }) {
   return (
-    <span className="flex h-2.5 w-full min-w-[140px] rounded-full overflow-hidden bg-surface-3">
+    <span className="flex h-2.5 w-full sm:min-w-[140px] rounded-full overflow-hidden bg-surface-3">
       {buckets(p).map(([b, w]) => <span key={b} style={{ width: `${w}%`, background: BUCKETS[b].color }} title={`${BUCKETS[b].en} ${w}%`} />)}
     </span>
   );
@@ -223,18 +223,18 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
       )}
 
       <div ref={ref} className={cn("overflow-x-auto rounded-3xl border border-border bg-white shadow-[0_20px_50px_-35px_rgba(17,17,24,0.4)]", home ? "mt-10" : "mt-6")}>
-        <table className="w-full min-w-[920px] text-[15px]">
+        <table className="w-full md:min-w-[920px] text-[12px] sm:text-[15px]">
           <thead>
             <tr className="text-sm text-text-3 border-b border-border">
-              <th className="text-left font-medium px-6 py-4">{t.portfolio}</th>
-              <th className="text-left font-medium px-3">{t.allocation}</th>
-              <th className="text-left font-medium px-3">{t.risk}</th>
+              <th className="text-left font-medium px-3 sm:px-6 py-3 sm:py-4">{t.portfolio}</th>
+              <th className="hidden md:table-cell text-left font-medium px-3">{t.allocation}</th>
+              <th className="hidden md:table-cell text-left font-medium px-3">{t.risk}</th>
               {PERIODS.map(([k, en, fr]) => (
-                <th key={k} className="text-right font-medium px-3">
+                <th key={k} className="text-right font-medium px-1 sm:px-3">
                   <button onClick={() => setSort(k)} className={cn("hover:text-text", sort === k && "text-pv-blue font-semibold")}>{lang === "fr" ? fr : en}{sort === k ? " ↓" : ""}</button>
                 </th>
               ))}
-              <th className="px-4" />
+              <th className="px-1 sm:px-4" />
             </tr>
           </thead>
           <tbody>
@@ -244,11 +244,11 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
                 <React.Fragment key={p.id}>
                 <motion.tr id={`lazy-${p.id}`} initial={{ opacity: 0, y: 18 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: i * 0.05 }}
                   onClick={() => (home ? onNavigate?.(`market?lazy=${p.id}`) : setOpen(open === p.id ? null : p.id))} className={cn("border-b border-border cursor-pointer hover:bg-surface-3/50 transition-colors scroll-mt-24", open === p.id && "bg-pv-blue/[0.06]")}>
-                  <td className="px-6 py-4"><span className="block font-semibold text-text">{p.name}</span><span className="text-sm text-text-3">{p.author}</span></td>
-                  <td className="px-3 w-[22%]"><AllocationBar p={p} /></td>
-                  <td className="px-3"><span className="flex items-center gap-1" title={t.riskLabels[p.risk - 1]}>{[1, 2, 3, 4, 5].map((k) => <span key={k} className={cn("w-1.5 h-4 rounded-sm", k <= p.risk ? "bg-pv-blue" : "bg-surface-3")} />)}</span></td>
+                  <td className="px-3 sm:px-6 py-2.5 sm:py-4 leading-tight"><span className="block font-semibold text-text">{p.name}</span><span className="text-[11px] sm:text-sm text-text-3">{p.author}</span><span className="md:hidden block mt-1.5 max-w-[130px]"><AllocationBar p={p} /></span></td>
+                  <td className="hidden md:table-cell px-3 w-[22%]"><AllocationBar p={p} /></td>
+                  <td className="hidden md:table-cell px-3"><span className="flex items-center gap-1" title={t.riskLabels[p.risk - 1]}>{[1, 2, 3, 4, 5].map((k) => <span key={k} className={cn("w-1.5 h-4 rounded-sm", k <= p.risk ? "bg-pv-blue" : "bg-surface-3")} />)}</span></td>
                   {PERIODS.map(([k], col) => (
-                    <td key={k} className="px-3 text-right font-mono tabular-nums font-semibold">
+                    <td key={k} className="px-1 sm:px-3 text-right font-mono tabular-nums font-semibold">
                       {state === "loading" ? <span className="inline-block w-14 h-4 rounded bg-surface-3 animate-pulse" /> : (
                         <motion.span
                           className="inline-flex flex-col items-end gap-1"
@@ -269,7 +269,7 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
                       )}
                     </td>
                   ))}
-                  <td className="px-4 text-text-4"><ArrowRight size={16} className={cn("transition-transform", open === p.id && "rotate-90 text-pv-blue")} /></td>
+                  <td className="px-1 sm:px-4 text-text-4"><ArrowRight size={14} className={cn("transition-transform", open === p.id && "rotate-90 text-pv-blue")} /></td>
                 </motion.tr>
                 {!home && (
                   <tr><td colSpan={8} className="p-0">

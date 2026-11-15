@@ -363,3 +363,11 @@ th > div > input[type="text"]:focus {
 .tool-page .text-sm { font-size: 0.95rem; line-height: 1.45rem; }
 .tool-page table { font-size: 0.95rem; }
 .tool-page input, .tool-page select { font-size: 0.95rem; }
+
+/* ── Phones: everything sized in rem scales down from 17px to 14px, so pages show more at once ── */
+@media (max-width: 640px) {
+  html, body { font-size: 14px; }
+  .tool-page .text-\[12px\] { font-size: 12.5px; }
+  .tool-page .text-\[13px\] { font-size: 13px; }
+  .tool-page .text-\[14px\] { font-size: 13.5px; }
+}

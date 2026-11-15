@@ -118,7 +118,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
   const hoverT = geo && hover !== null ? geo.t0 + ((hover - PAD.l) / (W - PAD.l - PAD.r)) * (geo.t1 - geo.t0) : null;
 
   return (
-    <div ref={ref} className="rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_70px_-45px_rgba(23,20,74,0.45)] p-5 md:p-8">
+    <div ref={ref} className="rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_70px_-45px_rgba(23,20,74,0.45)] p-3.5 sm:p-5 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
         <div className="flex flex-wrap gap-2">
           {SERIES.filter((x) => data[x.s]).map((x) => {
@@ -227,7 +227,39 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
 
       {/* details, same figures as the Market comparison */}
       {Object.keys(quotes).length > 0 && (
-        <div className="mt-8 overflow-x-auto rounded-2xl border border-slate-200">
+        <>
+        {/* phones: one card per asset */}
+        <div className="sm:hidden mt-6 grid gap-2.5">
+          {SERIES.filter((x) => quotes[x.s]).map((x) => {
+            const q = quotes[x.s];
+            const per = data[x.s]?.[data[x.s].length - 1]?.v ?? null;
+            const cell = (k: string, v: React.ReactNode) => <span className="flex flex-col"><span className="text-[10px] uppercase tracking-wider text-slate-400">{k}</span><span className="font-mono tabular-nums text-[12px] text-slate-800">{v}</span></span>;
+            return (
+              <div key={x.s} className="rounded-xl border border-slate-200 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2">
+                    <span className="relative w-7 h-7 rounded-full bg-white ring-1 ring-slate-200 flex items-center justify-center text-[11px] font-bold overflow-hidden" style={{ color: x.c }}>
+                      {x.n.charAt(0)}
+                      <img src={`/api/logo?domain=${x.d}&sz=64`} alt="" className="absolute inset-0 m-auto w-4 h-4 bg-white" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                    </span>
+                    <span className="leading-tight"><b className="block text-[13px] text-slate-900">{x.n}</b><span className="text-[11px] font-mono text-slate-500">{x.s}</span></span>
+                  </span>
+                  <span className="text-right leading-tight">
+                    <b className="block font-mono text-[13px] text-slate-900">{q.price.toFixed(2)} <span className="text-[10px] text-slate-400">{q.ccy}</span></b>
+                    <span className={cn("font-mono text-[11px]", q.day == null ? "text-slate-400" : q.day >= 0 ? "text-emerald-600" : "text-[#9F1239]")}>{q.day == null ? "-" : `${q.day >= 0 ? "+" : ""}${q.day.toFixed(2)}%`}</span>
+                  </span>
+                </div>
+                <div className="mt-2.5 grid grid-cols-4 gap-2">
+                  {cell(period.l, <span className={per == null ? "" : per >= 0 ? "text-emerald-600" : "text-[#9F1239]"}>{per == null ? "-" : `${per >= 0 ? "+" : ""}${per.toFixed(1)}%`}</span>)}
+                  {cell(fr ? "Capi." : "Cap", big(q.cap))}
+                  {cell("Vol.", big(q.vol))}
+                  {cell(fr ? "Depuis" : "Since", q.ipo == null ? "-" : new Date(q.ipo).getFullYear())}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="hidden sm:block mt-8 overflow-x-auto rounded-2xl border border-slate-200">
           <table className="w-full min-w-[980px] text-[14px]">
             <thead className="bg-slate-50 text-[11px] uppercase tracking-[0.12em] text-slate-500">
               <tr>
@@ -282,6 +314,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );
