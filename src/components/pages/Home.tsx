@@ -19,11 +19,12 @@ const DARK_GRID: React.CSSProperties = {
     "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(ellipse 90% 70% at 50% 0%, #123247 0%, #0A1B27 45%, #06111A 100%)",
   backgroundSize: "64px 64px, 64px 64px, 100% 100%",
 };
-// One continuous three-step gradient behind "Where to invest" and "Support", ending in the footer colour
+// The same three-step gradient (dark, lighter navy, dark) on "Where to invest" and on "Support":
+// both sections look identical and join without a seam; the footer continues the same dark navy.
 const NAVY_TRIPLE: React.CSSProperties = {
-  backgroundColor: "#06111A",
+  backgroundColor: "#0A1E2D",
   backgroundImage:
-    "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(180deg, #0B2233 0%, #14466B 42%, #0C2638 72%, #06111A 100%)",
+    "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(180deg, #0A1E2D 0%, #14466B 50%, #0A1E2D 100%)",
   backgroundSize: "64px 64px, 64px 64px, 100% 100%",
 };
 // White with large rectangular cells
@@ -426,9 +427,8 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </ZoomSection>
 
-      {/* ── Where to invest + Support: one block on the same three-step navy gradient ── */}
-      <div style={NAVY_TRIPLE}>
-      <ZoomSection className="relative w-full pt-20 lg:pt-28 pb-12 overflow-hidden">
+      {/* ── Where to invest and Support: each on the same three-step navy gradient ── */}
+      <ZoomSection style={NAVY_TRIPLE} className="relative w-full pt-20 lg:pt-28 pb-16 overflow-hidden">
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-6">
           <SectionTitle dark text={fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"} sub={fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."} />
           <motion.div className="flex justify-center -mt-4" initial={{ opacity: 0, scale: 0.85 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 200, damping: 16, delay: 1.7 }}>
@@ -440,7 +440,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         <ScrollZoom amount={0.12}><PlatformsMarquee fr={fr} /></ScrollZoom>
       </ZoomSection>
 
-      <ZoomSection className="w-full px-6 lg:px-24 pt-16 pb-10">
+      <ZoomSection style={NAVY_TRIPLE} className="w-full px-6 lg:px-24 pt-20 pb-12">
         <div className="max-w-4xl mx-auto text-center">
           <SectionTitle dark text={t("home.support.title")} sub={t("home.support.desc")} />
           <motion.button
@@ -457,7 +457,6 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
           <p className="text-white/45 text-xs max-w-3xl mx-auto leading-relaxed mt-14">{fr ? "Quantrih est un outil d'analyse et de formation. Rien sur ce site ne constitue un conseil en investissement. " : "Quantrih is an analysis and learning tool. Nothing on this site is investment advice. "}{t("home.disclaimer")}</p>
         </div>
       </ZoomSection>
-      </div>
     </div>
   );
 }
