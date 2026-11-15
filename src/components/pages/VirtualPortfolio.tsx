@@ -11,7 +11,7 @@ const START_CASH = 100_000;
 const STORE = "quantrih_vp_v1";
 const PENDING_MODEL = "quantrih_vp_pending_model";
 const QUICK = ["AAPL", "NVDA", "TSLA", "SPY", "VWCE.DE", "IWDA.AS", "ASML.AS", "BTC-USD", "ETH-USD"];
-const COLORS = ["#6D5AE6", "#18B8A0", "#E0B341", "#F08A5D", "#4C8DFF", "#C2587C", "#A99BF5", "#7ADFCF", "#94A3B8", "#E5484D"];
+const COLORS = ["#2A5591", "#18B8A0", "#E0B341", "#F08A5D", "#4C8DFF", "#C2587C", "#8FB3DD", "#7ADFCF", "#94A3B8", "#E5484D"];
 
 interface Position { qty: number; cost: number; name: string } // cost = total paid, in USD
 interface Trade { t: number; symbol: string; side: "buy" | "sell"; qty: number; price: number; value: number }
@@ -220,7 +220,7 @@ export function VirtualPortfolio() {
             { l: t.pnl, v: net - START_CASH, tip: t.pnlTip, signed: true, pct: ((net - START_CASH) / START_CASH) * 100 },
             { l: t.day, v: dayGain, signed: true },
           ].map((c, i) => (
-            <motion.div key={c.l} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} className={cn(card, c.big && "col-span-2 lg:col-span-1 bg-gradient-to-br from-pv-blue to-[#3C3199] text-white border-transparent")}>
+            <motion.div key={c.l} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} className={cn(card, c.big && "col-span-2 lg:col-span-1 bg-gradient-to-br from-pv-blue to-[#183E66] text-white border-transparent")}>
               <span className={cn("flex items-center text-sm", c.big ? "text-white/75" : "text-text-3")}>{c.l}{c.tip && <InfoTooltip content={c.tip} />}</span>
               <b className={cn("block mt-1.5 text-lg sm:text-2xl font-mono tabular-nums tracking-tighter sm:tracking-tight", c.signed && (c.v >= 0 ? "text-green" : "text-red"))}>
                 <Num value={c.v} format={(v) => (c.signed && v >= 0 ? "+" : "") + money(v)} />

@@ -167,20 +167,20 @@ export function FinancialStatements({ symbol, income, balance, cashFlow, period,
     if (tab === "income") {
       return {
         data: chronological.map((r) => ({ p: r.calendarYear, a: r.revenue, b: r.operatingIncome, c: r.netIncome, m1: pct(r.grossProfit, r.revenue), m2: pct(r.operatingIncome, r.revenue), m3: pct(r.netIncome, r.revenue) })),
-        bars: [["a", lang === "fr" ? "Chiffre d'affaires" : "Revenue", "#C7C2F7"], ["b", lang === "fr" ? "Résultat opérationnel" : "Operating income", "#7B6CF0"], ["c", lang === "fr" ? "Résultat net" : "Net income", "#3F2FB3"]],
+        bars: [["a", lang === "fr" ? "Chiffre d'affaires" : "Revenue", "#C7C2F7"], ["b", lang === "fr" ? "Résultat opérationnel" : "Operating income", "#3D6FB0"], ["c", lang === "fr" ? "Résultat net" : "Net income", "#1B3F72"]],
         lines: [["m1", lang === "fr" ? "Marge brute" : "Gross margin", "#0EA5E9"], ["m2", lang === "fr" ? "Marge op." : "Operating margin", "#F59E0B"], ["m3", lang === "fr" ? "Marge nette" : "Net margin", "#10B981"]],
       };
     }
     if (tab === "balance") {
       return {
         data: chronological.map((r) => ({ p: r.calendarYear, a: r.totalAssets, b: r.totalLiabilities, c: r.totalStockholdersEquity, m1: pct(r.totalDebt, r.totalStockholdersEquity) })),
-        bars: [["a", lang === "fr" ? "Actif" : "Assets", "#C7C2F7"], ["b", lang === "fr" ? "Passif" : "Liabilities", "#F59E0B"], ["c", lang === "fr" ? "Capitaux propres" : "Equity", "#3F2FB3"]],
+        bars: [["a", lang === "fr" ? "Actif" : "Assets", "#C7C2F7"], ["b", lang === "fr" ? "Passif" : "Liabilities", "#F59E0B"], ["c", lang === "fr" ? "Capitaux propres" : "Equity", "#1B3F72"]],
         lines: [["m1", lang === "fr" ? "Dette / capitaux propres" : "Debt / equity", "#E11D48"]],
       };
     }
     return {
       data: chronological.map((r) => ({ p: r.calendarYear, a: r.operatingCashFlow, b: isNum(r.capitalExpenditure) ? r.capitalExpenditure : null, c: r.freeCashFlow, m1: pct(r.freeCashFlow, sameRow(income, r.calendarYear)?.revenue) })),
-      bars: [["a", lang === "fr" ? "Flux d'exploitation" : "Operating cash flow", "#C7C2F7"], ["b", "Capex", "#F59E0B"], ["c", lang === "fr" ? "Flux disponible (FCF)" : "Free cash flow", "#3F2FB3"]],
+      bars: [["a", lang === "fr" ? "Flux d'exploitation" : "Operating cash flow", "#C7C2F7"], ["b", "Capex", "#F59E0B"], ["c", lang === "fr" ? "Flux disponible (FCF)" : "Free cash flow", "#1B3F72"]],
       lines: [["m1", lang === "fr" ? "Marge de FCF" : "FCF margin", "#10B981"]],
     };
   }, [tab, chronological, income, lang]);

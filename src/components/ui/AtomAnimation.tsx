@@ -5,15 +5,15 @@ type RGB = [number, number, number];
 // Three-colour palettes; the sphere cross-fades from one to the next and jumps on click.
 const DARK_PALETTES: [RGB, RGB, RGB][] = [
   [[45, 212, 191], [56, 189, 248], [236, 254, 255]], // teal, sky, ice
-  [[139, 124, 246], [96, 165, 250], [240, 240, 255]], // violet, blue, white
+  [[59, 130, 246], [125, 211, 252], [240, 249, 255]], // blue, light sky, white
   [[52, 211, 153], [226, 184, 79], [255, 251, 235]], // emerald, gold, cream
-  [[244, 114, 182], [167, 139, 250], [255, 241, 250]], // pink, lilac, white
+  [[14, 165, 233], [45, 212, 191], [224, 242, 254]], // ocean, teal, mist
 ];
 const LIGHT_PALETTES: [RGB, RGB, RGB][] = [
   [[13, 148, 136], [37, 99, 235], [30, 41, 59]],
-  [[91, 75, 219], [14, 116, 144], [30, 27, 75]],
+  [[27, 63, 114], [14, 116, 144], [15, 23, 42]],
   [[5, 150, 105], [180, 138, 46], [41, 37, 36]],
-  [[190, 24, 93], [109, 40, 217], [49, 46, 129]],
+  [[3, 105, 161], [13, 148, 136], [12, 34, 51]],
 ];
 
 const DEPTH_LEVELS = 5;

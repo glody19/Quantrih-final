@@ -14,25 +14,26 @@ export const QuantrihLogo = ({ className, variant = "bars", showText = true, siz
   const sizeClasses = {
     sm: "w-3.5 h-3.5",
     md: "w-4.5 h-4.5 lg:w-5 lg:h-5",
-    lg: "w-6 h-6 lg:w-7 lg:h-7"
+    lg: "w-8 h-8 lg:w-7 lg:h-7"
   };
 
   const textClasses = {
     sm: "text-[11px] font-semibold tracking-tight",
     md: "text-xs lg:text-sm font-semibold tracking-tight",
-    lg: "text-base lg:text-lg font-bold tracking-tight"
+    lg: "text-xl lg:text-lg font-bold tracking-tight"
   };
 
   const logos = {
-    // Brand mark: a Bloch sphere, the drawing of a quantum bit: sphere, equator, meridian and a state vector with a gold tip
+    // Brand mark: three rising bars in relief with pointed tops, the tallest touched by a gold spark (no circle, no letter)
     bars: (
-      <svg viewBox="0 0 32 32" className="w-full h-full text-current" fill="none">
-        <circle cx="16" cy="16" r="12.6" stroke="currentColor" strokeWidth="2.2" />
-        <ellipse cx="16" cy="16" rx="12.6" ry="4.4" stroke="currentColor" strokeWidth="1.5" opacity="0.55" />
-        <ellipse cx="16" cy="16" rx="4.4" ry="12.6" stroke="currentColor" strokeWidth="1.2" opacity="0.3" />
-        <path d="M16 16 L23.6 7.4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-        <circle cx="16" cy="16" r="1.6" fill="currentColor" />
-        <circle cx="24.2" cy="6.7" r="3" fill="#E2B84F" />
+      <svg viewBox="0 0 32 32" className="w-full h-full">
+        <polygon points="3.4,29.5 3.4,21.5 6.9,16.5 6.9,29.5" fill="#CFF1FD" />
+        <polygon points="6.9,29.5 6.9,16.5 10.4,21.5 10.4,29.5" fill="#7DD3F5" />
+        <polygon points="11.5,29.5 11.5,14.5 15.5,8.5 15.5,29.5" fill="#38BDF8" />
+        <polygon points="15.5,29.5 15.5,8.5 19.5,14.5 19.5,29.5" fill="#0E86C7" />
+        <polygon points="20.5,29.5 20.5,8.5 25,1.8 25,29.5" fill="#1D6FA8" />
+        <polygon points="25,29.5 25,1.8 29.5,8.5 29.5,29.5" fill="#0B3558" />
+        <path d="M19.6 1 L20.25 2.85 L22.1 3.5 L20.25 4.15 L19.6 6 L18.95 4.15 L17.1 3.5 L18.95 2.85 Z" fill="#E2B84F" />
       </svg>
     ),
     orbit: (

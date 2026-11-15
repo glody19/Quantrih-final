@@ -18,7 +18,7 @@ const ORBIT_ITEMS: OrbitItem[] = [
   },
   { 
     label: "ASSET\nALLOCATION", 
-    accent: "#7363EA", 
+    accent: "#2F5E9E", 
     active: false, 
     id: "asset-allocation",
     imageUrl: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=300&q=80"
@@ -60,7 +60,7 @@ const ORBIT_ITEMS: OrbitItem[] = [
   },
   { 
     label: "PLATFORMS", 
-    accent: "#c084fc", 
+    accent: "#7DD3FC", 
     active: false, 
     id: "platforms",
     imageUrl: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=300&q=80"

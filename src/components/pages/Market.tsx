@@ -27,7 +27,7 @@ import { lazyPortfolios } from './lazyPortfoliosData';
 import { MarketTickerBar } from '../market/MarketTickerBar';
 
 // One accent per lazy portfolio row
-const LAZY_COLORS = ['#5B4BDB', '#14B8A6', '#C9A24A', '#E5484D', '#0EA5E9', '#8B5CF6', '#F97316', '#10B981', '#EC4899', '#64748B'];
+const LAZY_COLORS = ['#1B3F72', '#14B8A6', '#C9A24A', '#E5484D', '#0EA5E9', '#3B6EA8', '#F97316', '#10B981', '#EC4899', '#64748B'];
 
 const MARQUEE_SYMBOLS = [
  "GOOGL", "AMZN", "META", "TSLA", "AAPL", "NVDA", "MSFT", "IBKR", "SPCX",
@@ -653,7 +653,7 @@ const isEuropeanMarketOpen = () => {
   const visibleMarqueeSymbols = useMemo(() => {
     return MARQUEE_SYMBOLS;
   }, []);
- const watchlistColors = ['#ef4444', '#22c55e', '#7363EA', '#f59e0b', '#8b5cf6', '#ec4899', '#0ea5e9', '#14b8a6', '#f43f5e', '#84cc16'];
+ const watchlistColors = ['#ef4444', '#22c55e', '#2F5E9E', '#f59e0b', '#3B6EA8', '#ec4899', '#0ea5e9', '#14b8a6', '#f43f5e', '#84cc16'];
  const getWatchlistColor = (index: number) => {
  return watchlistColors[index % watchlistColors.length];
  };

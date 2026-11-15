@@ -22,7 +22,7 @@ const loop = { repeat: Infinity, repeatType: "loop" as const };
 function AllocationArt({ accent }: { accent: string }) {
   const segs = [
     { v: 0.4, c: accent },
-    { v: 0.25, c: "#B6ABF7" },
+    { v: 0.25, c: "#A9C8EA" },
     { v: 0.2, c: "#2DD4BF" },
     { v: 0.15, c: "#E2B84F" },
   ];
@@ -52,7 +52,7 @@ function AllocationArt({ accent }: { accent: string }) {
           <motion.span
             key={i}
             className="aspect-square rounded-[4px]"
-            style={{ background: i % 3 === 0 ? accent : i % 3 === 1 ? "#2DD4BF" : "#B6ABF7" }}
+            style={{ background: i % 3 === 0 ? accent : i % 3 === 1 ? "#2DD4BF" : "#A9C8EA" }}
             animate={{ opacity: [0.25, 0.9, 0.25] }}
             transition={{ ...loop, duration: 2.6, delay: (i % 7) * 0.22 }}
           />
@@ -96,11 +96,11 @@ function TacticalArt({ accent }: { accent: string }) {
           initial={{ pathLength: 0 }} animate={{ pathLength: [0, 1, 1] }} transition={{ ...loop, duration: 4.5, times: [0, 0.7, 1] }} />
       </svg>
       <div className="absolute inset-x-4 bottom-3 flex gap-2">
-        <motion.span className="flex-1 h-6 rounded-md text-[10px] font-bold flex items-center justify-center text-[#0B0A24]" style={{ background: accent }}
+        <motion.span className="flex-1 h-6 rounded-md text-[10px] font-bold flex items-center justify-center text-[#06121B]" style={{ background: accent }}
           animate={{ opacity: [1, 1, 0.25, 0.25, 1] }} transition={{ ...loop, duration: 4.5, times: [0, 0.45, 0.5, 0.95, 1] }}>
           EQUITIES
         </motion.span>
-        <motion.span className="flex-1 h-6 rounded-md text-[10px] font-bold flex items-center justify-center text-[#0B0A24] bg-[#B6ABF7]"
+        <motion.span className="flex-1 h-6 rounded-md text-[10px] font-bold flex items-center justify-center text-[#06121B] bg-[#A9C8EA]"
           animate={{ opacity: [0.25, 0.25, 1, 1, 0.25] }} transition={{ ...loop, duration: 4.5, times: [0, 0.45, 0.5, 0.95, 1] }}>
           BONDS
         </motion.span>

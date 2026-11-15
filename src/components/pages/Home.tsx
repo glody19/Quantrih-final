@@ -14,9 +14,9 @@ import { RelativeCompare } from "../home/RelativeCompare";
 // ───────────────────────────── backgrounds (hybrid by section) ─────────────────────────────
 // Dark gradient with a fine white grid
 const DARK_GRID: React.CSSProperties = {
-  backgroundColor: "#0A0920",
+  backgroundColor: "#06111A",
   backgroundImage:
-    "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(ellipse 90% 70% at 50% 0%, #1E1A5C 0%, #100E33 45%, #0A0920 100%)",
+    "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(ellipse 90% 70% at 50% 0%, #123247 0%, #0A1B27 45%, #06111A 100%)",
   backgroundSize: "64px 64px, 64px 64px, 100% 100%",
 };
 // White with large rectangular cells
@@ -153,7 +153,7 @@ function SectionTitle({ text, sub, dark = false }: { text: string; sub?: string;
           <motion.span key={i} className="inline-block mr-[0.26em]" initial={{ opacity: 0, y: 40, rotateX: -80 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ type: "spring", stiffness: 110, damping: 14, delay: i * 0.1 }}>{w}</motion.span>
         ))}
       </h3>
-      <motion.span className="block mx-auto mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-[#5B4BDB] to-[#3B82F6]" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.35 }} />
+      <motion.span className="block mx-auto mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.35 }} />
       {sub && <motion.p className={`mt-5 text-base md:text-xl leading-relaxed ${dark ? "text-white/70" : "text-text-2"}`} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.45 }}>{sub}</motion.p>}
     </div>
   );
@@ -236,14 +236,14 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   const heroFade = useTransform(heroP, [0, 0.8], [1, 0]);
 
   const pages = [
-    { title: t("home.pages.asset_allocation.title"), id: "asset-allocation", cta: t("home.pages.asset_allocation.cta"), desc: t("home.pages.asset_allocation.desc"), accent: "#7B6CF0" },
+    { title: t("home.pages.asset_allocation.title"), id: "asset-allocation", cta: t("home.pages.asset_allocation.cta"), desc: t("home.pages.asset_allocation.desc"), accent: "#3D6FB0" },
     { title: t("home.pages.portfolio_backtest.title"), id: "portfolio-backtest", cta: t("home.pages.portfolio_backtest.cta"), desc: t("home.pages.portfolio_backtest.desc"), accent: "#2DD4BF" },
     { title: t("home.pages.tactical_allocation.title"), id: "tactical-allocation", cta: t("home.pages.tactical_allocation.cta"), desc: t("home.pages.tactical_allocation.desc"), accent: "#F59E0B" },
     { title: t("home.pages.montecarlo.title"), id: "montecarlo", cta: t("home.pages.montecarlo.cta"), desc: t("home.pages.montecarlo.desc"), accent: "#60A5FA" },
   ];
 
   return (
-    <div className="home-zoom flex flex-col w-full overflow-hidden text-text">
+    <div className="flex flex-col w-full overflow-hidden text-text">
       {/* ── Hero: original colour plate ── */}
       <div ref={heroRef} className="relative w-full min-h-[100svh] flex items-center" style={DARK_GRID}>
         <div
@@ -252,13 +252,13 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
           onMouseLeave={() => setHeroHovered(false)}
         >
           <motion.div style={{ y: heroTextY, opacity: heroFade }} className="w-full lg:w-[52%] px-6 sm:px-10 lg:pl-20 lg:pr-0 z-20 [perspective:900px]">
-            <h1 className="font-sans text-[22vw] sm:text-[15vw] lg:text-[clamp(150px,12.6vw,220px)] font-semibold leading-[0.9] tracking-tighter text-white [text-shadow:0_18px_70px_rgba(123,108,240,0.55)]">
+            <h1 className="font-sans text-[22vw] sm:text-[15vw] lg:text-[clamp(150px,12.6vw,220px)] font-semibold leading-[0.9] tracking-tighter text-white [text-shadow:0_18px_70px_rgba(61,111,176,0.55)]">
               <FloatTitle text="Quantrih" />
             </h1>
             <motion.h2
               animate={{ y: [0, -7, 0] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-              className="font-sans text-4xl sm:text-5xl lg:text-[56px] font-medium leading-tight tracking-tight mt-6 text-[#B6ABF7]"
+              className="font-sans text-4xl sm:text-5xl lg:text-[56px] font-medium leading-tight tracking-tight mt-6 text-[#A9C8EA]"
             >
               <DropIn text={t("home.hero.title2") + "."} delay={0.9} />
             </motion.h2>
@@ -285,7 +285,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </div>
 
-      {/* ── Three scrolling rows: allocations YTD, lazy portfolios 1Y, cryptocurrencies 1Y ── */}
+      {/* ── Scrolling row: famous allocations YTD ── */}
       <MarketTickers fr={fr} />
 
       {/* ── Why backtest: explanation first, then the tablet, desktop and phone demo (white, large squares) ── */}
@@ -431,7 +431,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             <h3 className="text-3xl md:text-5xl font-normal text-white tracking-tight">{fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"}</h3>
             <p className="mt-4 text-white/65 text-lg leading-relaxed">{fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."}</p>
           </div>
-          <button onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-[#15124A] bg-white hover:bg-white/90 inline-flex items-center gap-2">
+          <button onClick={() => onGoPage("platforms")} className="shrink-0 self-start md:self-auto px-6 py-3 rounded-full text-sm font-semibold text-[#0C2233] bg-white hover:bg-white/90 inline-flex items-center gap-2">
             {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
           </button>
         </div>
@@ -447,7 +447,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => window.open("https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00", "_blank", "noopener,noreferrer")}
-            className="px-10 py-4 bg-pv-blue hover:bg-pv-blue-d text-white rounded-full text-base font-bold tracking-wide uppercase shadow-[0_15px_30px_-12px_rgba(91,75,219,0.6)]"
+            className="px-10 py-4 bg-pv-blue hover:bg-pv-blue-d text-white rounded-full text-base font-bold tracking-wide uppercase shadow-[0_15px_30px_-12px_rgba(27,63,114,0.6)]"
           >
             {t("home.support.button")}
           </motion.button>

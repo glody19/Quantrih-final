@@ -88,7 +88,7 @@ export function MarketTickerBar({ label = "Markets", onSelect }: { label?: strin
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[90] h-12 bg-[#0B0A1F] border-t border-white/10 flex items-stretch shadow-[0_-6px_24px_rgba(0,0,0,0.25)]">
-      <span className="shrink-0 flex items-center gap-1.5 px-4 text-xs font-bold uppercase tracking-wider text-[#B6ABF7] border-r border-white/10">
+      <span className="shrink-0 flex items-center gap-1.5 px-4 text-xs font-bold uppercase tracking-wider text-[#A9C8EA] border-r border-white/10">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> {label}
       </span>
       <div className="flex-1 min-w-0 overflow-hidden flex items-center [mask-image:linear-gradient(90deg,transparent,black_4%,black_96%,transparent)]">

@@ -14,7 +14,7 @@ function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
       </span>
       <span className="mt-4 text-[15px] font-semibold text-white">{p.name}</span>
       <span className="mt-1 text-[13px] leading-snug text-white/65 line-clamp-2 min-h-[2.6em]">{fr ? p.bestFor.fr : p.bestFor.en}</span>
-      <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#B6ABF7]">{p.markets.map((m) => COUNTRY[m][fr ? "fr" : "en"]).join(" · ")}</span>
+      <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#A9C8EA]">{p.markets.map((m) => COUNTRY[m][fr ? "fr" : "en"]).join(" · ")}</span>
     </div>
   );
 }

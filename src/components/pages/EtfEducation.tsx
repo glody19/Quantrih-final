@@ -421,7 +421,7 @@ export function EtfEducation({ language: propLanguage }: { language: string }) {
         />
 
         <CategoryCard 
-          icon={<Search className="text-violet-500" />}
+          icon={<Search className="text-blue-700" />}
           title={t.cat6Title}
           description={t.cat6Desc}
           examplesLabel={t.examplesLabel}

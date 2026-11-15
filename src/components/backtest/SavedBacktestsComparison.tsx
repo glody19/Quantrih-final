@@ -6,7 +6,7 @@ import { cn } from "../../lib/utils";
 const isNum = (v: any): v is number => typeof v === "number" && Number.isFinite(v);
 const pct = (v: any) => (isNum(v) ? `${v.toFixed(2)}%` : "-");
 const num = (v: any) => (isNum(v) ? v.toFixed(2) : "-");
-const COLORS = ["#5B4BDB", "#0EA5E9", "#F59E0B", "#10B981"];
+const COLORS = ["#1B3F72", "#0EA5E9", "#F59E0B", "#10B981"];
 
 interface Row {
   rowId: string;

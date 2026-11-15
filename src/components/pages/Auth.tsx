@@ -454,7 +454,7 @@ export function Auth({ onBack }: { onBack: () => void }) {
                         {verifyPassword && verifyPassword === password && <CheckCircle2 size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-green" />}
                       </Field>
                       <label className="flex items-start gap-2.5 text-xs text-text-2 cursor-pointer">
-                        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 accent-[#5B4BDB]" />
+                        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 accent-[#1B3F72]" />
                         <span>{L.consent} <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-pv-blue font-semibold hover:underline">{L.privacy}</a>.</span>
                       </label>
                     </>
@@ -463,7 +463,7 @@ export function Auth({ onBack }: { onBack: () => void }) {
                   {error && <div role="alert" className="p-3 bg-red-bg border border-red/20 rounded-xl text-red text-sm">{error}</div>}
                   {info && <div role="status" className="p-3 bg-green-bg border border-green/20 rounded-xl text-green text-sm">{info}</div>}
 
-                  <button type="submit" disabled={loading} className="w-full mt-2 bg-pv-blue hover:bg-pv-blue-d text-white font-semibold py-3.5 rounded-xl text-sm transition-all shadow-[0_10px_24px_-10px_rgba(91,75,219,0.7)] disabled:opacity-60 flex justify-center items-center gap-2">
+                  <button type="submit" disabled={loading} className="w-full mt-2 bg-pv-blue hover:bg-pv-blue-d text-white font-semibold py-3.5 rounded-xl text-sm transition-all shadow-[0_10px_24px_-10px_rgba(27,63,114,0.7)] disabled:opacity-60 flex justify-center items-center gap-2">
                     {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                     {mode === "login" ? L.submitLogin : mode === "signup" ? L.submitSignup : L.submitReset}
                   </button>

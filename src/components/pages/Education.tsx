@@ -301,7 +301,7 @@ function BookCard({ book, language, labels: L, index }: { book: Book; language: 
           ) : (
             <div
               className="w-[108px] h-[160px] rounded-r-md rounded-l-sm p-2.5 flex flex-col justify-between text-white shadow-[6px_8px_18px_rgba(20,20,26,0.25)] relative overflow-hidden"
-              style={{ backgroundColor: book.coverColor || "#5B4BDB" }}
+              style={{ backgroundColor: book.coverColor || "#1B3F72" }}
             >
               <div className="absolute inset-y-0 left-0 w-1.5 bg-black/20" />
               <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/25 pointer-events-none" />

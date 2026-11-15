@@ -571,11 +571,11 @@ export function AssetAllocations({
           </div>
 
           <div className="bg-white border border-slate-200/80 p-6 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-500">
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-blue-700">
               {t("dashboard.best_sharpe")}
             </p>
             <div className="mt-4">
-              <p className="text-3xl font-extrabold text-indigo-600 tracking-tight">{bestSharpe}</p>
+              <p className="text-3xl font-extrabold text-blue-800 tracking-tight">{bestSharpe}</p>
               <p className="text-[11px] text-slate-500 font-medium truncate mt-1" title={bestSharpeName}>
                 {bestSharpeName || "No report generated"}
               </p>
@@ -825,7 +825,7 @@ export function AssetAllocations({
             <div className="p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/60 rounded-[2rem] shadow-sm">
               <div className="bg-[#050508] text-white rounded-[1.8rem]  p-6 relative overflow-hidden h-full">
                 <div className="absolute inset-2 border border-white/[0.04] rounded-[1.5rem] pointer-events-none" />
-                <h4 className="text-xs font-bold uppercase tracking-widest text-purple-400 mb-4 flex items-center gap-1.5 relative z-10">{t("aa.sharpe_alloc")}</h4>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-sky-400 mb-4 flex items-center gap-1.5 relative z-10">{t("aa.sharpe_alloc")}</h4>
                 <div className="space-y-4 relative z-10 text-xs">
                   {(() => {
                     let highestSharpe = -999;
@@ -843,7 +843,7 @@ export function AssetAllocations({
                         <div className="p-3.5 bg-white/5  rounded-2xl">
                           <span className="text-[10px] text-slate-400 font-extrabold uppercase block mb-1">{t("aa.max_eff")}</span>
                           <p className="text-sm font-medium text-slate-200">
-                            {t("aa.eff_port")} <span className="text-purple-400 font-extrabold">{highestSharpeName}</span> {t("aa.with_sharpe")} <span className="text-purple-400 font-extrabold">{highestSharpe.toFixed(2)}</span>.
+                            {t("aa.eff_port")} <span className="text-sky-400 font-extrabold">{highestSharpeName}</span> {t("aa.with_sharpe")} <span className="text-sky-400 font-extrabold">{highestSharpe.toFixed(2)}</span>.
                           </p>
                         </div>
                         <p className="text-[10px] text-slate-400 italic leading-relaxed px-1 mt-2">{t("aa.sharpe_note")}</p>
@@ -1129,7 +1129,7 @@ export function AssetAllocations({
               )
             : new Date().getFullYear();
 
-        const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#8b5cf6"];
+        const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#3B6EA8"];
         const color = colors[i % colors.length];
 
         const yearsInteger = Array.from(

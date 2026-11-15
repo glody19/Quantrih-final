@@ -1464,11 +1464,11 @@ export function TacticalAllocation() {
           </div>
 
           <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between text-left">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">
+            <p className="text-[11px] font-extrabold uppercase tracking-widest text-blue-700">
               {isEn ? "Best Sharpe Ratio" : "Meilleur ratio de Sharpe"}
             </p>
             <div className="mt-4">
-              <p className="text-3xl font-extrabold text-indigo-600">
+              <p className="text-3xl font-extrabold text-blue-800">
                 {bestSharpe > 0 ? bestSharpe.toFixed(2) : "N/A"}
               </p>
               <p className="text-[11px] text-text-4 font-medium truncate mt-1" title={bestSharpeName}>
@@ -1787,7 +1787,7 @@ export function TacticalAllocation() {
               )
             : new Date().getFullYear();
 
-        const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#8b5cf6"];
+        const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#3B6EA8"];
         const color = colors[i % colors.length];
 
         const yearsInteger = Array.from(

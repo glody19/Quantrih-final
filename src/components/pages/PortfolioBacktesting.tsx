@@ -540,7 +540,7 @@ export function PortfolioBacktesting({
               )
             : new Date().getFullYear();
 
-        const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#8b5cf6"];
+        const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#3B6EA8"];
         const color = colors[i % colors.length];
 
         const yearsInteger = Array.from(
@@ -662,7 +662,7 @@ export function PortfolioBacktesting({
     // Sort chronologically
     const sortedDates = Array.from(uniqueDates).sort();
 
-    const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#8b5cf6"];
+    const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#3B6EA8"];
 
     return {
       labels: sortedDates,
@@ -693,7 +693,7 @@ export function PortfolioBacktesting({
     results.forEach((r) => r.dates.forEach((d) => uniqueDates.add(d)));
     const sortedDates = Array.from(uniqueDates).sort();
 
-    const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#8b5cf6"];
+    const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#3B6EA8"];
     const bgColors = [
       "rgba(44, 108, 173, 0.2)",
       "rgba(234, 179, 8, 0.2)",

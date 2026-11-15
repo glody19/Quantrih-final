@@ -807,7 +807,7 @@ export const InvestorProfileForm: React.FC = () => {
                       onClick={() => handleChange('employmentStatus', item.id)}
                       className={`p-3 rounded-xl text-left text-xs font-bold transition-all duration-150 cursor-pointer ${
                         formData.employmentStatus === item.id 
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30 border border-blue-400/30' 
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg shadow-blue-600/30 border border-blue-400/30' 
                           : 'bg-surface-2 text-text-2 hover:bg-surface-2 hover:text-text border border-border'
                       }`}
                     >
@@ -1857,7 +1857,7 @@ export const InvestorProfileForm: React.FC = () => {
         {/* Animated Top Progress Line */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-surface-2 overflow-hidden rounded-t-3xl">
           <motion.div 
-            className="h-full bg-gradient-to-r from-blue-600 to-indigo-500"
+            className="h-full bg-gradient-to-r from-blue-600 to-blue-700"
             initial={{ width: '0%' }}
             animate={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
             transition={{ type: 'spring', stiffness: 200, damping: 24 }}

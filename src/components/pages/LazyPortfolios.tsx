@@ -138,7 +138,7 @@ function Detail({ p, s, lang, onClose, onNavigate, showInvest = true }: { p: Mod
                   <div key={k} className="grid grid-cols-[64px_1fr_86px] items-center gap-3 text-sm">
                     <span className="text-text-3">{lang === "fr" ? fr : en}</span>
                     <span className="h-7 rounded-lg bg-surface-3 overflow-hidden">
-                      {isNum(v) && <motion.span className="block h-full rounded-lg" style={{ background: v >= 0 ? "linear-gradient(90deg,#6D5AE6,#A99BF5)" : "linear-gradient(90deg,#F08A5D,#E5484D)" }} initial={{ width: 0 }} animate={{ width: `${Math.max(4, (Math.abs(v) / maxAbs) * 100)}%` }} transition={{ duration: 0.9, delay: 0.25 + i * 0.2, ease: [0.16, 1, 0.3, 1] }} />}
+                      {isNum(v) && <motion.span className="block h-full rounded-lg" style={{ background: v >= 0 ? "linear-gradient(90deg,#2A5591,#8FB3DD)" : "linear-gradient(90deg,#F08A5D,#E5484D)" }} initial={{ width: 0 }} animate={{ width: `${Math.max(4, (Math.abs(v) / maxAbs) * 100)}%` }} transition={{ duration: 0.9, delay: 0.25 + i * 0.2, ease: [0.16, 1, 0.3, 1] }} />}
                     </span>
                     <b className="text-right font-mono tabular-nums"><Count value={v ?? null} start delay={0.25 + i * 0.2} /></b>
                   </div>
@@ -223,12 +223,12 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
       )}
 
       <div ref={ref} className={cn("overflow-x-auto rounded-3xl border border-border bg-white shadow-[0_20px_50px_-35px_rgba(17,17,24,0.4)]", home ? "mt-10" : "mt-6")}>
-        <table className="w-full md:min-w-[920px] text-[12px] sm:text-[15px]">
+        <table className="w-full min-w-[760px] md:min-w-[920px] text-[14px] sm:text-[15px]">
           <thead>
             <tr className="text-sm text-text-3 border-b border-border">
-              <th className="text-left font-medium px-3 sm:px-6 py-3 sm:py-4">{t.portfolio}</th>
-              <th className="hidden md:table-cell text-left font-medium px-3">{t.allocation}</th>
-              <th className="hidden md:table-cell text-left font-medium px-3">{t.risk}</th>
+              <th className="sticky left-0 z-10 bg-white text-left font-medium px-3 sm:px-6 py-3 sm:py-4">{t.portfolio}</th>
+              <th className="text-left font-medium px-3">{t.allocation}</th>
+              <th className="text-left font-medium px-3">{t.risk}</th>
               {PERIODS.map(([k, en, fr]) => (
                 <th key={k} className="text-right font-medium px-1 sm:px-3">
                   <button onClick={() => setSort(k)} className={cn("hover:text-text", sort === k && "text-pv-blue font-semibold")}>{lang === "fr" ? fr : en}{sort === k ? " ↓" : ""}</button>
@@ -244,9 +244,9 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
                 <React.Fragment key={p.id}>
                 <motion.tr id={`lazy-${p.id}`} initial={{ opacity: 0, y: 18 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: i * 0.05 }}
                   onClick={() => (home ? onNavigate?.(`market?lazy=${p.id}`) : setOpen(open === p.id ? null : p.id))} className={cn("border-b border-border cursor-pointer hover:bg-surface-3/50 transition-colors scroll-mt-24", open === p.id && "bg-pv-blue/[0.06]")}>
-                  <td className="px-3 sm:px-6 py-2.5 sm:py-4 leading-tight"><span className="block font-semibold text-text">{p.name}</span><span className="text-[11px] sm:text-sm text-text-3">{p.author}</span><span className="md:hidden block mt-1.5 max-w-[130px]"><AllocationBar p={p} /></span></td>
-                  <td className="hidden md:table-cell px-3 w-[22%]"><AllocationBar p={p} /></td>
-                  <td className="hidden md:table-cell px-3"><span className="flex items-center gap-1" title={t.riskLabels[p.risk - 1]}>{[1, 2, 3, 4, 5].map((k) => <span key={k} className={cn("w-1.5 h-4 rounded-sm", k <= p.risk ? "bg-pv-blue" : "bg-surface-3")} />)}</span></td>
+                  <td className="sticky left-0 z-10 bg-white px-3 sm:px-6 py-3 sm:py-4 leading-tight shadow-[6px_0_8px_-8px_rgba(15,23,42,0.25)] md:shadow-none"><span className="block font-semibold text-text">{p.name}</span><span className="text-[12px] sm:text-sm text-text-3">{p.author}</span></td>
+                  <td className="px-3 w-[22%]"><AllocationBar p={p} /></td>
+                  <td className="px-3"><span className="flex items-center gap-1" title={t.riskLabels[p.risk - 1]}>{[1, 2, 3, 4, 5].map((k) => <span key={k} className={cn("w-1.5 h-4 rounded-sm", k <= p.risk ? "bg-pv-blue" : "bg-surface-3")} />)}</span></td>
                   {PERIODS.map(([k], col) => (
                     <td key={k} className="px-1 sm:px-3 text-right font-mono tabular-nums font-semibold">
                       {state === "loading" ? <span className="inline-block w-14 h-4 rounded bg-surface-3 animate-pulse" /> : (

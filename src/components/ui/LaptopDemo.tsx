@@ -69,7 +69,7 @@ export function LaptopDemo() {
                          />
                          <motion.path 
                            d="M0,0 L10,0 L20,-2 L30,-5 L40,-15 L50,-2 L60,0 L70,-2 L80,-5 L90,0 L100,0"
-                           fill="none" stroke="#7363EA" strokeWidth="1.5"
+                           fill="none" stroke="#2F5E9E" strokeWidth="1.5"
                            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 2, delay: 0.4 }}
                          />
                        </svg>
@@ -100,7 +100,7 @@ export function LaptopDemo() {
                        { name: "Dynamic", color: "bg-yellow-500", y1: "16.6%", y3: "21.1%", y5: "12.1%", full: "8.6%" },
                        { name: "100% Equities", color: "bg-red-500", y1: "17.1%", y3: "22.2%", y5: "13.0%", full: "9.4%" },
                        { name: "Conservative", color: "bg-emerald-500", y1: "14.7%", y3: "17.2%", y5: "9.0%", full: "6.5%" },
-                       { name: "Permanent", color: "bg-violet-500", y1: "30.8%", y3: "22.1%", y5: "11.8%", full: "8.0%" },
+                       { name: "Permanent", color: "bg-blue-700", y1: "30.8%", y3: "22.1%", y5: "11.8%", full: "8.0%" },
                      ].map((row, i) => (
                        <motion.div 
                          key={i} 

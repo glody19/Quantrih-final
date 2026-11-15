@@ -20,8 +20,8 @@ export interface ModelPortfolio {
 }
 
 export const BUCKETS: Record<AssetBucket, { en: string; fr: string; color: string }> = {
-  usStocks: { en: "US stocks", fr: "Actions US", color: "#6D5AE6" },
-  intlStocks: { en: "International stocks", fr: "Actions internationales", color: "#A99BF5" },
+  usStocks: { en: "US stocks", fr: "Actions US", color: "#2A5591" },
+  intlStocks: { en: "International stocks", fr: "Actions internationales", color: "#8FB3DD" },
   bonds: { en: "US bonds", fr: "Obligations US", color: "#18B8A0" },
   intlBonds: { en: "International bonds", fr: "Obligations internationales", color: "#7ADFCF" },
   gold: { en: "Gold", fr: "Or", color: "#E0B341" },

@@ -2,14 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "../../lib/utils";
 import { FAMOUS_ALLOCATIONS } from "../../data/famousAllocations";
-import { MODEL_PORTFOLIOS } from "../../data/modelPortfolios";
-import { useModelPerformance } from "../../hooks/useModelPerformance";
-
-const CRYPTO = [
-  ["BTC", "Bitcoin"], ["ETH", "Ethereum"], ["SOL", "Solana"], ["BNB", "BNB"], ["XRP", "XRP"], ["ADA", "Cardano"],
-  ["DOGE", "Dogecoin"], ["AVAX", "Avalanche"], ["DOT", "Polkadot"], ["LINK", "Chainlink"], ["LTC", "Litecoin"], ["TRX", "TRON"],
-] as const;
-const cryptoIcon = (s: string) => `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/${s.toLowerCase()}.svg`;
 
 type Item = { key: string; name: string; sub?: string; value: number; icon?: string; onClick?: () => void };
 
@@ -29,40 +21,32 @@ function Row({ label, items, seconds, reverse }: { label: string; items: Item[];
     </div>
   );
   return (
-    <div className="relative">
+    <div>
       <div className="overflow-hidden group">
         <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused]" style={{ animationDuration: `${seconds}s`, animationDirection: reverse ? "reverse" : "normal" }}>
           {run}
           {run}
         </div>
       </div>
-      {/* small label pinned on the left, over a fade so the moving names pass behind it */}
-      <span className="pointer-events-none absolute left-0 inset-y-0 flex items-stretch">
-        <span className="flex items-center pl-2 pr-2 bg-[#0A0920]">
-          <span className="text-[9px] leading-none font-semibold uppercase tracking-[0.14em] text-[#B6ABF7] border border-[#B6ABF7]/30 rounded px-1.5 py-1 whitespace-nowrap">{label}</span>
-        </span>
-        <span className="w-12 bg-gradient-to-r from-[#0A0920] to-transparent" />
-      </span>
+      {/* discreet caption under the row */}
+      <p className="text-right pr-4 text-[9px] font-medium uppercase tracking-[0.14em] text-white/35">{label}</p>
     </div>
   );
 }
 
 /**
- * Three scrolling rows under the hero: famous allocations year to date, lazy portfolios over one year
- * and cryptocurrencies over one year. All figures are computed from real prices; rows without data hide.
+ * Scrolling row under the hero: famous allocations year to date, computed from real prices.
+ * A discreet caption under the row says what the figures are.
  */
 export function MarketTickers({ fr }: { fr: boolean }) {
   const navigate = useNavigate();
   const go = (path: string) => { navigate(path); window.scrollTo({ top: 0 }); };
   const [ytd, setYtd] = useState<Record<string, { ytd: number } | null>>({});
-  const [crypto, setCrypto] = useState<Record<string, { y1: number | null } | null>>({});
-  const { stats } = useModelPerformance();
 
   const allocSymbols = useMemo(() => Array.from(new Set(FAMOUS_ALLOCATIONS.flatMap((a) => a.assets.map((x) => x.symbol)))), []);
   useEffect(() => {
     let alive = true;
     fetch(`/api/stock/ytd?symbols=${encodeURIComponent(allocSymbols.join(","))}`).then((r) => (r.ok ? r.json() : {})).then((d: any) => { if (alive && d) setYtd(d); }).catch(() => {});
-    fetch(`/api/stock/performance?symbols=${CRYPTO.map(([s]) => s + "-USD").join(",")}`).then((r) => (r.ok ? r.json() : {})).then((d: any) => { if (alive && d) setCrypto(d); }).catch(() => {});
     return () => { alive = false; };
   }, [allocSymbols]);
 
@@ -71,21 +55,10 @@ export function MarketTickers({ fr }: { fr: boolean }) {
     if (parts.some((p) => !p || typeof p.ytd !== "number")) return [];
     return [{ key: a.id, name: a.name, sub: a.author, value: a.assets.reduce((s, x, i) => s + (x.weight / 100) * (parts[i] as any).ytd, 0), onClick: () => go(`/portfolio-backtest?preset=${a.id}`) }];
   });
-  const lazyItems: Item[] = MODEL_PORTFOLIOS.flatMap((p) => {
-    const v = stats[p.id]?.y1;
-    return typeof v === "number" ? [{ key: p.id, name: p.name, sub: p.author, value: v, onClick: () => go(`/market?lazy=${p.id}`) }] : [];
-  });
-  const cryptoItems: Item[] = CRYPTO.flatMap(([s, n]) => {
-    const v = crypto[s + "-USD"]?.y1;
-    return typeof v === "number" ? [{ key: s, name: n, sub: s, value: v, icon: cryptoIcon(s), onClick: () => go("/market") }] : [];
-  });
-
-  if (allocItems.length + lazyItems.length + cryptoItems.length === 0) return null;
+  if (allocItems.length === 0) return null;
   return (
-    <div className="w-full bg-[#0A0920] border-y border-white/10 py-2 grid gap-1">
+    <div className="w-full bg-[#06111A] border-y border-white/10 pt-2 pb-1">
       <Row label={fr ? "Allocations · depuis le 1er janv." : "Allocations · YTD"} items={allocItems} seconds={Math.max(28, allocItems.length * 3)} />
-      <Row label={fr ? "Lazy portfolios · 1 an" : "Lazy portfolios · 1Y"} items={lazyItems} seconds={Math.max(24, lazyItems.length * 3.4)} reverse />
-      <Row label={fr ? "Cryptomonnaies · 1 an" : "Cryptocurrency · 1Y"} items={cryptoItems} seconds={Math.max(24, cryptoItems.length * 2.6)} />
     </div>
   );
 }

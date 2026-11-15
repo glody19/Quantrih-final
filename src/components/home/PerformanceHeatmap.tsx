@@ -91,7 +91,7 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
             {w}
           </motion.span>
         ))}
-        <motion.span className="block mx-auto mt-2 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#5B4BDB] to-[#18B8A0]" initial={{ scaleX: 0 }} animate={inView ? { scaleX: 1 } : {}} transition={{ duration: 0.8, delay: 0.4 }} />
+        <motion.span className="block mx-auto mt-2 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#18B8A0]" initial={{ scaleX: 0 }} animate={inView ? { scaleX: 1 } : {}} transition={{ duration: 0.8, delay: 0.4 }} />
       </h3>
       {data.length === 0 ? (
         <div className="space-y-2">
@@ -101,7 +101,7 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
         </div>
       ) : (
         <div className="sm:overflow-x-auto">
-          <table className="w-full w-full sm:min-w-[420px] text-[12px] sm:text-[15px] border-separate border-spacing-y-[3px]">
+          <table className="w-full w-full sm:min-w-[420px] text-[13px] sm:text-[15px] border-separate border-spacing-y-[3px]">
             <thead>
               <tr className="text-[13px] text-text-3">
                 <th className="text-left font-medium pl-1 sm:pl-3 pb-2">{firstCol}</th>
@@ -126,11 +126,11 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
                     const delay = col * COL_DELAY + i * ROW_DELAY;
                     return (
                       <td key={k} className="px-0.5 sm:px-3">
-                        <div className="relative mx-auto max-w-[112px] h-7 sm:h-8 rounded-md bg-slate-50 overflow-hidden">
+                        <div className="relative mx-auto max-w-[112px] h-8 rounded-md bg-slate-50 overflow-hidden">
                           <Bar v={v} maxAbs={maxAbs[k]} inView={inView} delay={delay} />
                           {/* only the figure moves: flies in from one side, zooms, then blinks once settled */}
                           <motion.span
-                            className={cn("relative z-10 flex h-full items-center justify-center tabular-nums font-mono text-[11px] sm:text-[14px] font-bold", !isNum(v) ? "text-text-4" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}
+                            className={cn("relative z-10 flex h-full items-center justify-center tabular-nums font-mono text-[13px] sm:text-[14px] font-bold", !isNum(v) ? "text-text-4" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}
                             initial={{ opacity: 0, scale: 0.3, ...FROM[(i + col) % 4] }}
                             animate={inView ? { opacity: [0, 1, 1, 0.35, 1], scale: [0.3, 1.25, 1, 1, 1], x: 0, y: 0 } : {}}
                             transition={{ duration: 2.6, delay, times: [0, 0.3, 0.45, 0.8, 1], ease: "easeOut" }}

@@ -11,7 +11,7 @@ interface EliteDonutProps {
 }
 
 const DEFAULT_COLORS = [
-  "#5B4BDB", // blue-600
+  "#1B3F72", // blue-600
   "#0ea5e9", // sky-500
   "#0d9488", // teal-600
   "#10b981", // emerald-500
@@ -19,8 +19,8 @@ const DEFAULT_COLORS = [
   "#f59e0b", // amber-500
   "#f97316", // orange-500
   "#ef4444", // red-500
-  "#8b5cf6", // violet-500
-  "#d946ef", // fuchsia-500
+  "#3B6EA8", // blue-700
+  "#0EA5E9", // sky-500
   "#f43f5e", // rose-500
   "#64748b", // slate-500
 ];

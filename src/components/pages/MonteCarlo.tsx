@@ -789,11 +789,11 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
           </div>
 
           <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between text-left">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-indigo-500">
+            <p className="text-[11px] font-extrabold uppercase tracking-widest text-blue-700">
               {isEn ? "Longest Horizon" : "Horizon maximal"}
             </p>
             <div className="mt-4">
-              <p className="text-3xl font-extrabold text-indigo-600">
+              <p className="text-3xl font-extrabold text-blue-800">
                 {longestHorizon > 0 ? `${longestHorizon} ${isEn ? "years" : "ans"}` : "N/A"}
               </p>
               <p className="text-[11px] text-text-4 font-medium mt-1">

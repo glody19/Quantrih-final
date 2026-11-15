@@ -767,7 +767,7 @@ export function Profile({ onBack }: { onBack: () => void }) {
               ];
               return (
                 <div className="space-y-6">
-                  <section className="rounded-2xl p-6 text-white bg-[radial-gradient(ellipse_at_0%_0%,#2B2580_0%,#15124A_55%,#0B0A24_100%)]">
+                  <section className="rounded-2xl p-6 text-white bg-[radial-gradient(ellipse_at_0%_0%,#123A55_0%,#0C2233_55%,#06121B_100%)]">
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-full bg-white/10 overflow-hidden flex items-center justify-center text-xl font-semibold uppercase">
                         {photoURLState ? <img src={photoURLState} alt="" className="w-full h-full object-cover" /> : (firstName.charAt(0) || email.charAt(0) || '?')}

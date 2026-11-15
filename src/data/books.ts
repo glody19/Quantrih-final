@@ -129,7 +129,7 @@ const CORE_BOOKS: Book[] = [
     tagFr: "Finance Comportementale",
     summary: "Exploring the strange ways people think about money and teaching you how to make better sense of one of life's most important topics.",
     summaryFr: "Explorer les façons étranges dont les gens pensent à l'argent et vous apprendre à mieux comprendre l'un des sujets les plus importants de la vie.",
-    coverColor: "#5B4BDB",
+    coverColor: "#1B3F72",
     isbn: "9780857197689",
     featured: false,
     link: "https://www.amazon.com/Psychology-Money-Timeless-lessons-happiness/dp/0857197681"
@@ -213,7 +213,7 @@ const CORE_BOOKS: Book[] = [
     tagFr: "Investissement de Valeur",
     summary: "The ultimate classic foundational blueprint for auditing balance sheets, earnings power, and detecting undervalued assets.",
     summaryFr: "Le modèle fondamental classique de l'investissement de valeur pour l'évaluation des actifs et l'audit du bilan.",
-    coverColor: "#7c3aed",
+    coverColor: "#1F4F8F",
     isbn: "0071596089",
     featured: false,
     link: "https://www.amazon.com/Security-Analysis-Classic-1940-Edition/dp/0071596089"
@@ -297,7 +297,7 @@ const CORE_BOOKS: Book[] = [
     tagFr: "Histoire Financière",
     summary: "The spectacular cautionary tale of LTCM, showing how Nobel-winning formulas collapsed under sudden liquidity crunches.",
     summaryFr: "La chronique de l'effondrement de LTCM, illustrant la fragilité des modèles face à des corrélations extrêmes.",
-    coverColor: "#701a75",
+    coverColor: "#0B2A40",
     isbn: "0375758259",
     featured: false,
     link: "https://www.amazon.com/When-Genius-Failed-Long-Term-Management/dp/0375758259"
@@ -409,7 +409,7 @@ const CORE_BOOKS: Book[] = [
     tagFr: "Produits de Taux",
     summary: "Advanced analytical tools for managing corporate debt pricing, repo trading, yield curves, and swap valuation.",
     summaryFr: "Un ouvrage analytique clé pour modéliser et gérer les risques de taux sur les obligations mondiales.",
-    coverColor: "#a21caf",
+    coverColor: "#2A6399",
     isbn: "047047839X",
     featured: false,
     link: "https://www.amazon.com/Fixed-Income-Securities-Valuation-Risk-Management/dp/047047839X"
@@ -649,13 +649,13 @@ const EXTRA_BOOKS: NewBook[] = [
     summaryFr: "Une étude sur la vie des vrais millionnaires : économes, disciplinés et loin des clichés de la richesse." },
 
   // ── Quant, factors & trend following ─────────────────────────
-  { title: "Dual Momentum Investing", author: "Gary Antonacci", year: "2014", level: "intermediate", tag: "Trend Following", tagFr: "Suivi de Tendance", isbn: "9780071849449", coverColor: "#4c1d95",
+  { title: "Dual Momentum Investing", author: "Gary Antonacci", year: "2014", level: "intermediate", tag: "Trend Following", tagFr: "Suivi de Tendance", isbn: "9780071849449", coverColor: "#0F2F4A",
     summary: "Combining relative and absolute momentum to capture upside and sidestep bear markets.",
     summaryFr: "Combiner momentum relatif et absolu pour profiter des hausses et éviter les marchés baissiers." },
   { title: "Following the Trend", author: "Andreas F. Clenow", year: "2012", level: "advanced", tag: "Trend Following", tagFr: "Suivi de Tendance", isbn: "9781118410851", coverColor: "#3730a3",
     summary: "A practitioner's blueprint for diversified futures trend following, with full backtests.",
     summaryFr: "Le plan d'un praticien pour le suivi de tendance diversifié sur contrats à terme, backtests complets à l'appui." },
-  { title: "Trend Following", author: "Michael W. Covel", year: "2004", level: "intermediate", tag: "Trend Following", tagFr: "Suivi de Tendance", coverColor: "#5b21b6",
+  { title: "Trend Following", author: "Michael W. Covel", year: "2004", level: "intermediate", tag: "Trend Following", tagFr: "Suivi de Tendance", coverColor: "#12305A",
     summary: "The history, track records and rules of the traders who ride trends instead of predicting them.",
     summaryFr: "L'histoire, les performances et les règles des traders qui suivent les tendances au lieu de les prédire." },
   { title: "Quantitative Value", author: "Wesley R. Gray & Tobias E. Carlisle", year: "2012", level: "advanced", tag: "Quant Investing", tagFr: "Gestion Quantitative", isbn: "9781118328071", coverColor: "#312e81",
@@ -723,10 +723,10 @@ const EXTRA_BOOKS: NewBook[] = [
     summaryFr: "Le livre qui a fait découvrir les chandeliers japonais aux traders occidentaux." },
 
   // ── Derivatives ───────────────────────────────────────────────
-  { title: "Option Volatility and Pricing", author: "Sheldon Natenberg", year: "1994", level: "advanced", tag: "Derivatives", tagFr: "Produits Dérivés", isbn: "9780071818773", coverColor: "#7e22ce",
+  { title: "Option Volatility and Pricing", author: "Sheldon Natenberg", year: "1994", level: "advanced", tag: "Derivatives", tagFr: "Produits Dérivés", isbn: "9780071818773", coverColor: "#1B4A80",
     summary: "The options trader's handbook on volatility, the Greeks and spread strategies.",
     summaryFr: "Le manuel du trader d'options sur la volatilité, les grecques et les stratégies d'écarts." },
-  { title: "Volatility Trading", author: "Euan Sinclair", year: "2008", level: "advanced", tag: "Derivatives", tagFr: "Produits Dérivés", isbn: "9781118347133", coverColor: "#6b21a8",
+  { title: "Volatility Trading", author: "Euan Sinclair", year: "2008", level: "advanced", tag: "Derivatives", tagFr: "Produits Dérivés", isbn: "9781118347133", coverColor: "#183E66",
     summary: "How to forecast volatility, size positions and trade the gap between implied and realised volatility.",
     summaryFr: "Prévoir la volatilité, dimensionner ses positions et exploiter l'écart entre volatilité implicite et réalisée." },
 
@@ -769,7 +769,7 @@ const EXTRA_BOOKS: NewBook[] = [
   { title: "Marchés financiers : gestion de portefeuille et des risques", author: "Bertrand Jacquillat, Bruno Solnik & Christophe Pérignon", year: "1988", level: "advanced", tag: "Asset Allocation", tagFr: "Allocation d'Actifs", origin: "fr", coverColor: "#0e7490",
     summary: "The French university standard on portfolio theory, asset pricing and risk management.",
     summaryFr: "Le manuel universitaire français de référence sur la théorie du portefeuille, l'évaluation des actifs et la gestion des risques." },
-  { title: "Psychologie de l'investisseur et des marchés financiers", author: "Mickaël Mangot", year: "2008", level: "beginner", tag: "Behavioral Finance", tagFr: "Finance Comportementale", origin: "fr", coverColor: "#a21caf",
+  { title: "Psychologie de l'investisseur et des marchés financiers", author: "Mickaël Mangot", year: "2008", level: "beginner", tag: "Behavioral Finance", tagFr: "Finance Comportementale", origin: "fr", coverColor: "#2A6399",
     summary: "A clear French introduction to the biases that drive investors and market anomalies.",
     summaryFr: "Une introduction claire aux biais qui guident les investisseurs et aux anomalies de marché." },
   { title: "Si la Bourse m'était contée", author: "André Kostolany", year: "1960", level: "beginner", tag: "Investment Philosophy", tagFr: "Philosophie d'Investissement", origin: "fr", coverColor: "#854d0e",

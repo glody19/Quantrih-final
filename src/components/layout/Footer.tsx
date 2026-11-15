@@ -57,18 +57,18 @@ export function Footer({ onNavigate }: FooterProps) {
   ];
 
   return (
-    <footer className="w-full bg-[#0A0920] text-slate-300 font-sans">
-      <div className="h-px bg-gradient-to-r from-transparent via-[#7B6CF0]/60 to-transparent" />
+    <footer className="w-full bg-[#06111A] text-slate-300 font-sans">
+      <div className="h-px bg-gradient-to-r from-transparent via-[#3D6FB0]/60 to-transparent" />
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-14 grid gap-12 lg:grid-cols-[1.3fr_2.7fr]">
         <div>
-          <QuantrihLogo variant="bars" size="lg" className="text-[#B6ABF7] [&>span]:!text-white" />
+          <QuantrihLogo variant="bars" size="lg" className="text-[#A9C8EA] [&>span]:!text-white" />
           <p className="mt-5 text-[15px] leading-relaxed text-slate-400 max-w-sm">
             {fr
               ? 'Backtests de portefeuilles, allocations d\'actifs et données de marché pour les investisseurs européens et américains.'
               : 'Portfolio backtests, asset allocation and market data for European and US investors.'}
           </p>
           <a href="mailto:contact@quantrih.com" className="mt-5 inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors">
-            <Mail className="w-4 h-4 text-[#9283F2]" /> contact@quantrih.com
+            <Mail className="w-4 h-4 text-[#5B8CC8]" /> contact@quantrih.com
           </a>
         </div>
 

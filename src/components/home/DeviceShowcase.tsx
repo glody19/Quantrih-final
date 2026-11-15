@@ -21,9 +21,9 @@ const PowerOn = ({ delay, run }: { delay: number; run: boolean }) => (
 function MiniNav({ pills = 4 }: { pills?: number }) {
   return (
     <div className="flex items-center justify-between px-[5%] py-[3%] border-b border-slate-100 bg-white">
-      <QuantrihLogo variant="bars" size="sm" className="text-[#5B4BDB] [&>span]:!text-slate-900 [&>span]:!text-[7px]" />
+      <QuantrihLogo variant="bars" size="sm" className="text-[#1B3F72] [&>span]:!text-slate-900 [&>span]:!text-[7px]" />
       <span className="flex gap-[3px]">
-        {Array.from({ length: pills }).map((_, i) => <span key={i} className={`h-[5px] rounded-full ${i === 1 ? "w-5 bg-[#5B4BDB]" : "w-3 bg-slate-200"}`} />)}
+        {Array.from({ length: pills }).map((_, i) => <span key={i} className={`h-[5px] rounded-full ${i === 1 ? "w-5 bg-[#1B3F72]" : "w-3 bg-slate-200"}`} />)}
       </span>
     </div>
   );
@@ -45,27 +45,27 @@ function MonteCarloScreen({ fr, run }: { fr: boolean; run: boolean }) {
       <MiniNav />
       <div className="px-[6%] pt-[5%] flex-1 flex flex-col gap-[3.5%]">
         <div>
-          <p className="text-[5.5px] font-semibold tracking-[0.2em] text-[#5B4BDB]">STOCHASTIC ENGINE</p>
+          <p className="text-[5.5px] font-semibold tracking-[0.2em] text-[#1B3F72]">STOCHASTIC ENGINE</p>
           <p className="text-[13px] font-semibold tracking-tight">Monte Carlo</p>
         </div>
         <div className="rounded-lg border border-slate-200 p-[4%]">
           <p className="text-[6px] font-semibold text-slate-500 mb-1">{fr ? "Évolution simulée du capital" : "Simulated portfolio value"}</p>
           <svg viewBox="0 0 200 110" className="w-full">
             <defs>
-              <linearGradient id="mcOuter" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7B6CF0" stopOpacity="0.18" /><stop offset="1" stopColor="#7B6CF0" stopOpacity="0.05" /></linearGradient>
+              <linearGradient id="mcOuter" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3D6FB0" stopOpacity="0.18" /><stop offset="1" stopColor="#3D6FB0" stopOpacity="0.05" /></linearGradient>
             </defs>
             {[25, 50, 75, 100].map((y) => <line key={y} x1="0" x2="200" y1={y} y2={y} stroke="#F1F5F9" />)}
             <motion.path d="M0 70 C60 40 120 12 200 2 L200 118 C120 112 60 96 0 70 Z" fill="url(#mcOuter)" initial={{ opacity: 0 }} animate={run ? { opacity: 1 } : undefined} transition={{ duration: 1, delay: 2.2 }} />
-            <motion.path d="M0 70 C60 52 120 38 200 30 L200 92 C120 90 60 84 0 70 Z" fill="#7B6CF0" fillOpacity="0.16" initial={{ opacity: 0 }} animate={run ? { opacity: 1 } : undefined} transition={{ duration: 1, delay: 2.5 }} />
+            <motion.path d="M0 70 C60 52 120 38 200 30 L200 92 C120 90 60 84 0 70 Z" fill="#3D6FB0" fillOpacity="0.16" initial={{ opacity: 0 }} animate={run ? { opacity: 1 } : undefined} transition={{ duration: 1, delay: 2.5 }} />
             {MC_PATHS.map((d, i) => (
-              <motion.path key={i} d={d} fill="none" stroke={i % 4 === 0 ? "#18B8A0" : i % 4 === 1 ? "#E0B341" : "#A99BF5"} strokeWidth="0.8" strokeOpacity="0.75"
+              <motion.path key={i} d={d} fill="none" stroke={i % 4 === 0 ? "#18B8A0" : i % 4 === 1 ? "#E0B341" : "#8FB3DD"} strokeWidth="0.8" strokeOpacity="0.75"
                 initial={{ pathLength: 0 }} animate={run ? { pathLength: [0, 1, 1] } : undefined} transition={{ duration: 3.4, times: [0, 0.6, 1], delay: 2 + i * 0.08, repeat: Infinity, repeatDelay: 1.2 }} />
             ))}
-            <motion.path d="M0 70 C60 58 120 50 200 44" fill="none" stroke="#5B4BDB" strokeWidth="2" strokeLinecap="round" initial={{ pathLength: 0 }} animate={run ? { pathLength: 1 } : undefined} transition={{ duration: 1.6, delay: 2.4 }} />
+            <motion.path d="M0 70 C60 58 120 50 200 44" fill="none" stroke="#1B3F72" strokeWidth="2" strokeLinecap="round" initial={{ pathLength: 0 }} animate={run ? { pathLength: 1 } : undefined} transition={{ duration: 1.6, delay: 2.4 }} />
           </svg>
         </div>
         <div className="grid grid-cols-3 gap-[4%]">
-          {[[fr ? "Succès" : "Success", "#18B8A0", 0.86], [fr ? "Médiane" : "Median", "#5B4BDB", 0.62], [fr ? "Pire 10 %" : "Worst 10%", "#9F1239", 0.3]].map(([label, c, k], i) => (
+          {[[fr ? "Succès" : "Success", "#18B8A0", 0.86], [fr ? "Médiane" : "Median", "#1B3F72", 0.62], [fr ? "Pire 10 %" : "Worst 10%", "#9F1239", 0.3]].map(([label, c, k], i) => (
             <div key={label as string} className="rounded-md border border-slate-200 p-[8%]">
               <p className="text-[5.5px] text-slate-500">{label}</p>
               <div className="mt-1 h-[4px] rounded-full bg-slate-100 overflow-hidden">
@@ -78,7 +78,7 @@ function MonteCarloScreen({ fr, run }: { fr: boolean; run: boolean }) {
           <p className="text-[6px] font-semibold text-slate-500 mb-1">{fr ? "Répartition des résultats" : "Distribution of outcomes"}</p>
           <div className="flex-1 flex items-end gap-[3%]">
             {[12, 22, 38, 58, 80, 96, 84, 62, 40, 24, 12, 6].map((h, i) => (
-              <motion.span key={i} className="flex-1 rounded-t-[2px]" style={{ background: i < 3 ? "#9F123966" : "#7B6CF0", transformOrigin: "bottom" }} initial={{ scaleY: 0, height: `${h}%` }} animate={run ? { scaleY: 1 } : undefined} transition={{ duration: 0.6, delay: 2.8 + i * 0.05 }} />
+              <motion.span key={i} className="flex-1 rounded-t-[2px]" style={{ background: i < 3 ? "#9F123966" : "#3D6FB0", transformOrigin: "bottom" }} initial={{ scaleY: 0, height: `${h}%` }} animate={run ? { scaleY: 1 } : undefined} transition={{ duration: 0.6, delay: 2.8 + i * 0.05 }} />
             ))}
           </div>
         </div>
@@ -96,7 +96,7 @@ function MarketScreen({ fr, run }: { fr: boolean; run: boolean }) {
       <div className="mt-[9%]"><MiniNav pills={2} /></div>
       <div className="px-[7%] pt-[5%] flex-1 flex flex-col gap-[3.5%]">
         <div className="h-[7%] rounded-full border border-slate-200 flex items-center px-[6%] text-[6px] text-slate-400">{fr ? "Rechercher une action..." : "Search a stock..."}</div>
-        <div className="flex gap-[6%] text-[6px] font-semibold"><span className="text-[#5B4BDB] border-b border-[#5B4BDB] pb-[2px]">{fr ? "Analyse" : "Analysis"}</span><span className="text-slate-400">{fr ? "États financiers" : "Financials"}</span></div>
+        <div className="flex gap-[6%] text-[6px] font-semibold"><span className="text-[#1B3F72] border-b border-[#1B3F72] pb-[2px]">{fr ? "Analyse" : "Analysis"}</span><span className="text-slate-400">{fr ? "États financiers" : "Financials"}</span></div>
         <div className="flex items-center gap-[5%]">
           <span className="w-5 h-5 rounded-full bg-slate-900 flex items-center justify-center text-white text-[7px] font-bold">A</span>
           <span><b className="block text-[8px]">Apple Inc.</b><span className="text-[5.5px] text-slate-400">AAPL · NasdaqGS</span></span>
@@ -108,14 +108,14 @@ function MarketScreen({ fr, run }: { fr: boolean; run: boolean }) {
             <motion.path d="M0 32 L10 28 L18 30 L28 22 L38 25 L48 17 L58 19 L68 12 L80 14 L90 7 L100 5" fill="none" stroke="#18B8A0" strokeWidth="1.8" strokeLinejoin="round"
               initial={{ pathLength: 0 }} animate={run ? { pathLength: [0, 1, 1] } : undefined} transition={{ duration: 4, times: [0, 0.55, 1], delay: 2.8, repeat: Infinity }} />
           </svg>
-          <div className="flex justify-between mt-1 text-[5px] text-slate-400">{["1M", "6M", "1Y", "5Y"].map((x, i) => <span key={x} className={i === 2 ? "text-[#5B4BDB] font-bold" : ""}>{x}</span>)}</div>
+          <div className="flex justify-between mt-1 text-[5px] text-slate-400">{["1M", "6M", "1Y", "5Y"].map((x, i) => <span key={x} className={i === 2 ? "text-[#1B3F72] font-bold" : ""}>{x}</span>)}</div>
         </div>
         <div className="grid grid-cols-2 gap-[5px]">
           {metrics.map(([label, k], i) => (
             <div key={label} className="rounded-md bg-slate-50 p-[6px]">
               <p className="text-[5.5px] text-slate-500">{label}</p>
               <div className="mt-[3px] h-[3px] rounded-full bg-slate-200 overflow-hidden">
-                <motion.div className="h-full rounded-full bg-[#5B4BDB]" style={{ transformOrigin: "left" }} initial={{ scaleX: 0 }} animate={run ? { scaleX: k } : undefined} transition={{ duration: 0.8, delay: 3 + i * 0.1 }} />
+                <motion.div className="h-full rounded-full bg-[#1B3F72]" style={{ transformOrigin: "left" }} initial={{ scaleX: 0 }} animate={run ? { scaleX: k } : undefined} transition={{ duration: 0.8, delay: 3 + i * 0.1 }} />
               </div>
             </div>
           ))}
@@ -240,13 +240,13 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = f
         className="absolute z-0 left-[1%] right-[1%] bottom-0"
       >
         {/* top surface */}
-        <div className="relative h-[52px] md:h-[78px] rounded-[50%] bg-[radial-gradient(ellipse_at_50%_35%,#FFFFFF_0%,#F6F7FA_40%,#E3E6EE_80%,#D3D7E1_100%)] shadow-[inset_0_2px_0_rgba(255,255,255,1),inset_0_-6px_14px_rgba(91,75,219,0.08)] ring-1 ring-slate-200/70">
-          <span className="absolute inset-x-[18%] top-[55%] h-[2px] rounded-full bg-gradient-to-r from-transparent via-[#7B6CF0]/45 to-transparent blur-[1px]" />
+        <div className="relative h-[52px] md:h-[78px] rounded-[50%] bg-[radial-gradient(ellipse_at_50%_35%,#FFFFFF_0%,#F6F7FA_40%,#E3E6EE_80%,#D3D7E1_100%)] shadow-[inset_0_2px_0_rgba(255,255,255,1),inset_0_-6px_14px_rgba(27,63,114,0.08)] ring-1 ring-slate-200/70">
+          <span className="absolute inset-x-[18%] top-[55%] h-[2px] rounded-full bg-gradient-to-r from-transparent via-[#3D6FB0]/45 to-transparent blur-[1px]" />
         </div>
         {/* front edge with depth */}
         <div className="relative -mt-[26px] md:-mt-[39px] h-[46px] md:h-[62px] rounded-b-[50%] bg-[linear-gradient(180deg,#E4E7EE_0%,#C3C8D4_55%,#A9AFBD_100%)] -z-10" />
         {/* shadow on the floor */}
-        <div className="absolute left-[4%] right-[4%] -bottom-8 h-12 rounded-[50%] bg-[radial-gradient(ellipse,rgba(21,18,74,0.30),transparent_70%)] blur-xl -z-20" />
+        <div className="absolute left-[4%] right-[4%] -bottom-8 h-12 rounded-[50%] bg-[radial-gradient(ellipse,rgba(6,18,27,0.30),transparent_70%)] blur-xl -z-20" />
       </motion.div>
     </div>
   );

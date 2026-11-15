@@ -11,24 +11,24 @@
   --animate-marquee: marquee 20s linear infinite;
   --animate-color-shift: color-shift 4s ease-in-out infinite alternate;
 
-  /* Brand accent: deep violet (Finary-like). Kept under the pv-blue names so every page picks it up. */
-  --color-pv-blue: #5B4BDB;
-  --color-pv-blue-d: #4636C2;
-  --color-pv-blue-l: #7B6CF0;
-  --color-pv-blue-bg: #EEECFD;
+  /* Brand accent: navy blue. Kept under the pv-blue names so every page picks it up. */
+  --color-pv-blue: #1B3F72;
+  --color-pv-blue-d: #12305A;
+  --color-pv-blue-l: #3D6FB0;
+  --color-pv-blue-bg: #E8EFF8;
 
   /* Tailwind's blue scale remapped to the violet accent */
   --color-blue-50: #F4F2FE;
   --color-blue-100: #EAE7FD;
   --color-blue-200: #D6D0FB;
-  --color-blue-300: #B6ABF7;
-  --color-blue-400: #9283F2;
-  --color-blue-500: #7363EA;
-  --color-blue-600: #5B4BDB;
+  --color-blue-300: #A9C8EA;
+  --color-blue-400: #5B8CC8;
+  --color-blue-500: #2F5E9E;
+  --color-blue-600: #1B3F72;
   --color-blue-700: #4A3BC0;
-  --color-blue-800: #3C3199;
+  --color-blue-800: #183E66;
   --color-blue-900: #312A79;
-  --color-blue-950: #1E1948;
+  --color-blue-950: #0F2638;
 
   /* Surfaces (plain white, neutral greys) */
   --color-bg: #FFFFFF;
@@ -82,10 +82,10 @@
   --color-text-2: #E2E8F0;
   --color-text-3: #94A3B8;
   --color-text-4: #64748B;
-  --color-pv-blue: #7B6CF0;
-  --color-pv-blue-d: #5B4BDB;
-  --color-pv-blue-l: #9283F2;
-  --color-pv-blue-bg: #1E1948;
+  --color-pv-blue: #3D6FB0;
+  --color-pv-blue-d: #1B3F72;
+  --color-pv-blue-l: #5B8CC8;
+  --color-pv-blue-bg: #0F2638;
 }
 
 [data-theme="dark"] .bg-surface,
@@ -134,7 +134,7 @@
   }
   
   input:hover {
-    box-shadow: 0 4px 20px rgba(91, 75, 219, 0.12);
+    box-shadow: 0 4px 20px rgba(27,63,114, 0.12);
   }
   
   input:focus {
@@ -148,7 +148,7 @@
 }
 
 .card {
-  @apply relative overflow-hidden bg-surface border border-border rounded-3xl p-6 shadow-[0_6px_24px_rgba(20,20,26,0.04)] transition-all duration-500 hover:shadow-[0_12px_36px_rgba(91,75,219,0.10)] hover:border-pv-blue/30;
+  @apply relative overflow-hidden bg-surface border border-border rounded-3xl p-6 shadow-[0_6px_24px_rgba(20,20,26,0.04)] transition-all duration-500 hover:shadow-[0_12px_36px_rgba(27,63,114,0.10)] hover:border-pv-blue/30;
 }
 .card::before {
   content: "";
@@ -159,7 +159,7 @@
 }
 
 .inventive-card {
-  @apply relative overflow-hidden bg-surface border border-border rounded-3xl p-6 shadow-[0_6px_24px_rgba(20,20,26,0.04)] transition-all duration-500 hover:shadow-[0_12px_36px_rgba(91,75,219,0.10)] hover:border-pv-blue/30;
+  @apply relative overflow-hidden bg-surface border border-border rounded-3xl p-6 shadow-[0_6px_24px_rgba(20,20,26,0.04)] transition-all duration-500 hover:shadow-[0_12px_36px_rgba(27,63,114,0.10)] hover:border-pv-blue/30;
 }
 
 /* Shared page width: fills wide screens while keeping a comfortable gutter */
@@ -372,7 +372,4 @@ th > div > input[type="text"]:focus {
   .tool-page .text-\[14px\] { font-size: 13.5px; }
 }
 
-/* Home page on phones: the content is shown at 70% (the header and its menu stay at full size) */
-@media (max-width: 640px) {
-  .home-zoom { zoom: 0.7; }
-}
+

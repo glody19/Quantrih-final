@@ -40,7 +40,7 @@ const BRAND: Record<string, { domain: string; color: string }> = {
   questrade: { domain: "questrade.com", color: "#3E8E41" },
   binance: { domain: "binance.com", color: "#F0B90B" },
   coinbase: { domain: "coinbase.com", color: "#0052FF" },
-  kraken: { domain: "kraken.com", color: "#5741D9" },
+  kraken: { domain: "kraken.com", color: "#1F4F8F" },
   kucoin: { domain: "kucoin.com", color: "#23AF91" },
   bitstamp: { domain: "bitstamp.net", color: "#1A9A4B" },
   gemini: { domain: "gemini.com", color: "#00B8D9" },
@@ -211,7 +211,7 @@ function PlatformCard({ p, l, lang, index }: { p: InvestmentPlatform; l: typeof 
 
 function LegacyCard({ p, t, index }: { p: LegacyPlatform; t: (k: string) => string; index: number }) {
   const brand = BRAND[p.id];
-  const color = brand?.color || "#5B4BDB";
+  const color = brand?.color || "#1B3F72";
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}

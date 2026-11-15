@@ -99,7 +99,7 @@ export function Header({
       )}
     >
       {/* Main Header Top Row: Logo + Page Nav Menu + Controls */}
-      <div className="h-[68px] lg:h-16 flex items-center justify-between px-4 md:px-8 max-w-full mx-auto text-sm font-normal">
+      <div className="h-[84px] lg:h-16 flex items-center justify-between px-4 md:px-8 max-w-full mx-auto text-sm font-normal">
         
         {/* Left & Center: Logo + Navigation Bar */}
         <div className="flex items-center gap-3 lg:gap-6 h-full">
@@ -107,7 +107,7 @@ export function Header({
             onClick={() => onPageChange("home")}
             className="cursor-pointer flex items-center transition-all hover:opacity-80 px-2 h-10 lg:h-12 shrink-0"
           >
-            <QuantrihLogo variant="bars" size="lg" className={cn("opacity-95 hover:opacity-100 transition-transform duration-300", currentPage === "home" ? "text-[#B6ABF7] [&>span]:!text-white" : "text-blue-600")} />
+            <QuantrihLogo variant="bars" size="lg" className={cn("opacity-95 hover:opacity-100 transition-transform duration-300", currentPage === "home" ? "text-[#A9C8EA] [&>span]:!text-white" : "text-blue-600")} />
           </div>
           
           {/* Desktop Nav Bar */}
@@ -195,7 +195,7 @@ export function Header({
           <div className="hidden lg:flex items-center gap-2">
             <button
               onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-pv-blue hover:bg-pv-blue-d text-white rounded-lg transition-all duration-300 text-xs font-semibold tracking-wide shadow-[0_6px_16px_-6px_rgba(91,75,219,0.7)]"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-pv-blue hover:bg-pv-blue-d text-white rounded-lg transition-all duration-300 text-xs font-semibold tracking-wide shadow-[0_6px_16px_-6px_rgba(27,63,114,0.7)]"
             >
               <Heart size={12} className="fill-white text-white animate-[pulse_2s_ease-in-out_infinite]" />
               <span>{t("header.donate")}</span>
@@ -342,10 +342,11 @@ export function Header({
 
           {/* Mobile Menu Toggle */}
           <button 
-            className="xl:hidden p-2.5 rounded-xl text-text hover:bg-surface-2 transition-colors ml-1"
+            className="xl:hidden w-12 h-12 flex items-center justify-center rounded-2xl text-text hover:bg-surface-2 transition-colors ml-1"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
-            {mobileMenuOpen ? <X size={30} /> : <Menu size={30} />}
+            {mobileMenuOpen ? <X size={34} /> : <Menu size={34} />}
           </button>
         </div>
       </div>
@@ -358,7 +359,7 @@ export function Header({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="xl:hidden absolute top-full left-0 right-0 w-full bg-surface border-b border-border p-5 shadow-2xl z-[150] flex flex-col gap-2 max-h-[80vh] overflow-y-auto scroll-smooth rounded-b-3xl"
+            className="xl:hidden absolute top-full left-0 right-0 w-full bg-white border-b border-border px-5 pt-4 pb-8 shadow-2xl z-[150] flex flex-col gap-1.5 h-[calc(100dvh-84px)] overflow-y-auto scroll-smooth"
           >
             {menus.map((menu) => {
               const hasChildren = "children" in menu && !!menu.children;
@@ -366,7 +367,7 @@ export function Header({
               const isChildActive = hasChildren && "children" in menu && menu.children?.some(c => c.id === currentPage);
               
               return (
-                <div key={menu.id} className="flex flex-col gap-1 border-b border-border/10 pb-2 mb-1">
+                <div key={menu.id} className="flex flex-col gap-1 border-b border-slate-100 pb-1.5">
                   <button
                     onClick={() => {
                       if (hasChildren) {
@@ -377,17 +378,17 @@ export function Header({
                       }
                     }}
                     className={cn(
-                      "w-full text-left px-4 py-3.5 rounded-xl text-lg sm:text-xl font-bold tracking-tight transition-all flex items-center justify-between",
+                      "w-full text-left px-5 py-4 rounded-2xl text-xl font-bold tracking-tight transition-all flex items-center justify-between",
                       currentPage === menu.id || isChildActive
                         ? "bg-blue-600 text-white shadow-md"
-                        : "text-text hover:bg-surface-2"
+                        : "text-slate-900 hover:bg-slate-100"
                     )}
                   >
                     <span>{menu.label}</span>
                     {hasChildren && (
                       <ChevronDown 
                         size={22} 
-                        className={cn("transition-transform duration-200", isExpanded ? "rotate-180 text-blue-500" : "text-text-3")} 
+                        className={cn("transition-transform duration-200", isExpanded ? "rotate-180 text-[#1B3F72]" : "text-slate-400")} 
                       />
                     )}
                   </button>
@@ -396,7 +397,7 @@ export function Header({
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="pl-3 flex flex-col gap-1.5 mt-1 bg-surface-2/60 rounded-2xl p-3 transition-all duration-300"
+                      className="pl-3 flex flex-col gap-1.5 mt-1 bg-slate-50 rounded-2xl p-3 transition-all duration-300"
                     >
                       {menu.children?.map(child => (
                         <button
@@ -406,8 +407,8 @@ export function Header({
                             setMobileMenuOpen(false);
                           }}
                           className={cn(
-                            "w-full text-left px-4 py-3 rounded-xl text-base font-semibold transition-all",
-                            currentPage === child.id ? "bg-blue-600 text-white font-bold" : "text-text hover:bg-surface-2"
+                            "w-full text-left px-4 py-3.5 rounded-xl text-lg font-semibold transition-all",
+                            currentPage === child.id ? "bg-blue-600 text-white font-bold" : "text-slate-900 hover:bg-slate-100"
                           )}
                         >
                           {child.label}
