@@ -1,30 +1,22 @@
 import React, { useEffect, useRef } from "react";
 import { INVESTMENT_PLATFORMS, type InvestmentPlatform } from "../../data/investmentPlatforms";
 
-const COUNTRY = { BE: { fr: "Belgique", en: "Belgium" }, FR: { fr: "France", en: "France" } } as const;
 const MAX_ZOOM = 0.16; // the logo at the very centre is 16% larger
 
-/** Lighter version of a brand colour, for the end of the pill gradient. */
-function lighten(hex: string, k: number) {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const ch = (v: number) => Math.round(v + (255 - v) * k);
-  return `rgb(${ch((n >> 16) & 255)}, ${ch((n >> 8) & 255)}, ${ch(n & 255)})`;
-}
-
 /**
- * A white 3D sphere holding the logo, docked on a rounded pill in the platform's colours
- * with its name, what it offers and its country.
+ * A white 3D sphere holding the logo, docked on a soft white pill with the platform's name
+ * and its main advantage.
  */
 function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
+  const advantage = (fr ? p.highlights.fr : p.highlights.en)[0] || (fr ? p.bestFor.fr : p.bestFor.en);
   return (
-    <div className="shrink-0 relative flex items-center w-[330px] h-[112px]" title={p.name}>
-      <div
-        className="absolute left-[46px] right-0 inset-y-[10px] rounded-full pl-[74px] pr-6 flex flex-col justify-center text-white shadow-[0_18px_30px_-18px_rgba(15,23,42,0.55)]"
-        style={{ background: `linear-gradient(105deg, ${p.color} 0%, ${lighten(p.color, 0.25)} 100%)` }}
-      >
-        <span className="text-[15px] font-bold uppercase tracking-wide truncate">{p.name}</span>
-        <span className="mt-0.5 text-[12px] leading-snug text-white/85 line-clamp-2">{fr ? p.bestFor.fr : p.bestFor.en}</span>
-        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">{p.markets.map((m) => COUNTRY[m][fr ? "fr" : "en"]).join(" · ")}</span>
+    <div className="shrink-0 relative flex items-center w-[340px] h-[112px]" title={p.name}>
+      <div className="absolute left-[46px] right-0 inset-y-[12px] rounded-full pl-[74px] pr-6 flex flex-col justify-center bg-white border border-slate-200/80 shadow-[0_16px_30px_-18px_rgba(15,23,42,0.35)]">
+        <span className="text-[15px] font-bold text-slate-900 truncate">{p.name}</span>
+        <span className="mt-1 flex items-start gap-1.5 text-[12.5px] leading-snug text-slate-600">
+          <span className="mt-[3px] w-3.5 h-3.5 shrink-0 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center text-[9px] font-bold">✓</span>
+          <span className="line-clamp-2">{advantage}</span>
+        </span>
       </div>
       {/* white sphere: soft highlight top-left, shade bottom-right, drop shadow */}
       <span
