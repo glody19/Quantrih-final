@@ -19,6 +19,8 @@ export interface InvestmentPlatform {
   regulator: string;
   group?: string;
   domain: string;
+  /** Domain whose icon is used for round logos when the main site only has a tiny favicon. */
+  logoDomain?: string;
   url: string;
   color: string;
   products: string[];
@@ -176,6 +178,7 @@ export const INVESTMENT_PLATFORMS: InvestmentPlatform[] = [
     regulator: "BNB, FSMA",
     group: "ING Belgique",
     domain: "ing.be",
+    logoDomain: "ing.de", // same ING lion, published in high definition
     url: "https://www.ing.be/en/individuals/investing/ing-self-invest",
     color: "#FF6200",
     products: ["Actions", "ETF", "Fonds", "Obligations"],
@@ -461,6 +464,7 @@ export const INVESTMENT_PLATFORMS: InvestmentPlatform[] = [
     markets: ["FR"],
     regulator: "ACPR, AMF",
     domain: "boursedirect.fr",
+    logoDomain: "www.boursedirect.fr",
     url: "https://www.boursedirect.fr/",
     color: "#E2001A",
     products: ["PEA", "Compte-titres", "ETF", "Actions", "Assurance-vie"],
@@ -554,6 +558,7 @@ export const INVESTMENT_PLATFORMS: InvestmentPlatform[] = [
     markets: ["FR"],
     regulator: "ACPR, AMF",
     domain: "mabanque.bnpparibas",
+    logoDomain: "bnpparibas.fr",
     url: "https://mabanque.bnpparibas/",
     color: "#00915A",
     products: ["PEA", "Compte-titres", "Assurance-vie", "Fonds"],
