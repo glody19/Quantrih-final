@@ -401,8 +401,8 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         {/* Best ETFs over 6 months, 1, 3 and 5 years */}
         <div className="max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-10 mt-20">
           <SectionTitle
-            text={fr ? "Les meilleurs ETF" : "Top performing ETFs"}
-            sub={fr ? "Les sept ETF qui ont le plus progressé, sur 6 mois, 1 an, 3 ans ou 5 ans. Cliquez sur une période pour changer le classement." : "The seven ETFs that gained the most over 6 months, 1, 3 or 5 years. Click a period to re-rank them."}
+            text={fr ? "Les 30 meilleurs ETF sur 12 mois" : "Best 30 ETF returns · last 12 months"}
+            sub={fr ? "Les ETF mondiaux les plus performants sur les 12 derniers mois, classés par rendement sur 1 an. Suivez les grands indices thématiques." : "Top performing global ETFs over the trailing 12 months, sorted by highest 1-year return. Track leading thematic indexes."}
           />
           <ScrollZoom><TopEtfs fr={fr} /></ScrollZoom>
         </div>

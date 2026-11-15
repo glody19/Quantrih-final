@@ -52,13 +52,6 @@ function buckets(p: ModelPortfolio) {
   return Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
 }
 
-function AllocationBar({ p }: { p: ModelPortfolio }) {
-  return (
-    <span className="flex h-2.5 w-full sm:min-w-[140px] rounded-full overflow-hidden bg-surface-3">
-      {buckets(p).map(([b, w]) => <span key={b} style={{ width: `${w}%`, background: BUCKETS[b].color }} title={`${BUCKETS[b].en} ${w}%`} />)}
-    </span>
-  );
-}
 
 /** Animated donut drawn with SVG arcs: segments sweep in one after the other. */
 function Donut({ p, lang }: { p: ModelPortfolio; lang: "en" | "fr" }) {
@@ -223,11 +216,10 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
       )}
 
       <div ref={ref} className={cn("overflow-x-auto rounded-3xl border border-border bg-white shadow-[0_20px_50px_-35px_rgba(17,17,24,0.4)]", home ? "mt-10" : "mt-6")}>
-        <table className="w-full min-w-[760px] md:min-w-[920px] text-[14px] sm:text-[15px]">
+        <table className="w-full min-w-[620px] md:min-w-[760px] text-[14px] sm:text-[15px]">
           <thead>
             <tr className="text-sm text-text-3 border-b border-border">
               <th className="sticky left-0 z-10 bg-white text-left font-medium px-3 sm:px-6 py-3 sm:py-4">{t.portfolio}</th>
-              <th className="text-left font-medium px-3">{t.allocation}</th>
               <th className="text-left font-medium px-3">{t.risk}</th>
               {PERIODS.map(([k, en, fr]) => (
                 <th key={k} className="text-right font-medium px-1 sm:px-3">
@@ -245,7 +237,6 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
                 <motion.tr id={`lazy-${p.id}`} initial={{ opacity: 0, y: 18 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: i * 0.05 }}
                   onClick={() => (home ? onNavigate?.(`market?lazy=${p.id}`) : setOpen(open === p.id ? null : p.id))} className={cn("border-b border-border cursor-pointer hover:bg-surface-3/50 transition-colors scroll-mt-24", open === p.id && "bg-pv-blue/[0.06]")}>
                   <td className="sticky left-0 z-10 bg-white px-3 sm:px-6 py-3 sm:py-4 leading-tight shadow-[6px_0_8px_-8px_rgba(15,23,42,0.25)] md:shadow-none"><span className="block font-semibold text-text">{p.name}</span><span className="text-[12px] sm:text-sm text-text-3">{p.author}</span></td>
-                  <td className="px-3 w-[22%]"><AllocationBar p={p} /></td>
                   <td className="px-3"><span className="flex items-center gap-1" title={t.riskLabels[p.risk - 1]}>{[1, 2, 3, 4, 5].map((k) => <span key={k} className={cn("w-1.5 h-4 rounded-sm", k <= p.risk ? "bg-pv-blue" : "bg-surface-3")} />)}</span></td>
                   {PERIODS.map(([k], col) => (
                     <td key={k} className="px-1 sm:px-3 text-right font-mono tabular-nums font-semibold">
@@ -272,7 +263,7 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
                   <td className="px-1 sm:px-4 text-text-4"><ArrowRight size={14} className={cn("transition-transform", open === p.id && "rotate-90 text-pv-blue")} /></td>
                 </motion.tr>
                 {!home && (
-                  <tr><td colSpan={8} className="p-0">
+                  <tr><td colSpan={7} className="p-0">
                     <AnimatePresence initial={false}>{open === p.id && <Detail p={p} s={stats[p.id] || null} lang={lang} onClose={() => setOpen(null)} onNavigate={onNavigate} />}</AnimatePresence>
                   </td></tr>
                 )}

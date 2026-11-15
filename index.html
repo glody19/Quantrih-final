@@ -4,15 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
-      // Phones: render the page twice as wide as the screen and show it at 50%, so they get the
+      // Phones: render the page 2.5 times as wide as the screen and show it at 40%, so they get the
       // computer layout. The header and its menu are enlarged again in CSS (.phone-desktop).
       (function () {
         var w = Math.min(screen.width, screen.height);
         if (w < 640) {
-          document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=' + (w * 2) + ', initial-scale=0.5');
+          document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=' + Math.round(w * 2.5) + ', initial-scale=0.4');
           document.documentElement.classList.add('phone-desktop');
-          // header enlarged as much as its content allows on this screen width (about 510px of content)
-          document.documentElement.style.setProperty('--hdr', String(Math.min(1.6, (w * 2) / 515)));
+          // header enlarged as much as its content allows on this screen width (about 700px of content at this layout width)
+          document.documentElement.style.setProperty('--hdr', String(Math.min(2, (w * 2.5) / 700)));
         }
       })();
     </script>
