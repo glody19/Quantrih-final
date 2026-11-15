@@ -11,7 +11,10 @@ function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
       {/* the round is the platform's own colour, and its logo fills it edge to edge */}
       <span data-zoom className="relative flex w-24 h-24 rounded-full ring-4 ring-white/10 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.7)] items-center justify-center text-3xl font-bold text-white overflow-hidden will-change-transform" style={{ background: p.color }}>
         {p.name.charAt(0)}
-        <img src={`/api/logo?domain=${p.domain}&sz=128&full=1&v=2`} alt={p.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+        <img src={`/api/logo?domain=${p.domain}&sz=128&full=1&v=3`} alt={p.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer"
+          onError={(e) => { e.currentTarget.style.display = "none"; }}
+          // a tiny icon would be blurry and boxed in white once stretched: keep the clean initial on the brand colour instead
+          onLoad={(e) => { if (e.currentTarget.naturalWidth < 96) e.currentTarget.style.display = "none"; }} />
       </span>
       <span className="mt-4 text-[15px] font-semibold text-white">{p.name}</span>
       <span className="mt-1 text-[13px] leading-snug text-white/65 line-clamp-2 min-h-[2.6em]">{fr ? p.bestFor.fr : p.bestFor.en}</span>

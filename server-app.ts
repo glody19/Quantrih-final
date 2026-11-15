@@ -1124,23 +1124,34 @@ export function createApp() {
 
   // Company / broker logos served from our own domain. Fetched once from public favicon services,
   // kept in memory and cached by the CDN for a week, so pages never depend on a third-party host.
-  const logoCache = new Map<string, { type: string; body: Buffer; at: number }>();
-  app.get("/api/logo", async (req, res) => {
-    const domain = String(req.query.domain || "").toLowerCase().trim();
-    const sz = [32, 64, 128].includes(Number(req.query.sz)) ? Number(req.query.sz) : 128;
-    // full=1: an edge-to-edge icon (the site's own apple-touch icon, made to fill a tile), for round logos
-    const full = req.query.full === "1";
-    if (!/^[a-z0-9][a-z0-9.-]{1,80}\.[a-z]{2,24}$/.test(domain)) return res.status(400).end();
+  const logoCache = new Map<string, { type: string; body: Buffer; at: number; src?: string }>();
+  // Width of a PNG/ICO/JPEG logo, to report which logos are too small for a round badge
+  const imageWidth = (b: Buffer): number | null => {
+    if (b.length > 24 && b[0] === 0x89 && b[1] === 0x50) return b.readUInt32BE(16);
+    if (b.length > 8 && b[0] === 0 && b[1] === 0 && b[2] === 1 && b[3] === 0) return b[6] || 256;
+    if (b.length > 4 && b[0] === 0xff && b[1] === 0xd8) {
+      let i = 2;
+      while (i + 9 < b.length) { if (b[i] !== 0xff) { i++; continue; } const m = b[i + 1]; const len = b.readUInt16BE(i + 2); if (m >= 0xc0 && m <= 0xc3) return b.readUInt16BE(i + 7); i += 2 + len; }
+    }
+    return null;
+  };
+  // /api/logo-report?domains=a.be,b.fr : size and source of each round logo (diagnostics, no images)
+  app.get("/api/logo-report", async (req, res) => {
+    const domains = String(req.query.domains || "").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean).slice(0, 40);
+    const out = await Promise.all(domains.map(async (d) => {
+      const hit = await resolveLogo(d, 128, true).catch(() => null);
+      return { domain: d, width: hit ? imageWidth(hit.body) : null, bytes: hit?.body.length ?? 0, source: hit?.src ?? null };
+    }));
+    res.json(out);
+  });
+
+  // Finds a logo for a domain. full=true wants an edge-to-edge icon of at least 96px for round badges:
+  // the largest icon the site declares, then its apple-touch icon, then Google's high-definition favicon.
+  async function resolveLogo(domain: string, sz: number, full: boolean) {
     const key = `${domain}:${sz}:${full ? "f" : "s"}`;
-    const send = (v: { type: string; body: Buffer }) => {
-      res.set("Content-Type", v.type);
-      res.set("Cache-Control", "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400");
-      res.send(v.body);
-    };
     const hit = logoCache.get(key);
-    if (hit && Date.now() - hit.at < 7 * 86400_000) return send(hit);
+    if (hit && Date.now() - hit.at < 7 * 86400_000) return hit;
     const host = encodeURIComponent(domain);
-    // full: look for the largest icon the site itself declares (apple-touch-icon or sized icons)
     const declared: string[] = [];
     if (full) {
       for (const home of [`https://${host}/`, `https://www.${host}/`]) {
@@ -1153,8 +1164,8 @@ export function createApp() {
             const rel = (tag.match(/rel=["']([^"']+)["']/i) || [])[1]?.toLowerCase() || "";
             const href = (tag.match(/href=["']([^"']+)["']/i) || [])[1];
             if (!href || !/(apple-touch-icon|icon)/.test(rel) || /mask-icon/.test(rel) || /\.svg(\?|$)/i.test(href)) continue;
-            const sz = parseInt((tag.match(/sizes=["'](\d+)x\d+["']/i) || [])[1] || (rel.includes("apple-touch") ? "180" : "32"), 10);
-            try { found.push({ url: new URL(href, r.url).toString(), size: sz }); } catch { /* bad href */ }
+            const size = parseInt((tag.match(/sizes=["'](\d+)x\d+["']/i) || [])[1] || (rel.includes("apple-touch") ? "180" : "32"), 10);
+            try { found.push({ url: new URL(href, r.url).toString(), size }); } catch { /* bad href */ }
           }
           found.sort((a, b) => b.size - a.size).filter((f) => f.size >= 96).forEach((f) => declared.push(f.url));
           if (declared.length) break;
@@ -1163,25 +1174,42 @@ export function createApp() {
     }
     const sources = [
       ...declared,
-      ...(full ? [`https://${host}/apple-touch-icon.png`, `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${host}&size=256`] : []),
+      ...(full ? [`https://${host}/apple-touch-icon.png`, `https://www.${host}/apple-touch-icon.png`, `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${host}&size=256`] : []),
       `https://www.google.com/s2/favicons?domain=${host}&sz=${sz}`,
-      `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico`,
+      `https://icons.duckduckgo.com/ip3/${host}.ico`,
     ];
+    let best: { type: string; body: Buffer; at: number; src?: string } | null = null;
+    let bestW = 0;
     for (const url of sources) {
       try {
         const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
         const type = r.headers.get("content-type") || "";
         if (!r.ok || !type.startsWith("image/")) continue;
         const body = Buffer.from(await r.arrayBuffer());
-        if (body.length < (full ? 600 : 120)) continue; // empty or tiny placeholder icon
-        const v = { type, body, at: Date.now() };
-        if (logoCache.size > 500) logoCache.clear();
-        logoCache.set(key, v);
-        return send(v);
+        if (body.length < 120) continue; // empty placeholder icon
+        const w = imageWidth(body) ?? 64;
+        if (!best || w > bestW) { best = { type, body, at: Date.now(), src: url }; bestW = w; }
+        if (!full || w >= 96) break; // good enough
       } catch { /* try the next source */ }
     }
-    res.set("Cache-Control", "public, max-age=3600");
-    res.status(404).end();
+    if (best) {
+      if (logoCache.size > 500) logoCache.clear();
+      logoCache.set(key, best);
+    }
+    return best;
+  }
+
+  app.get("/api/logo", async (req, res) => {
+    const domain = String(req.query.domain || "").toLowerCase().trim();
+    const sz = [32, 64, 128].includes(Number(req.query.sz)) ? Number(req.query.sz) : 128;
+    const full = req.query.full === "1";
+    if (!/^[a-z0-9][a-z0-9.-]{1,80}\.[a-z]{2,24}$/.test(domain)) return res.status(400).end();
+    const v = await resolveLogo(domain, sz, full);
+    if (!v) { res.set("Cache-Control", "public, max-age=3600"); return res.status(404).end(); }
+    res.set("Content-Type", v.type);
+    res.set("X-Logo-Width", String(imageWidth(v.body) ?? ""));
+    res.set("Cache-Control", "public, max-age=604800, s-maxage=2592000, stale-while-revalidate=86400");
+    res.send(v.body);
   });
 
   app.get("/api/stock/bulk-quotes", async (req, res) => {
