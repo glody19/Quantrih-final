@@ -167,7 +167,8 @@ function AppContent() {
       <main className={cn(
         "flex-1 w-full mx-auto flex flex-col",
         currentPage === "auth" || currentPage === "home" ? "pt-0" : "pt-4 lg:pt-6",
-        TOOL_PAGES.has(currentPage) && "tool-page"
+        TOOL_PAGES.has(currentPage) && "tool-page",
+        currentPage === "auth" && "no-zoom"
       )}>
         <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center"><span className="w-8 h-8 rounded-full border-2 border-pv-blue/20 border-t-pv-blue animate-spin" /></div>}>
         <Routes>

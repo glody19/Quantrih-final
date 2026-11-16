@@ -206,7 +206,7 @@ export function Header({
           {/* User Profile / Sign In Dropdown */}
           <div className="relative z-50">
             <button
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              onClick={() => (user ? setUserMenuOpen(!userMenuOpen) : onPageChange("auth"))}
               className={cn(
                 "pl-1 pr-2 py-1 h-8 lg:h-10 flex items-center gap-1.5 border border-transparent bg-surface hover:bg-surface-2 transition-all rounded-xl shadow-sm",
                 userMenuOpen && "border-blue-500/50 shadow-[0_0_15px_rgba(37,99,235,0.15)]"
@@ -228,7 +228,7 @@ export function Header({
               <span className="text-[10px] lg:text-[11px] font-bold text-text max-w-[60px] lg:max-w-[100px] truncate hidden sm:block">
                 {user ? (firestoreName || user.displayName || user.email?.split("@")[0]) : t("header.login")}
               </span>
-              <ChevronDown size={12} className={cn("text-text-3 transition-transform duration-200", userMenuOpen && "rotate-180 text-blue-500")} />
+              {user && <ChevronDown size={12} className={cn("text-text-3 transition-transform duration-200", userMenuOpen && "rotate-180 text-blue-500")} />}
             </button>
 
             {/* Backdrop click listener to close dropdown */}

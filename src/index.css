@@ -392,7 +392,7 @@ html.phone-desktop header .h-\[calc\(100dvh-84px\)\] { height: calc(100dvh / var
 /* Desktop and tablet: page content and footer shown at 80%, the top header stays at full size.
    Phones keep their own scaling (html.phone-desktop). */
 @media (min-width: 768px) {
-  html:not(.phone-desktop) main,
+  html:not(.phone-desktop) main:not(.no-zoom),
   html:not(.phone-desktop) footer { zoom: 0.8; }
   /* the hero still fills the whole screen once zoomed out */
   html:not(.phone-desktop) main .min-h-\[100svh\] { min-height: calc(100svh / 0.8); }
