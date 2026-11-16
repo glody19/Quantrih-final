@@ -78,8 +78,8 @@ function render(route: SeoRoute): string {
             "@type": "VideoObject",
             name: "Quantrih portfolio backtest demo",
             description: "Running a portfolio backtest on Quantrih and reading the results: summary, growth, risk metrics and drawdowns.",
-            thumbnailUrl: `${SITE_URL}/media/quantrih-demo-poster.jpg`,
-            contentUrl: `${SITE_URL}/media/quantrih-demo.mp4`,
+            thumbnailUrl: `${SITE_URL}/media/demo-desktop-poster.jpg`,
+            contentUrl: `${SITE_URL}/media/demo-desktop.mp4`,
             uploadDate: "2026-11-10",
             duration: "PT12S",
           }]
@@ -136,10 +136,10 @@ const urlEntry = (r: SeoRoute) => {
   const video = r.path === "/"
     ? `
     <video:video>
-      <video:thumbnail_loc>${SITE_URL}/media/quantrih-demo-poster.jpg</video:thumbnail_loc>
+      <video:thumbnail_loc>${SITE_URL}/media/demo-desktop-poster.jpg</video:thumbnail_loc>
       <video:title>Quantrih portfolio backtest demo</video:title>
       <video:description>Running a portfolio backtest on Quantrih and reading the results: summary, growth, risk metrics and drawdowns.</video:description>
-      <video:content_loc>${SITE_URL}/media/quantrih-demo.mp4</video:content_loc>
+      <video:content_loc>${SITE_URL}/media/demo-desktop.mp4</video:content_loc>
       <video:duration>12</video:duration>
       <video:family_friendly>yes</video:family_friendly>
     </video:video>`

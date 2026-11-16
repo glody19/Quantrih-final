@@ -77,9 +77,9 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="relative overflow-hidden rounded-2xl p-3 sm:p-5 md:p-6 text-text border border-border bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.25)]"
+            className="relative overflow-hidden rounded-2xl p-3 sm:p-5 md:p-6 text-text bg-white shadow-[0_12px_40px_-24px_rgba(15,23,42,0.25)]"
     >
-      <h3 className="relative text-center text-xl md:text-2xl font-semibold tracking-tight text-text mb-4 [perspective:600px]">
+      <h3 className="relative text-center text-[19px] md:text-[21px] font-semibold tracking-tight text-text mb-3 [perspective:600px]">
         {title.split(" ").map((w, i) => (
           <React.Fragment key={i}>{i > 0 && " "}<motion.span
             className="inline-block"
@@ -129,7 +129,7 @@ export function PerformanceHeatmap({ title, firstCol, rows, perf, note }: { titl
                           <Bar v={v} maxAbs={maxAbs[k]} inView={inView} delay={delay} />
                           {/* only the figure moves: flies in from one side, zooms, then blinks once settled */}
                           <motion.span
-                            className={cn("relative z-10 flex h-full items-center justify-center tabular-nums font-mono text-[13px] sm:text-[14px] font-bold", !isNum(v) ? "text-text-4" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}
+                            className={cn("relative z-10 flex h-full items-center justify-center tabular-nums text-[12.5px] sm:text-[13.5px] font-bold", !isNum(v) ? "text-text-4" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}
                             initial={{ opacity: 0, scale: 0.3, ...FROM[(i + col) % 4] }}
                             animate={inView ? { opacity: [0, 1, 1, 0.35, 1], scale: [0.3, 1.25, 1, 1, 1], x: 0, y: 0 } : {}}
                             transition={{ duration: 2.6, delay, times: [0, 0.3, 0.45, 0.8, 1], ease: "easeOut" }}

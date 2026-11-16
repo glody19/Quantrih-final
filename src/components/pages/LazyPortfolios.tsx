@@ -168,7 +168,7 @@ function Detail({ p, s, lang, onClose, onNavigate, showInvest = true }: { p: Mod
  * page: full page. embedded: same table inside the Market page; a click opens the details under the row.
  * home: full table on the home page; a click goes to the Market page with that portfolio opened.
  */
-export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: (page: string) => void; variant?: "page" | "embedded" | "home" }) {
+export function LazyPortfolios({ onNavigate, variant = "page", bare = false }: { onNavigate?: (page: string) => void; variant?: "page" | "embedded" | "home"; bare?: boolean }) {
   const home = variant === "home";
   const { language } = useTranslation();
   const lang: "en" | "fr" = language === "fr" ? "fr" : "en";
@@ -196,7 +196,7 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
 
   return (
     <div id="lazy-portfolios" className={variant === "page" ? "page-container pb-24 pt-6" : "w-full scroll-mt-24"}>
-      {home ? (
+      {bare ? null : home ? (
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-semibold tracking-tight text-text">{t.title}</h2>
           <span className="block mx-auto mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]" />
@@ -216,8 +216,8 @@ export function LazyPortfolios({ onNavigate, variant = "page" }: { onNavigate?: 
         </p>
       )}
 
-      <div ref={ref} className={cn("overflow-x-auto rounded-3xl border border-border bg-white shadow-[0_20px_50px_-35px_rgba(17,17,24,0.4)]", home ? "mt-10" : "mt-6")}>
-        <table className="w-full min-w-[620px] md:min-w-[760px] text-[14px] sm:text-[15px]">
+      <div ref={ref} className={cn("overflow-x-auto rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)]", bare ? "mt-0" : home ? "mt-6" : "mt-6")}>
+        <table className={cn("w-full", home ? "min-w-[520px] text-[13px]" : "min-w-[620px] md:min-w-[760px] text-[14px] sm:text-[15px]")}>
           <thead>
             <tr className="text-sm text-text-3 border-b border-border">
               <th className="sticky left-0 z-10 bg-white text-left font-medium px-3 sm:px-6 py-3 sm:py-4">{t.portfolio}</th>

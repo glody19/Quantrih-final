@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { animate, motion, useInView } from "motion/react";
 import { cn } from "../../lib/utils";
 
-// About 90 liquid US-listed ETFs: world, countries, sectors, themes, commodities and bonds. The table keeps the 30 best.
-const TOP_N = 30;
+// About 90 liquid US-listed ETFs: world, countries, sectors, themes, commodities and bonds. The table keeps the 10 best.
+const TOP_N = 10;
 const UNIVERSE: { s: string; n: string; tag: { en: string; fr: string } }[] = [
   { s: "SPY", n: "SPDR S&P 500", tag: { en: "US large caps", fr: "Grandes caps US" } },
   { s: "QQQ", n: "Invesco QQQ (Nasdaq 100)", tag: { en: "US tech", fr: "Tech US" } },
@@ -146,7 +146,7 @@ export function TopEtfs({ fr }: { fr: boolean }) {
   const loading = Object.keys(perf).length === 0;
 
   return (
-    <div ref={ref} className="rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_24px_60px_-40px_rgba(6,18,27,0.45)] p-3 sm:p-5 md:p-7">
+    <div ref={ref} className="rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)] p-3 sm:p-5">
       {asOf && (
         <p className="mb-3 text-right text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">
           {fr ? "Dernière mise à jour" : "Last update"}: {new Date(asOf).toLocaleDateString(fr ? "fr-BE" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}
@@ -181,7 +181,7 @@ export function TopEtfs({ fr }: { fr: boolean }) {
                       const delay = col * 0.6 + Math.min(i, 12) * 0.05;
                       return (
                         <td key={k} className="px-0.5 sm:px-1.5">
-                          <div className={cn("relative mx-auto max-w-[118px] h-8 sm:h-9 rounded-md overflow-hidden", sort === k ? "bg-[#1B3F72]/[0.06]" : "bg-slate-50")}>
+                          <div className={cn("relative mx-auto max-w-[118px] h-7 sm:h-8 rounded-md overflow-hidden", sort === k ? "bg-[#1B3F72]/[0.06]" : "bg-slate-50")}>
                             {isNum(v) && (
                               <motion.span
                                 className="absolute inset-y-0 rounded-md"
@@ -191,7 +191,7 @@ export function TopEtfs({ fr }: { fr: boolean }) {
                               />
                             )}
                             <motion.span
-                              className={cn("relative z-10 flex h-full items-center justify-center font-mono tabular-nums text-[13px] sm:text-[14px] font-bold", !isNum(v) ? "text-slate-300" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}
+                              className={cn("relative z-10 flex h-full items-center justify-center tabular-nums text-[12px] sm:text-[13px] font-semibold", !isNum(v) ? "text-slate-300" : v >= 0 ? "text-emerald-700" : "text-[#9F1239]")}
                               initial={{ opacity: 0, scale: 0.3, ...FROM[(i + col) % 4] }}
                               animate={inView ? { opacity: [0, 1, 1, 0.35, 1], scale: [0.3, 1.25, 1, 1, 1], x: 0, y: 0 } : {}}
                               transition={{ duration: 2.6, delay, times: [0, 0.3, 0.45, 0.8, 1], ease: "easeOut" }}

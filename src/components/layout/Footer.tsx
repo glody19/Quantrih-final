@@ -60,7 +60,7 @@ export function Footer({ onNavigate }: FooterProps) {
     <footer
       className="w-full text-slate-300 font-sans"
       // same dark grid as the support section above it on the home page, so the two read as one block
-      style={{ backgroundColor: "#0A1E2D", backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "64px 64px" }}
+      style={{ backgroundColor: "#040A10", backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "64px 64px" }}
     >
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-14 grid gap-12 lg:grid-cols-[1.3fr_2.7fr]">
         <div>

@@ -380,3 +380,11 @@ html.phone-desktop body { font-size: 19px; }
 html.phone-desktop header { transform: scale(var(--hdr, 1.5)); transform-origin: top left; width: calc(100% / var(--hdr, 1.5)) !important; }
 html.phone-desktop header.sticky { margin-bottom: calc(84px * (var(--hdr, 1.5) - 1)); } /* room for the enlarged bar on pages where it is in the flow */
 html.phone-desktop header .h-\[calc\(100dvh-84px\)\] { height: calc(100dvh / var(--hdr, 1.5) - 84px); }
+
+/* Home page tables: one typeface everywhere (figures in the same font as the labels, aligned digits) */
+.home-page table .font-mono,
+.home-page table .font-mono * { font-family: var(--font-sans); font-variant-numeric: tabular-nums; }
+
+/* Backtesting pages: no frame line around tables and cards, a soft shadow instead */
+.tool-page div.border,
+.tool-page div.border-2 { border-color: transparent !important; box-shadow: 0 16px 40px -32px rgba(6, 18, 27, 0.35); }

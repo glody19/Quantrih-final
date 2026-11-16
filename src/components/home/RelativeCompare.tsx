@@ -24,7 +24,7 @@ const PERIODS = [
 ] as const;
 
 type Pt = { t: number; v: number; c: number }; // time, % since start, close price
-const W = 1000, H = 380, PAD = { l: 8, r: 92, t: 18, b: 26 };
+const W = 1000, H = 300, PAD = { l: 8, r: 92, t: 18, b: 26 };
 
 /**
  * Home page version of the Market "relative performance" chart: every line starts at 0% and
@@ -131,7 +131,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
   const track = (clientX: number, el: Element) => { const r = el.getBoundingClientRect(); const x = ((clientX - r.left) / r.width) * W; setHover(x >= PAD.l && x <= W - PAD.r ? x : null); };
 
   return (
-    <div ref={ref} className="rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_70px_-45px_rgba(6,18,27,0.45)] p-3.5 sm:p-5 md:p-8">
+    <div ref={ref} className="rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)] p-3.5 sm:p-5 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
         <div className="flex flex-wrap gap-2">
           {SERIES.filter((x) => data[x.s]).map((x) => {
@@ -162,7 +162,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
       <div>
         <div className="relative">
           {!geo ? (
-            <div className="aspect-[1000/380] rounded-2xl bg-slate-50 animate-pulse" />
+            <div className="aspect-[1000/300] rounded-2xl bg-slate-50 animate-pulse" />
           ) : (
             <svg
               viewBox={`0 0 ${W} ${H}`}
@@ -231,8 +231,8 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
           <span className={cn("font-semibold uppercase tracking-[0.14em]", hoverLabel ? "text-[#1B3F72]" : "text-slate-500")}>{hoverLabel ? `${fr ? "Au" : "On"} ${hoverLabel}` : (fr ? "Aujourd'hui" : "Today")}</span>
           <span className="text-slate-400 hidden sm:inline">{fr ? "Passez la souris sur le graphique pour voir les prix à une date" : "Move over the chart to see prices on any date"}</span>
         </div>
-        <div className="mt-3 overflow-x-auto rounded-2xl border border-slate-200">
-          <table className="w-full min-w-[980px] text-[14px]">
+        <div className="mt-3 overflow-x-auto rounded-2xl bg-slate-50/60">
+          <table className="w-full min-w-[900px] text-[13px]">
             <thead className="bg-slate-50 text-[11px] uppercase tracking-[0.12em] text-slate-500">
               <tr>
                 <th className="sticky left-0 z-10 bg-slate-50 text-left font-semibold px-4 py-3">{fr ? "Actif" : "Asset"}</th>

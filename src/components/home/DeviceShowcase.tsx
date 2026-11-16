@@ -29,64 +29,6 @@ function MiniNav({ pills = 4 }: { pills?: number }) {
   );
 }
 
-// Deterministic pseudo-random paths for the Monte Carlo fan (same drawing on every visit)
-const MC_PATHS = Array.from({ length: 14 }, (_, k) => {
-  let v = 70, seed = k * 9301 + 49297;
-  const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
-  const pts: string[] = [];
-  for (let i = 0; i <= 30; i++) { pts.push(`${(i / 30) * 200},${v.toFixed(1)}`); v += (rand() - 0.47) * 9 - 0.5; v = Math.max(8, Math.min(118, v)); }
-  return "M" + pts.join(" L");
-});
-
-/** Tablet screen, styled after the Monte Carlo page: thousands of simulated futures fanning out. */
-function MonteCarloScreen({ fr, run }: { fr: boolean; run: boolean }) {
-  return (
-    <div className="absolute inset-0 bg-white flex flex-col text-slate-900">
-      <MiniNav />
-      <div className="px-[6%] pt-[5%] flex-1 flex flex-col gap-[3.5%]">
-        <div>
-          <p className="text-[5.5px] font-semibold tracking-[0.2em] text-[#1B3F72]">STOCHASTIC ENGINE</p>
-          <p className="text-[13px] font-semibold tracking-tight">Monte Carlo</p>
-        </div>
-        <div className="rounded-lg border border-slate-200 p-[4%]">
-          <p className="text-[6px] font-semibold text-slate-500 mb-1">{fr ? "Évolution simulée du capital" : "Simulated portfolio value"}</p>
-          <svg viewBox="0 0 200 110" className="w-full">
-            <defs>
-              <linearGradient id="mcOuter" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#3D6FB0" stopOpacity="0.18" /><stop offset="1" stopColor="#3D6FB0" stopOpacity="0.05" /></linearGradient>
-            </defs>
-            {[25, 50, 75, 100].map((y) => <line key={y} x1="0" x2="200" y1={y} y2={y} stroke="#F1F5F9" />)}
-            <motion.path d="M0 70 C60 40 120 12 200 2 L200 118 C120 112 60 96 0 70 Z" fill="url(#mcOuter)" initial={{ opacity: 0 }} animate={run ? { opacity: 1 } : undefined} transition={{ duration: 1, delay: 2.2 }} />
-            <motion.path d="M0 70 C60 52 120 38 200 30 L200 92 C120 90 60 84 0 70 Z" fill="#3D6FB0" fillOpacity="0.16" initial={{ opacity: 0 }} animate={run ? { opacity: 1 } : undefined} transition={{ duration: 1, delay: 2.5 }} />
-            {MC_PATHS.map((d, i) => (
-              <motion.path key={i} d={d} fill="none" stroke={i % 4 === 0 ? "#18B8A0" : i % 4 === 1 ? "#E0B341" : "#8FB3DD"} strokeWidth="0.8" strokeOpacity="0.75"
-                initial={{ pathLength: 0 }} animate={run ? { pathLength: [0, 1, 1] } : undefined} transition={{ duration: 3.4, times: [0, 0.6, 1], delay: 2 + i * 0.08, repeat: Infinity, repeatDelay: 1.2 }} />
-            ))}
-            <motion.path d="M0 70 C60 58 120 50 200 44" fill="none" stroke="#1B3F72" strokeWidth="2" strokeLinecap="round" initial={{ pathLength: 0 }} animate={run ? { pathLength: 1 } : undefined} transition={{ duration: 1.6, delay: 2.4 }} />
-          </svg>
-        </div>
-        <div className="grid grid-cols-3 gap-[4%]">
-          {[[fr ? "Succès" : "Success", "#18B8A0", 0.86], [fr ? "Médiane" : "Median", "#1B3F72", 0.62], [fr ? "Pire 10 %" : "Worst 10%", "#9F1239", 0.3]].map(([label, c, k], i) => (
-            <div key={label as string} className="rounded-md border border-slate-200 p-[8%]">
-              <p className="text-[5.5px] text-slate-500">{label}</p>
-              <div className="mt-1 h-[4px] rounded-full bg-slate-100 overflow-hidden">
-                <motion.div className="h-full rounded-full" style={{ background: c as string, transformOrigin: "left" }} initial={{ scaleX: 0 }} animate={run ? { scaleX: k as number } : undefined} transition={{ duration: 1, delay: 2.6 + i * 0.15 }} />
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="rounded-lg border border-slate-200 p-[4%] h-[17%] flex flex-col">
-          <p className="text-[6px] font-semibold text-slate-500 mb-1">{fr ? "Répartition des résultats" : "Distribution of outcomes"}</p>
-          <div className="flex-1 flex items-end gap-[3%]">
-            {[12, 22, 38, 58, 80, 96, 84, 62, 40, 24, 12, 6].map((h, i) => (
-              <motion.span key={i} className="flex-1 rounded-t-[2px]" style={{ background: i < 3 ? "#9F123966" : "#3D6FB0", transformOrigin: "bottom" }} initial={{ scaleY: 0, height: `${h}%` }} animate={run ? { scaleY: 1 } : undefined} transition={{ duration: 0.6, delay: 2.8 + i * 0.05 }} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /** Phone screen, styled after a stock analysis on the Market page. */
 function MarketScreen({ fr, run }: { fr: boolean; run: boolean }) {
   const metrics = [["P/E", 0.55], [fr ? "Marge nette" : "Net margin", 0.72], ["ROE", 0.8], [fr ? "Dette" : "Debt", 0.35], [fr ? "Dividende" : "Dividend", 0.25], ["Beta", 0.6]] as const;
@@ -135,12 +77,12 @@ function MarketScreen({ fr, run }: { fr: boolean; run: boolean }) {
 }
 
 /**
- * Tablet (Monte Carlo) on the left, desktop display (backtest recording) in the middle, smartphone
+ * Tablet and desktop display (real recordings of a backtest) and smartphone
  * (stock analysis) on the right. The display rises first, the tablet
  * turns in, the phone spins in, the screens power on, then the display moves forward so the backtest
  * can be read. Everything ends flat (no lasting 3D tilt) so the screens stay sharp.
  */
-export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = false }: { videoMp4: string; videoWebm: string; poster: string; desktopAlt: string; fr?: boolean }) {
+export function DeviceShowcase({ videoMp4, videoWebm, poster, tabletMp4, tabletWebm, tabletPoster, desktopAlt, fr = false }: { videoMp4: string; videoWebm: string; poster: string; tabletMp4: string; tabletWebm: string; tabletPoster: string; desktopAlt: string; fr?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const p = useSpring(scrollYProgress, { stiffness: 80, damping: 24, mass: 0.7 });
@@ -151,7 +93,7 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = f
   return (
     <div ref={ref} className="relative w-full max-w-[1240px] mx-auto select-none">
       <div className="relative z-10 flex items-end justify-center gap-[3.5%] pb-6 [perspective:1600px]">
-        {/* ── Tablet on its stand: Monte Carlo ── */}
+        {/* ── Tablet on its stand: backtest recording in the tablet layout ── */}
         <motion.div style={{ y: sideY }} className="relative w-[20%] hidden md:block z-10">
           <motion.div
             initial={{ opacity: 0, x: -260, rotateY: 75, rotateZ: -14, scale: 0.7 }}
@@ -161,7 +103,11 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, desktopAlt, fr = f
             <div className="relative rounded-[22px] p-[2.5px] bg-[linear-gradient(160deg,#F5F6F8,#A3A9B2)] shadow-[0_40px_70px_-30px_rgba(15,23,42,0.7)]">
               <div className="relative rounded-[20px] bg-[#07080C] p-[4%]">
                 <div className="relative overflow-hidden rounded-[12px] bg-white aspect-[3/4]">
-                  <MonteCarloScreen fr={fr} run={run} />
+                  {/* real recording of a backtest in the tablet layout */}
+                  <video className="absolute inset-0 w-full h-full object-cover object-top" autoPlay muted loop playsInline preload="metadata" poster={tabletPoster} aria-label={desktopAlt}>
+                    <source src={tabletWebm} type="video/webm" />
+                    <source src={tabletMp4} type="video/mp4" />
+                  </video>
                   <PowerOn delay={TABLET_IN + 0.8} run={run} />
                   <Glare />
                 </div>

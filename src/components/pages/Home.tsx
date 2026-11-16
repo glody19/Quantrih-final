@@ -8,6 +8,8 @@ import { DeviceShowcase } from "../home/DeviceShowcase";
 import { PerformanceHeatmap, type HeatRow } from "../home/PerformanceHeatmap";
 import { PlatformsMarquee } from "../home/PlatformsMarquee";
 import { TopEtfs } from "../home/TopEtfs";
+import { IpoNews } from "../home/IpoNews";
+import { FiberBackground } from "../home/FiberBackground";
 import { LazyPortfolios } from "./LazyPortfolios";
 import { RelativeCompare } from "../home/RelativeCompare";
 
@@ -27,9 +29,12 @@ const NAVY_TRIPLE: React.CSSProperties = {
     "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(180deg, #0A1E2D 0%, #14466B 50%, #0A1E2D 100%)",
   backgroundSize: "64px 64px, 64px 64px, 100% 100%",
 };
+// White sections with a light navy tint
+const TINT: React.CSSProperties = { background: "linear-gradient(180deg, #F3F7FC 0%, #EAF1F9 100%)" };
+const SOFT_WHITE: React.CSSProperties = { background: "linear-gradient(180deg, #FBFCFE 0%, #F4F8FC 100%)" };
 // White with large rectangular cells
 const LARGE_GRID: React.CSSProperties = {
-  backgroundColor: "#FFFFFF",
+  backgroundColor: "#F5F8FC",
   backgroundImage:
     "linear-gradient(to right, rgba(15,23,42,0.07) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,23,42,0.07) 1px, transparent 1px)",
   backgroundSize: "112px 112px",
@@ -114,58 +119,33 @@ function ZoomSection({ children, className, style, id }: { children: React.React
   );
 }
 
-/** Card that tilts in 3D towards the cursor. */
-function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const rx = useSpring(useTransform(my, [-0.5, 0.5], [7, -7]), { stiffness: 200, damping: 18 });
-  const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-9, 9]), { stiffness: 200, damping: 18 });
+
+
+/** Section title: words rise one by one, then an underline draws itself. */
+function SectionTitle({ text, sub, dark = false, align = "center" }: { text: string; sub?: string; dark?: boolean; align?: "center" | "left" }) {
+  const center = align === "center";
   return (
-    <div className="[perspective:1200px] h-full">
-      <motion.div
-        onMouseMove={(e) => {
-          const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-          mx.set((e.clientX - r.left) / r.width - 0.5);
-          my.set((e.clientY - r.top) / r.height - 0.5);
-        }}
-        onMouseLeave={() => {
-          mx.set(0);
-          my.set(0);
-        }}
-        whileHover={{ scale: 1.03 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        style={{ rotateX: rx, rotateY: ry, transformStyle: "preserve-3d" }}
-        className={className}
-      >
-        {children}
-      </motion.div>
+    <div className={`${center ? "text-center mx-auto" : "text-left"} max-w-3xl mb-10 [perspective:700px]`}>
+      <h3 className={`text-[26px] md:text-[34px] leading-tight font-semibold tracking-tight ${dark ? "text-white" : "text-text"}`}>
+        {text.split(" ").map((w, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && " "}
+            <motion.span className="inline-block" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: i * 0.08 }}>{w}</motion.span>
+          </React.Fragment>
+        ))}
+      </h3>
+      <motion.span className={`block mt-3 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6] ${center ? "mx-auto" : ""}`} style={{ transformOrigin: center ? "center" : "left" }} initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.35 }} />
+      {sub && <motion.p className={`mt-4 text-[15px] md:text-[17px] leading-relaxed ${dark ? "text-white/70" : "text-text-2"}`} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 1 }}>{sub}</motion.p>}
     </div>
   );
 }
 
-/** Grows as it reaches the middle of the screen and shrinks as it leaves, smoothed by a spring. */
-function ScrollZoom({ children, amount = 0.08 }: { children: React.ReactNode; amount?: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 70, damping: 22 });
-  const scale = useTransform(smooth, [0, 0.5, 1], [1 - amount, 1 + amount / 3, 1 - amount]);
-  return <motion.div ref={ref} style={{ scale }} className="will-change-transform">{children}</motion.div>;
-}
-
-/** Section title: words rise one by one, then an underline draws itself. */
-function SectionTitle({ text, sub, dark = false }: { text: string; sub?: string; dark?: boolean }) {
+/** Smaller title for a column inside a section. */
+function ColumnTitle({ text, sub }: { text: string; sub: string }) {
   return (
-    <div className="text-center max-w-3xl mx-auto mb-12 [perspective:700px]">
-      <h3 className={`text-3xl md:text-5xl font-semibold tracking-tight ${dark ? "text-white" : "text-text"}`}>
-        {text.split(" ").map((w, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && " "}
-            <motion.span className="inline-block" initial={{ opacity: 0, y: 40, rotateX: -80 }} whileInView={{ opacity: 1, y: 0, rotateX: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ type: "spring", stiffness: 110, damping: 14, delay: i * 0.1 }}>{w}</motion.span>
-          </React.Fragment>
-        ))}
-      </h3>
-      <motion.span className="block mx-auto mt-4 h-[3px] w-20 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.35 }} />
-      {sub && <motion.p className={`mt-5 text-base md:text-xl leading-relaxed ${dark ? "text-white/70" : "text-text-2"}`} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 1.1 }}>{sub}</motion.p>}
+    <div className="mb-4">
+      <motion.h3 initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-[20px] md:text-[22px] font-semibold tracking-tight text-text">{text}</motion.h3>
+      <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.6 }} className="mt-1.5 text-[14px] text-text-2 leading-relaxed">{sub}</motion.p>
     </div>
   );
 }
@@ -253,7 +233,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
   ];
 
   return (
-    <div className="flex flex-col w-full overflow-hidden text-text">
+    <div className="home-page flex flex-col w-full overflow-hidden text-text">
       {/* ── Hero: original colour plate ── */}
       <div ref={heroRef} className="relative w-full min-h-[100svh] flex items-center" style={DARK_GRID}>
         <div
@@ -298,78 +278,71 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       {/* ── Scrolling row: famous allocations YTD ── */}
       <MarketTickers fr={fr} />
 
-      {/* ── Why backtest: explanation first, then the tablet, desktop and phone demo (white, large squares) ── */}
-      <ZoomSection style={LARGE_GRID} className="relative w-full pt-24 pb-28 overflow-hidden">
-        <div className="px-6">
-          <SectionTitle text={t("home.why_backtest.title")} sub={t("home.why_backtest.desc")} />
-        </div>
-        <div className="w-full px-4 sm:px-6 lg:px-24 mt-16">
+      {/* ── Why backtest: the three devices on the left, the explanation on the right ── */}
+      <ZoomSection style={LARGE_GRID} className="relative w-full py-20 lg:py-24 overflow-hidden">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 grid lg:grid-cols-[1.45fr_1fr] gap-10 lg:gap-14 items-center">
           <DeviceShowcase
             fr={fr}
-            videoMp4="/media/quantrih-demo.mp4"
-            videoWebm="/media/quantrih-demo.webm"
-            poster="/media/quantrih-demo-poster.jpg"
+            videoMp4="/media/demo-desktop.mp4"
+            videoWebm="/media/demo-desktop.webm"
+            poster="/media/demo-desktop-poster.jpg"
+            tabletMp4="/media/demo-tablet.mp4"
+            tabletWebm="/media/demo-tablet.webm"
+            tabletPoster="/media/demo-tablet-poster.jpg"
             desktopAlt={fr ? "Démonstration : lancement d'un backtest Quantrih et lecture des résultats" : "Demo: running a Quantrih backtest and reading the results"}
           />
-        </div>
-      </ZoomSection>
-
-      {/* ── Tools & strategies: white background, navy cards with blue titles ── */}
-      <ZoomSection className="w-full py-24 lg:py-28 bg-white">
-        <div className="px-6 lg:px-24">
-          <SectionTitle text={t("home.tools.title")} sub={t("home.tools.subtitle")} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5 w-full max-w-[72rem] mx-auto">
-            {pages.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 50, scale: 0.94 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.7, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                className="h-full"
-              >
-                <TiltCard className="group h-full rounded-[1.75rem] px-6 py-6 lg:px-8 lg:py-7 flex flex-col items-center text-center bg-[#111A30] border border-white/[0.08] shadow-[0_30px_60px_-30px_rgba(15,23,42,0.75)] hover:border-[#3B82F6]/50 transition-colors">
-                  <motion.h4
-                    className="text-xl lg:text-2xl font-extrabold tracking-tight uppercase font-sans text-[#3B82F6] overflow-hidden"
-                    style={{ transform: "translateZ(30px)" }}
-                    initial="hidden"
-                    whileInView="shown"
-                    viewport={{ once: true }}
-                    transition={{ staggerChildren: 0.03, delayChildren: 0.25 + i * 0.12 }}
-                  >
-                    {p.title.split("").map((ch, k) => (
-                      <motion.span key={k} className="inline-block whitespace-pre" variants={{ hidden: { y: "110%", opacity: 0 }, shown: { y: 0, opacity: 1, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } } }}>{ch}</motion.span>
-                    ))}
-                  </motion.h4>
-                  <motion.p
-                    className="mt-3 text-slate-200 text-sm lg:text-[15px] leading-relaxed max-w-xl"
-                    style={{ transform: "translateZ(20px)" }}
-                    initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
-                    whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: 0.6 + i * 0.12 }}
-                  >
-                    {p.desc}
-                  </motion.p>
-                  <motion.div className="mt-auto pt-5 flex justify-center" style={{ transform: "translateZ(40px)" }} initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 200, damping: 16, delay: 0.9 + i * 0.12 }}>
-                    <button
-                      onClick={() => onGoPage(p.id)}
-                      className="px-7 py-2.5 rounded-full text-sm font-semibold text-slate-100 bg-[#1C2740] border border-white/10 hover:bg-[#3B82F6] hover:border-[#3B82F6] transition-all"
-                    >
-                      {p.cta}
-                    </button>
-                  </motion.div>
-                </TiltCard>
-              </motion.div>
-            ))}
+          <div>
+            <SectionTitle align="left" text={t("home.why_backtest.title")} sub={t("home.why_backtest.desc")} />
+            <ul className="-mt-4 grid gap-3">
+              {(fr
+                ? [["Données réelles", "Cours ajustés des dividendes depuis plus de 30 ans."], ["Risques visibles", "Pertes maximales, volatilité, années difficiles."], ["Comparaison", "Jusqu'à plusieurs portefeuilles face à un indice de référence."]]
+                : [["Real data", "Dividend-adjusted prices going back more than 30 years."], ["Risks in plain sight", "Worst falls, volatility and difficult years."], ["Side by side", "Several portfolios against a benchmark."]]
+              ).map(([h, d], i) => (
+                <motion.li key={h} initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 1.6 + i * 0.25 }} className="flex gap-3">
+                  <span className="mt-1 w-5 h-5 shrink-0 rounded-full bg-[#1B3F72] text-white text-[11px] font-bold flex items-center justify-center">{i + 1}</span>
+                  <span className="text-[15px] leading-relaxed text-text-2"><b className="text-text">{h}.</b> {d}</span>
+                </motion.li>
+              ))}
+            </ul>
+            <motion.button initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 2.4 }}
+              onClick={() => onGoPage("portfolio-backtest")} className="mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-pv-blue hover:bg-pv-blue-d text-white text-sm font-semibold">
+              {fr ? "Lancer un backtest" : "Run a backtest"} <ArrowRight size={15} />
+            </motion.button>
           </div>
         </div>
       </ZoomSection>
 
-      {/* ── Asset classes & sectors (white) ── */}
-      <ZoomSection className="relative w-full pt-20 pb-20 bg-white">
+      {/* ── Tools & strategies: four light cards on the fibre background ── */}
+      <section className="relative w-full py-20 lg:py-24 overflow-hidden" style={TINT}>
+        <FiberBackground light side="right" className="opacity-60" />
+        <div className="relative px-6 lg:px-16">
+          <SectionTitle text={t("home.tools.title")} sub={t("home.tools.subtitle")} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full max-w-[86rem] mx-auto">
+            {pages.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full rounded-[1.5rem] bg-white/85 backdrop-blur-sm px-6 py-6 flex flex-col items-center text-center shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)]"
+              >
+                <span className="text-[12px] font-semibold tracking-[0.18em] text-[#3D6FB0]">0{i + 1}</span>
+                <h4 className="mt-2 text-[17px] font-bold tracking-tight uppercase text-[#1B3F72]">{p.title}</h4>
+                <p className="mt-3 text-[14px] text-text-2 leading-relaxed">{p.desc}</p>
+                <button onClick={() => onGoPage(p.id)} className="mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1B3F72] hover:gap-2.5 transition-all">
+                  {p.cta} <ArrowRight size={14} />
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Asset classes & sectors ── */}
+      <ZoomSection className="relative w-full pt-16 pb-16" style={SOFT_WHITE}>
         <div className="flex justify-center mb-8">
-          <div className="inline-flex p-1 rounded-full bg-white border border-border shadow-sm">
+          <div className="inline-flex p-1 rounded-full bg-white shadow-sm">
             {(["us", "eu"] as const).map((r) => (
               <button
                 key={r}
@@ -400,30 +373,47 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               : (fr ? "Secteurs du S&P 500 (ETF Select Sector SPDR). 3Y et 5Y annualisés." : "S&P 500 sectors (Select Sector SPDR ETFs). 3Y and 5Y annualized.")}
           />
         </div>
+      </ZoomSection>
 
-        {/* Best ETFs over 6 months, 1, 3 and 5 years */}
-        <div className="max-w-[1120px] mx-auto px-4 sm:px-6 lg:px-10 mt-20">
-          <SectionTitle
-            text={fr ? "Les 30 meilleurs ETF sur 12 mois" : "Best 30 ETF returns · last 12 months"}
-            sub={fr ? "Les ETF mondiaux les plus performants sur les 12 derniers mois, classés par rendement sur 1 an. Suivez les grands indices thématiques." : "Top performing global ETFs over the trailing 12 months, sorted by highest 1-year return. Track leading thematic indexes."}
-          />
-          <ScrollZoom><TopEtfs fr={fr} /></ScrollZoom>
-        </div>
-
-        {/* Lazy portfolios: who performed; a click opens the details on the Market page */}
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12 mt-16">
-          <ScrollZoom amount={0.05}><LazyPortfolios variant="home" onNavigate={onGoPage} /></ScrollZoom>
+      {/* ── Best 10 ETFs and lazy portfolios, side by side ── */}
+      <ZoomSection className="w-full py-16" style={TINT}>
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 grid xl:grid-cols-2 gap-8 items-start">
+          <div className="min-w-0">
+            <ColumnTitle
+              text={fr ? "Les 10 meilleurs ETF sur 12 mois" : "Best 10 ETF returns · last 12 months"}
+              sub={fr ? "Les ETF mondiaux les plus performants sur 12 mois, classés par rendement sur 1 an." : "Top performing global ETFs over the trailing 12 months, sorted by highest 1-year return."}
+            />
+            <TopEtfs fr={fr} />
+          </div>
+          <div className="min-w-0">
+            <ColumnTitle
+              text="Lazy portfolios"
+              sub={fr ? "Des allocations simples de quelques ETF, à rééquilibrer une à deux fois par an. Cliquez pour voir leur composition." : "Simple mixes of a few index ETFs, rebalanced once or twice a year. Click one to see what is inside."}
+            />
+            <LazyPortfolios variant="home" bare onNavigate={onGoPage} />
+          </div>
         </div>
       </ZoomSection>
 
-      {/* ── Relative performance of the big names (white) ── */}
-      <ZoomSection className="w-full pt-10 pb-24 bg-white">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-12">
+      {/* ── Relative performance of the big names ── */}
+      <ZoomSection className="w-full py-16" style={SOFT_WHITE}>
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-10">
           <SectionTitle
             text={fr ? "Performance relative comparée" : "Relative Performance Comparison"}
             sub={fr ? "Toutes les courbes partent de zéro le même jour : on voit d'un coup d'œil qui a le plus progressé." : "Every line starts at zero on the same day, so you can see at a glance who has gained the most."}
           />
           <RelativeCompare fr={fr} onOpen={() => onGoPage("market")} />
+        </div>
+      </ZoomSection>
+
+      {/* ── IPO news ── */}
+      <ZoomSection className="w-full py-16" style={TINT}>
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10">
+          <SectionTitle
+            text={fr ? "Actualités des introductions en bourse" : "IPO news"}
+            sub={fr ? "Les sociétés qui entrent en bourse ou s'y préparent, avec les derniers articles de la presse financière." : "Companies going public or getting ready to, with the latest articles from the financial press."}
+          />
+          <IpoNews fr={fr} />
         </div>
       </ZoomSection>
 
@@ -437,7 +427,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             </button>
           </motion.div>
         </div>
-        <ScrollZoom amount={0.12}><PlatformsMarquee fr={fr} /></ScrollZoom>
+        <PlatformsMarquee fr={fr} />
       </ZoomSection>
 
       <ZoomSection style={NAVY_TRIPLE} className="w-full px-6 lg:px-24 pt-20 pb-12">
