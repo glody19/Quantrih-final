@@ -100,9 +100,11 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
       const time = now / 1000;
       ctx.clearRect(0, 0, width, height);
 
-      const cx = width / 2, cy = height / 2;
-      const R = Math.min(width, height) * 0.35;
-      const fs = Math.min(1.15, Math.max(0.62, R / 210)); // digits and spikes scale with the sphere, so a small atom is not crowded
+      // the atom drifts slowly around the middle; done here (not with CSS) so every frame stays pixel sharp
+      const cx = width / 2 + width * 0.07 * Math.sin(time * 0.27) + width * 0.025 * Math.sin(time * 0.71 + 1);
+      const cy = height / 2 + height * 0.06 * Math.cos(time * 0.23) + height * 0.02 * Math.sin(time * 0.59 + 2);
+      const R = Math.min(width, height) * 0.4;
+      const fs = Math.min(1.35, Math.max(0.85, R / 200)); // digits and spikes scale with the sphere, so a small atom is not crowded
       const inner = R * 0.56;
       const speed = hoverRef.current ? 2.2 : 1;
       angleY += (0.0032 + burst * 0.02) * speed * dt;
@@ -158,7 +160,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
       ctx.textBaseline = "middle";
       for (let d = 0; d < DEPTH_LEVELS; d++) {
         const k = d / (DEPTH_LEVELS - 1); // 0 far .. 1 near
-        ctx.lineWidth = (0.6 + k * 1.9) * fs;
+        ctx.lineWidth = (0.8 + k * 1.9) * fs;
         for (let c = 0; c < 3; c++) {
           const seg = lineBuckets[d][c];
           if (!seg.length) continue;
@@ -167,7 +169,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
           for (let i = 0; i < seg.length; i += 4) { ctx.moveTo(seg[i], seg[i + 1]); ctx.lineTo(seg[i + 2], seg[i + 3]); }
           ctx.stroke();
         }
-        ctx.font = `500 ${((7 + k * 7) * fs).toFixed(1)}px "JetBrains Mono", ui-monospace, monospace`;
+        ctx.font = `600 ${((9 + k * 7) * fs).toFixed(1)}px "JetBrains Mono", ui-monospace, monospace`;
         for (let c = 0; c < 3; c++) {
           const items = textBuckets[d][c];
           if (!items.length) continue;

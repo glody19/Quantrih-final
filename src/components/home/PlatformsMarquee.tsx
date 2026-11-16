@@ -8,10 +8,10 @@ const MAX_ZOOM = 0.16; // the logo at the very centre is 16% larger
 function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
   return (
     <div className="shrink-0 w-[190px] flex flex-col items-center text-center" title={p.name}>
-      {/* the round is the platform's own colour, and its logo fills it edge to edge */}
+      {/* the round is the platform's own colour; the logo sits whole inside it, slightly inset so nothing is cut off */}
       <span data-zoom className="relative flex w-24 h-24 rounded-full ring-4 ring-white/10 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.7)] items-center justify-center text-3xl font-bold text-white overflow-hidden will-change-transform" style={{ background: p.color }}>
         {p.name.charAt(0)}
-        <img src={`/api/logo?domain=${p.logoDomain ?? p.domain}&sz=128&full=1&v=3`} alt={p.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer"
+        <img src={`/api/logo?domain=${p.logoDomain ?? p.domain}&sz=128&full=1&v=3`} alt={p.name} className="absolute inset-[11%] w-[78%] h-[78%] object-contain rounded-[18%]" loading="lazy" referrerPolicy="no-referrer"
           onError={(e) => { e.currentTarget.style.display = "none"; }}
           // a tiny icon would be blurry and boxed in white once stretched: keep the clean initial on the brand colour instead
           onLoad={(e) => { if (e.currentTarget.naturalWidth < 96) e.currentTarget.style.display = "none"; }} />

@@ -1,5 +1,4 @@
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from '../../contexts/LanguageContext';
 
 const componentTranslations = {
@@ -9,7 +8,7 @@ const componentTranslations = {
   },
   fr: {
     title: "Avertissement",
-    text: "Les performances passées ne préjugent pas des résultats futurs. Les outils, simulations, calculs et analyses de Quantrih sont basés exclusivement sur des données historiques et sont fournis uniquement à des fins d'information et d'éducation. Ils ne constituent en aucun cas un conseil financier, d'investissement, juridique, fiscal ou professionnel. L'investissement sur les marchés financiers comporte des risques élevés, y compris la perte totale du capital. Les utilisateurs sont seuls responsables de leurs decisions d'investissement.",
+    text: "Les performances passées ne préjugent pas des résultats futurs. Les outils, simulations, calculs et analyses de Quantrih sont basés exclusivement sur des données historiques et sont fournis uniquement à des fins d'information et d'éducation. Ils ne constituent en aucun cas un conseil financier, d'investissement, juridique, fiscal ou professionnel. L'investissement sur les marchés financiers comporte des risques élevés, y compris la perte totale du capital. Les utilisateurs sont seuls responsables de leurs décisions d'investissement.",
   },
   de: {
     title: "Haftungsausschluss",
@@ -25,18 +24,14 @@ const componentTranslations = {
   },
 };
 
+/** The legal notice, once per page, at the very bottom under the footer: small, black, centred, no heading. */
 export const Disclaimer = () => {
   const { language } = useTranslation();
   const t = componentTranslations[language as keyof typeof componentTranslations] || componentTranslations.en;
 
   return (
-    <div className="mt-12 text-center text-blue-600 dark:text-blue-400 max-w-5xl mx-auto space-y-2 px-4 pb-8 max-sm:[zoom:0.4]">
-      <p className="font-bold uppercase tracking-[0.2em] text-[9px] flex items-center justify-center gap-1 text-blue-600/80 dark:text-blue-400/80">
-        <AlertTriangle size={9} className="shrink-0" /> {t.title}
-      </p>
-      <p className="text-xs sm:text-sm leading-relaxed font-medium max-w-4xl mx-auto opacity-80">
-        {t.text}
-      </p>
+    <div className="w-full bg-white px-6 py-4">
+      <p className="max-w-5xl mx-auto text-center text-[11px] leading-relaxed text-black">{t.text}</p>
     </div>
   );
 };

@@ -11,7 +11,7 @@ const IPO_WORDS = /\b(ipo|ipos|initial public offering|goes public|going public|
  * Latest news about initial public offerings: one lead story with its photo, then a list.
  * Live from /api/market-news; the section hides itself when nothing relevant comes back.
  */
-export function IpoNews({ fr }: { fr: boolean }) {
+export function IpoNews({ fr, stacked = false }: { fr: boolean; stacked?: boolean }) {
   const [items, setItems] = useState<News[] | null>(null);
 
   useEffect(() => {
@@ -32,15 +32,17 @@ export function IpoNews({ fr }: { fr: boolean }) {
   }, []);
 
   if (!items || items.length < 3) return null;
-  const [first, ...rest] = items;
+  const [first, ...all] = items;
+  // stacked (beside another block): the lead story on top, then a shorter list
+  const rest = stacked ? all.slice(0, 4) : all;
   const when = (t: number) => new Date(t * 1000).toLocaleDateString(fr ? "fr-BE" : "en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="grid lg:grid-cols-[1.15fr_1fr] gap-6 items-stretch">
+    <div className={stacked ? "grid gap-3" : "grid lg:grid-cols-[1.15fr_1fr] gap-6 items-stretch"}>
       <motion.a
         href={first.url} target="_blank" rel="noopener noreferrer"
         initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.7 }}
-        className="group relative rounded-[1.5rem] overflow-hidden bg-[#0B2233] min-h-[320px] flex items-end shadow-[0_18px_50px_-36px_rgba(6,18,27,0.5)]"
+        className={`group relative rounded-[1.5rem] overflow-hidden bg-[#0B2233] ${stacked ? "min-h-[220px]" : "min-h-[320px]"} flex items-end shadow-[0_18px_50px_-36px_rgba(6,18,27,0.5)]`}
       >
         {first.image && <img src={first.image} alt="" loading="lazy" referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
         <span className="absolute inset-0 bg-gradient-to-t from-[#06111A] via-[#06111A]/60 to-transparent" />

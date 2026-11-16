@@ -12,10 +12,10 @@ function Row({ label, items, seconds, reverse }: { label: string; items: Item[];
     <div className="flex items-center shrink-0">
       {items.map((it) => (
         <button key={it.key} type="button" onClick={it.onClick} className="flex items-center gap-2 px-5 py-1.5 whitespace-nowrap hover:bg-white/[0.04] rounded-md">
-          {it.icon && <img src={it.icon} alt="" className="w-4 h-4 rounded-full" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
-          <span className="text-[13px] font-medium text-white/90">{it.name}</span>
-          {it.sub && <span className="text-[11px] text-white/40">{it.sub}</span>}
-          <span className={cn("text-[12px] font-mono font-semibold tabular-nums", it.value >= 0 ? "text-emerald-400" : "text-rose-400")}>{it.value >= 0 ? "+" : ""}{it.value.toFixed(2)}%</span>
+          {it.icon && <img src={it.icon} alt="" className="w-5 h-5 rounded-full" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
+          <span className="text-[19px] font-medium text-white/90">{it.name}</span>
+          {it.sub && <span className="text-[14px] text-white/40">{it.sub}</span>}
+          <span className={cn("text-[17px] font-mono font-semibold tabular-nums", it.value >= 0 ? "text-emerald-400" : "text-rose-400")}>{it.value >= 0 ? "+" : ""}{it.value.toFixed(2)}%</span>
         </button>
       ))}
     </div>

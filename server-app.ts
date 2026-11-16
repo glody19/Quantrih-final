@@ -1140,7 +1140,10 @@ export function createApp() {
     const domains = String(req.query.domains || "").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean).slice(0, 40);
     const out = await Promise.all(domains.map(async (d) => {
       const hit = await resolveLogo(d, 128, true).catch(() => null);
-      return { domain: d, width: hit ? imageWidth(hit.body) : null, bytes: hit?.body.length ?? 0, source: hit?.src ?? null };
+      const info: any = { domain: d, width: hit ? imageWidth(hit.body) : null, bytes: hit?.body.length ?? 0, source: hit?.src ?? null };
+      // b64=1 adds the image itself, to review the logos by eye before saving them as static files
+      if (req.query.b64 === "1" && hit) info.data = `data:${hit.type || "image/png"};base64,${Buffer.from(hit.body).toString("base64")}`;
+      return info;
     }));
     res.json(out);
   });

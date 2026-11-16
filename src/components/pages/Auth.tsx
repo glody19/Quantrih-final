@@ -41,9 +41,9 @@ const LABELS = {
     perks: [
       { t: "Save your portfolios", d: "Find your backtests and simulations on any device." },
       { t: "Investor profile", d: "Keep your objectives and risk tolerance in one place." },
-      { t: "Private and secure", d: "Authentication by Google Firebase. We never sell your data." },
+      { t: "Private and secure", d: "Your password is never stored in clear text. We never sell your data." },
     ],
-    secured: "Secure authentication by Google Firebase",
+    secured: "Secure, encrypted sign in",
   },
   fr: {
     backToSite: "Retour au site",
@@ -69,9 +69,9 @@ const LABELS = {
     perks: [
       { t: "Vos portefeuilles sauvegardés", d: "Retrouvez vos backtests et simulations sur tous vos appareils." },
       { t: "Votre profil d'investisseur", d: "Vos objectifs et votre tolérance au risque, au même endroit." },
-      { t: "Privé et sécurisé", d: "Authentification par Google Firebase. Nous ne revendons jamais vos données." },
+      { t: "Privé et sécurisé", d: "Votre mot de passe n'est jamais stocké en clair. Nous ne revendons jamais vos données." },
     ],
-    secured: "Authentification sécurisée par Google Firebase",
+    secured: "Connexion sécurisée et chiffrée",
   },
   nl: {
     backToSite: "Terug naar de site",
@@ -97,9 +97,9 @@ const LABELS = {
     perks: [
       { t: "Bewaar je portefeuilles", d: "Vind je backtests en simulaties terug op al je toestellen." },
       { t: "Beleggersprofiel", d: "Je doelen en risicotolerantie op één plek." },
-      { t: "Privé en veilig", d: "Authenticatie via Google Firebase. We verkopen je gegevens nooit." },
+      { t: "Privé en veilig", d: "Je wachtwoord wordt nooit leesbaar opgeslagen. We verkopen je gegevens nooit." },
     ],
-    secured: "Veilige authenticatie via Google Firebase",
+    secured: "Veilige, versleutelde aanmelding",
   },
   de: {
     backToSite: "Zurück zur Website",
@@ -125,9 +125,9 @@ const LABELS = {
     perks: [
       { t: "Portfolios speichern", d: "Backtests und Simulationen auf allen Geräten." },
       { t: "Anlegerprofil", d: "Ziele und Risikotoleranz an einem Ort." },
-      { t: "Privat und sicher", d: "Authentifizierung über Google Firebase. Wir verkaufen keine Daten." },
+      { t: "Privat und sicher", d: "Ihr Passwort wird nie im Klartext gespeichert. Wir verkaufen keine Daten." },
     ],
-    secured: "Sichere Authentifizierung über Google Firebase",
+    secured: "Sichere, verschlüsselte Anmeldung",
   },
   es: {
     backToSite: "Volver al sitio",
@@ -153,9 +153,9 @@ const LABELS = {
     perks: [
       { t: "Guarde sus carteras", d: "Sus backtests y simulaciones en todos sus dispositivos." },
       { t: "Perfil de inversor", d: "Sus objetivos y tolerancia al riesgo en un solo lugar." },
-      { t: "Privado y seguro", d: "Autenticación con Google Firebase. Nunca vendemos sus datos." },
+      { t: "Privado y seguro", d: "Su contraseña nunca se guarda en texto claro. Nunca vendemos sus datos." },
     ],
-    secured: "Autenticación segura con Google Firebase",
+    secured: "Inicio de sesión seguro y cifrado",
   },
 };
 
@@ -283,12 +283,14 @@ export function Auth({ onBack }: { onBack: () => void }) {
         signingUp.current = true;
         const displayName = `${firstName} ${lastName}`.trim() || email.split("@")[0];
         const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(cred.user, { displayName });
+        await updateProfile(cred.user, { displayName }).catch(() => undefined);
+        // The account already exists at this point: a failed profile write must not show an error
+        // (the profile page writes it again later)
         await setDoc(doc(db, "users", cred.user.uid), {
           firstName, lastName, displayName, company, email,
           privacyAcceptedAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
-        });
+        }).catch((e) => console.warn("profile write failed", e?.code));
         await sendEmailVerification(cred.user).catch(() => undefined);
         setMode("verify");
       }

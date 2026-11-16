@@ -330,6 +330,38 @@ export const INVESTMENT_PLATFORMS: InvestmentPlatform[] = [
     },
   },
   {
+    id: "beobank",
+    name: "Beobank",
+    type: "bank",
+    markets: ["BE"],
+    regulator: "BNB, FSMA",
+    group: "Crédit Mutuel Alliance Fédérale",
+    domain: "beobank.be",
+    url: "https://www.beobank.be/",
+    color: "#0B4F8A",
+    products: ["Compte-titres", "Actions", "Fonds", "Épargne-pension"],
+    fees: {
+      fr: "Tarifs de banque traditionnelle, voir la liste de prix officielle.",
+      en: "Traditional bank pricing, see the official price list.",
+    },
+    tax: {
+      fr: "TOB et précompte retenus automatiquement.",
+      en: "TOB and withholding tax handled automatically.",
+    },
+    bestFor: {
+      fr: "Les clients Beobank qui veulent investir là où ils ont leur compte courant.",
+      en: "Beobank customers who want to invest where they hold their current account.",
+    },
+    highlights: {
+      fr: ["Banque belge", "Conseillers en agence", "Fonds et épargne-pension"],
+      en: ["Belgian bank", "Advisors in branches", "Funds and pension savings"],
+    },
+    watchouts: {
+      fr: ["Frais plus élevés qu'un courtier en ligne", "Choix d'ETF limité"],
+      en: ["Higher fees than an online broker", "Limited ETF choice"],
+    },
+  },
+  {
     id: "mexem",
     name: "MEXEM",
     type: "broker",
@@ -577,37 +609,6 @@ export const INVESTMENT_PLATFORMS: InvestmentPlatform[] = [
     highlights: {
       fr: ["Grand groupe européen", "Gamme de fonds et d'assurance-vie"],
       en: ["Large European group", "Fund and life insurance range"],
-    },
-    watchouts: {
-      fr: ["Frais plus élevés qu'en ligne"],
-      en: ["Higher fees than online"],
-    },
-  },
-  {
-    id: "societe_generale",
-    name: "Société Générale",
-    type: "bank",
-    markets: ["FR"],
-    regulator: "ACPR, AMF",
-    domain: "particuliers.sg.fr",
-    url: "https://particuliers.sg.fr/",
-    color: "#E60028",
-    products: ["PEA", "Compte-titres", "Assurance-vie", "Fonds"],
-    fees: {
-      fr: "Tarifs de banque traditionnelle.",
-      en: "Traditional bank pricing.",
-    },
-    tax: {
-      fr: "PEA et assurance-vie disponibles.",
-      en: "PEA and life insurance available.",
-    },
-    bestFor: {
-      fr: "Les clients Société Générale qui veulent tout centraliser.",
-      en: "Société Générale customers who want everything in one place.",
-    },
-    highlights: {
-      fr: ["Conseillers en agence", "Maison mère de BoursoBank"],
-      en: ["Advisors in branches", "Parent company of BoursoBank"],
     },
     watchouts: {
       fr: ["Frais plus élevés qu'en ligne"],

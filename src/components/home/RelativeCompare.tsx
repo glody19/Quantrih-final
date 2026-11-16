@@ -232,7 +232,7 @@ export function RelativeCompare({ fr, onOpen }: { fr: boolean; onOpen: () => voi
           <span className="text-slate-400 hidden sm:inline">{fr ? "Passez la souris sur le graphique pour voir les prix à une date" : "Move over the chart to see prices on any date"}</span>
         </div>
         <div className="mt-3 overflow-x-auto rounded-2xl bg-slate-50/60">
-          <table className="w-full min-w-[900px] text-[13px]">
+          <table className="w-full min-w-[760px] text-[13px]">
             <thead className="bg-slate-50 text-[11px] uppercase tracking-[0.12em] text-slate-500">
               <tr>
                 <th className="sticky left-0 z-10 bg-slate-50 text-left font-semibold px-4 py-3">{fr ? "Actif" : "Asset"}</th>

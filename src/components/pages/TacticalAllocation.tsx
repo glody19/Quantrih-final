@@ -27,7 +27,6 @@ import { EfficientFrontier } from "../ui/EfficientFrontier";
 import { PortfolioAnalysisExplication } from "./PortfolioAnalysisExplication";
 import { runBacktest as engineRunBacktest } from "../../engine";
 import { downloadCSV } from "../../utils/export";
-import { Disclaimer } from "../ui/Disclaimer";
 import { ASSET_DATA } from "../../constants";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
 import { PresetPortfoliosSelector } from "../ui/PresetPortfoliosSelector";
@@ -3473,7 +3472,6 @@ export function TacticalAllocation() {
               </div>
 
               <PortfolioAnalysisExplication results={results} />
-              <Disclaimer />
             </div>
           </div>
         )}

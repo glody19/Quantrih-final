@@ -50,7 +50,6 @@ import { db } from "../../firebase";
 import { handleFirestoreError, OperationType } from "../../lib/firestoreUtils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { InfoTooltip } from "../ui/InfoTooltip";
-import { Disclaimer } from "../ui/Disclaimer";
 import { lazyPortfolios } from "./lazyPortfoliosData";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
@@ -2567,7 +2566,6 @@ export function AssetAllocations({
             </div>
 
             <PortfolioAnalysisExplication results={results} />
-            <Disclaimer />
           </div>
         </div>
           }

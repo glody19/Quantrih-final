@@ -2,6 +2,7 @@ import React from 'react';
 import { Mail } from 'lucide-react';
 import { useTranslation } from '../../contexts/LanguageContext';
 import { QuantrihLogo } from '../ui/Logo';
+import { Disclaimer } from '../ui/Disclaimer';
 
 interface FooterProps {
   onNavigate: (page: string) => void;
@@ -99,6 +100,7 @@ export function Footer({ onNavigate }: FooterProps) {
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 pb-8 text-xs text-slate-500">
         <p>© {new Date().getFullYear()} Quantrih. {fr ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
       </div>
+      <Disclaimer />
     </footer>
   );
 }

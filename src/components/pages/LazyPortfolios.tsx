@@ -195,7 +195,7 @@ export function LazyPortfolios({ onNavigate, variant = "page", bare = false }: {
   }, [home]);
 
   return (
-    <div id="lazy-portfolios" className={variant === "page" ? "page-container pb-24 pt-6" : "w-full scroll-mt-24"}>
+    <div id="lazy-portfolios" className={variant === "page" ? "page-container pb-24 pt-6" : home ? "w-full h-full flex flex-col scroll-mt-24" : "w-full scroll-mt-24"}>
       {bare ? null : home ? (
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-semibold tracking-tight text-text">{t.title}</h2>
@@ -209,22 +209,30 @@ export function LazyPortfolios({ onNavigate, variant = "page", bare = false }: {
           <p className="mt-3 text-lg text-text-2 leading-relaxed">{t.sub}</p>
         </div>
       )}
-      {state !== "ready" && (
+      {state !== "ready" && !home && (
         <p className="mt-5 inline-flex items-center gap-2 text-sm text-text-3">
           {state === "loading" && <><RefreshCw size={14} className="animate-spin" /> {t.loading}</>}
           {state === "error" && <><ShieldAlert size={15} className="text-gold" /> {t.error}</>}
         </p>
       )}
 
-      <div ref={ref} className={cn("overflow-x-auto rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)]", bare ? "mt-0" : home ? "mt-6" : "mt-6")}>
-        <table className={cn("w-full", home ? "min-w-[520px] text-[13px]" : "min-w-[620px] md:min-w-[760px] text-[14px] sm:text-[15px]")}>
+      <div ref={ref} className={cn("overflow-x-auto rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)]", bare ? "mt-0" : "mt-6", home && "flex-1 p-3 sm:p-5")}>
+        {/* on the home page this card mirrors the Best 10 ETF card next to it: same date line, header and row height */}
+        {home && (
+          <p className="mb-3 text-right text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500 min-h-[18px]">
+            {asOf ? `${lang === "fr" ? "Dernière mise à jour" : "Last update"}: ${new Date(asOf).toLocaleDateString(lang === "fr" ? "fr-BE" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}` : ""}
+          </p>
+        )}
+        <table className={cn("w-full", home ? "min-w-[520px] text-[13px] sm:text-[15px] border-separate border-spacing-y-[3px]" : "min-w-[620px] md:min-w-[760px] text-[14px] sm:text-[15px]")}>
           <thead>
-            <tr className="text-sm text-text-3 border-b border-border">
-              <th className="sticky left-0 z-10 bg-white text-left font-medium px-3 sm:px-6 py-3 sm:py-4">{t.portfolio}</th>
-              <th className="text-left font-medium px-3">{t.risk}</th>
+            <tr className={cn(home ? "text-[13px] text-slate-500" : "text-sm text-text-3 border-b border-border")}>
+              <th className={cn("sticky left-0 z-10 bg-white text-left font-medium", home ? "pl-2 pb-2" : "px-3 sm:px-6 py-3 sm:py-4")}>{t.portfolio}</th>
+              <th className={cn("text-left font-medium", home ? "pb-2 px-2" : "px-3")}>{t.risk}</th>
               {PERIODS.map(([k, en, fr]) => (
-                <th key={k} className="text-right font-medium px-1 sm:px-3">
-                  <button onClick={() => setSort(k)} className={cn("hover:text-text", sort === k && "text-pv-blue font-semibold")}>{lang === "fr" ? fr : en}{sort === k ? " ↓" : ""}</button>
+                <th key={k} className={cn("font-medium", home ? "pb-2 w-[14%] text-center" : "text-right px-1 sm:px-3")}>
+                  {home
+                    ? <button onClick={() => setSort(k)} className={cn("px-1.5 sm:px-2 py-0.5 rounded-full font-semibold transition-colors text-[11px] sm:text-[13px]", sort === k ? "bg-[#0C2233] text-white" : "hover:text-slate-800")}>{lang === "fr" ? fr : en}</button>
+                    : <button onClick={() => setSort(k)} className={cn("hover:text-text", sort === k && "text-pv-blue font-semibold")}>{lang === "fr" ? fr : en}{sort === k ? " ↓" : ""}</button>}
                 </th>
               ))}
               <th className="px-1 sm:px-4" />
@@ -236,14 +244,14 @@ export function LazyPortfolios({ onNavigate, variant = "page", bare = false }: {
               return (
                 <React.Fragment key={p.id}>
                 <motion.tr id={`lazy-${p.id}`} initial={{ opacity: 0, y: 18 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: i * 0.05 }}
-                  onClick={() => (home ? onNavigate?.(`market?lazy=${p.id}`) : setOpen(open === p.id ? null : p.id))} className={cn("border-b border-border cursor-pointer hover:bg-surface-3/50 transition-colors scroll-mt-24", open === p.id && "bg-pv-blue/[0.06]")}>
-                  <td className="sticky left-0 z-10 bg-white px-3 sm:px-6 py-3 sm:py-4 leading-tight shadow-[6px_0_8px_-8px_rgba(15,23,42,0.25)] md:shadow-none"><span className="block font-semibold text-text">{p.name}</span><span className="text-[12px] sm:text-sm text-text-3">{p.author}</span></td>
+                  onClick={() => (home ? onNavigate?.(`market?lazy=${p.id}`) : setOpen(open === p.id ? null : p.id))} className={cn("cursor-pointer hover:bg-surface-3/50 transition-colors scroll-mt-24", home ? "h-[50px]" : "border-b border-border", open === p.id && "bg-pv-blue/[0.06]")}>
+                  <td className={cn("sticky left-0 z-10 bg-white leading-tight", home ? "pl-2 py-1.5" : "px-3 sm:px-6 py-3 sm:py-4")} ><span className={cn("block font-semibold text-text", home && "whitespace-nowrap")}>{p.name}</span><span className={cn(home ? "text-[11px] sm:text-xs" : "text-[12px] sm:text-sm", "text-text-3")}>{p.author}</span></td>
                   <td className="px-3"><span className="flex items-center gap-1" title={t.riskLabels[p.risk - 1]}>{[1, 2, 3, 4, 5].map((k) => <span key={k} className={cn("w-1.5 h-4 rounded-sm", k <= p.risk ? "bg-pv-blue" : "bg-surface-3")} />)}</span></td>
                   {PERIODS.map(([k], col) => (
-                    <td key={k} className="px-1 sm:px-3 text-right font-mono tabular-nums font-semibold">
+                    <td key={k} className={cn("tabular-nums font-semibold", home ? "px-0.5 sm:px-1.5 text-center text-[12px] sm:text-[13px]" : "px-1 sm:px-3 text-right font-mono")}>
                       {state === "loading" ? <span className="inline-block w-14 h-4 rounded bg-surface-3 animate-pulse" /> : (
                         <motion.span
-                          className="inline-flex flex-col items-end gap-1"
+                          className={cn("inline-flex flex-col gap-1", home ? "items-center" : "items-end")}
                           initial={{ opacity: 0, y: 14 }}
                           animate={inView ? { opacity: 1, y: 0 } : {}}
                           transition={{ duration: 0.5, delay: col * 0.45 + i * 0.05, ease: "easeOut" }}
@@ -273,8 +281,9 @@ export function LazyPortfolios({ onNavigate, variant = "page", bare = false }: {
             })}
           </tbody>
         </table>
+        {home && <p className="mt-3 text-[12px] text-slate-500">{t.method}</p>}
       </div>
-      <p className="mt-4 text-xs text-text-4 max-w-3xl">{t.method}</p>
+      {!home && <p className="mt-4 text-xs text-text-4 max-w-3xl">{t.method}</p>}
 
     </div>
   );

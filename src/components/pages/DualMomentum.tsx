@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Disclaimer } from "../ui/Disclaimer";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import {
@@ -304,7 +303,6 @@ export function DualMomentum() {
         
 </div>
       
-  <Disclaimer />
 </div>
   );
 }

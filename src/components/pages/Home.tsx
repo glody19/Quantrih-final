@@ -143,7 +143,7 @@ function SectionTitle({ text, sub, dark = false, align = "center" }: { text: str
 /** Smaller title for a column inside a section. */
 function ColumnTitle({ text, sub }: { text: string; sub: string }) {
   return (
-    <div className="mb-4">
+    <div className="h-full">
       <motion.h3 initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-[20px] md:text-[22px] font-semibold tracking-tight text-text">{text}</motion.h3>
       <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.6 }} className="mt-1.5 text-[14px] text-text-2 leading-relaxed">{sub}</motion.p>
     </div>
@@ -261,16 +261,9 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
               {t("home.hero.subtitle")}
             </motion.p>
           </motion.div>
-          <div className="w-[124%] -mx-[12%] lg:mx-0 lg:w-[48%] h-[58vh] sm:h-[56vh] lg:h-[68vh] relative z-10 flex items-center justify-center mt-2 lg:mt-0">
-            {/* the whole atom drifts up, down, left and right; the sphere itself turns in 3D inside the canvas.
-                No CSS scale or 3D tilt here: they resample the canvas and make it blurry */}
-            <motion.div
-              className="w-full h-full"
-              animate={{ x: [0, 46, -38, 22, -14, 0], y: [0, -40, 26, 36, -22, 0] }}
-              transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <AtomAnimation isHovered={heroHovered} />
-            </motion.div>
+          <div className="w-[124%] -mx-[12%] lg:-mr-[4%] lg:ml-0 lg:w-[54%] h-[62vh] sm:h-[60vh] lg:h-[80vh] relative z-10 mt-2 lg:mt-0">
+            {/* no CSS transform here: it would resample the canvas and blur it. The drift happens inside the canvas */}
+            <AtomAnimation isHovered={heroHovered} />
           </div>
         </div>
       </div>
@@ -377,43 +370,42 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
 
       {/* ── Best 10 ETFs and lazy portfolios, side by side ── */}
       <ZoomSection className="w-full py-16" style={TINT}>
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 grid xl:grid-cols-2 gap-8 items-start">
-          <div className="min-w-0">
+        {/* titles share one row and the two tables share the next, so both start and end on the same line */}
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 grid xl:grid-cols-2 gap-x-8 gap-y-4">
+          <div className="min-w-0 order-1">
             <ColumnTitle
               text={fr ? "Les 10 meilleurs ETF sur 12 mois" : "Best 10 ETF returns · last 12 months"}
-              sub={fr ? "Les ETF mondiaux les plus performants sur 12 mois, classés par rendement sur 1 an." : "Top performing global ETFs over the trailing 12 months, sorted by highest 1-year return."}
+              sub={fr ? "Les ETF les plus performants sur 12 mois, classés par rendement sur 1 an." : "Top performing ETFs over the trailing 12 months, sorted by 1-year return."}
             />
-            <TopEtfs fr={fr} />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 order-2 xl:order-3"><TopEtfs fr={fr} /></div>
+          <div className="min-w-0 order-3 xl:order-2 mt-8 xl:mt-0">
             <ColumnTitle
               text="Lazy portfolios"
-              sub={fr ? "Des allocations simples de quelques ETF, à rééquilibrer une à deux fois par an. Cliquez pour voir leur composition." : "Simple mixes of a few index ETFs, rebalanced once or twice a year. Click one to see what is inside."}
+              sub={fr ? "Des allocations simples de quelques ETF, à rééquilibrer une à deux fois par an." : "Simple mixes of a few index ETFs, rebalanced once or twice a year."}
             />
-            <LazyPortfolios variant="home" bare onNavigate={onGoPage} />
           </div>
+          <div className="min-w-0 order-4"><LazyPortfolios variant="home" bare onNavigate={onGoPage} /></div>
         </div>
       </ZoomSection>
 
-      {/* ── Relative performance of the big names ── */}
+      {/* ── Relative performance and IPO news, side by side ── */}
       <ZoomSection className="w-full py-16" style={SOFT_WHITE}>
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-10">
-          <SectionTitle
-            text={fr ? "Performance relative comparée" : "Relative Performance Comparison"}
-            sub={fr ? "Toutes les courbes partent de zéro le même jour : on voit d'un coup d'œil qui a le plus progressé." : "Every line starts at zero on the same day, so you can see at a glance who has gained the most."}
-          />
-          <RelativeCompare fr={fr} onOpen={() => onGoPage("market")} />
-        </div>
-      </ZoomSection>
-
-      {/* ── IPO news ── */}
-      <ZoomSection className="w-full py-16" style={TINT}>
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-10">
-          <SectionTitle
-            text={fr ? "Actualités des introductions en bourse" : "IPO news"}
-            sub={fr ? "Les sociétés qui entrent en bourse ou s'y préparent, avec les derniers articles de la presse financière." : "Companies going public or getting ready to, with the latest articles from the financial press."}
-          />
-          <IpoNews fr={fr} />
+        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 grid xl:grid-cols-[1.55fr_1fr] gap-x-8 gap-y-4">
+          <div className="min-w-0 order-1">
+            <ColumnTitle
+              text={fr ? "Performance relative comparée" : "Relative Performance Comparison"}
+              sub={fr ? "Toutes les courbes partent de zéro le même jour." : "Every line starts at zero on the same day."}
+            />
+          </div>
+          <div className="min-w-0 order-2 xl:order-3"><RelativeCompare fr={fr} onOpen={() => onGoPage("market")} /></div>
+          <div className="min-w-0 order-3 xl:order-2 mt-8 xl:mt-0">
+            <ColumnTitle
+              text={fr ? "Actualités des introductions en bourse" : "IPO news"}
+              sub={fr ? "Les sociétés qui entrent en bourse ou s'y préparent." : "Companies going public or getting ready to."}
+            />
+          </div>
+          <div className="min-w-0 order-4"><IpoNews fr={fr} stacked /></div>
         </div>
       </ZoomSection>
 
@@ -444,7 +436,6 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
           <div className="text-sm text-white/60 mt-4">
             {t("home.support.inquiry")}: <a href="mailto:contact@quantrih.com" className="text-[#A9C8EA] font-semibold underline underline-offset-4">contact@quantrih.com</a>
           </div>
-          <p className="text-white/45 text-xs max-w-3xl mx-auto leading-relaxed mt-14">{fr ? "Quantrih est un outil d'analyse et de formation. Rien sur ce site ne constitue un conseil en investissement. " : "Quantrih is an analysis and learning tool. Nothing on this site is investment advice. "}{t("home.disclaimer")}</p>
         </div>
       </ZoomSection>
     </div>

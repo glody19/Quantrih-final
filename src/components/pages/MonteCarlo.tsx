@@ -17,7 +17,6 @@ import { PageHeader } from "../ui/PageHeader";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { lazyPortfolios } from "./lazyPortfoliosData";
-import { Disclaimer } from "../ui/Disclaimer";
 import { auth, db } from "../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc } from "firebase/firestore";
@@ -1995,7 +1994,6 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
         </div>
       )}
 
-          <Disclaimer />
         </div>
       )}
     </div>

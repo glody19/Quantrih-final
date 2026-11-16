@@ -146,12 +146,10 @@ export function TopEtfs({ fr }: { fr: boolean }) {
   const loading = Object.keys(perf).length === 0;
 
   return (
-    <div ref={ref} className="rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)] p-3 sm:p-5">
-      {asOf && (
-        <p className="mb-3 text-right text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-          {fr ? "Dernière mise à jour" : "Last update"}: {new Date(asOf).toLocaleDateString(fr ? "fr-BE" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}
-        </p>
-      )}
+    <div ref={ref} className="h-full rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)] p-3 sm:p-5">
+      <p className="mb-3 text-right text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500 min-h-[18px]">
+        {asOf ? `${fr ? "Dernière mise à jour" : "Last update"}: ${new Date(asOf).toLocaleDateString(fr ? "fr-BE" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}` : ""}
+      </p>
       <div className="sm:overflow-x-auto">
         <table className="w-full w-full sm:min-w-[640px] text-[13px] sm:text-[15px] border-separate border-spacing-y-[3px]">
           <thead>
@@ -159,7 +157,7 @@ export function TopEtfs({ fr }: { fr: boolean }) {
               <th className="hidden sm:table-cell text-left font-medium pl-2 pb-2 w-10">#</th>
               <th className="text-left font-medium pb-2">ETF</th>
               {COLS.map(([k, en, frl]) => (
-                <th key={k} className="pb-2 w-[16%] sm:w-[15%] text-center">
+                <th key={k} className="pb-2 w-[14%] text-center">
                   <button onClick={() => setSort(k)} className={cn("px-1.5 sm:px-2 py-0.5 rounded-full font-semibold transition-colors text-[11px] sm:text-[13px]", sort === k ? "bg-[#0C2233] text-white" : "hover:text-slate-800")}>{fr ? frl : en}</button>
                 </th>
               ))}
@@ -167,9 +165,9 @@ export function TopEtfs({ fr }: { fr: boolean }) {
           </thead>
           <tbody>
             {loading
-              ? Array.from({ length: 10 }).map((_, i) => <tr key={i}><td colSpan={6}><div className="h-11 rounded-lg bg-slate-50 animate-pulse" /></td></tr>)
+              ? Array.from({ length: 10 }).map((_, i) => <tr key={i}><td colSpan={6}><div className="h-[44px] rounded-lg bg-slate-50 animate-pulse" /></td></tr>)
               : rows.map((r, i) => (
-                  <motion.tr key={r.s + sort} layout initial={{ opacity: 0, x: -30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.5, delay: Math.min(i, 12) * 0.05 }}>
+                  <motion.tr key={r.s + sort} className="h-[50px]" layout initial={{ opacity: 0, x: -30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.5, delay: Math.min(i, 12) * 0.05 }}>
                     <td className="hidden sm:table-cell pl-2"><span className={cn("inline-flex w-7 h-7 rounded-full items-center justify-center text-[13px] font-bold", i === 0 ? "bg-[#E0B341] text-white" : i < 3 ? "bg-[#1B3F72]/10 text-[#1B3F72]" : "bg-slate-100 text-slate-500")}>{i + 1}</span></td>
                     <td className="py-1.5 pr-1 sm:pr-3 leading-tight">
                       <b className="font-mono sm:font-sans font-semibold text-slate-900"><span className="sm:hidden">{i + 1}. </span><span className="hidden sm:inline">{r.n}</span><span className="sm:hidden">{r.s}</span></b>

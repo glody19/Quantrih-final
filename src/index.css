@@ -388,3 +388,12 @@ html.phone-desktop header .h-\[calc\(100dvh-84px\)\] { height: calc(100dvh / var
 /* Backtesting pages: no frame line around tables and cards, a soft shadow instead */
 .tool-page div.border,
 .tool-page div.border-2 { border-color: transparent !important; box-shadow: 0 16px 40px -32px rgba(6, 18, 27, 0.35); }
+
+/* Desktop and tablet: page content and footer shown at 80%, the top header stays at full size.
+   Phones keep their own scaling (html.phone-desktop). */
+@media (min-width: 768px) {
+  html:not(.phone-desktop) main,
+  html:not(.phone-desktop) footer { zoom: 0.8; }
+  /* the hero still fills the whole screen once zoomed out */
+  html:not(.phone-desktop) main .min-h-\[100svh\] { min-height: calc(100svh / 0.8); }
+}

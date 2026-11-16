@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { cn } from "../../lib/utils";
-import { MarketClock } from "../ui/MarketClock";
 
 // Indices, ETFs, gold, FX and crypto shown in the scrolling bar at the bottom of the Market page.
 const LIVE_SYMBOLS: { s: string; n: string }[] = [
@@ -100,9 +99,6 @@ export function MarketTickerBar({ label = "Markets", onSelect }: { label?: strin
         ) : (
           <span className="px-4 text-sm text-white/40">-</span>
         )}
-      </div>
-      <div className="hidden lg:flex items-center px-4 border-l border-white/10 overflow-x-auto no-scrollbar max-w-[55%]">
-        <MarketClock dark />
       </div>
     </div>
   );

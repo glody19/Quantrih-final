@@ -20,7 +20,6 @@ import { PageHeader } from "../ui/PageHeader";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { lazyPortfolios } from "./lazyPortfoliosData";
-import { Disclaimer } from "../ui/Disclaimer";
 import { calculateRollingReturns } from "../../engine/metrics";
 import { runMonteCarlo } from "../../engine/monte-carlo";
 import { downloadCSV } from "../../utils/export";
@@ -1518,7 +1517,6 @@ export function PortfolioBacktesting({
 
 
                   <PortfolioAnalysisExplication results={results} />
-                  <Disclaimer />
                 </div>
               </div>
           )}
