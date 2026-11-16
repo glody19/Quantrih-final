@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { INVESTMENT_PLATFORMS, type InvestmentPlatform } from "../../data/investmentPlatforms";
 
-const COUNTRY = { BE: { fr: "Belgique", en: "Belgium" }, FR: { fr: "France", en: "France" } } as const;
 const MAX_ZOOM = 0.16; // the logo at the very centre is 16% larger
 
 // Logos checked by eye and saved with the site. Platforms whose official icon is cut off, tiny or
@@ -16,7 +15,7 @@ const LOGOS: Record<string, string> = {
 // icons that are already a coloured square fill the tile edge to edge; the others sit on white
 const FULL = new Set(["ing", "bnp_paribas", "bnp_fortis", "bourse_direct"]);
 
-/** Small rounded square with the logo, then the name, what it offers and its country. */
+/** Small rounded square with the logo, then the name and what it offers. */
 function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
   const full = FULL.has(p.id);
   return (
@@ -26,7 +25,6 @@ function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
       </span>
       <span className="mt-4 text-[15px] font-semibold text-white">{p.name}</span>
       <span className="mt-1 text-[13px] leading-snug text-white/65 line-clamp-2 min-h-[2.6em]">{fr ? p.bestFor.fr : p.bestFor.en}</span>
-      <span className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#A9C8EA]">{p.markets.map((m) => COUNTRY[m][fr ? "fr" : "en"]).join(" · ")}</span>
     </div>
   );
 }

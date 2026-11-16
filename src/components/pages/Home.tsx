@@ -412,7 +412,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       {/* ── Where to invest and Support: each on the same three-step navy gradient ── */}
       <ZoomSection style={NAVY_TRIPLE} className="relative w-full pt-20 lg:pt-28 pb-16 overflow-hidden">
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-6">
-          <SectionTitle dark text={fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"} sub={fr ? "Frais, fiscalité et régulateur des plateformes accessibles en Belgique et en France." : "Fees, taxes and regulator for the platforms available in Belgium and France."} />
+          <SectionTitle dark text={fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"} sub={fr ? "Frais, fiscalité et régulateur des courtiers et banques pour investir." : "Fees, taxes and regulator of the brokers and banks you can invest with."} />
           <motion.div className="flex justify-center -mt-4" initial={{ opacity: 0, scale: 0.85 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring", stiffness: 200, damping: 16, delay: 1.7 }}>
             <button onClick={() => onGoPage("platforms")} className="px-6 py-3 rounded-full text-sm font-semibold text-[#0C2233] bg-white hover:bg-white/90 inline-flex items-center gap-2">
               {fr ? "Comparer les plateformes" : "Compare platforms"} <ArrowRight size={15} />
