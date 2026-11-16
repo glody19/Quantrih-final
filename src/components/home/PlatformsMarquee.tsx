@@ -4,17 +4,21 @@ import { INVESTMENT_PLATFORMS, type InvestmentPlatform } from "../../data/invest
 const COUNTRY = { BE: { fr: "Belgique", en: "Belgium" }, FR: { fr: "France", en: "France" } } as const;
 const MAX_ZOOM = 0.16; // the logo at the very centre is 16% larger
 
-/** Round logo in the platform's colour, then its name, what it offers and its country. */
+// Logos checked by eye and saved with the site. Platforms whose official icon is cut off, tiny or
+// unreadable on a round badge are left out of this row (they stay on the platforms page).
+const LOGOS: Record<string, string> = {
+  beobank: "/logos/beobank.png", bnp_paribas: "/logos/bnp_paribas.jpg", bnp_fortis: "/logos/bnp_fortis.png",
+  credit_agricole: "/logos/credit_agricole.png", fortuneo: "/logos/fortuneo.png", saxo: "/logos/saxo.png",
+  ing: "/logos/ing.png", keytrade: "/logos/keytrade.png", mexem: "/logos/mexem.png",
+  trade_republic: "/logos/trade_republic.png", bourse_direct: "/logos/bourse_direct.jpg",
+};
+
+/** Round white badge with the whole logo inside, then the name, what it offers and its country. */
 function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
   return (
     <div className="shrink-0 w-[190px] flex flex-col items-center text-center" title={p.name}>
-      {/* the round is the platform's own colour; the logo sits whole inside it, slightly inset so nothing is cut off */}
-      <span data-zoom className="relative flex w-24 h-24 rounded-full ring-4 ring-white/10 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.7)] items-center justify-center text-3xl font-bold text-white overflow-hidden will-change-transform" style={{ background: p.color }}>
-        {p.name.charAt(0)}
-        <img src={`/api/logo?domain=${p.logoDomain ?? p.domain}&sz=128&full=1&v=3`} alt={p.name} className="absolute inset-[11%] w-[78%] h-[78%] object-contain rounded-[18%]" loading="lazy" referrerPolicy="no-referrer"
-          onError={(e) => { e.currentTarget.style.display = "none"; }}
-          // a tiny icon would be blurry and boxed in white once stretched: keep the clean initial on the brand colour instead
-          onLoad={(e) => { if (e.currentTarget.naturalWidth < 96) e.currentTarget.style.display = "none"; }} />
+      <span data-zoom className="relative flex w-24 h-24 rounded-full bg-white ring-4 ring-white/10 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.7)] items-center justify-center overflow-hidden will-change-transform">
+        <img src={LOGOS[p.id]} alt={p.name} className="w-[72%] h-[72%] object-contain rounded-[16%]" loading="lazy" />
       </span>
       <span className="mt-4 text-[15px] font-semibold text-white">{p.name}</span>
       <span className="mt-1 text-[13px] leading-snug text-white/65 line-clamp-2 min-h-[2.6em]">{fr ? p.bestFor.fr : p.bestFor.en}</span>
@@ -29,9 +33,9 @@ function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
  * The loop only runs while the row is on screen.
  */
 export function PlatformsMarquee({ fr }: { fr: boolean }) {
-  // every platform, Belgian ones first (those also open to French clients come right after the Belgium-only ones)
+  // platforms with a clean logo, Belgian ones first (those also open to French clients come right after the Belgium-only ones)
   const rank = (p: InvestmentPlatform) => (p.markets[0] === "BE" ? (p.markets.length === 1 ? 0 : 1) : p.markets.includes("BE") ? 2 : 3);
-  const list = [...INVESTMENT_PLATFORMS].sort((a, b) => rank(a) - rank(b));
+  const list = INVESTMENT_PLATFORMS.filter((p) => LOGOS[p.id]).sort((a, b) => rank(a) - rank(b));
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
