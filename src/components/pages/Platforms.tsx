@@ -66,7 +66,7 @@ const BRAND: Record<string, { domain: string; color: string }> = {
 const L = {
   fr: {
     title: "Plateformes d'investissement",
-    subtitle: "Courtiers en ligne, banques et néobanques pour investir depuis la Belgique et la France : frais, fiscalité, régulateur et points d'attention, avec un lien vers chaque site officiel.",
+    subtitle: "Courtiers en ligne, banques et néobanques pour investir : frais, fiscalité, régulateur et points d'attention, avec un lien vers chaque site officiel.",
     tabBE: "Belgique", tabFR: "France", tabINTL: "Europe et international",
     all: "Tous", broker: "Courtiers", bank: "Banques", neobank: "Néobanques",
     typeBroker: "Courtier", typeBank: "Banque", typeNeobank: "Néobanque",
@@ -92,7 +92,7 @@ const L = {
   },
   en: {
     title: "Investment platforms",
-    subtitle: "Online brokers, banks and neobanks for investing from Belgium and France: fees, taxes, regulator and caveats, with a link to each official website.",
+    subtitle: "Online brokers, banks and neobanks to invest with: fees, taxes, regulator and caveats, with a link to each official website.",
     tabBE: "Belgium", tabFR: "France", tabINTL: "Europe and international",
     all: "All", broker: "Brokers", bank: "Banks", neobank: "Neobanks",
     typeBroker: "Broker", typeBank: "Bank", typeNeobank: "Neobank",

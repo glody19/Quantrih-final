@@ -49,14 +49,16 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
 
     const setup = () => {
       // full screen resolution (phones are ~3x): a lower backing store looks blurry on high-density screens
-      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      // and the page zoom (the content is shown at 80%): one canvas pixel per screen pixel, so lines stay crisp
+      const zoom = canvas.offsetWidth ? canvas.getBoundingClientRect().width / canvas.offsetWidth : 1;
+      const dpr = Math.min(3, window.devicePixelRatio || 1) * (zoom > 0 ? zoom : 1);
       width = canvas.offsetWidth;
       height = canvas.offsetHeight;
       canvas.width = Math.max(1, Math.round(width * dpr));
       canvas.height = Math.max(1, Math.round(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const count = 1500; // same density on phones and computers
+      const count = 1000; // fewer, clearer spikes; same density on phones and computers
       const golden = Math.PI * (3 - Math.sqrt(5));
       spikes = Array.from({ length: count }, (_, i) => {
         // Fibonacci sphere: even coverage without clumps
@@ -160,11 +162,11 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
       ctx.textBaseline = "middle";
       for (let d = 0; d < DEPTH_LEVELS; d++) {
         const k = d / (DEPTH_LEVELS - 1); // 0 far .. 1 near
-        ctx.lineWidth = (0.8 + k * 1.9) * fs;
+        ctx.lineWidth = (0.9 + k * 1.6) * fs;
         for (let c = 0; c < 3; c++) {
           const seg = lineBuckets[d][c];
           if (!seg.length) continue;
-          ctx.strokeStyle = `rgba(${colors[c]},${(0.14 + k * 0.5).toFixed(2)})`;
+          ctx.strokeStyle = `rgba(${colors[c]},${(0.3 + k * 0.6).toFixed(2)})`;
           ctx.beginPath();
           for (let i = 0; i < seg.length; i += 4) { ctx.moveTo(seg[i], seg[i + 1]); ctx.lineTo(seg[i + 2], seg[i + 3]); }
           ctx.stroke();

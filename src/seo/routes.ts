@@ -40,10 +40,10 @@ export const SEO_ROUTES: SeoRoute[] = [
     fr: {
       title: "Quantrih | Backtest de portefeuille et simulateur d'investissement",
       description:
-        "Testez gratuitement vos portefeuilles d'ETF et d'actions sur des données historiques : backtest, Monte Carlo, allocation tactique, comparateur de plateformes d'investissement en Belgique et en France.",
+        "Testez gratuitement vos portefeuilles d'ETF et d'actions sur des données historiques : backtest, Monte Carlo, allocation tactique, comparateur de plateformes d'investissement.",
       h1: "Quantrih : backtest de portefeuille et outils d'investissement",
       summary:
-        "Quantrih aide les investisseurs particuliers européens à tester leurs allocations d'actifs avant d'investir : backtest historique, simulation de Monte Carlo, stratégies de suivi de tendance, bibliothèque financière et comparaison des courtiers et banques en Belgique et en France.",
+        "Quantrih aide les investisseurs particuliers européens à tester leurs allocations d'actifs avant d'investir : backtest historique, simulation de Monte Carlo, stratégies de suivi de tendance, bibliothèque financière et comparaison des courtiers et banques.",
     },
     en: {
       title: "Quantrih | Portfolio Backtesting & Investment Tools",
@@ -157,18 +157,18 @@ export const SEO_ROUTES: SeoRoute[] = [
     priority: 0.9,
     changefreq: "weekly",
     fr: {
-      title: "Plateformes d'investissement en Belgique et en France : comparatif | Quantrih",
+      title: "Plateformes d'investissement : comparatif des courtiers et banques | Quantrih",
       description:
-        "Comparez les courtiers en ligne et banques en Belgique et en France : Bolero, Keytrade, DEGIRO, Saxo, ING, BoursoBank, Fortuneo. Frais, taxe sur les opérations de bourse, points forts et sources officielles.",
-      h1: "Plateformes d'investissement en Belgique et en France",
+        "Comparez les courtiers en ligne et banques : Bolero, Keytrade, DEGIRO, Saxo, ING, BoursoBank, Fortuneo. Frais, taxe sur les opérations de bourse, points forts et sources officielles.",
+      h1: "Plateformes d'investissement : courtiers et banques",
       summary:
         "Comparatif des courtiers en ligne, banques et néobanques accessibles aux investisseurs belges et français : frais de courtage, fiscalité, marchés disponibles et liens vers les grilles tarifaires officielles.",
     },
     en: {
-      title: "Investment Platforms in Belgium and France Compared | Quantrih",
+      title: "Investment Platforms Compared: Brokers and Banks | Quantrih",
       description:
-        "Compare online brokers and banks in Belgium and France: fees, local tax handling, strengths and links to official price lists.",
-      h1: "Investment platforms in Belgium and France",
+        "Compare online brokers and banks: fees, local tax handling, strengths and links to official price lists.",
+      h1: "Investment platforms: brokers and banks",
       summary:
         "Comparison of online brokers, banks and neobanks for Belgian and French investors: fees, tax handling, available markets and official price lists.",
     },

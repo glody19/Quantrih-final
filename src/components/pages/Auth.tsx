@@ -10,7 +10,6 @@ import {
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db, serverTimestamp } from "../../firebase";
 import { useTranslation } from "../../contexts/LanguageContext";
-import { AtomAnimation } from "../ui/AtomAnimation";
 import { useAuth } from "../../contexts/AuthContext";
 import { cn } from "../../lib/utils";
 import { ArrowLeft, Building2, CheckCircle2, Eye, EyeOff, Lock, Mail, MailCheck, User, Save, UserCheck, ShieldCheck } from "lucide-react";
@@ -310,11 +309,14 @@ export function Auth({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="min-h-screen grid md:grid-cols-2 bg-white font-sans">
-      {/* Visual half: navy grid with the Quantrih atom, splits the screen in two */}
-      <aside className="relative hidden md:block overflow-hidden min-h-screen" style={{ backgroundColor: "#0A1E2D", backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(180deg,#0A1E2D 0%,#14466B 55%,#0A1E2D 100%)", backgroundSize: "56px 56px, 56px 56px, 100% 100%" }}>
-        <div className="absolute inset-x-0 top-[9%] h-[44%] opacity-90 pointer-events-auto"><AtomAnimation isHovered={false} /></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#06111A] via-[#06111A]/40 to-transparent pointer-events-none" />
-        <div className="relative h-full flex flex-col justify-between p-10 xl:p-16 text-white pointer-events-none [&_button]:pointer-events-auto">
+      {/* Photo half: business towers, full height, splits the screen in two */}
+      <aside className="relative hidden md:block overflow-hidden min-h-screen bg-[#0A1E2D]">
+        <picture>
+          <source srcSet="/media/skyline.webp" type="image/webp" />
+          <img src="/media/skyline.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-[46%_center]" />
+        </picture>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#06111A] via-[#0A1E2D]/55 to-[#0A1E2D]/15" />
+        <div className="relative h-full flex flex-col justify-between p-10 xl:p-16 text-white">
           <button onClick={onBack} className="self-start inline-flex items-center gap-2.5">
             <span className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-lg"><img src="/icon.svg" alt="" className="w-6 h-6" /></span>
             <span className="text-xl font-bold tracking-tight">Quantrih</span>
@@ -347,8 +349,9 @@ export function Auth({ onBack }: { onBack: () => void }) {
         </button>
 
         <div className="w-full max-w-[420px]">
-          <div className="md:hidden relative mb-8 h-36 rounded-3xl overflow-hidden" style={{ background: "linear-gradient(180deg,#0A1E2D 0%,#14466B 60%,#0A1E2D 100%)" }}>
-            <div className="absolute inset-y-0 right-0 w-1/2"><AtomAnimation isHovered={false} /></div>
+          <div className="md:hidden relative mb-8 h-36 rounded-3xl overflow-hidden">
+            <img src="/media/skyline.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#06111A]/85 to-[#0A1E2D]/10" />
             <span className="absolute left-5 bottom-4 inline-flex items-center gap-2 text-white">
               <span className="w-8 h-8 rounded-lg bg-white flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5" /></span>
               <span className="text-lg font-bold">Quantrih</span>
