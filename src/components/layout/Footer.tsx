@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import { useTranslation } from '../../contexts/LanguageContext';
 import { QuantrihLogo } from '../ui/Logo';
@@ -13,6 +14,7 @@ const DONATE_URL = 'https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00';
 export function Footer({ onNavigate }: FooterProps) {
   const { language } = useTranslation();
   const fr = language === 'fr';
+  const { pathname } = useLocation();
 
   const go = (page: string) => {
     onNavigate(page);
@@ -100,7 +102,8 @@ export function Footer({ onNavigate }: FooterProps) {
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 pb-8 text-xs text-slate-500">
         <p>© {new Date().getFullYear()} Quantrih. {fr ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
       </div>
-      <Disclaimer />
+      {/* not on the home page */}
+      {pathname !== '/' && <Disclaimer />}
     </footer>
   );
 }

@@ -13,12 +13,16 @@ const LOGOS: Record<string, string> = {
   trade_republic: "/logos/trade_republic.png", bourse_direct: "/logos/bourse_direct.jpg",
 };
 
-/** Round white badge with the whole logo inside, then the name, what it offers and its country. */
+// icons that are already a coloured square fill the tile edge to edge; the others sit on white
+const FULL = new Set(["ing", "bnp_paribas", "bnp_fortis", "bourse_direct"]);
+
+/** Small rounded square with the logo, then the name, what it offers and its country. */
 function Badge({ p, fr }: { p: InvestmentPlatform; fr: boolean }) {
+  const full = FULL.has(p.id);
   return (
     <div className="shrink-0 w-[190px] flex flex-col items-center text-center" title={p.name}>
-      <span data-zoom className="relative flex w-24 h-24 rounded-full bg-white ring-4 ring-white/10 shadow-[0_14px_30px_-14px_rgba(0,0,0,0.7)] items-center justify-center overflow-hidden will-change-transform">
-        <img src={LOGOS[p.id]} alt={p.name} className="w-[72%] h-[72%] object-contain rounded-[16%]" loading="lazy" />
+      <span data-zoom className="relative flex w-20 h-20 rounded-[18px] bg-white shadow-[0_14px_30px_-14px_rgba(0,0,0,0.7)] items-center justify-center overflow-hidden will-change-transform">
+        <img src={LOGOS[p.id]} alt={p.name} className={full ? "w-full h-full object-cover" : "w-[76%] h-[76%] object-contain"} loading="lazy" />
       </span>
       <span className="mt-4 text-[15px] font-semibold text-white">{p.name}</span>
       <span className="mt-1 text-[13px] leading-snug text-white/65 line-clamp-2 min-h-[2.6em]">{fr ? p.bestFor.fr : p.bestFor.en}</span>
