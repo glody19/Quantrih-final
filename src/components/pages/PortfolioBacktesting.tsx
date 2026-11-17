@@ -292,6 +292,8 @@ export function PortfolioBacktesting({
     if (setBaseCcy) setBaseCcy(c);
   };
   const [applyEUTaxes, setApplyEUTaxes] = useState(true);
+  const [annualFeePct, setAnnualFeePct] = useState(0.2);
+
 
   // Market Conditions
   const [broker, setBroker] = useState("free");
@@ -520,6 +522,12 @@ export function PortfolioBacktesting({
         inflationAdjusted,
         benchmarkId: includeBenchmark ? "benchmark" : undefined,
         transactionFeeAmount: broker === "custom" ? customFee : 0,
+        reinvestDividends: dividendHandling !== "distribute",
+        // European taxes: 30% Belgian withholding on dividends and the 0.12% stock exchange tax (TOB) on each trade
+        dividendTaxRate: applyEUTaxes ? 0.3 : 0,
+        tradingCostRate: (Math.max(0, Number(slippage) || 0) + (applyEUTaxes ? 0.12 : 0)) / 100,
+        annualFeeRate: (Number(annualFeePct) || 0) / 100,
+        baseCurrency: (baseCurrency === "EUR" ? "EUR" : "USD") as "EUR" | "USD",
       };
 
       const res = await engineRunBacktest(enginePortfolios, engineOptions);
@@ -1055,6 +1063,13 @@ export function PortfolioBacktesting({
                     className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                   />
                 </div>
+              <div className="space-y-1.5">
+                <TooltipLabel
+                  label={language === "fr" ? "Frais annuels (%)" : "Annual fees (%)"}
+                  tooltip={language === "fr" ? "Frais courants des fonds (TER) et de garde, prélevés chaque mois sur le portefeuille. 0,2 % est typique pour des ETF indiciels." : "Fund running costs (TER) and custody, taken monthly from the portfolio. 0.2% is typical for index ETFs."}
+                />
+                <input type="number" step={0.05} min={0} value={annualFeePct} onChange={(e) => setAnnualFeePct(Math.max(0, Number(e.target.value) || 0))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors" />
+              </div>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2 pt-1">
                     <input

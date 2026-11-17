@@ -983,6 +983,9 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
     "annual",
   ); // annual, monthly
   const [horizon, setHorizon] = useLocalStorage("mc_horizon", 30);
+  const [inflationRatePct, setInflationRatePct] = useLocalStorage("mc_inflationRatePct", 2.5);
+  const [annualFeePct, setAnnualFeePct] = useLocalStorage("mc_annualFeePct", 0.2);
+  const [taxRatePct, setTaxRatePct] = useLocalStorage("mc_taxRatePct", 30);
   const [taxTreatment, setTaxTreatment] = useLocalStorage(
     "mc_taxTreatment",
     "pre_tax",
@@ -1179,12 +1182,8 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
         allAssetReturns.push({ symbol, returns });
       }
 
-      let amt =
-        cashflowType === "none"
-          ? 0
-          : cashflowType === "percentage"
-            ? -Number(cashflowAmount)
-            : -Number(cashflowAmount);
+      // Size of the cashflow; its direction (contribution or withdrawal) comes from cashflowType
+      let amt = cashflowType === "none" ? 0 : Math.abs(Number(cashflowAmount) || 0);
 
       const allResults = [];
 
@@ -1205,6 +1204,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
           corrMatrix = calculateCorrelationMatrix(assetReturns);
         }
 
+        const twrs: number[] = [];
         const paths = runSimulation(
           assetReturns,
           weights,
@@ -1222,8 +1222,13 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
             spendingRule: spendingRule as any,
             sequenceOfReturnsYears: sequenceOfReturns === "worst_first" ? 2 : 0,
             inflationModel: inflationModel as any,
-            inflationRate: 0.03, // 3% proxy
+            inflationRate: (Number(inflationRatePct) || 0) / 100,
+            inflationIndexed: !!inflationAdjusted,
             blockSize: 12,
+            rebalance: rebalancing as any,
+            annualFee: (Number(annualFeePct) || 0) / 100,
+            taxRate: taxTreatment === "post_tax" ? (Number(taxRatePct) || 0) / 100 : 0,
+            twrOut: twrs,
           },
           corrMatrix,
         );
@@ -1237,6 +1242,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
           result: paths,
           metrics: {
             solvency: (successful / sims) * 100,
+            twrSorted: [...twrs].sort((a, b) => a - b),
             assetReturns,
             corrMatrix,
           }
@@ -1404,6 +1410,50 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     <option value="pre_tax">{currentLabels.preTax}</option>
                     <option value="post_tax">{currentLabels.postTax}</option>
                   </CustomSelect>
+                </div>
+                {taxTreatment === "post_tax" && (
+                  <div className="space-y-1.5 focus-within:text-pv-blue">
+                  <TooltipLabel
+                    label={language === "fr" ? "Taux d'imposition des gains (%)" : "Tax rate on gains (%)"}
+                    tooltip={language === "fr" ? "Part de chaque année de gain prélevée en impôt (compte titres taxable)." : "Share of each year's investment gain paid in tax (taxable account)."}
+                  />
+                  <input
+                    type="number"
+                    step={1}
+                    min={0}
+                    value={taxRatePct}
+                    onChange={(e) => setTaxRatePct(Math.max(0, Number(e.target.value) || 0))}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                  />
+                </div>
+                )}
+                <div className="space-y-1.5 focus-within:text-pv-blue">
+                  <TooltipLabel
+                    label={language === "fr" ? "Frais annuels (%)" : "Annual fees (%)"}
+                    tooltip={language === "fr" ? "Frais de gestion des fonds et de conseil, prélevés chaque mois sur le capital." : "Fund and advice costs, taken monthly from the capital."}
+                  />
+                  <input
+                    type="number"
+                    step={0.05}
+                    min={0}
+                    value={annualFeePct}
+                    onChange={(e) => setAnnualFeePct(Math.max(0, Number(e.target.value) || 0))}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                  />
+                </div>
+                <div className="space-y-1.5 focus-within:text-pv-blue">
+                  <TooltipLabel
+                    label={language === "fr" ? "Inflation supposée (% par an)" : "Assumed inflation (% per year)"}
+                    tooltip={language === "fr" ? "Sert à indexer les montants fixes quand l'ajustement à l'inflation est activé." : "Used to index fixed amounts when inflation adjustment is on."}
+                  />
+                  <input
+                    type="number"
+                    step={0.1}
+                    min={0}
+                    value={inflationRatePct}
+                    onChange={(e) => setInflationRatePct(Math.max(0, Number(e.target.value) || 0))}
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                  />
                 </div>
                 <div className="space-y-1.5 focus-within:text-pv-blue">
                   <TooltipLabel
@@ -1784,15 +1834,11 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                         {
                           label: currentLabels.twr,
                           calc: (p: number) => {
-                            const end = getPercentileCurve(mcResults[activeResIdx].result, p)[
-                              horizon
-                            ];
-                            // simplified nominal CAGR
-                            if (end <= 0) return "0.00%";
-                            const cagr =
-                              (Math.pow(end / initialAmount, 1 / horizon) - 1) *
-                              100;
-                            return formatPct(cagr);
+                            // Percentile of the paths' time-weighted returns (withdrawals and contributions excluded)
+                            const tw: number[] = (mcResults[activeResIdx].metrics as any).twrSorted || [];
+                            if (!tw.length) return "-";
+                            const idx = Math.max(0, Math.min(tw.length - 1, Math.floor((p / 100) * (tw.length - 1))));
+                            return formatPct(tw[idx] * 100);
                           },
                         },
                         {

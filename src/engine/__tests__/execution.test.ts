@@ -41,3 +41,15 @@ describe('tactical execution options', () => {
     expect(w[0] + w[1]).toBeCloseTo(1);
   });
 });
+
+describe('costs and currency', () => {
+  it('annual fees and trading costs lower the result; euro base converts dollar assets', async () => {
+    vi.mocked(dataFetcher.fetchMonthlyPrices).mockImplementation(async (sym: string) =>
+      sym === 'EURUSD=X' ? series((i) => 1 + i * 0.01) : series((i) => 100 * Math.pow(1.01, i)));
+    const p = [{ id: 'a', name: 'A', allocations: [{ symbol: 'VTI', weight: 0.5 }, { symbol: 'BND', weight: 0.5 }] }];
+    const endOf = async (o: any) => { const [r] = await runBacktest(p, { ...opts, rebalanceFrequency: 'monthly', ...o }); return r.equityCurve.at(-1)!.value; };
+    const plain = await endOf({});
+    expect(await endOf({ annualFeeRate: 0.01 })).toBeLessThan(plain);
+    expect(await endOf({ baseCurrency: 'EUR' })).toBeLessThan(plain); // the euro rises against the dollar here
+  });
+});

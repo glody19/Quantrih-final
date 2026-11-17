@@ -157,6 +157,7 @@ export function AssetAllocations({
     "aa_rebalancing",
     "annual",
   ); // "annual", "none"
+  const [annualFeePct, setAnnualFeePct] = useLocalStorage("aa_annualFeePct", 0);
   const [rebalanceThreshold, setRebalanceThreshold] = useLocalStorage(
     "aa_rebalanceThreshold",
     0,
@@ -1115,6 +1116,7 @@ export function AssetAllocations({
         dividendTaxRate: dividendTaxRate / 100,
         capitalGainsTaxRate: capitalGainsTaxRate / 100,
         transactionFeeAmount: broker === "custom" ? customFee : 0,
+        annualFeeRate: (Number(annualFeePct) || 0) / 100,
       };
 
       const res = await engineRunBacktest(enginePortfolios, engineOptions);
@@ -1450,6 +1452,25 @@ export function AssetAllocations({
                   <option value="monthly">{t("aa.monthly")}</option>
                   <option value="none">{t("aa.none")}</option>
                 </CustomSelect>
+              </div>
+              <div className="space-y-1.5">
+                <TooltipLabel
+                  label={language === "fr" ? "Bandes de rééquilibrage" : "Rebalancing bands"}
+                  tooltip={language === "fr" ? "Rééquilibre aussi dès qu'un actif s'écarte de sa cible de plus de cet écart, en plus du calendrier choisi." : "Also rebalances as soon as an asset drifts from its target by more than this, on top of the schedule."}
+                />
+                <CustomSelect value={Number(rebalanceThreshold)} onChange={(e: any) => setRebalanceThreshold(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors">
+                  <option value={0}>{language === "fr" ? "Aucune" : "None"}</option>
+                  <option value={5}>± 5 %</option>
+                  <option value={10}>± 10 %</option>
+                  <option value={20}>± 20 %</option>
+                </CustomSelect>
+              </div>
+              <div className="space-y-1.5">
+                <TooltipLabel
+                  label={language === "fr" ? "Frais annuels (%)" : "Annual fees (%)"}
+                  tooltip={language === "fr" ? "Frais courants des fonds (TER) et de garde, prélevés chaque mois sur le portefeuille. 0,2 % est typique pour des ETF indiciels." : "Fund running costs (TER) and custody, taken monthly from the portfolio. 0.2% is typical for index ETFs."}
+                />
+                <input type="number" step={0.05} min={0} value={annualFeePct} onChange={(e) => setAnnualFeePct(Math.max(0, Number(e.target.value) || 0))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors" />
               </div>
               <div className="space-y-1.5">
                 <TooltipLabel

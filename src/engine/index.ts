@@ -2,6 +2,16 @@ import { Portfolio, BacktestOptions, BacktestResult, EquityDataPoint, MonthlyPri
 import { fetchMonthlyPrices, fetchDividends } from './data';
 import { calculateMetrics, calculateMonteCarlo, calculateCorrelationMatrix, calculateRelativeMetrics } from './metrics';
 import { evaluateTacticalModel } from './tactical';
+import { FX_TO_USD } from '../constants';
+
+const EUR_SUFFIXES = ['.AS', '.DE', '.PA', '.MI', '.MC', '.BR', '.F', '.VI', '.LS', '.IR', '.HE'];
+/** Trading currency of a ticker: euro for euro-area exchanges, US dollar otherwise (GBP and others are left as they are). */
+export function tickerCurrency(sym: string): 'EUR' | 'USD' | 'OTHER' {
+  const u = sym.toUpperCase();
+  if (EUR_SUFFIXES.some(x => u.endsWith(x))) return 'EUR';
+  if (/\.[A-Z]{1,3}$/.test(u)) return 'OTHER';
+  return 'USD';
+}
 
 export async function runBacktest(
   portfolios: Portfolio[],
@@ -43,6 +53,32 @@ export async function runBacktest(
     pricesBySymbol.set(sym, normalizedData);
     dividendsBySymbol.set(sym, divData);
   }));
+
+  // 2b. Currency: express US dollar assets in euro, month by month (EURUSD=X), annual rates as a fallback
+  if (options.baseCurrency === 'EUR') {
+    let fx = new Map<string, number>();
+    try {
+      const eurusd = await fetchMonthlyPrices('EURUSD=X', options.startDate, options.endDate, { noFallback: true } as any);
+      fx = new Map(eurusd.map(p => [p.date.substring(0, 7), p.close]));
+    } catch { /* annual fallback below */ }
+    const annual = FX_TO_USD.EUR || {};
+    const years = Object.keys(annual).map(Number).sort((a, b) => a - b);
+    const rate = (month: string) => {
+      const r = fx.get(month);
+      if (r) return r;
+      const y = Number(month.substring(0, 4));
+      let best = years[0];
+      for (const yy of years) if (yy <= y) best = yy;
+      return annual[best] || 1;
+    };
+    for (const sym of symbols) {
+      if (tickerCurrency(sym) !== 'USD') continue;
+      const pr = pricesBySymbol.get(sym);
+      if (pr) pricesBySymbol.set(sym, pr.map(p => ({ ...p, close: p.close / rate(p.normalizedDate) })));
+      const dv = dividendsBySymbol.get(sym);
+      if (dv) dividendsBySymbol.set(sym, dv.map(d => ({ ...d, amount: d.amount / rate(d.date.substring(0, 7)) })));
+    }
+  }
 
   // 3. (Skipped global common months check)
   const symbolList = Array.from(symbols);
@@ -254,7 +290,14 @@ export async function runBacktest(
                 if (equity > 0 && priced.length) {
                   const tw = priced.reduce((t, a) => t + a.weight, 0) || 1;
                   const fee = key(next) !== key(allocations) ? (options.transactionFeeAmount || 0) * priced.length : 0;
-                  const eq = equity - fee;
+                  let eq = equity - fee;
+                  if (options.tradingCostRate && options.tradingCostRate > 0) {
+                    let turnover = 0;
+                    const target = new Map(priced.map(a => [a.symbol, eq * L * a.weight / tw]));
+                    const syms = new Set([...shares.keys(), ...target.keys()]);
+                    for (const sym of syms) turnover += Math.abs((target.get(sym) || 0) - (shares.get(sym) || 0) * px(sym));
+                    eq -= turnover * options.tradingCostRate;
+                  }
                   shares.clear();
                   for (const a of priced) shares.set(a.symbol, (eq * L * a.weight / tw) / px(a.symbol));
                   debt = eq * (L - 1);
@@ -308,6 +351,13 @@ export async function runBacktest(
           }
       }
       
+        // Running costs: a twelfth of the yearly fee comes off the holdings each month
+        if (options.annualFeeRate && options.annualFeeRate > 0) {
+          const keep = 1 - options.annualFeeRate / 12;
+          for (const [k, v] of shares) shares.set(k, v * keep);
+          cashBalance *= keep;
+        }
+
         // Calculate new balance based on updated shares and current price
         for (const alloc of allocations) {
           const price = priceLookup.get(alloc.symbol)?.get(month) || 0;
@@ -371,6 +421,14 @@ export async function runBacktest(
            }
          }
 
+         if (options.tradingCostRate && options.tradingCostRate > 0) {
+           let turnover = 0;
+           for (const alloc of allocations) {
+             const price = priceLookup.get(alloc.symbol)?.get(month) || 0;
+             turnover += Math.abs(currentBalance * alloc.weight - (shares.get(alloc.symbol) || 0) * price);
+           }
+           currentBalance -= turnover * options.tradingCostRate;
+         }
          for (const alloc of allocations) {
            const price = priceLookup.get(alloc.symbol)?.get(month) || 1;
            // Deduct transaction fee on rebalance (assumes you have to sell and buy, so 2 * fee, or just a simplified flat fee)

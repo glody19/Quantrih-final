@@ -59,6 +59,12 @@ export interface BacktestOptions {
   capitalGainsTaxRate?: number; // decimal (0-1)
   rebalanceThreshold?: number; // decimal (e.g. 0.05 for 5%)
   transactionFeeAmount?: number; // fixed fee per transaction (e.g. 1 EUR for DEGIRO)
+  /** Yearly running costs (fund fees, custody), e.g. 0.002 for 0.2%. Taken monthly. */
+  annualFeeRate?: number;
+  /** Cost per euro or dollar traded (slippage, stamp duty such as the Belgian TOB), e.g. 0.0017. */
+  tradingCostRate?: number;
+  /** Currency the results are expressed in. US dollar assets are converted month by month. */
+  baseCurrency?: 'USD' | 'EUR';
 }
 
 export interface DrawdownEpisode {
