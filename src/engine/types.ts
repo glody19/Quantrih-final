@@ -4,8 +4,9 @@ export interface AssetAllocation {
 }
 
 export type TacticalModel =
-    | { type: 'moving_average', movingAverageMonths: number, safeAsset: string }
-    | { type: 'relative_momentum', lookbackMonths: number, topK: number }
+    | { type: 'moving_average', movingAverageMonths: number, safeAsset: string, buySignal?: 'gt' | 'gte', maType?: 'sma' | 'ema' }
+    | { type: 'seasonal', outOfMarketStartMonth: number, outOfMarketEndMonth: number, safeAsset: string }
+    | { type: 'relative_momentum', lookbackMonths: number, topK: number, absoluteMomentum?: boolean, safeAsset?: string }
     | { type: 'dual_momentum', lookbackMonths: number, safeAsset: string }
     | { type: 'adaptive_allocation', lookbackMonths: number, volatilityMonths: number }
     | { type: 'target_volatility', targetVolatility: number, safeAsset: string, lookbackMonths: number }

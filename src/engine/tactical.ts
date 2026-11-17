@@ -30,6 +30,14 @@ export function evaluateTacticalModel(
   // Safe asset fallback if all risky assets fail
   const fallbackSafe = (safeAsset: string) => [{ symbol: safeAsset, weight: 1 }];
 
+  if (model.type === 'seasonal') {
+    // Out of the market from the start month (included) to the re-entry month (excluded), e.g. May to October.
+    const month = Number(currentMonthDate.substring(5, 7));
+    const start = model.outOfMarketStartMonth, end = model.outOfMarketEndMonth;
+    const out = start === end ? false : start < end ? month >= start && month < end : month >= start || month < end;
+    return out ? fallbackSafe(model.safeAsset) : portfolio.allocations;
+  }
+
   if (model.type === 'moving_average') {
     // Single or Portfolio... If it's a MA model, usually it applies independently to each asset:
     // If Asset Price > MA(N) -> Weight = original weight. If < MA(N) -> Weight = 0 (moves to safe asset).
@@ -42,18 +50,34 @@ export function evaluateTacticalModel(
        if (alloc.symbol === model.safeAsset) continue;
 
        const currentPrice = getPrice(alloc.symbol, 0);
-       let sum = 0;
+       const n = model.movingAverageMonths;
        let count = 0;
-       for (let i = 0; i < model.movingAverageMonths; i++) {
-          const p = getPrice(alloc.symbol, i);
-          if (p !== null) { sum += p; count++; }
+       let ma = 0;
+       if (model.maType === 'ema') {
+          // Exponential average over up to 3N months, seeded with the oldest price, alpha = 2 / (N + 1)
+          const alpha = 2 / (n + 1);
+          let ema: number | null = null;
+          for (let i = Math.min(3 * n, currentMonthIndex); i >= 0; i--) {
+             const p = getPrice(alloc.symbol, i);
+             if (p === null) continue;
+             ema = ema === null ? p : alpha * p + (1 - alpha) * ema;
+             count++;
+          }
+          ma = ema ?? 0;
+       } else {
+          let sum = 0;
+          for (let i = 0; i < n; i++) {
+             const p = getPrice(alloc.symbol, i);
+             if (p !== null) { sum += p; count++; }
+          }
+          ma = count ? sum / count : 0;
        }
-       
-       if (count < model.movingAverageMonths || currentPrice === null) {
+
+       if (count < n || currentPrice === null) {
           allocations.push({ symbol: alloc.symbol, weight: alloc.weight }); // not enough data, keep original
        } else {
-          const ma = sum / count;
-          if (currentPrice > ma) {
+          const inMarket = model.buySignal === 'gte' ? currentPrice >= ma : currentPrice > ma;
+          if (inMarket) {
             allocations.push({ symbol: alloc.symbol, weight: alloc.weight });
           } else {
             // Allocate to safe asset instead
@@ -80,6 +104,12 @@ export function evaluateTacticalModel(
     
     const topK = momData.slice(0, model.topK);
     const weightPerAsset = 1 / topK.length;
+    if (model.absoluteMomentum && model.safeAsset) {
+      // Absolute momentum filter: a selected asset that did not beat the safe asset over the
+      // lookback hands its share to the safe asset.
+      const safeMom = getMomentum(model.safeAsset, model.lookbackMonths) ?? 0;
+      return mergeAllocations(topK.map(t => ({ symbol: t.mom > safeMom ? t.symbol : model.safeAsset!, weight: weightPerAsset })));
+    }
     return topK.map(t => ({ symbol: t.symbol, weight: weightPerAsset }));
   }
 

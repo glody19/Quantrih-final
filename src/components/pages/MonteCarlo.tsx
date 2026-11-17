@@ -36,7 +36,7 @@ import {
   Filler,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { fetchMonthlyPrices } from "../../engine/data";
+import { fetchTotalReturnPrices } from "../../engine/data";
 import { runSimulation } from "../../engine/simulation";
 import { calculateCorrelationMatrix } from "../../engine/metrics";
 import { AssetPicker, RunButton, toOptions } from "../ui/AllocationInputs";
@@ -1160,7 +1160,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
       const endDate = new Date().toISOString().split("T")[0];
 
       for (const symbol of uniqueSymbols) {
-        const prices = await fetchMonthlyPrices(
+        const prices = await fetchTotalReturnPrices(
           symbol,
           startDate,
           endDate,

@@ -13,7 +13,7 @@ export async function runBacktest(
     p.allocations.forEach(a => symbols.add(a.symbol));
     if (p.tacticalModel) {
        const tm = p.tacticalModel;
-       if ('safeAsset' in tm) symbols.add(tm.safeAsset);
+       if ('safeAsset' in tm && tm.safeAsset) symbols.add(tm.safeAsset);
        if ('baselineEquity' in tm) symbols.add(tm.baselineEquity);
        if ('baselineBond' in tm) symbols.add(tm.baselineBond);
     }
@@ -198,7 +198,22 @@ export async function runBacktest(
 
         // Update allocations based on Tactical Model (at start of the month before dividends/prices)
         if (portfolio.tacticalModel) {
-            allocations = evaluateTacticalModel(portfolio, i, commonMonths, priceLookup);
+            // Decide with the closes known at the end of the previous month (no look-ahead),
+            // then move the whole portfolio to the new targets at those closes.
+            const prevMonth = commonMonths[i - 1];
+            const next = evaluateTacticalModel(portfolio, i - 1, commonMonths, priceLookup);
+            const key = (a: { symbol: string; weight: number }[]) => a.map(x => `${x.symbol}:${x.weight.toFixed(6)}`).sort().join("|");
+            if (key(next) !== key(allocations) || i === 1) {
+              let value = 0;
+              for (const [sym, sh] of shares) value += sh * (priceLookup.get(sym)?.get(prevMonth) || 0);
+              const priced = next.filter(a => (priceLookup.get(a.symbol)?.get(prevMonth) || 0) > 0);
+              if (value > 0 && priced.length) {
+                const tw = priced.reduce((t, a) => t + a.weight, 0) || 1;
+                shares.clear();
+                for (const a of priced) shares.set(a.symbol, (value * a.weight / tw) / priceLookup.get(a.symbol)!.get(prevMonth)!);
+                allocations = priced.map(a => ({ symbol: a.symbol, weight: a.weight / tw }));
+              }
+            }
         }
 
         // 4.1 Handle Dividends & Taxes (Phase 3.2)
