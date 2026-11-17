@@ -92,12 +92,12 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, tabletMp4, tabletW
 
   return (
     <div ref={ref} className="relative w-full select-none">
-      <div className="relative z-10 flex items-center justify-start gap-[2.5%] py-6 [perspective:1600px]">
+      <div className="relative z-10 flex items-center justify-start gap-0 py-6 [perspective:1600px]">
         {/* ── Tablet, held horizontally: backtest recording in the tablet layout ── */}
         <motion.div style={{ y: sideY }} className="relative w-[27%] hidden md:block z-10">
           <motion.div
             initial={{ opacity: 0, x: -260, rotateY: 75, rotateZ: -14, scale: 0.7 }}
-            animate={run ? { opacity: [0, 1, 1], x: [-260, 0, -24], rotateY: [75, 0, 0], rotateZ: [-14, 0, 0], scale: [0.7, 1, 0.96] } : undefined}
+            animate={run ? { opacity: [0, 1, 1], x: [-260, 0, 22], rotateY: [75, 0, 0], rotateZ: [-14, 0, 0], scale: [0.7, 1, 0.96] } : undefined}
             transition={{ duration: ZOOM_AT + 0.8 - TABLET_IN, times: [0, 0.55, 1], delay: TABLET_IN, ease: EASE }}
           >
             <div className="relative rounded-[20px] p-[2.5px] bg-[linear-gradient(160deg,#F5F6F8,#A3A9B2)] shadow-[0_40px_70px_-30px_rgba(15,23,42,0.7)]">
@@ -150,7 +150,7 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, tabletMp4, tabletW
         <motion.div style={{ y: sideY }} className="relative w-[11%] hidden md:block z-10">
           <motion.div
             initial={{ opacity: 0, x: 240, y: -60, rotateY: -360, rotateZ: 18, scale: 0.6 }}
-            animate={run ? { opacity: [0, 1, 1], x: [240, 0, 24], y: [-60, 0, 0], rotateY: [-360, 0, 0], rotateZ: [18, 0, 0], scale: [0.6, 1, 0.96] } : undefined}
+            animate={run ? { opacity: [0, 1, 1], x: [240, 0, -20], y: [-60, 0, 0], rotateY: [-360, 0, 0], rotateZ: [18, 0, 0], scale: [0.6, 1, 0.96] } : undefined}
             transition={{ duration: ZOOM_AT + 0.8 - PHONE_IN, times: [0, 0.55, 1], delay: PHONE_IN, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="relative rounded-[18%/8.5%] p-[2.5px] bg-[linear-gradient(150deg,#ECEDF0_0%,#8E949D_45%,#DADCE0_70%,#7C828B_100%)] shadow-[0_40px_60px_-22px_rgba(15,23,42,0.8)]">

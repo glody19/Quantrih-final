@@ -1136,6 +1136,39 @@ export function createApp() {
     return null;
   };
   // /api/logo-report?domains=a.be,b.fr : size and source of each round logo (diagnostics, no images)
+  // ── Off-exchange trading (FINRA public OTC transparency data: weekly volumes per ATS and per stock) ──
+  const finraCache = new Map<string, { at: number; body: any }>();
+  async function finraQuery(dataset: string, body: any) {
+    const key = dataset + JSON.stringify(body);
+    const hit = finraCache.get(key);
+    if (hit && Date.now() - hit.at < 6 * 3600_000) return hit.body;
+    const r = await fetch(`https://api.finra.org/data/group/otcMarket/name/${dataset}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
+    });
+    const text = await r.text();
+    if (!r.ok) throw new Error(`FINRA ${r.status}: ${text.slice(0, 200)}`);
+    const json = text ? JSON.parse(text) : [];
+    finraCache.set(key, { at: Date.now(), body: json });
+    return json;
+  }
+
+  // /api/finra/raw?dataset=weeklySummary&type=ATS_W_FIRM : first rows, to inspect the format
+  app.get("/api/finra/raw", async (req, res) => {
+    try {
+      const dataset = ["weeklySummary", "weeklySummaryHistoric"].includes(String(req.query.dataset)) ? String(req.query.dataset) : "weeklySummary";
+      const filters: any[] = [];
+      if (req.query.type) filters.push({ compareType: "EQUAL", fieldName: "summaryTypeCode", fieldValue: String(req.query.type) });
+      if (req.query.symbol) filters.push({ compareType: "EQUAL", fieldName: "issueSymbolIdentifier", fieldValue: String(req.query.symbol).toUpperCase() });
+      const rows = await finraQuery(dataset, { limit: Math.min(50, Number(req.query.limit) || 5), ...(filters.length ? { compareFilters: filters } : {}) });
+      res.json(rows);
+    } catch (e: any) {
+      res.status(502).json({ error: String(e?.message || e) });
+    }
+  });
+
   app.get("/api/logo-report", async (req, res) => {
     const domains = String(req.query.domains || "").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean).slice(0, 40);
     const out = await Promise.all(domains.map(async (d) => {
