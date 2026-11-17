@@ -35,33 +35,29 @@ export function ReturnsHeatmap({ monthlyReturns }: ReturnsHeatmapProps) {
     return { years, heatmapData: data };
   }, [monthlyReturns]);
 
-  const getColor = (value: number | null) => {
-    if (value === null) return 'bg-transparent';
-    if (value === 0) return 'bg-bg-2 text-text';
-
-    if (value > 0) {
-      const alpha = Math.min(value / 10, 1) * 0.8;
-      return `rgba(16, 185, 129, ${alpha + 0.2})`;
-    } else {
-      const alpha = Math.min(Math.abs(value) / 10, 1) * 0.8;
-      return `rgba(239, 68, 68, ${alpha + 0.2})`;
-    }
+  // green for gains, burgundy for losses, intensity by size (YTD on a wider scale)
+  const tone = (value: number | null, scale = 8) => {
+    if (value === null || value === undefined) return { background: "transparent", color: "#CBD5E1" };
+    const k = Math.min(Math.abs(value) / scale, 1);
+    const bg = value >= 0 ? `rgba(16,150,105,${0.08 + k * 0.72})` : `rgba(159,18,57,${0.08 + k * 0.72})`;
+    return { background: bg, color: k > 0.5 ? "#FFFFFF" : value >= 0 ? "#065F46" : "#881337" };
   };
+  const fmt = (v: number | null) => (v == null ? "-" : `${v > 0 ? "+" : ""}${v.toFixed(1)}%`);
 
   const months = MONTH_NAMES[language] || MONTH_NAMES.en;
 
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full text-xs text-center border-collapse">
+      <table className="heat-table w-full min-w-[860px] text-[12.5px] text-center border-separate border-spacing-[3px] tabular-nums">
         <thead>
-          <tr>
-            <th className="p-2 border-b border-border text-left font-semibold">{t("heat.year")}</th>
-            {months.map((m, idx) => <th key={idx} className="p-2 border-b border-border font-semibold">{m}</th>)}
-            <th className="p-2 border-b border-border font-bold">YTD</th>
+          <tr className="text-[11.5px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+            <th className="px-2 pb-2 text-left">{t("heat.year")}</th>
+            {months.map((m, idx) => <th key={idx} className="px-1 pb-2">{m}</th>)}
+            <th className="px-2 pb-2 text-[#0C2233]">YTD</th>
           </tr>
         </thead>
         <tbody>
-          {years.map(year => {
+          {years.map((year, yi) => {
             const row = heatmapData[year];
             let ytd = 1;
             let hasData = false;
@@ -74,23 +70,14 @@ export function ReturnsHeatmap({ monthlyReturns }: ReturnsHeatmapProps) {
             const ytdPercent = hasData ? (ytd - 1) * 100 : null;
 
             return (
-              <tr key={year}>
-                <td className="p-2 border-b border-border text-left font-medium">{year}</td>
+              <tr key={year} className="heat-row" style={{ animationDelay: `${Math.min(yi, 30) * 35}ms` }}>
+                <td className="px-2 py-1.5 text-left font-semibold text-slate-700">{year}</td>
                 {row.map((val, idx) => (
-                  <td 
-                    key={idx} 
-                    className="p-2 border-b border-border font-mono transition-colors"
-                    style={{ backgroundColor: getColor(val) }}
-                  >
-                    {val != null ? <span className={(val && Math.abs(val) > 4) ? "text-white" : "text-text"}>{val > 0 ? '+' : ''}{val.toFixed(1)}%</span> : '-'}
+                  <td key={idx} className="rounded-md px-1 py-1.5 font-semibold transition-transform duration-150 hover:scale-[1.08] hover:relative hover:z-10 hover:shadow-[0_6px_16px_-6px_rgba(6,18,27,0.45)]" style={tone(val)} title={`${months[idx]} ${year}: ${fmt(val)}`}>
+                    {fmt(val)}
                   </td>
                 ))}
-                <td 
-                  className="p-2 border-b border-border font-mono font-bold"
-                  style={{ backgroundColor: getColor(ytdPercent) }}
-                >
-                  {ytdPercent != null ? <span className={(ytdPercent && Math.abs(ytdPercent) > 10) ? "text-white" : "text-text"}>{ytdPercent > 0 ? '+' : ''}{ytdPercent.toFixed(1)}%</span> : '-'}
-                </td>
+                <td className="rounded-md px-2 py-1.5 font-bold" style={tone(ytdPercent, 25)}>{fmt(ytdPercent)}</td>
               </tr>
             );
           })}

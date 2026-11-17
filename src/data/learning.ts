@@ -128,6 +128,15 @@ export const LIBRARY: Book[] = [
 
 /** The well-known titles shown first. */
 export const HEADLINERS: Book[] = LIBRARY.filter((b) => (rank.get(b.title) ?? 999) < 12);
+/** Best sellers: stock market investing and trading only (no real estate, no general personal finance), well-known authors. */
+const BEST_SELLER_TITLES = [
+  "The Intelligent Investor", "A Random Walk Down Wall Street", "One Up On Wall Street", "The Little Book of Common Sense Investing",
+  "Common Stocks and Uncommon Profits", "The Essays of Warren Buffett", "Security Analysis", "Reminiscences of a Stock Operator",
+  "Market Wizards", "Stocks for the Long Run", "The Most Important Thing", "Beating the Street", "L'art du trading",
+  "Si la Bourse m'était contée", "Technical Analysis of the Financial Markets", "Trading in the Zone", "Psychologie des grands traders",
+  "The Little Book That Still Beats the Market", "Margin of Safety", "Fooled by Randomness",
+];
+export const BEST_SELLERS: Book[] = BEST_SELLER_TITLES.map((t) => LIBRARY.find((b) => b.title === t)).filter(Boolean) as Book[];
 /** Recent releases, newest first. */
 export const RECENT: Book[] = LIBRARY.filter((b) => b.recent).sort((a, b) => Number(b.year) - Number(a.year));
 

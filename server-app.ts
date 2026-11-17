@@ -1239,6 +1239,74 @@ export function createApp() {
     }
   });
 
+  // ── Crypto: market data and stablecoin supply (public endpoints, cached server side) ──
+  const cryptoCache = new Map<string, { at: number; body: any }>();
+  async function cachedJson(key: string, url: string, ttlMs: number) {
+    const hit = cryptoCache.get(key);
+    if (hit && Date.now() - hit.at < ttlMs) return hit.body;
+    try {
+      const r = await fetch(url, { headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0 (compatible; QuantrihBot/1.0)" }, signal: AbortSignal.timeout(15000) });
+      if (!r.ok) throw new Error(`upstream ${r.status}`);
+      const body = await r.json();
+      cryptoCache.set(key, { at: Date.now(), body });
+      return body;
+    } catch (e) {
+      if (hit) return hit.body; // serve the last good copy rather than nothing
+      throw e;
+    }
+  }
+  const num = (v: any) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
+  // /api/crypto/markets : top 20 crypto assets by market cap
+  app.get("/api/crypto/markets", async (_req, res) => {
+    try {
+      const raw = await cachedJson("markets", "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=true&price_change_percentage=24h,7d,30d,1y", 10 * 60_000);
+      const coins = (Array.isArray(raw) ? raw : []).map((c: any) => ({
+        id: String(c.id || ""), symbol: String(c.symbol || "").toUpperCase(), name: String(c.name || ""), image: typeof c.image === "string" ? c.image : null,
+        rank: num(c.market_cap_rank), price: num(c.current_price), marketCap: num(c.market_cap), volume: num(c.total_volume),
+        ch24h: num(c.price_change_percentage_24h_in_currency ?? c.price_change_percentage_24h), ch7d: num(c.price_change_percentage_7d_in_currency),
+        ch30d: num(c.price_change_percentage_30d_in_currency), ch1y: num(c.price_change_percentage_1y_in_currency),
+        ath: num(c.ath), athDate: typeof c.ath_date === "string" ? c.ath_date.slice(0, 10) : null,
+        spark: Array.isArray(c.sparkline_in_7d?.price) ? c.sparkline_in_7d.price.filter((x: any) => typeof x === "number").filter((_: any, i: number) => i % 4 === 0) : [],
+      })).filter((c: any) => c.id && c.price != null);
+      if (!coins.length) return res.status(502).json({ error: "no data" });
+      res.set("Cache-Control", "public, s-maxage=600, stale-while-revalidate=3600");
+      res.json({ asOf: new Date().toISOString(), coins });
+    } catch (e: any) {
+      res.status(502).json({ error: String(e?.message || e) });
+    }
+  });
+
+  // /api/crypto/stablecoins : supply by stablecoin, peg mechanism, and total supply history (weekly points)
+  app.get("/api/crypto/stablecoins", async (_req, res) => {
+    try {
+      const [list, chart] = await Promise.all([
+        cachedJson("stables", "https://stablecoins.llama.fi/stablecoins?includePrices=true", 30 * 60_000),
+        cachedJson("stablesChart", "https://stablecoins.llama.fi/stablecoincharts/all", 6 * 3600_000).catch(() => null),
+      ]);
+      const assets = (Array.isArray(list?.peggedAssets) ? list.peggedAssets : []).map((a: any) => {
+        const circ = a?.circulating && typeof a.circulating === "object" ? Object.values(a.circulating).reduce((s: number, v: any) => s + (num(v) || 0), 0) : 0;
+        return {
+          name: String(a?.name || ""), symbol: String(a?.symbol || ""), pegType: String(a?.pegType || ""), mechanism: String(a?.pegMechanism || ""),
+          supply: circ as number, price: num(a?.price), chains: Array.isArray(a?.chains) ? a.chains.length : null,
+        };
+      }).filter((a: any) => a.name && a.supply > 0).sort((a: any, b: any) => b.supply - a.supply);
+      // supply is quoted in the peg currency; only USD-pegged coins are summed into the USD total
+      const usd = assets.filter((a: any) => a.pegType === "peggedUSD");
+      const byMechanism: Record<string, number> = {};
+      for (const a of usd) byMechanism[a.mechanism || "other"] = (byMechanism[a.mechanism || "other"] || 0) + a.supply;
+      const history = (Array.isArray(chart) ? chart : []).map((p: any) => ({
+        date: Number(p?.date) ? new Date(Number(p.date) * 1000).toISOString().slice(0, 10) : null,
+        usd: num(p?.totalCirculatingUSD?.peggedUSD) ?? num(p?.totalCirculating?.peggedUSD),
+      })).filter((p: any) => p.date && p.usd != null).filter((_: any, i: number, arr: any[]) => i % 7 === 0 || i === arr.length - 1);
+      if (!assets.length) return res.status(502).json({ error: "no data" });
+      res.set("Cache-Control", "public, s-maxage=1800, stale-while-revalidate=21600");
+      res.json({ asOf: new Date().toISOString(), totalUsd: usd.reduce((s: number, a: any) => s + a.supply, 0), byMechanism, assets: assets.slice(0, 15), history });
+    } catch (e: any) {
+      res.status(502).json({ error: String(e?.message || e) });
+    }
+  });
+
   app.get("/api/logo-report", async (req, res) => {
     const domains = String(req.query.domains || "").split(",").map((d) => d.trim().toLowerCase()).filter(Boolean).slice(0, 40);
     const out = await Promise.all(domains.map(async (d) => {

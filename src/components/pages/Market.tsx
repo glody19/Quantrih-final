@@ -2427,12 +2427,14 @@ const isEuropeanMarketOpen = () => {
 
  </div>
   </MobileZoomWrapper>
-  {/* Lazy portfolios: holdings and returns, at the bottom of the Market page */}
+  {/* Lazy portfolios: at the bottom of the stocks view only, not under the ETF overview */}
+  {marketPageUrl === 'stocks' && (
   <section className="w-full bg-white border-t border-border mt-10 py-14">
    <div className="page-container">
     <LazyPortfolios variant="embedded" onNavigate={(page) => navigate(`/${page}`)} />
    </div>
   </section>
+  )}
   {/* Scrolling market quotes + exchange hours: only on the Market page, at the bottom */}
   <div className="h-14" aria-hidden />
   <MarketTickerBar

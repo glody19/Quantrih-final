@@ -357,6 +357,7 @@ const CORE_BOOKS: Book[] = [
     summaryFr: "Comment le trading électronique et algorithmique, les dark pools et la haute fréquence ont transformé le marché actions américain.",
     coverColor: "#111827",
     featured: false,
+    isbn: "9780307887177",
     link: "#"
   },
   {
@@ -369,6 +370,7 @@ const CORE_BOOKS: Book[] = [
     summaryFr: "Le manuel de référence sur le fonctionnement des marchés : types d'ordres, liquidité, teneurs de marché et plateformes.",
     coverColor: "#1e3a5f",
     featured: false,
+    isbn: "9780195144703",
     link: "#"
   },
   {
@@ -381,6 +383,7 @@ const CORE_BOOKS: Book[] = [
     summaryFr: "La critique de deux courtiers sur la fragmentation des marchés, les dark pools et le trading haute fréquence.",
     coverColor: "#7f1d1d",
     featured: false,
+    isbn: "9780132875240",
     link: "#"
   },
   {

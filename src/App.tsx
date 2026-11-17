@@ -19,6 +19,7 @@ const Market = lazy(() => import("./components/pages/Market").then((m) => ({ def
 const SiteMap = lazy(() => import("./components/pages/SiteMap").then((m) => ({ default: m.SiteMap })));
 const Platforms = lazy(() => import("./components/pages/Platforms").then((m) => ({ default: m.Platforms })));
 const VirtualPortfolio = lazy(() => import("./components/pages/VirtualPortfolio").then((m) => ({ default: m.VirtualPortfolio })));
+const CryptoMarkets = lazy(() => import("./components/pages/CryptoMarkets").then((m) => ({ default: m.CryptoMarkets })));
 const MarketStructure = lazy(() => import("./components/pages/MarketStructure").then((m) => ({ default: m.MarketStructure })));
 const EtfScreener = lazy(() => import("./components/pages/EtfScreener").then((m) => ({ default: m.EtfScreener })));
 const Auth = lazy(() => import("./components/pages/Auth").then((m) => ({ default: m.Auth })));
@@ -191,6 +192,7 @@ function AppContent() {
           <Route path="/market" element={<Market />} />
           <Route path="/etf-overview" element={<EtfScreener />} />
           <Route path="/market-structure" element={<MarketStructure />} />
+          <Route path="/crypto" element={<CryptoMarkets />} />
           <Route path="/lazy-portfolios" element={<Navigate to="/market#lazy-portfolios" replace />} />
           <Route path="/virtual-portfolio" element={<VirtualPortfolio />} />
           <Route path="/education" element={<Education />} />

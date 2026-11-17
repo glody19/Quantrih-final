@@ -6,6 +6,9 @@ import { PageHeader } from "../ui/PageHeader";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { InfoTooltip } from "../ui/InfoTooltip";
 import { Play, Settings, Activity, Database, Trash2, Save, FileDown, Search } from "lucide-react";
+import { areaGradient, CHART_FONT, TOOLTIP } from "../ui/chartTheme";
+import { CountUp } from "../ui/CountUp";
+import { AssetPicker, RunButton, toOptions } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import {
   Chart as ChartJS,
@@ -1057,7 +1060,7 @@ export function TacticalAllocation() {
               <th className="py-2.5 px-2.5 text-xs lg:text-sm font-semibold text-text w-auto whitespace-nowrap">
                 {currentLabels.asset || "Asset"}
               </th>
-              <th className="py-2.5 px-2.5 min-w-[320px] lg:min-w-[400px] w-80 lg:w-96 border-r border-border font-semibold text-text text-xs lg:text-sm whitespace-nowrap">
+              <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] font-semibold text-text text-xs lg:text-sm whitespace-nowrap">
                 Ticker & Name
               </th>
               {portfolioNames.map((pn, i) => (
@@ -1117,28 +1120,9 @@ export function TacticalAllocation() {
                       </button>
                     )}
                   </td>
-                  <td className="py-2 pl-1 pr-2.5 border-r border-border min-w-[320px] lg:min-w-[420px]">
-                    <div className="flex items-center gap-2 w-full">
-                      <div className="relative flex items-center shadow-sm w-40 bg-surface-2 border border-border rounded-[1.5rem] px-3 py-1.5 shrink-0">
-                        <TickerInput
-                          value={asset.symbol}
-                          onChange={(val) => updateAssetSymbol(aIdx, val)}
-                          placeholder="e.g. VTI"
-                          className="bg-transparent text-xs border-0 outline-none focus:ring-0 w-full box-border font-mono font-bold"
-                        />
-                        <Search className="w-3.5 h-3.5 text-text-3 shrink-0 ml-1" />
-                      </div>
-                      {assetName ? (
-                        <span className="text-xs text-pv-blue font-semibold truncate flex-1 leading-tight" title={assetName}>
-                          {assetName}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-text-3/60 font-normal italic truncate flex-1">
-                          --
-                        </span>
-                      )}
-                    </div>
-                  </td>
+                  <td className="py-2.5 pl-2 pr-5 min-w-[420px] lg:min-w-[540px]">
+                    <AssetPicker symbol={asset.symbol} onChange={(val) => updateAssetSymbol(aIdx, val)} placeholder="e.g. VTI" />
+</td>
                   {portfolioNames.map((pn, i) => (
                     <td key={pn.id} className="p-2 lg:p-3">
                       <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
@@ -1870,7 +1854,7 @@ export function TacticalAllocation() {
   return (
     <MobileZoomWrapper scaleMobile={0.4}>
       <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
-      <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24">
+      <div className="space-y-8 animate-fade-up w-full max-w-[1880px] mx-auto px-4 md:px-12 pb-24">
         <div className="flex flex-col gap-8">
           <PageHeader
             title={t("ta.title")}
@@ -2639,14 +2623,7 @@ export function TacticalAllocation() {
 
           <div className="flex justify-between pt-4 items-center">
             
-            <button
-              onClick={handleRunBacktest}
-              disabled={isRunning}
-              className="py-3 px-8 bg-pv-blue text-white rounded-[1.5rem] text-base font-semibold hover:bg-pv-blue-l transition-colors shadow-lg shadow-pv-blue/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Play size={16} fill="currentColor" />{" "}
-              {isRunning ? t("pb.running") : t("pb.run")}
-            </button>
+            <RunButton onClick={handleRunBacktest} running={isRunning} label={t("pb.run")} runningLabel={t("pb.running")} />
           </div>
         </div>
         <div id="bt-results-anchor" className="h-4"></div>
@@ -2661,9 +2638,9 @@ export function TacticalAllocation() {
         {results && results.length > 0 && (
           <div
             id="report-content"
-            className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
+            className="space-y-12 pb-24 transition-all duration-700 bg-white pt-12 mt-12"
           >
-            <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 text-base text-text font-sans">
+            <div className="w-full max-w-[1880px] mx-auto px-4 md:px-8 text-base text-text font-sans">
               {/* Header info */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-border pb-12">
                 <div className="space-y-2">
@@ -2785,7 +2762,7 @@ export function TacticalAllocation() {
                                 <div className="font-semibold text-text">
                                   {r.name}
                                 </div>
-                                <div className="text-base text-text-4">
+                                <div className="text-[12px] text-text-4">
                                   {currentLabels.since} {r.startYear}
                                 </div>
                               </div>
@@ -2828,20 +2805,19 @@ export function TacticalAllocation() {
                               r.cagr >= 0 ? "text-green" : "text-red",
                             )}
                           >
-                            {r.cagr >= 0 ? "+" : ""}
-                            {r.cagr.toFixed(2)}%
+                            <CountUp value={r.cagr} decimals={2} sign suffix="%" />
                           </td>
                           <td className="px-4 py-4 text-center text-text tabular-nums text-base">
-                            {r.stdev.toFixed(2)}%
+                            <CountUp value={r.stdev} decimals={2} suffix="%" delay={0.15} />
                           </td>
                           <td className="px-4 py-4 text-center font-medium text-red tabular-nums text-base">
-                            -{Math.abs(r.maxDrawdown).toFixed(2)}%
+                            <CountUp value={-Math.abs(r.maxDrawdown)} decimals={2} suffix="%" delay={0.3} />
                           </td>
                           <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
-                            {r.sharpe.toFixed(2)}
+                            <CountUp value={r.sharpe} decimals={2} delay={0.45} />
                           </td>
                           <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
-                            {r.sortino.toFixed(2)}
+                            <CountUp value={r.sortino} decimals={2} delay={0.6} />
                           </td>
                           {results.some(
                             (r) => r.metrics.alpha !== undefined,
@@ -2916,15 +2892,15 @@ export function TacticalAllocation() {
                           label: r.name,
                           data: r.balances,
                           borderColor: r.color,
-                          backgroundColor: r.color + "05",
-                          borderWidth: 3,
+                          backgroundColor: areaGradient(r.color, results.length > 1 ? 0.07 : 0.18),
+                        borderWidth: 2.25,
                           pointRadius: 0,
                           pointHoverRadius: 5,
                           pointHoverBackgroundColor: r.color,
                           pointHoverBorderColor: "#ffffff",
                           pointHoverBorderWidth: 2,
                           tension: 0.15,
-                          fill: false,
+                          fill: "origin",
                         })),
                       }}
                       options={{
@@ -2936,12 +2912,12 @@ export function TacticalAllocation() {
                             position: "bottom",
                             labels: {
                               usePointStyle: true,
-                              pointStyle: "rectRounded",
+                              pointStyle: "circle",
                               boxWidth: 12,
                               boxHeight: 12,
                               padding: 24,
                               font: {
-                                family: "sans-serif",
+                                family: CHART_FONT,
                                 size: 13,
                                 weight: "bold",
                               },
@@ -2949,16 +2925,8 @@ export function TacticalAllocation() {
                             },
                           },
                           tooltip: {
-                            backgroundColor: "#0f172a",
-                            titleColor: "#94a3b8",
-                            bodyColor: "#f8fafc",
-                            borderColor: "#1e293b",
-                            borderWidth: 1,
-                            padding: 14,
-                            cornerRadius: 8,
-                            displayColors: true,
-                            boxPadding: 6,
-                            usePointStyle: true,
+                            ...TOOLTIP,
+                          displayColors: true,
                             callbacks: {
                               label: (context) => {
                                 let label = context.dataset.label || "";
@@ -2980,16 +2948,18 @@ export function TacticalAllocation() {
                             grid: { display: false },
                             border: { display: false },
                             ticks: {
-                              font: { family: "sans-serif", size: 10 },
+                              font: { family: CHART_FONT, size: 10 },
                               color: "#64748b",
-                              maxTicksLimit: 52,
+                              maxTicksLimit: 14,
+                            maxRotation: 0,
+                            callback: function (this: any, v: any) { return String(this.getLabelForValue(v)).slice(0, 4); },
                             },
                           },
                           y: {
                             ticks: {
                               callback: (v) =>
                                 "$" + Number(v).toLocaleString("en-US"),
-                              font: { family: "sans-serif", size: 10 },
+                              font: { family: CHART_FONT, size: 10 },
                               color: "#64748b",
                             },
                             grid: { color: "#f1f5f9" },
@@ -3020,11 +2990,10 @@ export function TacticalAllocation() {
                             label: r.name,
                             data: r.annualReturns,
                             backgroundColor: r.annualReturns.map((val) =>
-                              val >= 0 ? r.color : "#e11d48",
-                            ),
-                            borderRadius: 0,
-                            borderWidth: 1,
-                            borderColor: "rgba(0,0,0,0.1)",
+                              val >= 0 ? r.color : r.color + "8C",
+                          ),
+                          borderRadius: 4,
+                          borderWidth: 0,
                             barPercentage: 0.85,
                             categoryPercentage: 0.9,
                           })),
@@ -3038,12 +3007,12 @@ export function TacticalAllocation() {
                               position: "bottom",
                               labels: {
                                 usePointStyle: true,
-                                pointStyle: "rectRounded",
+                                pointStyle: "circle",
                                 boxWidth: 12,
                                 boxHeight: 12,
                                 padding: 24,
                                 font: {
-                                  family: "sans-serif",
+                                  family: CHART_FONT,
                                   size: 13,
                                   weight: "bold",
                                 },
@@ -3051,16 +3020,8 @@ export function TacticalAllocation() {
                               },
                             },
                             tooltip: {
-                              backgroundColor: "#0f172a",
-                              titleColor: "#94a3b8",
-                              bodyColor: "#f8fafc",
-                              borderColor: "#1e293b",
-                              borderWidth: 1,
-                              padding: 14,
-                              cornerRadius: 8,
-                              displayColors: true,
-                              boxPadding: 6,
-                              usePointStyle: true,
+                              ...TOOLTIP,
+                          displayColors: true,
                               callbacks: {
                                 label: (context) => {
                                   let label = context.dataset.label || "";
@@ -3078,14 +3039,14 @@ export function TacticalAllocation() {
                               grid: { display: false },
                               border: { display: false },
                               ticks: {
-                                font: { family: "sans-serif", size: 10 },
+                                font: { family: CHART_FONT, size: 10 },
                                 color: "#64748b",
                               },
                             },
                             y: {
                               ticks: {
                                 callback: (v) => v + "%",
-                                font: { family: "sans-serif", size: 10 },
+                                font: { family: CHART_FONT, size: 10 },
                                 color: "#64748b",
                               },
                               grid: { color: "#f1f5f9" },
@@ -3115,11 +3076,11 @@ export function TacticalAllocation() {
                             label: r.name,
                             data: r.drawdowns,
                             borderColor: r.color,
-                            backgroundColor: r.color + "08",
-                            fill: true,
-                            pointRadius: 0,
-                            pointHoverRadius: 5,
-                            borderWidth: 1,
+                            backgroundColor: areaGradient(r.color, 0.22, true),
+                          fill: "origin",
+                          pointRadius: 0,
+                          pointHoverRadius: 5,
+                          borderWidth: 1.75,
                             tension: 0.15,
                           })),
                         }}
@@ -3132,12 +3093,12 @@ export function TacticalAllocation() {
                               position: "bottom",
                               labels: {
                                 usePointStyle: true,
-                                pointStyle: "rectRounded",
+                                pointStyle: "circle",
                                 boxWidth: 12,
                                 boxHeight: 12,
                                 padding: 24,
                                 font: {
-                                  family: "sans-serif",
+                                  family: CHART_FONT,
                                   size: 13,
                                   weight: "bold",
                                 },
@@ -3145,16 +3106,8 @@ export function TacticalAllocation() {
                               },
                             },
                             tooltip: {
-                              backgroundColor: "#0f172a",
-                              titleColor: "#94a3b8",
-                              bodyColor: "#f8fafc",
-                              borderColor: "#1e293b",
-                              borderWidth: 1,
-                              padding: 14,
-                              cornerRadius: 8,
-                              displayColors: true,
-                              boxPadding: 6,
-                              usePointStyle: true,
+                              ...TOOLTIP,
+                          displayColors: true,
                               callbacks: {
                                 label: (context) => {
                                   let label = context.dataset.label || "";
@@ -3172,16 +3125,18 @@ export function TacticalAllocation() {
                               grid: { display: false },
                               border: { display: false },
                               ticks: {
-                                font: { family: "sans-serif", size: 10 },
+                                font: { family: CHART_FONT, size: 10 },
                                 color: "#64748b",
-                                maxTicksLimit: 52,
+                                maxTicksLimit: 14,
+                            maxRotation: 0,
+                            callback: function (this: any, v: any) { return String(this.getLabelForValue(v)).slice(0, 4); },
                               },
                             },
                             y: {
                               max: 0,
                               ticks: {
                                 callback: (v) => v + "%",
-                                font: { family: "sans-serif", size: 10 },
+                                font: { family: CHART_FONT, size: 10 },
                                 color: "#64748b",
                               },
                               grid: { color: "#f1f5f9" },
@@ -3444,7 +3399,7 @@ export function TacticalAllocation() {
                     className="space-y-12"
                   >
                     <div className="flex flex-col xl:flex-row gap-12 items-start">
-                      <div className="flex-1 w-full xl:w-2/3 overflow-x-auto ">
+                      <div className="w-full overflow-x-auto">
                         <div className="flex items-center justify-between mb-6">
                           <h3 className="text-base font-semibold flex items-center gap-2 text-text">
                             <Activity size={14} /> {currentLabels.heatmap}
@@ -3453,18 +3408,6 @@ export function TacticalAllocation() {
                         <ReturnsHeatmap
                           monthlyReturns={results[activeResIdx].monthlyReturns}
                         />
-                      </div>
-                      <div className="w-full xl:w-1/3 shrink-0">
-                        <h3 className="text-base font-semibold mb-6 flex items-center gap-2 text-text">
-                          <Activity size={14} /> {currentLabels.assetAllocation}
-                        </h3>
-                        <div className="bg-[#0f172a] rounded-[2rem] p-8 shadow-2xl border border-surface-3">
-                          <EliteDonut
-                            assets={results[activeResIdx].assets || []}
-                            allocations={results[activeResIdx].alloc || {}}
-                            title={currentLabels.assetAllocDetails}
-                          />
-                        </div>
                       </div>
                     </div>
                   </div>

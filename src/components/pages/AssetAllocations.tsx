@@ -51,6 +51,9 @@ import { handleFirestoreError, OperationType } from "../../lib/firestoreUtils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { InfoTooltip } from "../ui/InfoTooltip";
 import { lazyPortfolios } from "./lazyPortfoliosData";
+import { areaGradient, CHART_FONT, TOOLTIP } from "../ui/chartTheme";
+import { CountUp } from "../ui/CountUp";
+import { AssetPicker, RunButton, toOptions } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
 import {
@@ -1297,7 +1300,7 @@ export function AssetAllocations({
   return (
     <MobileZoomWrapper scaleMobile={0.4}>
       <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
-      <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24">
+      <div className="space-y-8 animate-fade-up w-full max-w-[1880px] mx-auto px-4 md:px-12 pb-24">
         <div className="flex flex-col gap-8">
           <PageHeader
             title={t("aa.page_title")}
@@ -1597,7 +1600,7 @@ export function AssetAllocations({
                 <thead>
                   <tr className="border-b border-border bg-surface-2">
                     <th className="py-2.5 px-2.5 text-xs lg:text-sm font-semibold text-text w-auto whitespace-nowrap">{t("aa.asset_class") || "Assets"}</th>
-                    <th className="py-2.5 px-2.5 min-w-[320px] lg:min-w-[400px] w-80 lg:w-96 border-r border-border font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Asset & Name</th>
+                    <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Ticker & Name</th>
                     {portfolioNames.map((pn, i) => (
                       <th
                         key={pn.id}
@@ -1653,41 +1656,9 @@ export function AssetAllocations({
                           >+ {t("aa.add_more")}</button>
                         )}
                       </td>
-                      <td className="py-2 pl-1 pr-2.5 border-r border-border min-w-[320px] lg:min-w-[420px]">
-                        <div className="flex items-center gap-2 w-full">
-                          <div className="relative flex items-center shadow-sm w-40 shrink-0">
-                            <CustomSelect
-                              value={asset.symbol}
-                              onChange={(e: any) =>
-                                updateAssetSymbol(aIdx, e.target.value)
-                              }
-                              className="bg-surface-2 text-xs px-3 py-2 border border-border rounded-[1.5rem] outline-none focus:border-pv-blue transition-colors w-full box-border font-semibold text-text cursor-pointer truncate"
-                            >
-                              <option value="" disabled>{t("aa.sel_asset")}</option>
-                              {ASSET_CLASSES.map((group) => (
-                                <optgroup key={group.group} label={group.group}>
-                                  {group.options.map((opt) => (
-                                    <option key={opt.symbol} value={opt.symbol}>
-                                      {opt.symbol} - {opt.label}
-                                    </option>
-                                  ))}
-                                </optgroup>
-                              ))}
-                            </CustomSelect>
-                          </div>
-                          {asset.symbol ? (
-                            <span className="text-xs text-pv-blue font-semibold truncate flex-1 leading-tight" title={ASSET_DATA[asset.symbol.toUpperCase()]?.label || ASSET_CLASSES.flatMap((g) => g.options).find((o) => o.symbol === asset.symbol)?.label || ""}>
-                              {ASSET_DATA[asset.symbol.toUpperCase()]?.label ||
-                                ASSET_CLASSES.flatMap((g) => g.options).find((o) => o.symbol === asset.symbol)?.label ||
-                                ""}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-text-3/60 font-normal italic truncate flex-1">
-                              --
-                            </span>
-                          )}
-                        </div>
-                      </td>
+                      <td className="py-2.5 pl-2 pr-5 min-w-[420px] lg:min-w-[540px]">
+                        <AssetPicker symbol={asset.symbol} options={toOptions(ASSET_CLASSES)} placeholder={t("aa.sel_asset")} onChange={(val) => updateAssetSymbol(aIdx, val)} />
+</td>
                       {portfolioNames.map((pn, i) => (
                         <td key={pn.id} className="p-2 lg:p-3">
                           <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
@@ -1713,7 +1684,7 @@ export function AssetAllocations({
                   {/* Totals Row */}
                   <tr className="bg-surface-2 font-bold">
                     <td className="p-3.5 text-sm lg:text-base font-bold text-text">{t("aa.totals")}</td>
-                    <td className="p-3.5 border-r border-border"></td>
+                    <td className="p-3.5"></td>
                     {portfolioNames.map((pn, i) => {
                       const totalWeight = portfolioAssets.reduce(
                         (sum, a) => sum + Number(a.weights[i] || 0),
@@ -1763,28 +1734,13 @@ export function AssetAllocations({
             )}
             <div className="flex justify-between pt-4 items-center">
               
-              <button
-                onClick={runBacktest}
-                disabled={isRunning}
-                className="py-3 px-8 bg-pv-blue text-white rounded-[1.5rem] text-base font-semibold hover:bg-pv-blue-l transition-colors shadow-lg shadow-pv-blue/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isRunning ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{" "}
-                    {t("pb.running")}{" "}
-                  </>
-                ) : (
-                  <>
-                    <Play size={16} fill="currentColor" /> {t("pb.run")}{" "}
-                  </>
-                )}
-              </button>
+              <RunButton onClick={runBacktest} running={isRunning} label={t("pb.run")} runningLabel={t("pb.running")} />
             </div>
           </div>
         </div>
           <div id="bt-results-anchor" className="h-4"></div>
           {(!results || results.length === 0) && (
-            <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8">
+            <div className="w-full max-w-[1880px] mx-auto px-4 md:px-8">
               <div className="h-full min-h-[500px] border border-border/30 rounded-[2rem] relative overflow-hidden bg-surface-2/20">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale"></div>
                 <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
@@ -1795,9 +1751,9 @@ export function AssetAllocations({
           {results && results.length > 0 &&
               <div
                 id="report-content"
-                className="space-y-12 pb-24 transition-all duration-700 bg-surface-2 pt-12 border-t border-border mt-12"
+                className="space-y-12 pb-24 transition-all duration-700 bg-white pt-12 mt-12"
               >
-          <div className="w-full max-w-[1308px] mx-auto px-4 md:px-8 text-base text-text font-sans">
+          <div className="w-full max-w-[1880px] mx-auto px-4 md:px-8 text-base text-text font-sans">
             {/* Header info */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-border pb-12">
               <div className="space-y-2">
@@ -1907,7 +1863,7 @@ export function AssetAllocations({
                               <div className="font-semibold text-text">
                                 {r.name}
                               </div>
-                              <div className="text-base text-text-4">
+                              <div className="text-[12px] text-text-4">
                                 {t("pb.since")} {r.startYear}
                               </div>
                             </div>
@@ -1939,10 +1895,7 @@ export function AssetAllocations({
                           })}
                         </td>
                         <td className="px-4 py-4 text-center font-medium text-text tabular-nums text-base">
-                          $
-                          {r.endBalance.toLocaleString("fr-FR", {
-                            maximumFractionDigits: 0,
-                          })}
+                          <CountUp value={r.endBalance} decimals={0} prefix="$" locale="fr-FR" duration={2} />
                         </td>
                         <td
                           className={cn(
@@ -1950,20 +1903,19 @@ export function AssetAllocations({
                             r.cagr >= 0 ? "text-green" : "text-red",
                           )}
                         >
-                          {r.cagr >= 0 ? "+" : ""}
-                          {r.cagr.toFixed(2)}%
+                          <CountUp value={r.cagr} decimals={2} sign suffix="%" />
                         </td>
                         <td className="px-4 py-4 text-center text-text tabular-nums text-base">
-                          {r.stdev.toFixed(2)}%
+                          <CountUp value={r.stdev} decimals={2} suffix="%" delay={0.15} />
                         </td>
                         <td className="px-4 py-4 text-center font-medium text-red tabular-nums text-base">
-                          -{Math.abs(r.maxDrawdown).toFixed(2)}%
+                          <CountUp value={-Math.abs(r.maxDrawdown)} decimals={2} suffix="%" delay={0.3} />
                         </td>
                         <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
-                          {r.sharpe.toFixed(2)}
+                          <CountUp value={r.sharpe} decimals={2} delay={0.45} />
                         </td>
                         <td className="px-4 py-4 text-center tabular-nums text-base font-medium text-text">
-                          {r.sortino.toFixed(2)}
+                          <CountUp value={r.sortino} decimals={2} delay={0.6} />
                         </td>
                         {results.some((r) => r.metrics.alpha !== undefined) && (
                           <td
@@ -2032,15 +1984,15 @@ export function AssetAllocations({
                         label: r.name,
                         data: r.balances,
                         borderColor: r.color,
-                        backgroundColor: r.color + "05",
-                        borderWidth: 3,
+                        backgroundColor: areaGradient(r.color, results.length > 1 ? 0.07 : 0.18),
+                        borderWidth: 2.25,
                         pointRadius: 0,
                         pointHoverRadius: 5,
                         pointHoverBackgroundColor: r.color,
                         pointHoverBorderColor: "#ffffff",
                         pointHoverBorderWidth: 2,
                         tension: 0.15,
-                        fill: false,
+                        fill: "origin",
                       })),
                     }}
                     options={{
@@ -2052,12 +2004,12 @@ export function AssetAllocations({
                           position: "bottom",
                           labels: {
                             usePointStyle: true,
-                            pointStyle: "rectRounded",
+                            pointStyle: "circle",
                             boxWidth: 12,
                             boxHeight: 12,
                             padding: 24,
                             font: {
-                              family: "sans-serif",
+                              family: CHART_FONT,
                               size: 13,
                               weight: "bold",
                             },
@@ -2065,16 +2017,8 @@ export function AssetAllocations({
                           },
                         },
                         tooltip: {
-                          backgroundColor: "#0f172a",
-                          titleColor: "#94a3b8",
-                          bodyColor: "#f8fafc",
-                          borderColor: "#1e293b",
-                          borderWidth: 1,
-                          padding: 14,
-                          cornerRadius: 8,
+                          ...TOOLTIP,
                           displayColors: true,
-                          boxPadding: 6,
-                          usePointStyle: true,
                           callbacks: {
                             label: (context) => {
                               let label = context.dataset.label || "";
@@ -2096,16 +2040,18 @@ export function AssetAllocations({
                           grid: { display: false },
                           border: { display: false },
                           ticks: {
-                            font: { family: "sans-serif", size: 10 },
+                            font: { family: CHART_FONT, size: 10 },
                             color: "#64748b",
-                            maxTicksLimit: 52,
+                            maxTicksLimit: 14,
+                            maxRotation: 0,
+                            callback: function (this: any, v: any) { return String(this.getLabelForValue(v)).slice(0, 4); },
                           },
                         },
                         y: {
                           ticks: {
                             callback: (v) =>
                               "$" + Number(v).toLocaleString("fr-FR"),
-                            font: { family: "sans-serif", size: 10 },
+                            font: { family: CHART_FONT, size: 10 },
                             color: "#64748b",
                           },
                           grid: { color: "#f1f5f9" },
@@ -2134,11 +2080,10 @@ export function AssetAllocations({
                           label: r.name,
                           data: r.annualReturns,
                           backgroundColor: r.annualReturns.map((val) =>
-                            val >= 0 ? r.color : "#e11d48",
+                            val >= 0 ? r.color : r.color + "8C",
                           ),
-                          borderRadius: 0,
-                          borderWidth: 1,
-                          borderColor: "rgba(0,0,0,0.1)",
+                          borderRadius: 4,
+                          borderWidth: 0,
                           barPercentage: 0.85,
                           categoryPercentage: 0.9,
                         })),
@@ -2152,12 +2097,12 @@ export function AssetAllocations({
                             position: "bottom",
                             labels: {
                               usePointStyle: true,
-                              pointStyle: "rectRounded",
+                              pointStyle: "circle",
                               boxWidth: 12,
                               boxHeight: 12,
                               padding: 24,
                               font: {
-                                family: "sans-serif",
+                                family: CHART_FONT,
                                 size: 13,
                                 weight: "bold",
                               },
@@ -2165,16 +2110,8 @@ export function AssetAllocations({
                             },
                           },
                           tooltip: {
-                            backgroundColor: "#0f172a",
-                            titleColor: "#94a3b8",
-                            bodyColor: "#f8fafc",
-                            borderColor: "#1e293b",
-                            borderWidth: 1,
-                            padding: 14,
-                            cornerRadius: 8,
-                            displayColors: true,
-                            boxPadding: 6,
-                            usePointStyle: true,
+                            ...TOOLTIP,
+                          displayColors: true,
                             callbacks: {
                               label: (context) => {
                                 let label = context.dataset.label || "";
@@ -2192,14 +2129,14 @@ export function AssetAllocations({
                             grid: { display: false },
                             border: { display: false },
                             ticks: {
-                              font: { family: "sans-serif", size: 10 },
+                              font: { family: CHART_FONT, size: 10 },
                               color: "#64748b",
                             },
                           },
                           y: {
                             ticks: {
                               callback: (v) => v + "%",
-                              font: { family: "sans-serif", size: 10 },
+                              font: { family: CHART_FONT, size: 10 },
                               color: "#64748b",
                             },
                             grid: { color: "#f1f5f9" },
@@ -2227,11 +2164,11 @@ export function AssetAllocations({
                           label: r.name,
                           data: r.drawdowns,
                           borderColor: r.color,
-                          backgroundColor: r.color + "08",
-                          fill: true,
+                          backgroundColor: areaGradient(r.color, 0.22, true),
+                          fill: "origin",
                           pointRadius: 0,
                           pointHoverRadius: 5,
-                          borderWidth: 1,
+                          borderWidth: 1.75,
                           tension: 0.15,
                         })),
                       }}
@@ -2244,12 +2181,12 @@ export function AssetAllocations({
                             position: "bottom",
                             labels: {
                               usePointStyle: true,
-                              pointStyle: "rectRounded",
+                              pointStyle: "circle",
                               boxWidth: 12,
                               boxHeight: 12,
                               padding: 24,
                               font: {
-                                family: "sans-serif",
+                                family: CHART_FONT,
                                 size: 13,
                                 weight: "bold",
                               },
@@ -2257,16 +2194,8 @@ export function AssetAllocations({
                             },
                           },
                           tooltip: {
-                            backgroundColor: "#0f172a",
-                            titleColor: "#94a3b8",
-                            bodyColor: "#f8fafc",
-                            borderColor: "#1e293b",
-                            borderWidth: 1,
-                            padding: 14,
-                            cornerRadius: 8,
-                            displayColors: true,
-                            boxPadding: 6,
-                            usePointStyle: true,
+                            ...TOOLTIP,
+                          displayColors: true,
                             callbacks: {
                               label: (context) => {
                                 let label = context.dataset.label || "";
@@ -2284,16 +2213,18 @@ export function AssetAllocations({
                             grid: { display: false },
                             border: { display: false },
                             ticks: {
-                              font: { family: "sans-serif", size: 10 },
+                              font: { family: CHART_FONT, size: 10 },
                               color: "#64748b",
-                              maxTicksLimit: 52,
+                              maxTicksLimit: 14,
+                            maxRotation: 0,
+                            callback: function (this: any, v: any) { return String(this.getLabelForValue(v)).slice(0, 4); },
                             },
                           },
                           y: {
                             max: 0,
                             ticks: {
                               callback: (v) => v + "%",
-                              font: { family: "sans-serif", size: 10 },
+                              font: { family: CHART_FONT, size: 10 },
                               color: "#64748b",
                             },
                             grid: { color: "#f1f5f9" },
@@ -2539,7 +2470,7 @@ export function AssetAllocations({
                   className="space-y-12"
                 >
                   <div className="flex flex-col xl:flex-row gap-12 items-start">
-                    <div className="flex-1 w-full xl:w-2/3 overflow-x-auto">
+                    <div className="w-full overflow-x-auto">
                       <div className="flex items-center justify-between mb-6">
                         <h3 className="text-base font-semibold flex items-center gap-2 text-text">
                           <Activity size={14} />{t("aa.chart.heatmap")}</h3>
@@ -2547,18 +2478,6 @@ export function AssetAllocations({
                       <ReturnsHeatmap
                         monthlyReturns={results[activeResIdx].monthlyReturns}
                       />
-                    </div>
-                    <div className="w-full xl:w-1/3 shrink-0">
-                      <h3 className="text-base font-semibold mb-6 flex items-center gap-2 text-text">
-                        <Activity size={14} /> {t("pb.assetAllocDetails")}
-                      </h3>
-                      <div className="bg-surface rounded-[2rem] p-8 shadow-xl border border-border">
-                        <EliteDonut
-                          assets={results[activeResIdx].assets || []}
-                          allocations={results[activeResIdx].alloc || {}}
-                          title={t("pb.assetAllocDetails")}
-                        />
-                      </div>
                     </div>
                   </div>
                 </div>

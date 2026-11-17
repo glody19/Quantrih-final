@@ -6,7 +6,9 @@ import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { SUMMARY_TRANSLATIONS, type Book } from "../../data/books";
-import { CATEGORIES, LIBRARY, HEADLINERS, RECENT, PAPERS, MEDIA, categoryOf, type CategoryId, type Media } from "../../data/learning";
+import { CATEGORIES, LIBRARY, BEST_SELLERS, RECENT, PAPERS, MEDIA, categoryOf, type CategoryId, type Media } from "../../data/learning";
+import { BookCard } from "../education/BookCard";
+import { HeroBand, HeroStats, Donut, Columns, BarList, CountUp, LibraryArt, PALETTE } from "../education/Viz";
 
 type Tab = "books" | "research" | "media";
 
@@ -17,7 +19,10 @@ const T = {
     tabs: { books: "Books", research: "Research", media: "Videos and podcasts" },
     search: "Search a title, an author or a topic",
     all: "All topics",
-    headliners: "The references",
+    headliners: "Best sellers",
+    bestSub: "Stock market investing and trading classics, the most read worldwide. Hover a book to turn it around.",
+    kicker: "Library", glance: "The library at a glance", byTopic: "Books by topic", byDecade: "Research by decade", byKind: "Videos, podcasts and lectures", langs: "Books by language", english: "English", frenchL: "French",
+    statBooks: "books", statPapers: "papers", statMedia: "videos and podcasts", statTopics: "topics",
     recent: "Recent releases",
     allBooks: "All books, most read first",
     results: "Results",
@@ -33,7 +38,10 @@ const T = {
     tabs: { books: "Livres", research: "Recherche", media: "Vidéos et podcasts" },
     search: "Rechercher un titre, un auteur ou un sujet",
     all: "Tous les sujets",
-    headliners: "Les références",
+    headliners: "Best-sellers",
+    bestSub: "Les classiques de l'investissement en bourse et du trading, les plus lus au monde. Survolez un livre pour le retourner.",
+    kicker: "Bibliothèque", glance: "La bibliothèque en un coup d'œil", byTopic: "Livres par thème", byDecade: "Recherche par décennie", byKind: "Vidéos, podcasts et cours", langs: "Livres par langue", english: "Anglais", frenchL: "Français",
+    statBooks: "livres", statPapers: "articles", statMedia: "vidéos et podcasts", statTopics: "thèmes",
     recent: "Parutions récentes",
     allBooks: "Tous les livres, les plus lus d'abord",
     results: "Résultats",
@@ -111,15 +119,25 @@ function PartnerCoursesBand({ language }: { language: string }) {
   );
 }
 
-const CARD = "rounded-[1.25rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)]";
+const CARD = "rounded-[1.5rem] bg-white shadow-[0_22px_60px_-40px_rgba(6,18,27,0.45)]";
 const KIND_ICON = { video: PlayCircle, podcast: Mic, course: Presentation } as const;
+const KIND_COLOR = { video: PALETTE.coral, podcast: PALETTE.teal, course: PALETTE.gold } as const;
+/** One colour per topic, used on chips, charts and book tags. */
+const CAT_COLOR: Record<CategoryId, string> = {
+  value: PALETTE.gold, index: PALETTE.sky, quant: PALETTE.teal, trading: PALETTE.coral, risk: PALETTE.blue, macro: PALETTE.green, pricing: PALETTE.navy,
+};
 
-function GroupTitle({ children, count }: { children: React.ReactNode; count?: number }) {
+function GroupTitle({ children, count, sub, color = PALETTE.sky }: { children: React.ReactNode; count?: number; sub?: string; color?: string }) {
   return (
-    <h2 className="mb-5 flex items-baseline gap-3 text-[20px] md:text-[22px] font-semibold tracking-tight text-text">
-      {children}
-      {count != null && <span className="text-[13px] font-medium text-text-3 tabular-nums">{count}</span>}
-    </h2>
+    <div className="mb-7">
+      <motion.h2 initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="flex items-center gap-3 text-[24px] md:text-[30px] font-semibold tracking-tight text-slate-900">
+        <span className="w-2.5 h-8 rounded-full" style={{ background: `linear-gradient(180deg, ${color}, ${PALETTE.navy})` }} />
+        {children}
+        {count != null && <span className="text-[15px] font-medium text-slate-400 tabular-nums">{count}</span>}
+      </motion.h2>
+      {sub && <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.3 }} className="mt-2 ml-5 text-[16px] text-slate-600">{sub}</motion.p>}
+    </div>
   );
 }
 
@@ -150,212 +168,220 @@ export function Education() {
   const filtering = !!q || cat !== "all";
   const catName = (id: CategoryId) => CATEGORIES.find((c) => c.id === id)![lang];
 
+  // figures for the infographics, all computed from the library itself
+  const byTopic = CATEGORIES.map((c) => ({ label: c[lang], value: LIBRARY.filter((b) => categoryOf(b) === c.id).length, color: CAT_COLOR[c.id] })).filter((d) => d.value > 0);
+  const decades = (() => {
+    const m = new Map<number, number>();
+    PAPERS.forEach((p) => { const d = Math.floor(Number(p.year) / 10) * 10; if (d) m.set(d, (m.get(d) || 0) + 1); });
+    return [...m.entries()].sort((a, b) => a[0] - b[0]).map(([d, v]) => ({ label: `${d}s`, value: v }));
+  })();
+  const byKind = (["video", "podcast", "course"] as const).map((k) => ({ label: L.kinds[k], value: MEDIA.filter((m) => m.kind === k).length, color: KIND_COLOR[k] }));
+  const frBooks = LIBRARY.filter((b) => b.origin === "fr").length;
+
+  const grid = (list: typeof LIBRARY) => (
+    <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-x-8 gap-y-12">
+      {list.map((b, i) => (
+        <BookCard key={b.title} book={b} index={i} find={L.find} summary={summaryLabel(b, language)} tag={tagLabel(b, language)} tagColor={CAT_COLOR[categoryOf(b)]} />
+      ))}
+    </div>
+  );
+
   return (
     <MobileZoomWrapper scaleMobile={0.8}>
-      <div className="page-container pb-24 mt-6 min-h-[calc(100vh-80px)] font-sans">
-        <header className="max-w-3xl">
-          <h1 className="text-[26px] md:text-[34px] leading-tight font-semibold tracking-tight text-text">{L.title}</h1>
-          <span className="block mt-3 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]" />
-          <p className="mt-4 text-[15px] md:text-[17px] leading-relaxed text-text-2">{L.sub}</p>
-        </header>
+      <div className="w-full pb-24 -mt-4 lg:-mt-6 font-sans">
+        <HeroBand kicker={L.kicker} title={L.title} sub={L.sub} art={<LibraryArt />}>
+          <HeroStats items={[
+            { value: LIBRARY.length, label: L.statBooks, color: PALETTE.gold },
+            { value: PAPERS.length, label: L.statPapers, color: PALETTE.sky },
+            { value: MEDIA.length, label: L.statMedia, color: PALETTE.coral },
+            { value: CATEGORIES.length, label: L.statTopics, color: PALETTE.teal },
+          ]} />
+        </HeroBand>
 
-        {/* feature: market structure and dark pools */}
-        <a href="/market-structure" onClick={(e) => { e.preventDefault(); window.history.pushState({}, "", "/market-structure"); window.dispatchEvent(new PopStateEvent("popstate")); window.scrollTo(0, 0); }}
-          className="group mt-8 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-[1.5rem] px-6 py-5 text-white shadow-[0_18px_50px_-30px_rgba(6,18,27,0.6)]"
-          style={{ background: "linear-gradient(110deg,#0A1E2D 0%,#14466B 70%,#1D6FA8 100%)" }}>
-          <span>
-            <span className="block text-[12px] font-semibold uppercase tracking-[0.16em] text-[#A9C8EA]">{lang === "fr" ? "Dossier" : "Feature"}</span>
-            <span className="mt-1 block text-[20px] md:text-[22px] font-semibold">{lang === "fr" ? "Dark pools et microstructure de marché" : "Dark pools and market structure"}</span>
-            <span className="mt-1 block text-[14px] text-white/70">{lang === "fr" ? "Le trajet d'un ordre, les plateformes, les données hebdomadaires de la FINRA, Euronext et les règles européennes." : "How an order travels, the venues, FINRA weekly data, Euronext and the European rules."}</span>
-          </span>
-          <span className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#0C2233] text-[14px] font-semibold group-hover:gap-3 transition-all">{lang === "fr" ? "Lire le dossier" : "Read the feature"} →</span>
-        </a>
+        <div className="max-w-[1720px] mx-auto px-5 sm:px-8 lg:px-14">
+          {/* feature: market structure and dark pools */}
+          <motion.a href="/market-structure" onClick={(e) => { e.preventDefault(); window.history.pushState({}, "", "/market-structure"); window.dispatchEvent(new PopStateEvent("popstate")); window.scrollTo(0, 0); }}
+            initial={{ opacity: 0, y: 30, scale: 0.97 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            whileHover={{ scale: 1.01 }}
+            className="group mt-10 flex flex-col md:flex-row md:items-center justify-between gap-5 rounded-[1.75rem] px-8 py-7 text-white shadow-[0_24px_60px_-30px_rgba(6,18,27,0.6)] overflow-hidden relative"
+            style={{ background: "linear-gradient(110deg,#0A1E2D 0%,#14466B 60%,#1D6FA8 100%)" }}>
+            <span className="absolute -right-10 -top-16 w-64 h-64 rounded-full bg-[#E2B84F]/20 blur-2xl" />
+            <span className="relative">
+              <span className="block text-[13px] font-semibold uppercase tracking-[0.18em] text-[#E2B84F]">{lang === "fr" ? "Dossier" : "Feature"}</span>
+              <span className="mt-1 block text-[23px] md:text-[27px] font-semibold">{lang === "fr" ? "Dark pools et microstructure de marché" : "Dark pools and market structure"}</span>
+              <span className="mt-1 block text-[16px] text-white/75">{lang === "fr" ? "Le trajet d'un ordre, les plateformes, les données hebdomadaires de la FINRA, Euronext et les règles européennes." : "How an order travels, the venues, FINRA weekly data, Euronext and the European rules."}</span>
+            </span>
+            <span className="relative shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0C2233] text-[15px] font-semibold group-hover:gap-3 transition-all">{lang === "fr" ? "Lire le dossier" : "Read the feature"} →</span>
+          </motion.a>
 
-        {/* Tabs, search, topics */}
-        <div className="mt-8 flex flex-col gap-4">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-            <div className="inline-flex self-start p-1 rounded-full bg-white shadow-sm">
-              {(["books", "research", "media"] as const).map((k) => (
-                <button key={k} onClick={() => setTab(k)} className={cn("relative px-4 sm:px-5 h-10 rounded-full text-sm font-semibold transition-colors whitespace-nowrap", tab === k ? "text-white" : "text-text-2 hover:text-text")}>
-                  {tab === k && <motion.span layoutId="eduTab" className="absolute inset-0 rounded-full bg-pv-blue" transition={{ type: "spring", stiffness: 380, damping: 30 }} />}
-                  <span className="relative">{L.tabs[k]} <span className={cn("ml-1 text-xs tabular-nums", tab === k ? "text-white/70" : "text-text-4")}>{counts[k]}</span></span>
-                </button>
-              ))}
+          {/* infographics */}
+          <section className="mt-14">
+            <GroupTitle color={PALETTE.teal}>{L.glance}</GroupTitle>
+            <div className="grid lg:grid-cols-3 gap-6">
+              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className={cn(CARD, "p-6")}>
+                <h3 className="text-[18px] font-semibold text-slate-900">{L.byTopic}</h3>
+                <div className="mt-5 flex items-center gap-6">
+                  <Donut data={byTopic} size={190} thickness={24} center={<><CountUp value={LIBRARY.length} className="text-[32px] font-semibold text-slate-900" /><span className="text-[12px] uppercase tracking-[0.14em] text-slate-500">{L.statBooks}</span></>} />
+                  <ul className="grid gap-1.5 text-[14px]">
+                    {byTopic.map((d) => <li key={d.label} className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} /><span className="text-slate-700 leading-tight">{d.label}</span><span className="ml-auto pl-2 font-semibold tabular-nums text-slate-900">{d.value}</span></li>)}
+                  </ul>
+                </div>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.15 }} className={cn(CARD, "p-6")}>
+                <h3 className="text-[18px] font-semibold text-slate-900">{L.byDecade}</h3>
+                <div className="mt-6"><Columns data={decades} color={PALETTE.sky} height={200} /></div>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.3 }} className={cn(CARD, "p-6 grid gap-7 content-start")}>
+                <div><h3 className="mb-4 text-[18px] font-semibold text-slate-900">{L.byKind}</h3><BarList data={byKind} /></div>
+                <div><h3 className="mb-4 text-[18px] font-semibold text-slate-900">{L.langs}</h3>
+                  <BarList data={[{ label: L.english, value: LIBRARY.length - frBooks, color: PALETTE.blue }, { label: L.frenchL, value: frBooks, color: PALETTE.gold }]} /></div>
+              </motion.div>
             </div>
-            <div className="relative flex-1 max-w-xl">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-4" />
-              <input type="text" placeholder={L.search} value={search} onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-11 pr-4 h-11 bg-white rounded-full text-sm text-text placeholder-text-4 outline-none shadow-sm focus:ring-2 focus:ring-pv-blue/30" />
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {(["all", ...CATEGORIES.map((c) => c.id)] as const).map((id) => (
-              <button key={id} onClick={() => setCat(id as CategoryId | "all")}
-                className={cn("px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-colors", cat === id ? "bg-[#0C2233] text-white" : "bg-white text-text-2 hover:text-text shadow-sm")}>
-                {id === "all" ? L.all : catName(id as CategoryId)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-10"><PartnerCoursesBand language={language} /></div>
-
-        {counts[tab] === 0 && <p className={cn(CARD, "text-center text-text-3 py-16 text-sm")}>{L.none}</p>}
-
-        {/* ── Books ── */}
-        {tab === "books" && books.length > 0 && (
-          filtering ? (
-            <section>
-              <GroupTitle count={books.length}>{L.results}</GroupTitle>
-              <BookGrid books={books} language={language} find={L.find} french={L.french} />
-            </section>
-          ) : (
-            <div className="grid gap-14">
-              <section>
-                <GroupTitle>{L.headliners}</GroupTitle>
-                <BookGrid books={HEADLINERS} language={language} find={L.find} french={L.french} />
-              </section>
-              <section>
-                <GroupTitle>{L.recent}</GroupTitle>
-                <BookGrid books={RECENT} language={language} find={L.find} french={L.french} />
-              </section>
-              <section>
-                <GroupTitle count={books.length}>{L.allBooks}</GroupTitle>
-                <BookGrid books={books.filter((b) => !HEADLINERS.includes(b) && !b.recent)} language={language} find={L.find} french={L.french} />
-              </section>
-            </div>
-          )
-        )}
-
-        {/* ── Research ── */}
-        {tab === "research" && papers.length > 0 && (
-          <section>
-            <div className={cn(CARD, "overflow-x-auto p-3 sm:p-5")}>
-              <table className="w-full min-w-[720px] text-[14px] border-separate border-spacing-y-[3px]">
-                <thead>
-                  <tr className="text-[13px] text-slate-500">
-                    <th className="text-left font-medium pl-2 pb-2">{L.paper}</th>
-                    <th className="text-left font-medium pb-2 px-3 w-[24%]">{L.published}</th>
-                    <th className="pb-2 w-[70px]" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {papers.map((p, i) => (
-                    <motion.tr key={p.title} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i, 10) * 0.03 }} className="align-top hover:bg-surface-3/50 transition-colors">
-                      <td className="pl-2 py-3 pr-3">
-                        <a href={p.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-text hover:text-pv-blue leading-snug">{p.title}</a>
-                        <span className="block mt-0.5 text-[13px] text-[#1B3F72]">{p.authors}</span>
-                        <span className="block mt-1.5 text-[13px] leading-relaxed text-text-2 max-w-3xl">{p[lang]}</span>
-                      </td>
-                      <td className="px-3 py-3 text-[13px] text-text-2">
-                        <span className="block">{p.venue}</span>
-                        <span className="block tabular-nums text-text-3">{p.year} · {catName(p.cat)}</span>
-                      </td>
-                      <td className="py-3 pr-2 text-right">
-                        <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[13px] font-semibold text-pv-blue hover:underline">{L.read} <ArrowUpRight size={14} /></a>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="mt-3 text-[12px] text-slate-500">{L.researchNote}</p>
           </section>
-        )}
 
-        {/* ── Videos, podcasts, lectures ── */}
-        {tab === "media" && media.length > 0 && (
-          <div className="grid gap-12">
-            {(["video", "podcast", "course"] as const).map((kind) => {
-              const list = media.filter((m) => m.kind === kind);
-              if (!list.length) return null;
-              return (
-                <section key={kind}>
-                  <GroupTitle count={list.length}>{L.kinds[kind]}</GroupTitle>
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {list.map((m, i) => <MediaCard key={m.name} m={m} lang={lang} index={i} open={L.open} topic={catName(m.cat)} />)}
-                  </div>
-                </section>
-              );
-            })}
+          {/* Tabs, search, topics */}
+          <div className="mt-16 flex flex-col gap-5">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <div className="inline-flex self-start p-1.5 rounded-full bg-white shadow-[0_10px_30px_-18px_rgba(6,18,27,0.4)]">
+                {(["books", "research", "media"] as const).map((k) => (
+                  <button key={k} onClick={() => setTab(k)} className={cn("relative px-5 sm:px-6 h-12 rounded-full text-[16px] font-semibold transition-colors whitespace-nowrap", tab === k ? "text-white" : "text-slate-600 hover:text-slate-900")}>
+                    {tab === k && <motion.span layoutId="eduTab" className="absolute inset-0 rounded-full" style={{ background: `linear-gradient(110deg, ${PALETTE.navy}, ${PALETTE.blue})` }} transition={{ type: "spring", stiffness: 380, damping: 30 }} />}
+                    <span className="relative">{L.tabs[k]} <span className={cn("ml-1 text-[13px] tabular-nums", tab === k ? "text-white/70" : "text-slate-400")}>{counts[k]}</span></span>
+                  </button>
+                ))}
+              </div>
+              <div className="relative flex-1 max-w-2xl">
+                <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input type="text" placeholder={L.search} value={search} onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-12 pr-4 h-[52px] bg-white rounded-full text-[16px] text-slate-900 placeholder-slate-400 outline-none shadow-[0_10px_30px_-18px_rgba(6,18,27,0.4)] focus:ring-2 focus:ring-[#38BDF8]/40" />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(["all", ...CATEGORIES.map((c) => c.id)] as const).map((id, i) => {
+                const on = cat === id;
+                const color = id === "all" ? PALETTE.ink : CAT_COLOR[id as CategoryId];
+                return (
+                  <motion.button key={id} onClick={() => setCat(id as CategoryId | "all")} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+                    className={cn("inline-flex items-center gap-2 px-4 py-2 rounded-full text-[15px] font-semibold transition-all", on ? "text-white shadow-md" : "bg-white text-slate-700 hover:text-slate-900 shadow-sm")}
+                    style={on ? { background: color } : undefined}>
+                    {id !== "all" && <span className="w-2.5 h-2.5 rounded-full" style={{ background: on ? "#fff" : color }} />}
+                    {id === "all" ? L.all : catName(id as CategoryId)}
+                  </motion.button>
+                );
+              })}
+            </div>
           </div>
-        )}
+
+          <div className="mt-10"><PartnerCoursesBand language={language} /></div>
+
+          {counts[tab] === 0 && <p className={cn(CARD, "text-center text-slate-500 py-16 text-[16px]")}>{L.none}</p>}
+
+          {/* ── Books ── */}
+          {tab === "books" && books.length > 0 && (
+            filtering ? (
+              <section>
+                <GroupTitle count={books.length}>{L.results}</GroupTitle>
+                {grid(books)}
+              </section>
+            ) : (
+              <div className="grid gap-20">
+                <section className="relative rounded-[2rem] px-6 sm:px-10 py-10" style={{ background: "linear-gradient(135deg, #FFF8E8 0%, #F3F7FC 55%, #E8F4FC 100%)" }}>
+                  <GroupTitle color={PALETTE.gold} sub={L.bestSub}>{L.headliners}</GroupTitle>
+                  {grid(BEST_SELLERS)}
+                </section>
+                <section>
+                  <GroupTitle color={PALETTE.coral}>{L.recent}</GroupTitle>
+                  {grid(RECENT)}
+                </section>
+                <section>
+                  <GroupTitle color={PALETTE.sky}>{L.allBooks}</GroupTitle>
+                  {grid(books.filter((b) => !BEST_SELLERS.includes(b) && !b.recent))}
+                </section>
+              </div>
+            )
+          )}
+
+          {/* ── Research ── */}
+          {tab === "research" && papers.length > 0 && (
+            <section>
+              <div className={cn(CARD, "overflow-x-auto p-4 sm:p-6")}>
+                <table className="w-full min-w-[760px] text-[16px] border-separate border-spacing-y-[4px]">
+                  <thead>
+                    <tr className="text-[14px] text-slate-500">
+                      <th className="text-left font-medium pl-3 pb-2">{L.paper}</th>
+                      <th className="text-left font-medium pb-2 px-3 w-[24%]">{L.published}</th>
+                      <th className="pb-2 w-[80px]" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {papers.map((p, i) => (
+                      <motion.tr key={p.title} initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: Math.min(i, 10) * 0.04 }} className="align-top hover:bg-[#F3F7FC] transition-colors">
+                        <td className="pl-3 py-4 pr-3 rounded-l-xl" style={{ boxShadow: `inset 4px 0 0 ${CAT_COLOR[p.cat]}` }}>
+                          <a href={p.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-slate-900 hover:text-[#1D6FA8] leading-snug">{p.title}</a>
+                          <span className="block mt-0.5 text-[14.5px] text-[#1B3F72]">{p.authors}</span>
+                          <span className="block mt-1.5 text-[14.5px] leading-relaxed text-slate-600 max-w-3xl">{p[lang]}</span>
+                        </td>
+                        <td className="px-3 py-4 text-[14.5px] text-slate-600">
+                          <span className="block">{p.venue}</span>
+                          <span className="mt-1 inline-flex items-center gap-1.5 tabular-nums text-slate-500"><span className="w-2 h-2 rounded-full" style={{ background: CAT_COLOR[p.cat] }} />{p.year} · {catName(p.cat)}</span>
+                        </td>
+                        <td className="py-4 pr-3 text-right rounded-r-xl">
+                          <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[14.5px] font-semibold text-[#1D6FA8] hover:underline">{L.read} <ArrowUpRight size={15} /></a>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 text-[13.5px] text-slate-500">{L.researchNote}</p>
+            </section>
+          )}
+
+          {/* ── Videos, podcasts, lectures ── */}
+          {tab === "media" && media.length > 0 && (
+            <div className="grid gap-14">
+              {(["video", "podcast", "course"] as const).map((kind) => {
+                const list = media.filter((m) => m.kind === kind);
+                if (!list.length) return null;
+                return (
+                  <section key={kind}>
+                    <GroupTitle count={list.length} color={KIND_COLOR[kind]}>{L.kinds[kind]}</GroupTitle>
+                    <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {list.map((m, i) => <MediaCard key={m.name} m={m} lang={lang} index={i} open={L.open} topic={catName(m.cat)} topicColor={CAT_COLOR[m.cat]} />)}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </MobileZoomWrapper>
   );
 }
 
-function MediaCard({ m, lang, index, open, topic }: { m: Media; lang: "en" | "fr"; index: number; open: string; topic: string }) {
+function MediaCard({ m, lang, index, open, topic, topicColor }: { m: Media; lang: "en" | "fr"; index: number; open: string; topic: string; topicColor: string }) {
   const Icon = KIND_ICON[m.kind];
+  const color = KIND_COLOR[m.kind];
   return (
     <motion.a href={m.url} target="_blank" rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.45, delay: (index % 3) * 0.06 }}
-      className={cn(CARD, "group flex flex-col p-5 hover:shadow-[0_22px_50px_-30px_rgba(6,18,27,0.45)] transition-shadow")}>
-      <div className="flex items-start gap-3">
-        <span className="w-10 h-10 shrink-0 rounded-xl bg-[#0C2233] text-white flex items-center justify-center"><Icon size={18} /></span>
+      initial={{ opacity: 0, y: 30, scale: 0.94 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.55, delay: (index % 3) * 0.1, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -6 }}
+      className={cn(CARD, "group relative flex flex-col p-6 overflow-hidden")}>
+      <span className="absolute inset-x-0 top-0 h-1.5" style={{ background: `linear-gradient(90deg, ${color}, ${PALETTE.blue})` }} />
+      <div className="flex items-start gap-4">
+        <span className="w-12 h-12 shrink-0 rounded-2xl text-white flex items-center justify-center shadow-md" style={{ background: `linear-gradient(140deg, ${color}, ${PALETTE.navy})` }}><Icon size={21} /></span>
         <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-semibold text-text leading-snug group-hover:text-pv-blue">{m.name}</p>
-          <p className="text-[13px] text-[#1B3F72]">{m.by}</p>
+          <p className="text-[17px] font-semibold text-slate-900 leading-snug group-hover:text-[#1D6FA8]">{m.name}</p>
+          <p className="text-[14.5px] text-[#1B3F72]">{m.by}</p>
         </div>
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-text-3 bg-surface-3 rounded px-1.5 py-0.5">{m.lang}</span>
+        <span className="text-[12px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-100 rounded px-2 py-0.5">{m.lang}</span>
       </div>
-      <p className="mt-3 text-[13px] leading-relaxed text-text-2">{m[lang]}</p>
-      <div className="mt-auto pt-4 flex items-center justify-between text-[13px]">
-        <span className="text-text-3">{topic}</span>
-        <span className="inline-flex items-center gap-1 font-semibold text-pv-blue">{open} <ArrowUpRight size={14} /></span>
+      <p className="mt-4 text-[15px] leading-relaxed text-slate-600">{m[lang]}</p>
+      <div className="mt-auto pt-5 flex items-center justify-between text-[14.5px]">
+        <span className="inline-flex items-center gap-1.5 font-medium text-slate-600"><span className="w-2 h-2 rounded-full" style={{ background: topicColor }} />{topic}</span>
+        <span className="inline-flex items-center gap-1 font-semibold text-[#1D6FA8]">{open} <ArrowUpRight size={15} /></span>
       </div>
     </motion.a>
-  );
-}
-
-function BookGrid({ books, language, find, french }: { books: Book[]; language: string; find: string; french: string }) {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-9">
-      {books.map((b, i) => <BookCard key={b.title} book={b} language={language} find={find} french={french} index={i} />)}
-    </div>
-  );
-}
-
-function BookCard({ book, language, find, french, index }: { book: Book; language: string; find: string; french: string; index: number }) {
-  const [imageError, setImageError] = useState(false);
-  const searchLink = `https://www.google.com/search?tbm=bks&q=${encodeURIComponent(`${book.title} ${book.author}`)}`;
-  const link = book.link === "#" || book.link.includes("amazon.") ? searchLink : book.link;
-  const coverUrl = book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg?default=false` : null;
-
-  return (
-    <motion.article
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.45, delay: (index % 6) * 0.05, ease: [0.16, 1, 0.3, 1] }}
-      className="group flex flex-col"
-    >
-      <a href={link} target="_blank" rel="noopener noreferrer" className="relative flex items-end justify-center h-[176px] [perspective:900px]">
-        <div className="relative transition-transform duration-500 ease-out [transform-style:preserve-3d] group-hover:[transform:rotateY(-18deg)_translateY(-8px)]">
-          {coverUrl && !imageError ? (
-            <img src={coverUrl} alt={book.title} loading="lazy" referrerPolicy="no-referrer" onError={() => setImageError(true)}
-              className="w-[108px] h-[160px] rounded-r-md rounded-l-sm object-cover shadow-[6px_8px_18px_rgba(20,20,26,0.25)]" />
-          ) : (
-            <div className="w-[108px] h-[160px] rounded-r-md rounded-l-sm p-2.5 flex flex-col justify-between text-white shadow-[6px_8px_18px_rgba(20,20,26,0.25)] relative overflow-hidden"
-              style={{ backgroundColor: book.coverColor && !/^#(4338ca|6d28d9|7c3aed|5b21b6|4c1d95|6366f1|8b5cf6|a855f7|9333ea|7e22ce)$/i.test(book.coverColor) ? book.coverColor : "#1B3F72" }}>
-              <div className="absolute inset-y-0 left-0 w-1.5 bg-black/20" />
-              <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/25 pointer-events-none" />
-              <h4 className="relative font-bold text-[11px] leading-tight line-clamp-5 pl-1">{book.title}</h4>
-              <span className="relative text-[9px] font-medium opacity-90 pl-1 line-clamp-2">{book.author}</span>
-            </div>
-          )}
-        </div>
-      </a>
-
-      <div className="pt-3 flex flex-col gap-1 flex-grow">
-        <h4 className="text-[13px] font-semibold text-text leading-snug line-clamp-2 group-hover:text-pv-blue transition-colors">{book.title}</h4>
-        <p className="text-[12px] text-[#1B3F72] leading-snug line-clamp-1">{book.author} · <span className="tabular-nums text-text-3">{book.year}</span>{book.origin === "fr" && <span className="text-text-3" title={french}> · FR</span>}</p>
-        <p className="text-[12px] text-text-2 leading-relaxed line-clamp-4">{summaryLabel(book, language)}</p>
-        <div className="mt-auto pt-2 flex items-center justify-between gap-2 text-[12px]">
-          <span className="text-text-3 truncate">{tagLabel(book, language)}</span>
-          <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 font-semibold text-pv-blue hover:underline shrink-0">{find} <ArrowUpRight size={12} /></a>
-        </div>
-      </div>
-    </motion.article>
   );
 }

@@ -39,6 +39,7 @@ import { Line } from "react-chartjs-2";
 import { fetchMonthlyPrices } from "../../engine/data";
 import { runSimulation } from "../../engine/simulation";
 import { calculateCorrelationMatrix } from "../../engine/metrics";
+import { AssetPicker, RunButton, toOptions } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { ASSET_DATA } from "../../constants";
 import { InfoTooltip } from "../ui/InfoTooltip";
@@ -1268,7 +1269,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
   return (
     <MobileZoomWrapper scaleMobile={0.4}>
       <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
-      <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24">
+      <div className="space-y-8 animate-fade-up w-full max-w-[1880px] mx-auto px-4 md:px-12 pb-24">
         <div className="flex flex-col gap-8">
           {/* TITLE HEADER */}
           <PageHeader
@@ -1548,7 +1549,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                       <th className="py-2.5 px-2.5 text-xs lg:text-sm font-semibold text-text w-auto whitespace-nowrap">
                         {currentLabels.portfolioAssets || "Assets"}
                       </th>
-                      <th className="py-2.5 px-2.5 min-w-[320px] lg:min-w-[400px] w-80 lg:w-96 border-r border-border font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Asset & Name</th>
+                      <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Ticker & Name</th>
                       {portfolioNames.map((pn, i) => (
                         <th
                           key={pn.id}
@@ -1606,41 +1607,9 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                             </button>
                           )}
                         </td>
-                        <td className="py-2 pl-1 pr-2.5 border-r border-border min-w-[320px] lg:min-w-[420px]">
-                          <div className="flex items-center gap-2 w-full">
-                            <div className="relative flex items-center shadow-sm w-40 shrink-0">
-                              <CustomSelect
-                                value={asset.symbol}
-                                onChange={(e: any) =>
-                                  updateAssetSymbol(aIdx, e.target.value)
-                                }
-                                className="bg-surface-2 text-xs px-3 py-2 border border-border rounded-[1.5rem] outline-none focus:border-pv-blue transition-colors w-full box-border font-semibold text-text cursor-pointer truncate"
-                              >
-                                <option value="" disabled>
-                                  {currentLabels.selectAssetClass}
-                                </option>
-                                {ASSET_CLASSES.map((group) => (
-                                  <optgroup key={group.group} label={group.group}>
-                                    {group.options.map((opt) => (
-                                      <option key={opt.symbol} value={opt.symbol}>
-                                        {opt.symbol} - {opt.label}
-                                      </option>
-                                    ))}
-                                  </optgroup>
-                                ))}
-                              </CustomSelect>
-                            </div>
-                            {ASSET_DATA[asset.symbol]?.label ? (
-                              <span className="text-xs text-pv-blue font-semibold truncate flex-1 leading-tight" title={ASSET_DATA[asset.symbol].label}>
-                                {ASSET_DATA[asset.symbol].label}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-text-3/60 font-normal italic truncate flex-1">
-                                --
-                              </span>
-                            )}
-                          </div>
-                        </td>
+                        <td className="py-2.5 pl-2 pr-5 min-w-[420px] lg:min-w-[540px]">
+                          <AssetPicker symbol={asset.symbol} options={toOptions(ASSET_CLASSES)} placeholder={currentLabels.selectAssetClass} onChange={(val) => updateAssetSymbol(aIdx, val)} />
+</td>
                         {portfolioNames.map((pn, i) => (
                           <td key={pn.id} className="p-2 lg:p-3">
                             <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
@@ -1668,7 +1637,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                       <td className="p-3.5 text-sm lg:text-base font-bold text-text">
                         {currentLabels.total}
                       </td>
-                      <td className="p-3.5 border-r border-border"></td>
+                      <td className="p-3.5"></td>
                       {portfolioNames.map((pn, i) => {
                         const totalWeight = portfolioAssets.reduce(
                           (sum, a) => sum + Number(a.weights[i] || 0),
@@ -1720,22 +1689,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
 
               <div className="flex justify-between pt-4 items-center">
                 
-                <button
-                  onClick={handleRunSimulation}
-                  disabled={isRunning}
-                  className="py-3 px-8 bg-pv-blue text-white rounded-[1.5rem] text-base font-semibold hover:bg-pv-blue-l transition-colors shadow-lg shadow-pv-blue/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isRunning ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{" "}
-                      {currentLabels.running}
-                    </>
-                  ) : (
-                    <>
-                      <Play size={16} fill="currentColor" /> {currentLabels.runSimulation}
-                    </>
-                  )}
-                </button>
+                <RunButton onClick={handleRunSimulation} running={isRunning} label={currentLabels.runSimulation} runningLabel={currentLabels.running} />
               </div>
             </div>
           </div>

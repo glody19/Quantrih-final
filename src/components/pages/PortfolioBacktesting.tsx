@@ -28,6 +28,7 @@ import { ReturnsHeatmap } from "../ui/ReturnsHeatmap";
 import { RollingReturnsTable } from "../ui/RollingReturnsTable";
 import { CorrelationMatrix } from "../ui/CorrelationMatrix";
 import { EfficientFrontier } from "../ui/EfficientFrontier";
+import { AssetPicker, RunButton, toOptions } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
 import { InfoTooltip } from "../ui/InfoTooltip";
@@ -1124,7 +1125,7 @@ export function PortfolioBacktesting({
                   <thead>
                     <tr className="border-b border-border bg-surface-2">
                       <th className="py-2.5 px-2.5 text-xs lg:text-sm font-semibold text-text w-auto whitespace-nowrap">{t("aa.port_assets") || "Assets"}</th>
-                      <th className="py-2.5 px-2.5 min-w-[320px] lg:min-w-[400px] w-80 lg:w-96 border-r border-border font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Ticker & Name</th>
+                      <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Ticker & Name</th>
                       {portfolioNames.map((pn, i) => (
                         <th
                           key={pn.id}
@@ -1182,28 +1183,9 @@ export function PortfolioBacktesting({
                             </button>
                           )}
                         </td>
-                        <td className="py-2 pl-1 pr-2.5 border-r border-border min-w-[320px] lg:min-w-[420px]">
-                          <div className="flex items-center gap-2 w-full">
-                            <div className="relative flex items-center shadow-sm w-40 bg-surface-2 border border-border rounded-[1.5rem] px-3 py-1.5 shrink-0">
-                              <TickerInput
-                                value={asset.symbol}
-                                onChange={(val) => updateAssetSymbol(aIdx, val)}
-                                placeholder="Ticker"
-                                className="bg-transparent text-xs border-0 outline-none focus:ring-0 w-full box-border font-mono font-bold"
-                              />
-                              <Search className="w-3.5 h-3.5 text-text-3 shrink-0 ml-1" />
-                            </div>
-                            {ASSET_DATA[asset.symbol.toUpperCase()]?.label ? (
-                              <span className="text-xs text-pv-blue font-semibold truncate flex-1 leading-tight" title={ASSET_DATA[asset.symbol.toUpperCase()].label}>
-                                {ASSET_DATA[asset.symbol.toUpperCase()].label}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-text-3/60 font-normal italic truncate flex-1">
-                                --
-                              </span>
-                            )}
-                          </div>
-                        </td>
+                        <td className="py-2.5 pl-2 pr-5 min-w-[420px] lg:min-w-[540px]">
+                          <AssetPicker symbol={asset.symbol} onChange={(val) => updateAssetSymbol(aIdx, val)} />
+</td>
                         {portfolioNames.map((pn, i) => (
                           <td key={pn.id} className="p-2 lg:p-3">
                             <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
@@ -1231,7 +1213,7 @@ export function PortfolioBacktesting({
                       <td className="p-3.5 text-sm lg:text-base font-bold text-text">
                         {"Total"}
                       </td>
-                      <td className="p-3.5 border-r border-border"></td>
+                      <td className="p-3.5"></td>
                       {portfolioNames.map((pn, i) => {
                         const totalWeight = portfolioAssets.reduce(
                           (sum, a) => sum + Number(a.weights[i] || 0),
@@ -1286,22 +1268,7 @@ export function PortfolioBacktesting({
                   ? "Les titres européens fonctionnent aussi : ajoutez le suffixe de la place de cotation, par exemple IWDA.AS (Amsterdam), VWCE.DE (Xetra), CW8.PA (Paris) ou ASML.AS."
                   : "European listings work too: add the exchange suffix, for example IWDA.AS (Amsterdam), VWCE.DE (Xetra), CW8.PA (Paris) or ASML.AS."}
               </p>
-              <button
-                onClick={runBacktest}
-                disabled={isRunning}
-                className="py-3 px-8 bg-pv-blue text-white rounded-[1.5rem] text-base font-semibold hover:bg-pv-blue-l transition-colors shadow-lg shadow-pv-blue/20 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isRunning ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{" "}
-                    {t("pb.running")}{" "}
-                  </>
-                ) : (
-                  <>
-                    <Play size={16} fill="currentColor" /> {t("pb.run")}{" "}
-                  </>
-                )}
-              </button>
+              <RunButton onClick={runBacktest} running={isRunning} label={t("pb.run")} runningLabel={t("pb.running")} />
             </div>
           </div>
 
@@ -1488,7 +1455,7 @@ export function PortfolioBacktesting({
                         className="space-y-12"
                       >
                         <div className="flex flex-col xl:flex-row gap-12 items-start">
-                          <div className="flex-1 w-full xl:w-2/3 overflow-x-auto">
+                          <div className="w-full overflow-x-auto">
                             <div className="flex items-center justify-between mb-6">
                               <h3 className="text-base font-semibold flex items-center gap-2 text-text">
                                 <Activity size={14} />{t("aa.chart.heatmap")}</h3>
@@ -1498,17 +1465,6 @@ export function PortfolioBacktesting({
                                 results[activeResIdx].monthlyReturns
                               }
                             />
-                          </div>
-                          <div className="w-full xl:w-1/3 shrink-0">
-                            <h3 className="text-base font-semibold mb-6 flex items-center gap-2 text-text">
-                              <Activity size={14} />{t("aa.port_assets")}</h3>
-                            <div className="bg-surface rounded-[2rem] p-8 shadow-xl border border-border">
-                              <EliteDonut
-                                assets={results[activeResIdx].assets || []}
-                                allocations={results[activeResIdx].alloc || {}}
-                                title={t("pb.assetAllocDetails")}
-                              />
-                            </div>
                           </div>
                         </div>
                       </div>

@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Check, ExternalLink, Minus, Star, ShieldCheck, Receipt, Landmark, Megaphone, LayoutGrid, Table2, Search, ArrowRight } from "lucide-react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
+import { HeroBand, HeroStats, Donut, BarList, CountUp, NetworkArt, SectionHead, PALETTE } from "../education/Viz";
 import { cn } from "../../lib/utils";
 import { PLATFORMS } from "./platformsData";
 import { INVESTMENT_PLATFORMS, PLATFORM_SOURCES, type InvestmentPlatform, type Market, type PlatformType } from "../../data/investmentPlatforms";
@@ -149,7 +150,7 @@ function Logo({ id, domain, name, color, fallbackSrc, size = 48 }: { id?: string
       {i < sources.length ? (
         <img src={sources[i]} alt={name} loading="lazy" referrerPolicy="no-referrer" onError={() => setI((n) => n + 1)} style={{ width: size * 0.66, height: size * 0.66 }} className="object-contain" />
       ) : (
-        <span className="text-sm font-bold text-white w-full h-full flex items-center justify-center" style={{ backgroundColor: color }}>{initials}</span>
+        <span className="text-[16px] font-bold text-white w-full h-full flex items-center justify-center" style={{ backgroundColor: color }}>{initials}</span>
       )}
     </div>
   );
@@ -163,16 +164,16 @@ function PartnerCard({ p, l, lang }: { p: Partner; l: typeof L.fr; lang: "fr" | 
       rel="noopener sponsored"
       className="group relative flex flex-col gap-4 rounded-3xl border-2 border-gold/50 bg-gradient-to-br from-[#FBF3E2] via-surface to-surface p-6 shadow-[0_14px_36px_rgba(201,162,74,0.15)] hover:border-gold transition-colors"
     >
-      <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#8A6A1F] bg-gold/15 px-2.5 py-1 rounded-full">
+      <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[12px] font-bold uppercase tracking-wider text-[#8A6A1F] bg-gold/15 px-2.5 py-1 rounded-full">
         <Megaphone size={11} /> {l.partner}
       </span>
       <Logo domain={p.domain} name={p.name} color={p.color} size={52} />
       <div>
-        <h3 className="text-lg font-bold text-text">{p.name}</h3>
-        <p className="text-sm text-text-2 mt-1 leading-relaxed">{p.tagline[lang]}</p>
+        <h3 className="text-[20px] font-bold text-text">{p.name}</h3>
+        <p className="text-[16px] text-text-2 mt-1 leading-relaxed">{p.tagline[lang]}</p>
       </div>
-      {p.highlight && <p className="text-sm font-semibold text-[#8A6A1F] bg-gold/10 rounded-xl px-3 py-2">{p.highlight[lang]}</p>}
-      <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-bold text-text group-hover:gap-2.5 transition-all">
+      {p.highlight && <p className="text-[16px] font-semibold text-[#8A6A1F] bg-gold/10 rounded-xl px-3 py-2">{p.highlight[lang]}</p>}
+      <span className="mt-auto inline-flex items-center gap-1.5 text-[16px] font-bold text-text group-hover:gap-2.5 transition-all">
         {l.official} <ArrowRight size={14} />
       </span>
     </a>
@@ -182,25 +183,25 @@ function PartnerCard({ p, l, lang }: { p: Partner; l: typeof L.fr; lang: "fr" | 
 function PlatformCard({ p, l, lang, index }: { p: InvestmentPlatform; l: typeof L.fr; lang: "fr" | "en"; index: number }) {
   return (
     <motion.article
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 34, scale: 0.92 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: (index % 3) * 0.05, ease: [0.16, 1, 0.3, 1] }}
       className="relative flex flex-col bg-white rounded-3xl overflow-hidden shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)] hover:shadow-[0_22px_48px_-26px_rgba(6,18,27,0.5)] transition-shadow"
     >
       <div className="h-14 relative" style={{ background: `linear-gradient(135deg, ${p.color} 0%, ${p.color}CC 55%, ${p.color}80 100%)` }}>
-        <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wide text-white bg-black/25 px-2 py-0.5 rounded-full">{TYPE_LABEL(p.type, l)}</span>
+        <span className="absolute top-3 right-3 text-[12px] font-bold uppercase tracking-wide text-white bg-black/25 px-2 py-0.5 rounded-full">{TYPE_LABEL(p.type, l)}</span>
       </div>
       <div className="relative z-10 px-5 pb-5 -mt-6 flex flex-col gap-3 flex-grow">
         <Logo id={p.id} domain={p.domain} name={p.name} color={p.color} />
         <div className="min-w-0 -mt-1">
-          <h3 className="text-base font-bold text-text leading-tight truncate">{p.name}</h3>
-          {p.group && <p className="text-[11px] text-text-4 truncate">{p.group}</p>}
+          <h3 className="text-[18px] font-bold text-text leading-tight truncate">{p.name}</h3>
+          {p.group && <p className="text-[15px] text-text-4 truncate">{p.group}</p>}
         </div>
 
-        <p className="text-xs text-text-2 leading-relaxed"><span className="font-semibold text-text">{l.bestFor} : </span>{p.bestFor[lang]}</p>
+        <p className="text-[14px] text-text-2 leading-relaxed"><span className="font-semibold text-text">{l.bestFor} : </span>{p.bestFor[lang]}</p>
 
-        <div className="rounded-2xl bg-surface-3/60 p-3 flex flex-col gap-2 text-xs">
+        <div className="rounded-2xl bg-surface-3/60 p-3 flex flex-col gap-2 text-[14px]">
           <div className="flex gap-2"><Receipt size={14} className="text-pv-blue shrink-0 mt-0.5" /><span className="text-text-2 leading-snug"><span className="font-semibold text-text">{l.fees} : </span>{p.fees[lang]}</span></div>
           <div className="flex gap-2"><Landmark size={14} className="text-gold shrink-0 mt-0.5" /><span className="text-text-2 leading-snug"><span className="font-semibold text-text">{l.tax} : </span>{p.tax[lang]}</span></div>
           <div className="flex gap-2"><ShieldCheck size={14} className="text-green shrink-0 mt-0.5" /><span className="text-text-2 leading-snug"><span className="font-semibold text-text">{l.regulator} : </span>{p.regulator}</span></div>
@@ -208,11 +209,11 @@ function PlatformCard({ p, l, lang, index }: { p: InvestmentPlatform; l: typeof 
 
         <div className="flex flex-wrap gap-1">
           {p.products.map((x) => (
-            <span key={x} className="text-[10px] font-medium text-text-3 border border-border rounded-full px-2 py-0.5">{x}</span>
+            <span key={x} className="text-[12px] font-medium text-text-3 border border-border rounded-full px-2 py-0.5">{x}</span>
           ))}
         </div>
 
-        <ul className="flex flex-col gap-1.5 text-xs text-text-2">
+        <ul className="flex flex-col gap-1.5 text-[14px] text-text-2">
           {p.highlights[lang].map((x) => (
             <li key={x} className="flex gap-1.5"><Check size={13} className="text-green shrink-0 mt-0.5" /><span className="leading-snug">{x}</span></li>
           ))}
@@ -221,7 +222,7 @@ function PlatformCard({ p, l, lang, index }: { p: InvestmentPlatform; l: typeof 
           ))}
         </ul>
 
-        <a href={p.url} target="_blank" rel="noopener noreferrer" className="mt-auto pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-text-2 hover:text-pv-blue transition-colors">
+        <a href={p.url} target="_blank" rel="noopener noreferrer" className="mt-auto pt-3 border-t border-border flex items-center justify-between text-[14px] font-semibold text-text-2 hover:text-pv-blue transition-colors">
           {l.official} <ExternalLink size={12} />
         </a>
       </div>
@@ -235,30 +236,31 @@ function LegacyCard({ p, l, index }: { p: LegacyPlatform; l: typeof L.fr; index:
   const pick = p.id === "interactive_brokers";
   return (
     <motion.article
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 34, scale: 0.92 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: (index % 4) * 0.05, ease: [0.16, 1, 0.3, 1] }}
-      className={cn("relative flex flex-col gap-3 bg-white rounded-3xl p-5 shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)]", pick && "ring-2 ring-[#1B3F72]/70")}
+      className={cn("relative overflow-hidden flex flex-col gap-3 bg-white rounded-3xl p-6 shadow-[0_22px_60px_-40px_rgba(6,18,27,0.45)] hover:-translate-y-1.5 transition-transform", pick && "ring-2 ring-[#1B3F72]/70")}
     >
+      <span className="absolute inset-x-0 top-0 h-1.5" style={{ background: `linear-gradient(90deg, ${color}, ${color}66)` }} />
       <div className="flex items-center gap-3">
         <Logo id={p.id} domain={brand?.domain} name={p.name} color={color} fallbackSrc={p.logo} size={52} />
         <div className="min-w-0">
-          <h3 className="text-base font-bold text-text leading-tight truncate">{p.name}</h3>
-          <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-4">{p.type === "crypto" ? l.crypto : p.type === "bank" ? l.typeBank : p.type === "neobank" ? l.typeNeobank : l.typeBroker} · {l.fees} {String(p.fees).toLowerCase()}</p>
+          <h3 className="text-[18px] font-bold text-text leading-tight truncate">{p.name}</h3>
+          <p className="mt-0.5 text-[15px] font-semibold uppercase tracking-[0.12em] text-text-4">{p.type === "crypto" ? l.crypto : p.type === "bank" ? l.typeBank : p.type === "neobank" ? l.typeNeobank : l.typeBroker} · {l.fees} {String(p.fees).toLowerCase()}</p>
         </div>
-        {pick && <span className="ml-auto shrink-0 text-[10px] font-bold uppercase tracking-wider text-white bg-[#1B3F72] px-2.5 py-1 rounded-full">{l.pick}</span>}
+        {pick && <span className="ml-auto shrink-0 text-[12px] font-bold uppercase tracking-wider text-white bg-[#1B3F72] px-2.5 py-1 rounded-full">{l.pick}</span>}
       </div>
-      <p className="text-[13px] text-text-2 leading-relaxed">{p.bestFor}</p>
+      <p className="text-[15px] text-text-2 leading-relaxed">{p.bestFor}</p>
       <div className="flex flex-wrap gap-1">
-        {p.features.slice(0, 4).map((x) => <span key={x} className="text-[11px] font-medium text-[#1B3F72] bg-[#1B3F72]/[0.07] rounded-full px-2 py-0.5">{x}</span>)}
+        {p.features.slice(0, 4).map((x) => <span key={x} className="text-[15px] font-medium text-[#1B3F72] bg-[#1B3F72]/[0.07] rounded-full px-2 py-0.5">{x}</span>)}
       </div>
-      <ul className="flex flex-col gap-1.5 text-[13px] text-text-2">
+      <ul className="flex flex-col gap-1.5 text-[15px] text-text-2">
         {p.pros.slice(0, 3).map((x) => (<li key={x} className="flex gap-1.5"><Check size={14} className="text-green shrink-0 mt-0.5" /><span className="leading-snug">{x}</span></li>))}
         {p.cons.slice(0, 2).map((x) => (<li key={x} className="flex gap-1.5 text-text-3"><Minus size={14} className="text-red shrink-0 mt-0.5" /><span className="leading-snug">{x}</span></li>))}
       </ul>
       {brand && (
-        <a href={`https://${brand.domain}`} target="_blank" rel="noopener noreferrer" className="mt-auto pt-3 flex items-center justify-between text-[13px] font-semibold text-[#1B3F72] hover:gap-2">
+        <a href={`https://${brand.domain}`} target="_blank" rel="noopener noreferrer" className="mt-auto pt-3 flex items-center justify-between text-[15px] font-semibold text-[#1B3F72] hover:gap-2">
           {l.visit} <ExternalLink size={13} />
         </a>
       )}
@@ -298,15 +300,51 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
     { id: "FR", label: l.tabFR, flag: "🇫🇷", n: count("FR") },
   ];
   const typeFilters: TypeFilter[] = ["all", "broker", "bank", "neobank"];
+  const typeMix = ([
+    ["broker", l.broker, PALETTE.sky], ["crypto", l.crypto, PALETTE.coral], ["neobank", l.neobank, PALETTE.teal], ["bank", l.bank, PALETTE.gold],
+  ] as const).map(([k, label, color]) => ({ label, color, value: popular.filter((p) => p.type === k).length })).filter((d) => d.value > 0);
+  const productMix = ([
+    ["ETF", /^ETF$/, PALETTE.sky], [lang === "fr" ? "Actions" : "Shares", /^Actions/, PALETTE.blue], [lang === "fr" ? "Obligations" : "Bonds", /^Obligations$/, PALETTE.teal],
+    [lang === "fr" ? "Fonds" : "Funds", /^Fonds$/, PALETTE.green], ["Options", /^Options$/, PALETTE.coral], ["Futures", /^Futures$/, PALETTE.navy],
+    ["PEA", /PEA/, PALETTE.gold], [lang === "fr" ? "Épargne-pension" : "Pension savings", /pargne-pension/, PALETTE.green],
+  ] as const).map(([label, re, color]) => ({ label, color, value: INVESTMENT_PLATFORMS.filter((p) => p.products.some((x) => re.test(x))).length }))
+    .filter((d) => d.value > 0).sort((a, b) => b.value - a.value);
 
   return (
     <MobileZoomWrapper scaleMobile={0.8}>
-      <div className="page-container pb-24 mt-6 min-h-[calc(100vh-120px)] font-sans">
-        {/* Header */}
-        <div className="flex flex-col gap-2 mb-6">
-          <h1 className="text-[26px] md:text-[34px] leading-tight font-semibold tracking-tight text-text">{l.title}</h1>
-          <p className="text-sm text-text-3 max-w-3xl leading-relaxed">{l.subtitle}</p>
-        </div>
+      <div className="w-full pb-24 -mt-4 lg:-mt-6 font-sans">
+        <HeroBand kicker={lang === "fr" ? "Où investir" : "Where to invest"} title={l.title} sub={l.subtitle} art={<NetworkArt />}>
+          <HeroStats items={[
+            { value: popular.length, label: lang === "fr" ? "plateformes" : "platforms", color: PALETTE.gold },
+            { value: popular.filter((p) => p.type === "broker").length, label: l.broker, color: PALETTE.sky },
+            { value: popular.filter((p) => p.type === "crypto").length, label: l.crypto, color: PALETTE.coral },
+            { value: INVESTMENT_PLATFORMS.length, label: lang === "fr" ? "fiches détaillées" : "detailed profiles", color: PALETTE.teal },
+          ]} />
+        </HeroBand>
+        <div className="max-w-[1720px] mx-auto px-5 sm:px-8 lg:px-14 pt-12">
+
+        {/* Infographics computed from the platforms listed on this page */}
+        <section className="mb-14 grid lg:grid-cols-[1fr_1.35fr] gap-6 items-start">
+          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="rounded-[1.5rem] bg-white shadow-[0_22px_60px_-40px_rgba(6,18,27,0.45)] p-7">
+            <h3 className="text-[19px] font-semibold text-slate-900">{lang === "fr" ? "Les plateformes par type" : "Platforms by type"}</h3>
+            <div className="mt-6 flex flex-wrap items-center gap-8">
+              <Donut size={200} thickness={26} data={typeMix} center={<><CountUp value={popular.length} className="text-[34px] font-semibold text-slate-900" /><span className="text-[12px] uppercase tracking-[0.14em] text-slate-500">{lang === "fr" ? "plateformes" : "platforms"}</span></>} />
+              <ul className="grid gap-2.5 text-[16px]">
+                {typeMix.map((d, i) => (
+                  <motion.li key={d.label} initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 + i * 0.12 }} className="flex items-center gap-2.5">
+                    <span className="w-3 h-3 rounded-full" style={{ background: d.color }} /><span className="text-slate-700">{d.label}</span>
+                    <CountUp value={d.value} delay={0.4 + i * 0.12} className="ml-4 font-semibold text-slate-900" />
+                  </motion.li>
+                ))}
+              </ul>
+            </div>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.15 }} className="rounded-[1.5rem] bg-white shadow-[0_22px_60px_-40px_rgba(6,18,27,0.45)] p-7">
+            <h3 className="text-[19px] font-semibold text-slate-900">{lang === "fr" ? "Ce que proposent les fiches détaillées" : "What the detailed profiles offer"}</h3>
+            <p className="mt-1 text-[14.5px] text-slate-500">{lang === "fr" ? `Nombre de plateformes, sur ${INVESTMENT_PLATFORMS.length}, qui donnent accès à chaque produit.` : `Number of platforms, out of ${INVESTMENT_PLATFORMS.length}, giving access to each product.`}</p>
+            <div className="mt-5"><BarList data={productMix} unit={`/ ${INVESTMENT_PLATFORMS.length}`} /></div>
+          </motion.div>
+        </section>
 
         {/* Market tabs */}
         <div className="flex flex-wrap items-center gap-2 mb-5">
@@ -315,13 +353,13 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
               key={tb.id}
               onClick={() => setTab(tb.id)}
               className={cn(
-                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors",
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-[16px] font-semibold transition-colors",
                 tab === tb.id ? "bg-[#0C2233] text-white shadow-sm" : "bg-white text-text-2 shadow-sm hover:text-text"
               )}
             >
-              <span className="text-base leading-none">{tb.flag}</span>
+              <span className="text-[18px] leading-none">{tb.flag}</span>
               {tb.label}
-              <span className="text-[11px] font-mono opacity-60">{tb.n}</span>
+              <span className="text-[15px] font-mono opacity-60">{tb.n}</span>
             </button>
           ))}
         </div>
@@ -330,12 +368,12 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
         <div className="flex flex-col md:flex-row md:items-center gap-3 mb-8">
           <div className="relative w-full md:max-w-xs">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={l.search} className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-xl text-sm outline-none focus:border-pv-blue/60" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={l.search} className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-xl text-[16px] outline-none focus:border-pv-blue/60" />
           </div>
           {tab === "INTL" && (
             <div className="flex flex-wrap gap-1.5">
               {(["all", "broker", "crypto", "neobank", "bank"] as const).map((f) => (
-                <button key={f} onClick={() => setKind(f)} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold transition-colors", kind === f ? "bg-pv-blue text-white" : "bg-white text-text-3 shadow-sm hover:text-text")}>
+                <button key={f} onClick={() => setKind(f)} className={cn("px-3 py-1.5 rounded-full text-[14px] font-semibold transition-colors", kind === f ? "bg-pv-blue text-white" : "bg-white text-text-3 shadow-sm hover:text-text")}>
                   {f === "crypto" ? l.crypto : l[f]}
                 </button>
               ))}
@@ -345,14 +383,14 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
             <>
               <div className="flex flex-wrap gap-1.5">
                 {typeFilters.map((f) => (
-                  <button key={f} onClick={() => setType(f)} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors", type === f ? "bg-pv-blue text-white border-pv-blue" : "bg-surface text-text-3 border-border hover:border-border-2")}>
+                  <button key={f} onClick={() => setType(f)} className={cn("px-3 py-1.5 rounded-full text-[14px] font-semibold border transition-colors", type === f ? "bg-pv-blue text-white border-pv-blue" : "bg-surface text-text-3 border-border hover:border-border-2")}>
                     {l[f]}
                   </button>
                 ))}
               </div>
               <div className="md:ml-auto inline-flex rounded-xl border border-border bg-surface p-0.5">
-                <button onClick={() => setView("cards")} className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold", view === "cards" ? "bg-surface-3 text-text" : "text-text-3")}><LayoutGrid size={13} />{l.cards}</button>
-                <button onClick={() => setView("table")} className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold", view === "table" ? "bg-surface-3 text-text" : "text-text-3")}><Table2 size={13} />{l.table}</button>
+                <button onClick={() => setView("cards")} className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[14px] font-semibold", view === "cards" ? "bg-surface-3 text-text" : "text-text-3")}><LayoutGrid size={13} />{l.cards}</button>
+                <button onClick={() => setView("table")} className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[14px] font-semibold", view === "table" ? "bg-surface-3 text-text" : "text-text-3")}><Table2 size={13} />{l.table}</button>
               </div>
             </>
           )}
@@ -370,8 +408,8 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
           </div>
         ) : (
           <div className="overflow-x-auto rounded-3xl bg-white shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)]">
-            <table className="w-full min-w-[860px] text-left text-xs">
-              <thead className="bg-surface-3/60 text-text-3 uppercase tracking-wide text-[10px]">
+            <table className="w-full min-w-[860px] text-left text-[14px]">
+              <thead className="bg-surface-3/60 text-text-3 uppercase tracking-wide text-[12px]">
                 <tr>
                   <th className="px-4 py-3">{l.colName}</th>
                   <th className="px-4 py-3">{l.colType}</th>
@@ -384,7 +422,7 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
               <tbody className="divide-y divide-border">
                 {marketList.map((p) => (
                   <tr key={p.id} className="hover:bg-surface-3/30 align-top">
-                    <td className="px-4 py-3"><div className="flex items-center gap-2.5"><Logo id={p.id} domain={p.domain} name={p.name} color={p.color} size={32} /><span className="font-bold text-text text-sm">{p.name}</span></div></td>
+                    <td className="px-4 py-3"><div className="flex items-center gap-2.5"><Logo id={p.id} domain={p.domain} name={p.name} color={p.color} size={32} /><span className="font-bold text-text text-[16px]">{p.name}</span></div></td>
                     <td className="px-4 py-3 text-text-2">{TYPE_LABEL(p.type, l)}</td>
                     <td className="px-4 py-3 text-text-2 max-w-[280px] leading-snug">{p.fees[lang]}</td>
                     <td className="px-4 py-3 text-text-2 max-w-[220px] leading-snug">{p.tax[lang]}</td>
@@ -399,28 +437,34 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
 
         {/* How to choose */}
         <section className="mt-14">
-          <h2 className="text-xl font-bold text-text mb-4">{l.guideTitle}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {l.guide.map(([title, desc], i) => (
-              <div key={title} className="rounded-3xl bg-white shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)] p-5">
-                <div className="w-9 h-9 rounded-xl bg-pv-blue/10 text-pv-blue font-bold flex items-center justify-center mb-3">{i + 1}</div>
-                <h3 className="font-bold text-text">{title}</h3>
-                <p className="text-sm text-text-2 mt-1.5 leading-relaxed">{desc}</p>
-              </div>
-            ))}
+          <SectionHead kicker={lang === "fr" ? "Méthode" : "Method"} title={l.guideTitle} color={PALETTE.gold} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {l.guide.map(([title, desc], i) => {
+              const c = [PALETTE.gold, PALETTE.sky, PALETTE.teal, PALETTE.coral, PALETTE.blue, PALETTE.green][i % 6];
+              return (
+                <motion.div key={title} initial={{ opacity: 0, y: 30, scale: 0.94 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.55, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }} whileHover={{ y: -6 }}
+                  className="relative overflow-hidden rounded-3xl bg-white shadow-[0_22px_60px_-40px_rgba(6,18,27,0.45)] p-6">
+                  <span className="absolute inset-x-0 top-0 h-1.5" style={{ background: `linear-gradient(90deg, ${c}, ${PALETTE.navy})` }} />
+                  <div className="w-11 h-11 rounded-2xl text-white text-[18px] font-bold flex items-center justify-center mb-4 shadow-md" style={{ background: `linear-gradient(140deg, ${c}, ${PALETTE.navy})` }}>{i + 1}</div>
+                  <h3 className="text-[19px] font-semibold text-slate-900">{title}</h3>
+                  <p className="text-[16px] text-slate-600 mt-1.5 leading-relaxed">{desc}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </section>
 
         {/* Sources */}
         <section className="mt-14 rounded-3xl bg-white shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)] p-6">
-          <h2 className="text-base font-bold text-text mb-3">{l.sources}</h2>
-          <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
+          <h2 className="text-[18px] font-bold text-text mb-3">{l.sources}</h2>
+          <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-[14px]">
             {PLATFORM_SOURCES.map((s) => (
               <li key={s.url}><a href={s.url} target="_blank" rel="noopener noreferrer" className="text-pv-blue hover:underline inline-flex items-center gap-1">{s.label} <ExternalLink size={10} /></a></li>
             ))}
           </ul>
-          <p className="text-[11px] text-text-4 mt-4 leading-relaxed">{l.disclaimer}</p>
+          <p className="text-[15px] text-text-4 mt-4 leading-relaxed">{l.disclaimer}</p>
         </section>
+        </div>
       </div>
     </MobileZoomWrapper>
   );

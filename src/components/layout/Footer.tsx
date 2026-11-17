@@ -38,6 +38,7 @@ export function Footer({ onNavigate }: FooterProps) {
         { label: fr ? 'Marchés et analyse' : 'Markets and analysis', page: 'market' },
         { label: fr ? 'Comparateur d\'ETF' : 'ETF screener', page: 'etf-overview' },
         { label: 'Dark pools', page: 'market-structure' },
+        { label: fr ? 'Blockchain et stablecoins' : 'Blockchain and stablecoins', page: 'crypto' },
         { label: 'Lazy portfolios', page: 'market#lazy-portfolios' },
         { label: fr ? 'Plateformes d\'investissement' : 'Investment platforms', page: 'platforms' },
       ],

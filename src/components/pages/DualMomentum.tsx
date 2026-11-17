@@ -26,6 +26,7 @@ import { cn } from "../../lib/utils";
 import { PageHeader } from "../ui/PageHeader";
 import { InfoTooltip } from "../ui/InfoTooltip";
 import { TickerInput } from "../ui/TickerInput";
+import { RunButton } from "../ui/AllocationInputs";
 
 function TooltipLabel({
   label,
@@ -98,12 +99,7 @@ export function DualMomentum() {
                   onChange={(e) => setSaveName(e.target.value)}
                   className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[200px]"
                 />
-                <button
-                onClick={() => setHasRun(true)}
-                className="flex justify-center items-center gap-2 py-2.5 px-6 bg-pv-blue text-white rounded-[1.5rem] text-xs font-semibold hover:bg-pv-blue-l transition-colors shadow-md active:scale-95 disabled:opacity-50"
-              >
-                <Play size={12} fill="currentColor" /> {'Run Model'}
-              </button>
+                <RunButton onClick={() => setHasRun(true)} running={false} label="Run Model" runningLabel="Run Model" />
               
 </div>
 

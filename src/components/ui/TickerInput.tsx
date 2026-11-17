@@ -1,234 +1,200 @@
-import React, { useState, useEffect, useRef } from "react";
-import { ASSET_DATA } from "../../constants";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "../../lib/utils";
+import { useTranslation } from "../../contexts/LanguageContext";
+import { ASSET_CLASS_META, assetClass, assetName, rememberName, type AssetClassKey } from "./assetClass";
+
+export interface TickerOption { symbol: string; label: string; group?: string }
 
 export interface TickerInputProps {
- value: string;
- onChange: (value: string) => void;
- onSelect?: (value: string) => void;
- placeholder?: string;
- className?: string;
- disabled?: boolean;
- onSubmit?: (val: string) => void;
+  value: string;
+  onChange: (value: string) => void;
+  onSelect?: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+  onSubmit?: (val: string) => void;
+  /** A fixed list to pick from (filtered locally, no server search). */
+  options?: TickerOption[];
 }
 
-function AssetIcon({ symbol }: { symbol: string }) {
- const [errorLevel, setErrorLevel] = useState(0);
- const size = 24;
- const target = symbol.toLowerCase().split('-')[0];
- 
- let url = `https://eodhd.com/img/logos/US/${symbol}.png`;
- if (errorLevel === 1) {
- url = `/api/logo?domain=${target}.com?size=${size}&sz=128`;
- } else if (errorLevel >= 2) {
- url = `https://ui-avatars.com/api/?name=${symbol}&background=random&color=fff&size=${size}&font-size=0.4`;
- }
- 
- return (
- <img 
- src={url}
- alt={symbol}
- onError={() => setErrorLevel(prev => prev + 1)}
- className="w-6 h-6 rounded-full shadow-sm bg-white p-0.5 flex-shrink-0 object-contain"
- loading="lazy"
- />
- );
+type Suggestion = { symbol: string; label: string; group: string; cls: AssetClassKey };
+
+const POPULAR = ["VTI", "SPY", "QQQ", "VXUS", "IWDA.AS", "VWCE.DE", "BND", "TLT", "IEF", "GLD", "VNQ", "BTC-USD", "AAPL", "MSFT", "NVDA"];
+
+/** Coloured dot marking the asset class of a ticker. */
+export function ClassDot({ cls, className }: { cls: AssetClassKey; className?: string }) {
+  return <span className={cn("inline-block w-2.5 h-2.5 rounded-full shrink-0", className)} style={{ background: ASSET_CLASS_META[cls].color }} />;
 }
 
-export function TickerInput({
- value,
- onChange,
- onSelect,
- placeholder = "Ticker",
- className,
- disabled,
- onSubmit
-}: TickerInputProps) {
- const [isOpen, setIsOpen] = useState(false);
- const [suggestions, setSuggestions] = useState<{ symbol: string; label: string; type: string }[]>([]);
- const [activeIndex, setActiveIndex] = useState(-1);
- const containerRef = useRef<HTMLDivElement>(null);
- const inputRef = useRef<HTMLInputElement>(null);
+/** Small label with the asset class, in its colour. */
+export function ClassChip({ cls, lang }: { cls: AssetClassKey; lang: "en" | "fr" }) {
+  const m = ASSET_CLASS_META[cls];
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10.5px] font-semibold whitespace-nowrap" style={{ color: m.color, background: `${m.color}14` }}>
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: m.color }} />
+      {lang === "fr" ? m.fr : m.en}
+    </span>
+  );
+}
 
- // Generate lists of suggestions based on typed input or default popular assets
- useEffect(() => {
- const val = value.trim().toUpperCase();
- 
- const popularAssets = [
- {symbol: 'AAPL', label: 'Apple Inc.', type: 'Equity (US)'},
- {symbol: 'MSFT', label: 'Microsoft', type: 'Equity (US)'},
- {symbol: 'NVDA', label: 'NVIDIA Corp', type: 'Equity (US)'},
- {symbol: 'MC.PA', label: 'LVMH', type: 'Equity (FR)'},
- {symbol: 'OR.PA', label: 'L\'Oréal', type: 'Equity (FR)'},
- {symbol: 'TTE.PA', label: 'TotalEnergies', type: 'Equity (FR)'},
- {symbol: 'SAN.PA', label: 'Sanofi', type: 'Equity (FR)'},
- {symbol: 'SHEL.L', label: 'Shell', type: 'Equity (UK)'},
- {symbol: 'AZN.L', label: 'AstraZeneca', type: 'Equity (UK)'},
- {symbol: 'HSBA.L', label: 'HSBC', type: 'Equity (UK)'},
- {symbol: 'ULVR.L', label: 'Unilever', type: 'Equity (UK)'},
- {symbol: 'BTC-USD', label: 'Bitcoin', type: 'Crypto'},
- ];
+export function TickerInput({ value, onChange, onSelect, placeholder = "Ticker", className, disabled, onSubmit, options }: TickerInputProps) {
+  const { language } = useTranslation();
+  const lang: "en" | "fr" = language === "fr" ? "fr" : "en";
+  const [isOpen, setIsOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [pos, setPos] = useState<{ left: number; top: number; width: number; up: boolean } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const typed = useRef(false); // true once the user types: until then a fixed list shows every option
 
- if (!val) {
- setSuggestions(popularAssets);
- return;
- }
+  const toSuggestion = (symbol: string, label: string, group?: string): Suggestion => {
+    rememberName(symbol, label);
+    const cls = assetClass(symbol, label);
+    return { symbol, label: assetName(symbol) || label || symbol, group: group || (lang === "fr" ? ASSET_CLASS_META[cls].fr : ASSET_CLASS_META[cls].en), cls };
+  };
 
- const fetchSuggestions = async () => {
- try {
- const res = await fetch(`/api/stock/search?q=${encodeURIComponent(val)}`);
- if (res.ok) {
- const data = await res.json();
- if (data && data.result) {
- const mapped = data.result.filter((r: any) => r.symbol).map((r: any) => ({
- symbol: r.symbol,
- label: r.label,
- type: r.type || 'Equity'
- }));
- 
- setSuggestions(mapped.slice(0, 15));
- }
- }
- } catch (e) {}
- };
+  // Suggestions: the fixed list when one is given, otherwise popular tickers or the server search
+  useEffect(() => {
+    const val = value.trim().toUpperCase();
+    if (options) {
+      const all = options.map((o) => toSuggestion(o.symbol, o.label, o.group));
+      const hit = typed.current && val ? all.filter((o) => o.symbol.toUpperCase().includes(val) || o.label.toUpperCase().includes(val)) : all;
+      setSuggestions(hit.length ? hit : all);
+      return;
+    }
+    // on focus, before any typing: the popular list, with the current ticker on top
+    if (!val || !typed.current) {
+      const list = val && !POPULAR.includes(val) ? [val, ...POPULAR] : POPULAR;
+      setSuggestions(list.map((s) => toSuggestion(s, assetName(s))));
+      return;
+    }
+    let alive = true;
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/stock/search?q=${encodeURIComponent(val)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (alive && data?.result) setSuggestions(data.result.filter((r: any) => r.symbol).slice(0, 18).map((r: any) => toSuggestion(r.symbol, r.label)));
+      } catch {
+        /* keep the previous list */
+      }
+    }, 250);
+    return () => { alive = false; clearTimeout(timeout); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, options, lang, isOpen]);
 
- const timeout = setTimeout(fetchSuggestions, 300);
- return () => clearTimeout(timeout);
- }, [value]);
+  // The list is drawn in a layer above the page, so tables with horizontal scroll do not clip it
+  const place = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const width = Math.min(window.innerWidth - 24, Math.max(r.width, 480));
+    const left = Math.max(12, Math.min(r.left, window.innerWidth - width - 12));
+    const below = window.innerHeight - r.bottom;
+    const up = below < 320 && r.top > below;
+    setPos({ left, top: up ? r.top - 8 : r.bottom + 8, width, up });
+  };
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    place();
+    const on = () => place();
+    window.addEventListener("scroll", on, true);
+    window.addEventListener("resize", on);
+    return () => { window.removeEventListener("scroll", on, true); window.removeEventListener("resize", on); };
+  }, [isOpen]);
 
- // Handle clicking outside to close suggestions list
- useEffect(() => {
- function handleClickOutside(event: MouseEvent) {
- if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
- setIsOpen(false);
- }
- }
- document.addEventListener("mousedown", handleClickOutside);
- return () => document.removeEventListener("mousedown", handleClickOutside);
- }, []);
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const t = event.target as Node;
+      if (containerRef.current?.contains(t) || listRef.current?.contains(t)) return;
+      setIsOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
- const handleKeyDown = (e: React.KeyboardEvent) => {
- if (!isOpen) {
- if (e.key === "ArrowDown") {
- setIsOpen(true);
- setActiveIndex(0);
- e.preventDefault();
- } else if (e.key === "Enter" && onSubmit) {
- onSubmit(value);
- e.preventDefault();
- }
- return;
- }
+  const pick = (symbol: string) => {
+    typed.current = false;
+    onChange(symbol);
+    onSelect?.(symbol);
+    setIsOpen(false);
+  };
 
- if (e.key === "ArrowDown") {
- setActiveIndex(prev => (prev + 1) % suggestions.length);
- e.preventDefault();
- } else if (e.key === "ArrowUp") {
- setActiveIndex(prev => (prev - 1 + suggestions.length) % suggestions.length);
- e.preventDefault();
- } else if (e.key === "Enter") {
- if (activeIndex >= 0 && activeIndex < suggestions.length) {
- const sym = suggestions[activeIndex].symbol;
- onChange(sym);
- if (onSelect) onSelect(sym);
- setIsOpen(false);
- e.preventDefault();
- } else if (suggestions.length > 0) {
- const sym = suggestions[0].symbol;
- onChange(sym);
- if (onSelect) onSelect(sym);
- setIsOpen(false);
- e.preventDefault();
- } else {
- if (onSubmit) onSubmit(value);
- setIsOpen(false);
- e.preventDefault();
- }
- } else if (e.key === "Escape") {
- setIsOpen(false);
- }
- };
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isOpen) {
+      if (e.key === "ArrowDown") { setIsOpen(true); setActiveIndex(0); e.preventDefault(); }
+      else if (e.key === "Enter" && onSubmit) { onSubmit(value); e.preventDefault(); }
+      return;
+    }
+    if (e.key === "ArrowDown") { setActiveIndex((p) => (p + 1) % Math.max(1, suggestions.length)); e.preventDefault(); }
+    else if (e.key === "ArrowUp") { setActiveIndex((p) => (p - 1 + suggestions.length) % Math.max(1, suggestions.length)); e.preventDefault(); }
+    else if (e.key === "Enter") {
+      const s = suggestions[activeIndex >= 0 ? activeIndex : 0];
+      if (s) pick(s.symbol); else { onSubmit?.(value); setIsOpen(false); }
+      e.preventDefault();
+    } else if (e.key === "Escape") setIsOpen(false);
+  };
 
- const handleItemSelect = (symbol: string) => {
- onChange(symbol);
- if (onSelect) onSelect(symbol);
- setIsOpen(false);
- // Focus back on input
- inputRef.current?.focus();
- };
+  const groups = suggestions.reduce((acc, s) => { (acc[s.group] ||= []).push(s); return acc; }, {} as Record<string, Suggestion[]>);
 
- return (
- <div ref={containerRef} className="relative w-full">
- <input
- ref={inputRef}
- type="text"
- value={value}
- onChange={e => {
- onChange(e.target.value);
- setIsOpen(true);
- setActiveIndex(-1);
- }}
- onFocus={() => {
- setIsOpen(true);
- setActiveIndex(-1);
- }}
- onKeyDown={handleKeyDown}
- placeholder={placeholder}
- disabled={disabled}
- className={cn(
- "w-full bg-surface text-xs p-1.5 border border-border rounded outline-none focus:border-pv-blue transition-colors",
- className
- )}
- />
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => { typed.current = true; onChange(e.target.value); setIsOpen(true); setActiveIndex(-1); }}
+        onFocus={() => { typed.current = false; setIsOpen(true); setActiveIndex(-1); }}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        disabled={disabled}
+        spellCheck={false}
+        autoComplete="off"
+        className={cn("w-full bg-surface text-xs p-1.5 border border-border rounded outline-none focus:border-pv-blue transition-colors uppercase placeholder:normal-case", className)}
+      />
 
- {isOpen && suggestions.length > 0 && !disabled && (
- <div className="absolute left-0 top-full mt-1.5 w-full bg-surface-2 border border-border rounded-[1.5rem] shadow-2xl z-50 py-1 overflow-hidden animate-fade-in font-sans">
- <div className="px-2 py-1 text-xs font-semibold text-text border-b border-border/40">
- {value.trim() ? "Matching Tickers" : "Available Assets"}
- </div>
- <div className="max-h-60 overflow-y-auto no-scrollbar">
- {Object.entries(
- suggestions.reduce((acc, item) => {
- const type = item.type || "Other";
- if (!acc[type]) acc[type] = [];
- acc[type].push(item);
- return acc;
- }, {} as Record<string, typeof suggestions>)
- ).map(([type, items]) => (
- <div key={type}>
- <div className="px-3 py-1 bg-surface-3/50 text-xs font-semibold text-text sticky top-0 backdrop-blur-sm z-10">
- {type}
- </div>
- {items.map((item) => {
- const index = suggestions.findIndex(s => s.symbol === item.symbol);
- return (
- <button
- key={item.symbol}
- type="button"
- onClick={() => handleItemSelect(item.symbol)}
- onMouseEnter={() => setActiveIndex(index)}
- className={cn(
- "w-full text-left px-3 py-2 flex items-center justify-between transition-colors text-xs border-b border-border/30 last:border-0",
- index === activeIndex 
- ? "bg-pv-blue/10 text-pv-blue" 
- : "hover:bg-surface-3 text-text"
- )}
- >
- <div className="flex items-center min-w-0 gap-3">
- <AssetIcon symbol={item.symbol} />
- <div className="flex flex-col min-w-0">
- <span className="font-bold ">{item.symbol}</span>
- <span className="text-xs text-text truncate max-w-[160px]">{item.label}</span>
- </div>
- </div>
- </button>
- );
- })}
- </div>
- ))}
- </div>
- </div>
- )}
- </div>
- );
+      {isOpen && pos && suggestions.length > 0 && !disabled && createPortal(
+        <div
+          ref={listRef}
+          className="fixed z-[200] rounded-2xl bg-white shadow-[0_24px_60px_-20px_rgba(6,18,27,0.45)] ring-1 ring-slate-900/5 overflow-hidden font-sans animate-fade-in"
+          style={{ left: pos.left, width: pos.width, ...(pos.up ? { bottom: window.innerHeight - pos.top } : { top: pos.top }) }}
+        >
+          <div className="px-4 pt-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+            {value.trim() && typed.current && !options ? (lang === "fr" ? "Résultats" : "Matching tickers") : (lang === "fr" ? "Actifs proposés" : "Suggested assets")}
+          </div>
+          <div className="max-h-[340px] overflow-y-auto pb-2">
+            {Object.entries(groups).map(([group, items]) => (
+              <div key={group}>
+                <div className="sticky top-0 z-10 bg-white/95 backdrop-blur px-4 py-1.5 text-[11px] font-semibold text-slate-500">{group}</div>
+                {items.map((item) => {
+                  const index = suggestions.indexOf(item);
+                  const m = ASSET_CLASS_META[item.cls];
+                  const selected = item.symbol.toUpperCase() === value.trim().toUpperCase();
+                  return (
+                    <button
+                      key={item.symbol + group}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => pick(item.symbol)}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      className={cn("w-full text-left px-4 py-2 flex items-center gap-3 transition-colors", index === activeIndex ? "bg-[#F1F6FC]" : "hover:bg-slate-50", selected && "bg-[#EAF2FB]")}
+                    >
+                      <span className="w-1 self-stretch rounded-full shrink-0" style={{ background: m.color }} />
+                      <span className="w-[86px] shrink-0 text-[13px] font-bold text-slate-900 tabular-nums">{item.symbol}</span>
+                      <span className="flex-1 min-w-0 text-[13px] leading-snug text-slate-700">{item.label}</span>
+                      <ClassChip cls={item.cls} lang={lang} />
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>,
+        document.body,
+      )}
+    </div>
+  );
 }

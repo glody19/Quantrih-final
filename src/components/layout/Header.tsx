@@ -82,11 +82,18 @@ export function Header({
         { id: "market", label: t("nav.markets.equity") },
         { id: "etf-overview", label: t("nav.markets.etf") },
         { id: "market-structure", label: language === "fr" ? "Dark pools et microstructure" : "Dark pools and market structure" },
-        { id: "virtual-portfolio", label: language === "fr" ? "Portefeuille virtuel" : "Virtual portfolio" },
+        { id: "crypto", label: language === "fr" ? "Blockchain et stablecoins" : "Blockchain and stablecoins" },
       ],
     },
     { id: "education", label: t("nav.education") },
-    { id: "platforms", label: t("nav.platforms") },
+    {
+      id: "platforms-group",
+      label: t("nav.platforms"),
+      children: [
+        { id: "platforms", label: language === "fr" ? "Courtiers et banques" : "Brokers and banks" },
+        { id: "virtual-portfolio", label: language === "fr" ? "Trading virtuel" : "Paper trading" },
+      ],
+    },
   ];
 
   // on the home page the bar is transparent over the hero, then turns solid once the page scrolls
@@ -135,6 +142,7 @@ export function Header({
                       <button
                         onClick={() => {
                           if (menu.id === "fmp-group") onPageChange("market");
+                          if (menu.id === "platforms-group") onPageChange("platforms");
                         }}
                         className={cn(
                           "px-2.5 py-1.5 lg:px-3 lg:py-2 rounded-2xl whitespace-nowrap text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all flex items-center gap-1 relative overflow-visible",
