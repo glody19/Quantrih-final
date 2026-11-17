@@ -30,6 +30,14 @@ export function evaluateTacticalModel(
   // Safe asset fallback if all risky assets fail
   const fallbackSafe = (safeAsset: string) => [{ symbol: safeAsset, weight: 1 }];
 
+  if (model.type === 'seasonal') {
+    // Out of the market from the start month (included) to the re-entry month (excluded), e.g. May to October.
+    const month = Number(currentMonthDate.substring(5, 7));
+    const start = model.outOfMarketStartMonth, end = model.outOfMarketEndMonth;
+    const out = start === end ? false : start < end ? month >= start && month < end : month >= start || month < end;
+    return out ? fallbackSafe(model.safeAsset) : portfolio.allocations;
+  }
+
   if (model.type === 'moving_average') {
     // Single or Portfolio... If it's a MA model, usually it applies independently to each asset:
     // If Asset Price > MA(N) -> Weight = original weight. If < MA(N) -> Weight = 0 (moves to safe asset).

@@ -822,6 +822,8 @@ export function TacticalAllocation() {
     "ta_momSafeAsset",
     "CASH",
   );
+  const [seasonalStart, setSeasonalStart] = useLocalStorage("ta_seasonalStart", 5);
+  const [seasonalEnd, setSeasonalEnd] = useLocalStorage("ta_seasonalEnd", 10);
   const [momOutMarket, setMomOutMarket] = useLocalStorage(
     "ta_momOutMarket",
     true,
@@ -1638,8 +1640,8 @@ export function TacticalAllocation() {
       } else if (activeTab === "seasonal") {
         tacticalModel = {
           type: "seasonal",
-          outOfMarketStartMonth: 5,
-          outOfMarketEndMonth: 10,
+          outOfMarketStartMonth: Number(seasonalStart) || 5,
+          outOfMarketEndMonth: Number(seasonalEnd) || 10,
           safeAsset: momSafeAsset,
         };
       } else if (activeTab === "mom_relative") {
@@ -2068,7 +2070,8 @@ export function TacticalAllocation() {
                       }
                     />
                     <select
-                      defaultValue="May"
+                      value={Number(seasonalStart)}
+                      onChange={(e) => setSeasonalStart(Number(e.target.value))}
                       className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
                       {[
@@ -2084,8 +2087,8 @@ export function TacticalAllocation() {
                         "Oct",
                         "Nov",
                         "Dec",
-                      ].map((m) => (
-                        <option key={m} value={m}>
+                      ].map((m, i) => (
+                        <option key={m} value={i + 1}>
                           {m}
                         </option>
                       ))}
@@ -2099,7 +2102,8 @@ export function TacticalAllocation() {
                       }
                     />
                     <select
-                      defaultValue="Oct"
+                      value={Number(seasonalEnd)}
+                      onChange={(e) => setSeasonalEnd(Number(e.target.value))}
                       className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
                       {[
@@ -2115,8 +2119,8 @@ export function TacticalAllocation() {
                         "Oct",
                         "Nov",
                         "Dec",
-                      ].map((m) => (
-                        <option key={m} value={m}>
+                      ].map((m, i) => (
+                        <option key={m} value={i + 1}>
                           {m}
                         </option>
                       ))}
@@ -2130,12 +2134,13 @@ export function TacticalAllocation() {
                       }
                     />
                     <select
-                      defaultValue="Cash"
+                      value={momSafeAsset}
+                      onChange={(e) => setMomSafeAsset(e.target.value)}
                       className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
-                      <option>{currentLabels.cash || "Cash"}</option>
-                      <option>{currentLabels.bil || "BIL (1-3 Month T-Bill)"}</option>
-                      <option>{currentLabels.shv || "SHV (Short Term Treasuries)"}</option>
+                      <option value="CASH">{currentLabels.cash || "Cash"}</option>
+                      <option value="BIL">{currentLabels.bil || "BIL (1-3 Month T-Bill)"}</option>
+                      <option value="SHV">{currentLabels.shv || "SHV (Short Term Treasuries)"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
@@ -2197,12 +2202,13 @@ export function TacticalAllocation() {
                       }
                     />
                     <select
-                      defaultValue="Cash"
+                      value={momSafeAsset}
+                      onChange={(e) => setMomSafeAsset(e.target.value)}
                       className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
-                      <option>{currentLabels.cash || "Cash"}</option>
-                      <option>{currentLabels.bil || "BIL (1-3 Month T-Bill)"}</option>
-                      <option>{currentLabels.shv || "SHV (Short Term Treasuries)"}</option>
+                      <option value="CASH">{currentLabels.cash || "Cash"}</option>
+                      <option value="BIL">{currentLabels.bil || "BIL (1-3 Month T-Bill)"}</option>
+                      <option value="SHV">{currentLabels.shv || "SHV (Short Term Treasuries)"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
@@ -2350,12 +2356,13 @@ export function TacticalAllocation() {
                       }
                     />
                     <select
-                      defaultValue="Cash"
+                      value={momSafeAsset}
+                      onChange={(e) => setMomSafeAsset(e.target.value)}
                       className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
                     >
-                      <option>{currentLabels.cash || "Cash"}</option>
-                      <option>{currentLabels.bil || "BIL (1-3 Month T-Bill)"}</option>
-                      <option>{currentLabels.shv || "SHV (Short Term Treasuries)"}</option>
+                      <option value="CASH">{currentLabels.cash || "Cash"}</option>
+                      <option value="BIL">{currentLabels.bil || "BIL (1-3 Month T-Bill)"}</option>
+                      <option value="SHV">{currentLabels.shv || "SHV (Short Term Treasuries)"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
