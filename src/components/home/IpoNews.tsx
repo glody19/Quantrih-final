@@ -24,6 +24,8 @@ export function IpoNews({ fr, stacked = false }: { fr: boolean; stacked?: boolea
       const all = lists.flat().filter((n: any) => n?.headline && n?.url && IPO_WORDS.test(n.headline) && !seen.has(n.headline) && seen.add(n.headline));
       all.sort((a: any, b: any) => (b.datetime || 0) - (a.datetime || 0));
       // the lead story should have a photo
+      const major = /bloomberg|financial times|ft\.com|reuters|wall street journal|wsj|barron|cnbc|economist/i;
+      all.sort((a: any, b: any) => Number(major.test(b.source || "")) - Number(major.test(a.source || "")) || (b.datetime || 0) - (a.datetime || 0));
       const lead = all.findIndex((n: any) => n.image);
       if (lead > 0) all.unshift(all.splice(lead, 1)[0]);
       setItems(all.slice(0, 7));
@@ -34,7 +36,7 @@ export function IpoNews({ fr, stacked = false }: { fr: boolean; stacked?: boolea
   if (!items || items.length < 3) return null;
   const [first, ...all] = items;
   // stacked (beside another block): the lead story on top, then a shorter list
-  const rest = stacked ? all.slice(0, 4) : all;
+  const rest = stacked ? all.slice(0, 3) : all;
   const when = (t: number) => new Date(t * 1000).toLocaleDateString(fr ? "fr-BE" : "en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
   return (
@@ -42,7 +44,7 @@ export function IpoNews({ fr, stacked = false }: { fr: boolean; stacked?: boolea
       <motion.a
         href={first.url} target="_blank" rel="noopener noreferrer"
         initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.7 }}
-        className={`group relative rounded-[1.5rem] overflow-hidden bg-[#0B2233] ${stacked ? "min-h-[220px]" : "min-h-[320px]"} flex items-end shadow-[0_18px_50px_-36px_rgba(6,18,27,0.5)]`}
+        className={`group relative rounded-[1.5rem] overflow-hidden bg-[#0B2233] ${stacked ? "min-h-[380px]" : "min-h-[320px]"} flex items-end shadow-[0_18px_50px_-36px_rgba(6,18,27,0.5)]`}
       >
         {first.image && <img src={first.image} alt="" loading="lazy" referrerPolicy="no-referrer" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
         <span className="absolute inset-0 bg-gradient-to-t from-[#06111A] via-[#06111A]/60 to-transparent" />

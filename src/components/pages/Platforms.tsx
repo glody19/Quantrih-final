@@ -63,11 +63,31 @@ const BRAND: Record<string, { domain: string; color: string }> = {
   belfius: { domain: "belfius.be", color: "#C30045" },
 };
 
+// Most widely used first; Interactive Brokers leads as our own pick. Anything not listed keeps its place after these.
+const POPULAR = [
+  "interactive_brokers", "charles_schwab", "fidelity", "robinhood", "etoro", "webull", "vanguard", "tastytrade",
+  "trading212", "degiro", "trade_republic", "saxo_bank", "xtb", "scalable_capital", "ig", "revolut", "n26", "lightyear",
+  "boursorama", "fortuneo", "wealthsimple", "questrade", "plus500",
+  "binance", "coinbase", "kraken", "bybit", "okx", "crypto_com", "kucoin", "bitstamp", "gemini", "htx",
+];
+const rankOf = (id: string) => { const i = POPULAR.indexOf(id); return i === -1 ? 999 : i; };
+
+// Logos checked by eye and saved with the site
+const LOCAL_LOGO: Record<string, string> = {
+  interactive_brokers: "/logos/interactive_brokers.png", charles_schwab: "/logos/charles_schwab.png", fidelity: "/logos/fidelity.png",
+  robinhood: "/logos/robinhood.png", etoro: "/logos/etoro.png", webull: "/logos/webull.png", tastytrade: "/logos/tastytrade.png",
+  trading212: "/logos/trading212.png", xtb: "/logos/xtb.png", scalable_capital: "/logos/scalable_capital.png", ig: "/logos/ig.png",
+  revolut: "/logos/revolut.png", n26: "/logos/n26.png", lightyear: "/logos/lightyear.png", wealthsimple: "/logos/wealthsimple.png",
+  saxo_bank: "/logos/saxo.png", saxo: "/logos/saxo.png", trade_republic: "/logos/trade_republic.png", fortuneo: "/logos/fortuneo.png",
+  ing: "/logos/ing.png", bnp_paribas: "/logos/bnp_paribas.jpg", bnp_fortis: "/logos/bnp_fortis.png", credit_agricole: "/logos/credit_agricole.png",
+  keytrade: "/logos/keytrade.png", mexem: "/logos/mexem.png", beobank: "/logos/beobank.png", bourse_direct: "/logos/bourse_direct.jpg",
+};
+
 const L = {
   fr: {
     title: "Plateformes d'investissement",
     subtitle: "Courtiers en ligne, banques et néobanques pour investir : frais, fiscalité, régulateur et points d'attention, avec un lien vers chaque site officiel.",
-    tabBE: "Belgique", tabFR: "France", tabINTL: "Europe et international",
+    tabBE: "Belgique", tabFR: "France", tabINTL: "Les plus populaires", crypto: "Crypto", pick: "Notre choix", strengths: "Points forts", limits: "Limites", visit: "Site officiel",
     all: "Tous", broker: "Courtiers", bank: "Banques", neobank: "Néobanques",
     typeBroker: "Courtier", typeBank: "Banque", typeNeobank: "Néobanque",
     search: "Rechercher une plateforme",
@@ -93,7 +113,7 @@ const L = {
   en: {
     title: "Investment platforms",
     subtitle: "Online brokers, banks and neobanks to invest with: fees, taxes, regulator and caveats, with a link to each official website.",
-    tabBE: "Belgium", tabFR: "France", tabINTL: "Europe and international",
+    tabBE: "Belgium", tabFR: "France", tabINTL: "Most popular", crypto: "Crypto", pick: "Our pick", strengths: "Strengths", limits: "Limits", visit: "Official website",
     all: "All", broker: "Brokers", bank: "Banks", neobank: "Neobanks",
     typeBroker: "Broker", typeBank: "Bank", typeNeobank: "Neobank",
     search: "Search a platform",
@@ -120,12 +140,12 @@ const L = {
 
 const TYPE_LABEL = (t: PlatformType, l: typeof L.fr) => (t === "broker" ? l.typeBroker : t === "bank" ? l.typeBank : l.typeNeobank);
 
-function Logo({ domain, name, color, fallbackSrc, size = 48 }: { domain?: string; name: string; color: string; fallbackSrc?: string; size?: number }) {
-  const sources = [domain ? `/api/logo?domain=${domain}&sz=128` : "", fallbackSrc || ""].filter(Boolean);
+function Logo({ id, domain, name, color, fallbackSrc, size = 48 }: { id?: string; domain?: string; name: string; color: string; fallbackSrc?: string; size?: number }) {
+  const sources = [id && LOCAL_LOGO[id] ? LOCAL_LOGO[id] : "", domain ? `/api/logo?domain=${domain}&sz=128` : "", fallbackSrc || ""].filter(Boolean);
   const [i, setI] = useState(0);
   const initials = name.replace(/\(.*\)/, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
   return (
-    <div className="rounded-2xl bg-white border border-border shadow-sm flex items-center justify-center overflow-hidden shrink-0" style={{ width: size, height: size }}>
+    <div className="rounded-2xl bg-white shadow-[0_6px_16px_-8px_rgba(6,18,27,0.35)] flex items-center justify-center overflow-hidden shrink-0" style={{ width: size, height: size }}>
       {i < sources.length ? (
         <img src={sources[i]} alt={name} loading="lazy" referrerPolicy="no-referrer" onError={() => setI((n) => n + 1)} style={{ width: size * 0.66, height: size * 0.66 }} className="object-contain" />
       ) : (
@@ -166,13 +186,13 @@ function PlatformCard({ p, l, lang, index }: { p: InvestmentPlatform; l: typeof 
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: (index % 3) * 0.05, ease: [0.16, 1, 0.3, 1] }}
-      className="relative flex flex-col bg-surface border border-border rounded-3xl overflow-hidden shadow-[0_6px_24px_rgba(20,20,26,0.04)] hover:shadow-[0_14px_36px_rgba(20,20,26,0.08)] transition-shadow"
+      className="relative flex flex-col bg-white rounded-3xl overflow-hidden shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)] hover:shadow-[0_22px_48px_-26px_rgba(6,18,27,0.5)] transition-shadow"
     >
       <div className="h-14 relative" style={{ background: `linear-gradient(135deg, ${p.color} 0%, ${p.color}CC 55%, ${p.color}80 100%)` }}>
         <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wide text-white bg-black/25 px-2 py-0.5 rounded-full">{TYPE_LABEL(p.type, l)}</span>
       </div>
       <div className="relative z-10 px-5 pb-5 -mt-6 flex flex-col gap-3 flex-grow">
-        <Logo domain={p.domain} name={p.name} color={p.color} />
+        <Logo id={p.id} domain={p.domain} name={p.name} color={p.color} />
         <div className="min-w-0 -mt-1">
           <h3 className="text-base font-bold text-text leading-tight truncate">{p.name}</h3>
           {p.group && <p className="text-[11px] text-text-4 truncate">{p.group}</p>}
@@ -209,37 +229,39 @@ function PlatformCard({ p, l, lang, index }: { p: InvestmentPlatform; l: typeof 
   );
 }
 
-function LegacyCard({ p, t, index }: { p: LegacyPlatform; t: (k: string) => string; index: number }) {
+function LegacyCard({ p, l, index }: { p: LegacyPlatform; l: typeof L.fr; index: number }) {
   const brand = BRAND[p.id];
   const color = brand?.color || "#1B3F72";
+  const pick = p.id === "interactive_brokers";
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: (index % 4) * 0.05, ease: [0.16, 1, 0.3, 1] }}
-      className="relative flex flex-col bg-surface border border-border rounded-3xl overflow-hidden shadow-[0_6px_24px_rgba(20,20,26,0.04)]"
+      className={cn("relative flex flex-col gap-3 bg-white rounded-3xl p-5 shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)]", pick && "ring-2 ring-[#1B3F72]/70")}
     >
-      <div className="h-12" style={{ background: `linear-gradient(135deg, ${color} 0%, ${color}AA 100%)` }} />
-      <div className="relative z-10 px-5 pb-5 -mt-6 flex flex-col gap-3 flex-grow">
-        <div className="flex items-end justify-between gap-3">
-          <Logo domain={brand?.domain} name={p.name} color={color} fallbackSrc={p.logo} />
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-text-2"><Star size={12} className="fill-gold text-gold" />{p.rating.toFixed(1)}</span>
+      <div className="flex items-center gap-3">
+        <Logo id={p.id} domain={brand?.domain} name={p.name} color={color} fallbackSrc={p.logo} size={52} />
+        <div className="min-w-0">
+          <h3 className="text-base font-bold text-text leading-tight truncate">{p.name}</h3>
+          <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-4">{p.type === "crypto" ? l.crypto : p.type === "bank" ? l.typeBank : p.type === "neobank" ? l.typeNeobank : l.typeBroker} · {l.fees} {String(p.fees).toLowerCase()}</p>
         </div>
-        <div>
-          <h3 className="text-base font-bold text-text leading-tight">{p.name}</h3>
-          <p className="text-xs text-text-3 mt-1 leading-relaxed line-clamp-2">{p.bestFor}</p>
-        </div>
-        <div className="flex items-center gap-2 text-xs"><span className="text-text-4">{t("platforms.fees")}</span><span className="font-semibold text-text-2 px-2 py-0.5 rounded-md bg-surface-3">{p.fees}</span></div>
-        <ul className="flex flex-col gap-1.5 text-xs text-text-2">
-          {p.pros.slice(0, 2).map((x) => (<li key={x} className="flex gap-1.5"><Check size={13} className="text-green shrink-0 mt-0.5" /><span className="leading-snug">{x}</span></li>))}
-        </ul>
-        {brand && (
-          <a href={`https://${brand.domain}`} target="_blank" rel="noopener noreferrer" className="mt-auto pt-3 border-t border-border flex items-center justify-between text-xs font-semibold text-text-2 hover:text-pv-blue transition-colors">
-            {t("platforms.visit")} <ExternalLink size={12} />
-          </a>
-        )}
+        {pick && <span className="ml-auto shrink-0 text-[10px] font-bold uppercase tracking-wider text-white bg-[#1B3F72] px-2.5 py-1 rounded-full">{l.pick}</span>}
       </div>
+      <p className="text-[13px] text-text-2 leading-relaxed">{p.bestFor}</p>
+      <div className="flex flex-wrap gap-1">
+        {p.features.slice(0, 4).map((x) => <span key={x} className="text-[11px] font-medium text-[#1B3F72] bg-[#1B3F72]/[0.07] rounded-full px-2 py-0.5">{x}</span>)}
+      </div>
+      <ul className="flex flex-col gap-1.5 text-[13px] text-text-2">
+        {p.pros.slice(0, 3).map((x) => (<li key={x} className="flex gap-1.5"><Check size={14} className="text-green shrink-0 mt-0.5" /><span className="leading-snug">{x}</span></li>))}
+        {p.cons.slice(0, 2).map((x) => (<li key={x} className="flex gap-1.5 text-text-3"><Minus size={14} className="text-red shrink-0 mt-0.5" /><span className="leading-snug">{x}</span></li>))}
+      </ul>
+      {brand && (
+        <a href={`https://${brand.domain}`} target="_blank" rel="noopener noreferrer" className="mt-auto pt-3 flex items-center justify-between text-[13px] font-semibold text-[#1B3F72] hover:gap-2">
+          {l.visit} <ExternalLink size={13} />
+        </a>
+      )}
     </motion.article>
   );
 }
@@ -248,15 +270,11 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
   const { t, language } = useTranslation();
   const lang: "fr" | "en" = language === "fr" ? "fr" : language === "en" ? "en" : "en";
   const l = language === "fr" ? L.fr : L.en;
-  const [tab, setTab] = useState<Tab>("BE");
+  const [tab, setTab] = useState<Tab>("INTL");
+  const [kind, setKind] = useState<"all" | "broker" | "crypto" | "neobank" | "bank">("all");
   const [type, setType] = useState<TypeFilter>("all");
   const [view, setView] = useState<"cards" | "table">("cards");
   const [query, setQuery] = useState("");
-  const [compare, setCompare] = useState<string[]>([]);
-  const toggleCompare = (id: string) =>
-    setCompare((c) => (c.includes(id) ? c.filter((x) => x !== id) : c.length >= 3 ? c : [...c, id]));
-  const compared = compare.map((id) => INVESTMENT_PLATFORMS.find((p) => p.id === id)).filter(Boolean) as InvestmentPlatform[];
-
   const marketList = useMemo(() => {
     if (tab === "INTL") return [];
     const q = query.trim().toLowerCase();
@@ -265,19 +283,19 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
       .filter((p) => !q || p.name.toLowerCase().includes(q) || (p.group || "").toLowerCase().includes(q));
   }, [tab, type, query]);
 
+  // the popular tab lists everything, most used first
+  const popular = useMemo(() => PLATFORMS.filter((p) => p.type !== "screener").sort((a, b) => rankOf(a.id) - rankOf(b.id)), []);
   const intlList = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return PLATFORMS.filter((p) => !COVERED_LEGACY_IDS.has(p.id))
-      .filter((p) => !q || p.name.toLowerCase().includes(q))
-      .sort((a, b) => b.rating - a.rating);
-  }, [query]);
+    return popular.filter((p) => kind === "all" || p.type === kind).filter((p) => !q || p.name.toLowerCase().includes(q));
+  }, [query, kind, popular]);
 
   const partners = tab === "INTL" ? [] : PARTNERS.filter((p) => p.kind !== "education" && p.markets.includes(tab));
   const count = (m: Market) => INVESTMENT_PLATFORMS.filter((p) => p.markets.includes(m)).length;
   const tabs: { id: Tab; label: string; flag: string; n: number }[] = [
+    { id: "INTL", label: l.tabINTL, flag: "🌍", n: popular.length },
     { id: "BE", label: l.tabBE, flag: "🇧🇪", n: count("BE") },
     { id: "FR", label: l.tabFR, flag: "🇫🇷", n: count("FR") },
-    { id: "INTL", label: l.tabINTL, flag: "🌍", n: PLATFORMS.filter((p) => !COVERED_LEGACY_IDS.has(p.id)).length },
   ];
   const typeFilters: TypeFilter[] = ["all", "broker", "bank", "neobank"];
 
@@ -286,7 +304,7 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
       <div className="page-container pb-24 mt-6 min-h-[calc(100vh-120px)] font-sans">
         {/* Header */}
         <div className="flex flex-col gap-2 mb-6">
-          <h1 className="font-serif text-3xl md:text-[2.6rem] leading-tight font-semibold tracking-tight text-text">{l.title}</h1>
+          <h1 className="text-[26px] md:text-[34px] leading-tight font-semibold tracking-tight text-text">{l.title}</h1>
           <p className="text-sm text-text-3 max-w-3xl leading-relaxed">{l.subtitle}</p>
         </div>
 
@@ -297,8 +315,8 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
               key={tb.id}
               onClick={() => setTab(tb.id)}
               className={cn(
-                "inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold border transition-colors",
-                tab === tb.id ? "bg-text text-bg border-text shadow-sm" : "bg-surface text-text-2 border-border hover:border-border-2"
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors",
+                tab === tb.id ? "bg-[#0C2233] text-white shadow-sm" : "bg-white text-text-2 shadow-sm hover:text-text"
               )}
             >
               <span className="text-base leading-none">{tb.flag}</span>
@@ -314,6 +332,15 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-4" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={l.search} className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-xl text-sm outline-none focus:border-pv-blue/60" />
           </div>
+          {tab === "INTL" && (
+            <div className="flex flex-wrap gap-1.5">
+              {(["all", "broker", "crypto", "neobank", "bank"] as const).map((f) => (
+                <button key={f} onClick={() => setKind(f)} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold transition-colors", kind === f ? "bg-pv-blue text-white" : "bg-white text-text-3 shadow-sm hover:text-text")}>
+                  {f === "crypto" ? l.crypto : l[f]}
+                </button>
+              ))}
+            </div>
+          )}
           {tab !== "INTL" && (
             <>
               <div className="flex flex-wrap gap-1.5">
@@ -331,74 +358,10 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
           )}
         </div>
 
-        {/* Side-by-side comparison (Belgium / France platforms) */}
-        {tab !== "INTL" && (
-          <section className="mb-8 rounded-3xl border border-border bg-surface p-5">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <h2 className="text-base font-bold text-text">{l.compareTitle} <span className="text-text-4 font-mono text-sm">({compared.length}/3)</span></h2>
-              {compared.length > 0 && <button onClick={() => setCompare([])} className="text-sm font-semibold text-text-3 hover:text-text">{l.clear}</button>}
-            </div>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {INVESTMENT_PLATFORMS.filter((p) => p.markets.includes(tab as Market)).map((p) => {
-                const on = compare.includes(p.id);
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => toggleCompare(p.id)}
-                    disabled={!on && compare.length >= 3}
-                    className={cn("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold border transition-colors disabled:opacity-40", on ? "bg-pv-blue text-white border-pv-blue" : "bg-surface text-text-2 border-border hover:border-pv-blue")}
-                  >
-                    {on && <Check size={14} />}{p.name}
-                  </button>
-                );
-              })}
-            </div>
-            {compared.length < 2 ? (
-              <p className="text-sm text-text-3">{l.compareHint}</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm">
-                  <thead>
-                    <tr>
-                      <th className="w-36" />
-                      {compared.map((p) => (
-                        <th key={p.id} className="text-left p-3"><div className="flex items-center gap-2.5"><Logo domain={p.domain} name={p.name} color={p.color} size={32} /><span className="font-bold text-text text-base">{p.name}</span></div></th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border align-top">
-                    {([
-                      [l.colType, (p: InvestmentPlatform) => TYPE_LABEL(p.type, l)],
-                      [l.regulator, (p: InvestmentPlatform) => p.regulator],
-                      [l.products, (p: InvestmentPlatform) => p.products.join(" · ")],
-                      [l.fees, (p: InvestmentPlatform) => p.fees[lang]],
-                      [l.tax, (p: InvestmentPlatform) => p.tax[lang]],
-                      [l.highlights, (p: InvestmentPlatform) => <ul className="space-y-1">{p.highlights[lang].map((x) => <li key={x} className="flex gap-1.5"><Check size={14} className="text-emerald-500 shrink-0 mt-0.5" />{x}</li>)}</ul>],
-                      [l.watchouts, (p: InvestmentPlatform) => <ul className="space-y-1">{p.watchouts[lang].map((x) => <li key={x} className="flex gap-1.5"><Minus size={14} className="text-rose-500 shrink-0 mt-0.5" />{x}</li>)}</ul>],
-                      [l.bestFor, (p: InvestmentPlatform) => p.bestFor[lang]],
-                    ] as [string, (p: InvestmentPlatform) => React.ReactNode][]).map(([k, f]) => (
-                      <tr key={k}>
-                        <td className="p-3 font-semibold text-text-3">{k}</td>
-                        {compared.map((p) => <td key={p.id} className="p-3 text-text-2 leading-snug">{f(p)}</td>)}
-                      </tr>
-                    ))}
-                    <tr>
-                      <td />
-                      {compared.map((p) => (
-                        <td key={p.id} className="p-3"><a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-pv-blue font-semibold">{l.official} <ExternalLink size={12} /></a></td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-        )}
-
         {/* Content */}
         {tab === "INTL" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
-            {intlList.map((p, i) => <LegacyCard key={p.id} p={p} t={t} index={i} />)}
+            {intlList.map((p, i) => <LegacyCard key={p.id} p={p} l={l} index={i} />)}
           </div>
         ) : view === "cards" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -406,7 +369,7 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
             {marketList.map((p, i) => <PlatformCard key={p.id} p={p} l={l} lang={lang} index={i} />)}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-3xl border border-border bg-surface">
+          <div className="overflow-x-auto rounded-3xl bg-white shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)]">
             <table className="w-full min-w-[860px] text-left text-xs">
               <thead className="bg-surface-3/60 text-text-3 uppercase tracking-wide text-[10px]">
                 <tr>
@@ -421,7 +384,7 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
               <tbody className="divide-y divide-border">
                 {marketList.map((p) => (
                   <tr key={p.id} className="hover:bg-surface-3/30 align-top">
-                    <td className="px-4 py-3"><div className="flex items-center gap-2.5"><Logo domain={p.domain} name={p.name} color={p.color} size={32} /><span className="font-bold text-text text-sm">{p.name}</span></div></td>
+                    <td className="px-4 py-3"><div className="flex items-center gap-2.5"><Logo id={p.id} domain={p.domain} name={p.name} color={p.color} size={32} /><span className="font-bold text-text text-sm">{p.name}</span></div></td>
                     <td className="px-4 py-3 text-text-2">{TYPE_LABEL(p.type, l)}</td>
                     <td className="px-4 py-3 text-text-2 max-w-[280px] leading-snug">{p.fees[lang]}</td>
                     <td className="px-4 py-3 text-text-2 max-w-[220px] leading-snug">{p.tax[lang]}</td>
@@ -439,7 +402,7 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
           <h2 className="text-xl font-bold text-text mb-4">{l.guideTitle}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {l.guide.map(([title, desc], i) => (
-              <div key={title} className="rounded-3xl border border-border bg-surface p-5">
+              <div key={title} className="rounded-3xl bg-white shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)] p-5">
                 <div className="w-9 h-9 rounded-xl bg-pv-blue/10 text-pv-blue font-bold flex items-center justify-center mb-3">{i + 1}</div>
                 <h3 className="font-bold text-text">{title}</h3>
                 <p className="text-sm text-text-2 mt-1.5 leading-relaxed">{desc}</p>
@@ -449,7 +412,7 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
         </section>
 
         {/* Sources */}
-        <section className="mt-14 rounded-3xl border border-border bg-surface p-6">
+        <section className="mt-14 rounded-3xl bg-white shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)] p-6">
           <h2 className="text-base font-bold text-text mb-3">{l.sources}</h2>
           <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
             {PLATFORM_SOURCES.map((s) => (

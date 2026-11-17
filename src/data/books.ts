@@ -2,7 +2,10 @@ export type BookLevel = "beginner" | "intermediate" | "advanced";
 
 export interface Book {
   title: string;
-  level: BookLevel;
+  /** Kept in the data, no longer shown. */
+  level?: BookLevel;
+  /** Published or re-issued recently by a well-known author. */
+  recent?: boolean;
   author: string;
   year: string;
   tag: string;
@@ -792,14 +795,8 @@ const EXTRA_BOOKS: NewBook[] = [
     summaryFr: "Une introduction pas à pas aux actions, aux fonds, aux ordres de bourse et à la fiscalité pour débutants." },
 ];
 
-const LEVEL_ORDER: Record<BookLevel, number> = { beginner: 0, intermediate: 1, advanced: 2 };
-
-/** All books, featured titles first, then by level and title. */
+/** All books. The page orders them by popularity (see data/learning.ts). */
 export const BOOKS: Book[] = [
   ...CORE_BOOKS,
   ...EXTRA_BOOKS.map((b) => ({ ...b, link: b.link ?? g(b.title, b.author) })),
-].sort((a, b) =>
-  Number(!!b.featured) - Number(!!a.featured) ||
-  LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level] ||
-  a.title.localeCompare(b.title)
-);
+];

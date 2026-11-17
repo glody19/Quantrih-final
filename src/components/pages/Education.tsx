@@ -1,105 +1,49 @@
 import React, { useMemo, useState } from "react";
-import { BookOpen, Search, ExternalLink, Star, GraduationCap } from "lucide-react";
+import { Search, ArrowUpRight, GraduationCap, PlayCircle, Mic, Presentation } from "lucide-react";
 import { PARTNERS } from "../../data/partners";
 import { motion } from "motion/react";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
-import { BOOKS, SUMMARY_TRANSLATIONS, type Book, type BookLevel } from "../../data/books";
+import { SUMMARY_TRANSLATIONS, type Book } from "../../data/books";
+import { CATEGORIES, LIBRARY, HEADLINERS, RECENT, PAPERS, MEDIA, categoryOf, type CategoryId, type Media } from "../../data/learning";
 
-type Labels = {
-  search: string;
-  library: string;
-  books: string;
-  no_books: string;
-  by: string;
-  consult: string;
-  featured: string;
-  all: string;
-  all_themes: string;
-  beginner: string;
-  intermediate: string;
-  advanced: string;
-  french: string;
-};
+type Tab = "books" | "research" | "media";
 
-const labels: Record<string, Labels> = {
+const T = {
   en: {
-    search: "Search a title, an author or a theme",
-    library: "The Reference Library",
-    books: "books",
-    no_books: "No book matches these filters.",
-    by: "By",
-    consult: "Find the book",
-    featured: "Featured",
-    all: "All levels",
-    all_themes: "All themes",
-    beginner: "Beginner",
-    intermediate: "Intermediate",
-    advanced: "Advanced",
-    french: "French-language book",
+    title: "Library and research",
+    sub: "Books, academic papers, lectures and shows on portfolio construction, factors, trend following and risk.",
+    tabs: { books: "Books", research: "Research", media: "Videos and podcasts" },
+    search: "Search a title, an author or a topic",
+    all: "All topics",
+    headliners: "The references",
+    recent: "Recent releases",
+    allBooks: "All books, most read first",
+    results: "Results",
+    none: "Nothing matches this search.",
+    paper: "Paper", authors: "Authors", published: "Published in", read: "Read", open: "Open", find: "Find the book",
+    kinds: { video: "Videos", podcast: "Podcasts", course: "Lecture series" },
+    researchNote: "Links go to the publisher through the DOI when there is one, otherwise to the working paper or a search for the exact title.",
+    french: "In French",
   },
   fr: {
-    search: "Rechercher un titre, un auteur ou un thème",
-    library: "La Bibliothèque de Référence",
-    books: "livres",
-    no_books: "Aucun livre ne correspond à ces filtres.",
-    by: "Par",
-    consult: "Trouver le livre",
-    featured: "Coup de cœur",
-    all: "Tous niveaux",
-    all_themes: "Tous les thèmes",
-    beginner: "Débutant",
-    intermediate: "Intermédiaire",
-    advanced: "Avancé",
-    french: "Ouvrage francophone",
+    title: "Bibliothèque et recherche",
+    sub: "Livres, articles académiques, cours et émissions sur la construction de portefeuille, les facteurs, le suivi de tendance et le risque.",
+    tabs: { books: "Livres", research: "Recherche", media: "Vidéos et podcasts" },
+    search: "Rechercher un titre, un auteur ou un sujet",
+    all: "Tous les sujets",
+    headliners: "Les références",
+    recent: "Parutions récentes",
+    allBooks: "Tous les livres, les plus lus d'abord",
+    results: "Résultats",
+    none: "Aucun résultat pour cette recherche.",
+    paper: "Article", authors: "Auteurs", published: "Publié dans", read: "Lire", open: "Ouvrir", find: "Trouver le livre",
+    kinds: { video: "Vidéos", podcast: "Podcasts", course: "Cours filmés" },
+    researchNote: "Les liens mènent à l'éditeur par le DOI quand il existe, sinon au document de travail ou à une recherche du titre exact.",
+    french: "En français",
   },
-  nl: {
-    search: "Zoek een titel, auteur of thema",
-    library: "De Referentiebibliotheek",
-    books: "boeken",
-    no_books: "Geen boek komt overeen met deze filters.",
-    by: "Door",
-    consult: "Boek zoeken",
-    featured: "Aanrader",
-    all: "Alle niveaus",
-    all_themes: "Alle thema's",
-    beginner: "Beginner",
-    intermediate: "Gevorderd",
-    advanced: "Expert",
-    french: "Franstalig boek",
-  },
-  de: {
-    search: "Titel, Autor oder Thema suchen",
-    library: "Die Referenzbibliothek",
-    books: "Bücher",
-    no_books: "Kein Buch entspricht diesen Filtern.",
-    by: "Von",
-    consult: "Buch finden",
-    featured: "Empfehlung",
-    all: "Alle Stufen",
-    all_themes: "Alle Themen",
-    beginner: "Einsteiger",
-    intermediate: "Fortgeschritten",
-    advanced: "Experte",
-    french: "Französischsprachiges Buch",
-  },
-  es: {
-    search: "Buscar un título, un autor o un tema",
-    library: "La Biblioteca de Referencia",
-    books: "libros",
-    no_books: "Ningún libro coincide con estos filtros.",
-    by: "Por",
-    consult: "Buscar el libro",
-    featured: "Destacado",
-    all: "Todos los niveles",
-    all_themes: "Todos los temas",
-    beginner: "Principiante",
-    intermediate: "Intermedio",
-    advanced: "Avanzado",
-    french: "Libro en francés",
-  },
-};
+} as const;
 
 const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   "Derivatives": { fr: "Produits Dérivés", nl: "Derivaten", de: "Derivate", es: "Derivados" },
@@ -129,11 +73,6 @@ const TAG_TRANSLATIONS: Record<string, Record<string, string>> = {
   "Technical Analysis": { fr: "Analyse Technique", nl: "Technische Analyse", de: "Technische Analyse", es: "Análisis Técnico" },
 };
 
-const LEVEL_STYLE: Record<BookLevel, string> = {
-  beginner: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  intermediate: "bg-amber-50 text-amber-700 border-amber-200",
-  advanced: "bg-rose-50 text-rose-700 border-rose-200",
-};
 
 const tagLabel = (book: Book, language: string) =>
   TAG_TRANSLATIONS[book.tag]?.[language] ?? (language === "fr" ? book.tagFr : book.tag);
@@ -172,98 +111,161 @@ function PartnerCoursesBand({ language }: { language: string }) {
   );
 }
 
+const CARD = "rounded-[1.25rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)]";
+const KIND_ICON = { video: PlayCircle, podcast: Mic, course: Presentation } as const;
+
+function GroupTitle({ children, count }: { children: React.ReactNode; count?: number }) {
+  return (
+    <h2 className="mb-5 flex items-baseline gap-3 text-[20px] md:text-[22px] font-semibold tracking-tight text-text">
+      {children}
+      {count != null && <span className="text-[13px] font-medium text-text-3 tabular-nums">{count}</span>}
+    </h2>
+  );
+}
+
 export function Education() {
   const { language } = useTranslation();
-  const L = labels[language] || labels.en;
+  const lang: "en" | "fr" = language === "fr" ? "fr" : "en";
+  const L = T[lang];
+  const [tab, setTab] = useState<Tab>("books");
   const [search, setSearch] = useState("");
-  const [level, setLevel] = useState<BookLevel | "all">("all");
-  const [theme, setTheme] = useState<string>("all");
+  const [cat, setCat] = useState<CategoryId | "all">("all");
 
-  const themes = useMemo(
-    () => Array.from(new Set(BOOKS.map((b) => b.tag))).sort((a, b) => a.localeCompare(b)),
-    []
+  const q = search.trim().toLowerCase();
+  const hit = (...v: (string | undefined)[]) => !q || v.some((x) => x && x.toLowerCase().includes(q));
+
+  const books = useMemo(
+    () => LIBRARY.filter((b) => (cat === "all" || categoryOf(b) === cat) && hit(b.title, b.author, b.tag, b.tagFr)),
+    [q, cat]
   );
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return BOOKS.filter((b) => {
-      if (level !== "all" && b.level !== level) return false;
-      if (theme !== "all" && b.tag !== theme) return false;
-      if (!q) return true;
-      return [b.title, b.author, b.tag, b.tagFr, tagLabel(b, language)].some((v) => v.toLowerCase().includes(q));
-    });
-  }, [search, level, theme, language]);
-
-  const levelOptions: (BookLevel | "all")[] = ["all", "beginner", "intermediate", "advanced"];
+  const papers = useMemo(
+    () => PAPERS.filter((p) => (cat === "all" || p.cat === cat) && hit(p.title, p.authors, p.venue, String(p.year))),
+    [q, cat]
+  );
+  const media = useMemo(
+    () => MEDIA.filter((m) => (cat === "all" || m.cat === cat) && hit(m.name, m.by, m.en, m.fr)),
+    [q, cat]
+  );
+  const counts: Record<Tab, number> = { books: books.length, research: papers.length, media: media.length };
+  const filtering = !!q || cat !== "all";
+  const catName = (id: CategoryId) => CATEGORIES.find((c) => c.id === id)![lang];
 
   return (
     <MobileZoomWrapper scaleMobile={0.8}>
       <div className="page-container pb-24 mt-6 min-h-[calc(100vh-80px)] font-sans">
-        {/* Header and filters */}
-        <div className="flex flex-col gap-5 mb-10">
-          <div className="flex items-end justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <span className="w-10 h-10 rounded-2xl bg-pv-blue/10 text-pv-blue flex items-center justify-center">
-                <BookOpen size={20} />
-              </span>
-              <h1 className="font-serif text-3xl md:text-[2.6rem] leading-tight font-semibold tracking-tight text-text">{L.library}</h1>
-            </div>
-            <span className="text-xs font-semibold bg-pv-blue/10 text-pv-blue px-3 py-1 rounded-full font-mono">
-              {filtered.length} {L.books}
-            </span>
-          </div>
+        <header className="max-w-3xl">
+          <h1 className="text-[26px] md:text-[34px] leading-tight font-semibold tracking-tight text-text">{L.title}</h1>
+          <span className="block mt-3 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]" />
+          <p className="mt-4 text-[15px] md:text-[17px] leading-relaxed text-text-2">{L.sub}</p>
+        </header>
 
-          <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
-            <div className="relative flex-1 max-w-xl">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-4" />
-              <input
-                type="text"
-                placeholder={L.search}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm text-text placeholder-text-4 outline-none focus:border-pv-blue/60"
-              />
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {levelOptions.map((lv) => (
-                <button
-                  key={lv}
-                  onClick={() => setLevel(lv)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors",
-                    level === lv ? "bg-text text-bg border-text" : "bg-surface text-text-3 border-border hover:border-border-2"
-                  )}
-                >
-                  {lv === "all" ? L.all : L[lv]}
+        {/* Tabs, search, topics */}
+        <div className="mt-8 flex flex-col gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+            <div className="inline-flex self-start p-1 rounded-full bg-white shadow-sm">
+              {(["books", "research", "media"] as const).map((k) => (
+                <button key={k} onClick={() => setTab(k)} className={cn("relative px-4 sm:px-5 h-10 rounded-full text-sm font-semibold transition-colors whitespace-nowrap", tab === k ? "text-white" : "text-text-2 hover:text-text")}>
+                  {tab === k && <motion.span layoutId="eduTab" className="absolute inset-0 rounded-full bg-pv-blue" transition={{ type: "spring", stiffness: 380, damping: 30 }} />}
+                  <span className="relative">{L.tabs[k]} <span className={cn("ml-1 text-xs tabular-nums", tab === k ? "text-white/70" : "text-text-4")}>{counts[k]}</span></span>
                 </button>
               ))}
             </div>
-            <select
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-              className="px-3 py-2 bg-surface border border-border rounded-xl text-xs font-semibold text-text-2 outline-none focus:border-pv-blue/60"
-            >
-              <option value="all">{L.all_themes}</option>
-              {themes.map((tg) => (
-                <option key={tg} value={tg}>
-                  {TAG_TRANSLATIONS[tg]?.[language] ?? tg}
-                </option>
-              ))}
-            </select>
+            <div className="relative flex-1 max-w-xl">
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-4" />
+              <input type="text" placeholder={L.search} value={search} onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-11 pr-4 h-11 bg-white rounded-full text-sm text-text placeholder-text-4 outline-none shadow-sm focus:ring-2 focus:ring-pv-blue/30" />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {(["all", ...CATEGORIES.map((c) => c.id)] as const).map((id) => (
+              <button key={id} onClick={() => setCat(id as CategoryId | "all")}
+                className={cn("px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-colors", cat === id ? "bg-[#0C2233] text-white" : "bg-white text-text-2 hover:text-text shadow-sm")}>
+                {id === "all" ? L.all : catName(id as CategoryId)}
+              </button>
+            ))}
           </div>
         </div>
 
-        <PartnerCoursesBand language={language} />
+        <div className="mt-10"><PartnerCoursesBand language={language} /></div>
 
-        {filtered.length === 0 ? (
-          <div className="text-center text-text-3 py-20 bg-surface rounded-3xl border border-border text-sm">
-            {L.no_books}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-10">
-            {filtered.map((b, i) => (
-              <BookCard key={b.title} book={b} language={language} labels={L} index={i} />
-            ))}
+        {counts[tab] === 0 && <p className={cn(CARD, "text-center text-text-3 py-16 text-sm")}>{L.none}</p>}
+
+        {/* ── Books ── */}
+        {tab === "books" && books.length > 0 && (
+          filtering ? (
+            <section>
+              <GroupTitle count={books.length}>{L.results}</GroupTitle>
+              <BookGrid books={books} language={language} find={L.find} french={L.french} />
+            </section>
+          ) : (
+            <div className="grid gap-14">
+              <section>
+                <GroupTitle>{L.headliners}</GroupTitle>
+                <BookGrid books={HEADLINERS} language={language} find={L.find} french={L.french} />
+              </section>
+              <section>
+                <GroupTitle>{L.recent}</GroupTitle>
+                <BookGrid books={RECENT} language={language} find={L.find} french={L.french} />
+              </section>
+              <section>
+                <GroupTitle count={books.length}>{L.allBooks}</GroupTitle>
+                <BookGrid books={books.filter((b) => !HEADLINERS.includes(b) && !b.recent)} language={language} find={L.find} french={L.french} />
+              </section>
+            </div>
+          )
+        )}
+
+        {/* ── Research ── */}
+        {tab === "research" && papers.length > 0 && (
+          <section>
+            <div className={cn(CARD, "overflow-x-auto p-3 sm:p-5")}>
+              <table className="w-full min-w-[720px] text-[14px] border-separate border-spacing-y-[3px]">
+                <thead>
+                  <tr className="text-[13px] text-slate-500">
+                    <th className="text-left font-medium pl-2 pb-2">{L.paper}</th>
+                    <th className="text-left font-medium pb-2 px-3 w-[24%]">{L.published}</th>
+                    <th className="pb-2 w-[70px]" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {papers.map((p, i) => (
+                    <motion.tr key={p.title} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i, 10) * 0.03 }} className="align-top hover:bg-surface-3/50 transition-colors">
+                      <td className="pl-2 py-3 pr-3">
+                        <a href={p.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-text hover:text-pv-blue leading-snug">{p.title}</a>
+                        <span className="block mt-0.5 text-[13px] text-[#1B3F72]">{p.authors}</span>
+                        <span className="block mt-1.5 text-[13px] leading-relaxed text-text-2 max-w-3xl">{p[lang]}</span>
+                      </td>
+                      <td className="px-3 py-3 text-[13px] text-text-2">
+                        <span className="block">{p.venue}</span>
+                        <span className="block tabular-nums text-text-3">{p.year} · {catName(p.cat)}</span>
+                      </td>
+                      <td className="py-3 pr-2 text-right">
+                        <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[13px] font-semibold text-pv-blue hover:underline">{L.read} <ArrowUpRight size={14} /></a>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-[12px] text-slate-500">{L.researchNote}</p>
+          </section>
+        )}
+
+        {/* ── Videos, podcasts, lectures ── */}
+        {tab === "media" && media.length > 0 && (
+          <div className="grid gap-12">
+            {(["video", "podcast", "course"] as const).map((kind) => {
+              const list = media.filter((m) => m.kind === kind);
+              if (!list.length) return null;
+              return (
+                <section key={kind}>
+                  <GroupTitle count={list.length}>{L.kinds[kind]}</GroupTitle>
+                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {list.map((m, i) => <MediaCard key={m.name} m={m} lang={lang} index={i} open={L.open} topic={catName(m.cat)} />)}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         )}
       </div>
@@ -271,12 +273,42 @@ export function Education() {
   );
 }
 
-function BookCard({ book, language, labels: L, index }: { book: Book; language: string; labels: Labels; index: number }) {
+function MediaCard({ m, lang, index, open, topic }: { m: Media; lang: "en" | "fr"; index: number; open: string; topic: string }) {
+  const Icon = KIND_ICON[m.kind];
+  return (
+    <motion.a href={m.url} target="_blank" rel="noopener noreferrer"
+      initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.45, delay: (index % 3) * 0.06 }}
+      className={cn(CARD, "group flex flex-col p-5 hover:shadow-[0_22px_50px_-30px_rgba(6,18,27,0.45)] transition-shadow")}>
+      <div className="flex items-start gap-3">
+        <span className="w-10 h-10 shrink-0 rounded-xl bg-[#0C2233] text-white flex items-center justify-center"><Icon size={18} /></span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-semibold text-text leading-snug group-hover:text-pv-blue">{m.name}</p>
+          <p className="text-[13px] text-[#1B3F72]">{m.by}</p>
+        </div>
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-text-3 bg-surface-3 rounded px-1.5 py-0.5">{m.lang}</span>
+      </div>
+      <p className="mt-3 text-[13px] leading-relaxed text-text-2">{m[lang]}</p>
+      <div className="mt-auto pt-4 flex items-center justify-between text-[13px]">
+        <span className="text-text-3">{topic}</span>
+        <span className="inline-flex items-center gap-1 font-semibold text-pv-blue">{open} <ArrowUpRight size={14} /></span>
+      </div>
+    </motion.a>
+  );
+}
+
+function BookGrid({ books, language, find, french }: { books: Book[]; language: string; find: string; french: string }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-9">
+      {books.map((b, i) => <BookCard key={b.title} book={b} language={language} find={find} french={french} index={i} />)}
+    </div>
+  );
+}
+
+function BookCard({ book, language, find, french, index }: { book: Book; language: string; find: string; french: string; index: number }) {
   const [imageError, setImageError] = useState(false);
   const searchLink = `https://www.google.com/search?tbm=bks&q=${encodeURIComponent(`${book.title} ${book.author}`)}`;
   const link = book.link === "#" || book.link.includes("amazon.") ? searchLink : book.link;
   const coverUrl = book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg?default=false` : null;
-  const tag = tagLabel(book, language);
 
   return (
     <motion.article
@@ -286,70 +318,30 @@ function BookCard({ book, language, labels: L, index }: { book: Book; language: 
       transition={{ duration: 0.45, delay: (index % 6) * 0.05, ease: [0.16, 1, 0.3, 1] }}
       className="group flex flex-col"
     >
-      {/* Book on its shelf */}
-      <a href={link} target="_blank" rel="noopener noreferrer" className="relative flex items-end justify-center h-[190px] pb-3 [perspective:900px]">
+      <a href={link} target="_blank" rel="noopener noreferrer" className="relative flex items-end justify-center h-[176px] [perspective:900px]">
         <div className="relative transition-transform duration-500 ease-out [transform-style:preserve-3d] group-hover:[transform:rotateY(-18deg)_translateY(-8px)]">
           {coverUrl && !imageError ? (
-            <img
-              src={coverUrl}
-              alt={book.title}
-              loading="lazy"
-              referrerPolicy="no-referrer"
-              onError={() => setImageError(true)}
-              className="w-[108px] h-[160px] rounded-r-md rounded-l-sm object-cover shadow-[6px_8px_18px_rgba(20,20,26,0.25)]"
-            />
+            <img src={coverUrl} alt={book.title} loading="lazy" referrerPolicy="no-referrer" onError={() => setImageError(true)}
+              className="w-[108px] h-[160px] rounded-r-md rounded-l-sm object-cover shadow-[6px_8px_18px_rgba(20,20,26,0.25)]" />
           ) : (
-            <div
-              className="w-[108px] h-[160px] rounded-r-md rounded-l-sm p-2.5 flex flex-col justify-between text-white shadow-[6px_8px_18px_rgba(20,20,26,0.25)] relative overflow-hidden"
-              style={{ backgroundColor: book.coverColor || "#1B3F72" }}
-            >
+            <div className="w-[108px] h-[160px] rounded-r-md rounded-l-sm p-2.5 flex flex-col justify-between text-white shadow-[6px_8px_18px_rgba(20,20,26,0.25)] relative overflow-hidden"
+              style={{ backgroundColor: book.coverColor && !/^#(4338ca|6d28d9|7c3aed|5b21b6|4c1d95|6366f1|8b5cf6|a855f7|9333ea|7e22ce)$/i.test(book.coverColor) ? book.coverColor : "#1B3F72" }}>
               <div className="absolute inset-y-0 left-0 w-1.5 bg-black/20" />
               <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/25 pointer-events-none" />
               <h4 className="relative font-bold text-[11px] leading-tight line-clamp-5 pl-1">{book.title}</h4>
               <span className="relative text-[9px] font-medium opacity-90 pl-1 line-clamp-2">{book.author}</span>
             </div>
           )}
-          {book.featured && (
-            <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gold text-white flex items-center justify-center shadow-md" title={L.featured}>
-              <Star size={12} className="fill-white" />
-            </span>
-          )}
         </div>
-        {/* Shelf ledge */}
-        <div className="absolute bottom-0 -left-3 -right-3 h-3 rounded-sm bg-gradient-to-b from-[#E4DED2] to-[#CFC6B5] shadow-[0_6px_10px_-4px_rgba(20,20,26,0.25)]" />
       </a>
 
-      {/* Book details */}
-      <div className="pt-3 flex flex-col gap-1.5 flex-grow">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className={cn("text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border", LEVEL_STYLE[book.level])}>
-            {L[book.level]}
-          </span>
-          {book.origin === "fr" && (
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border border-border text-text-3" title={L.french}>
-              FR
-            </span>
-          )}
-          <span className="text-[10px] text-text-4 font-mono">{book.year}</span>
-        </div>
-        <h4 className="text-[13px] font-bold text-text leading-snug line-clamp-2 group-hover:text-pv-blue transition-colors">
-          {book.title}
-        </h4>
-        <p className="text-[11px] text-text-3 leading-snug line-clamp-1">
-          {L.by} {book.author}
-        </p>
-        <p className="text-[11px] text-text-3 leading-relaxed line-clamp-3">{summaryLabel(book, language)}</p>
-        <div className="mt-auto pt-2 flex items-center justify-between gap-2">
-          <span className="text-[10px] font-semibold text-pv-blue bg-pv-blue/8 px-2 py-0.5 rounded-full truncate">{tag}</span>
-          <a
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] font-semibold text-text-3 hover:text-pv-blue inline-flex items-center gap-1 shrink-0"
-            title={L.consult}
-          >
-            <ExternalLink size={11} />
-          </a>
+      <div className="pt-3 flex flex-col gap-1 flex-grow">
+        <h4 className="text-[13px] font-semibold text-text leading-snug line-clamp-2 group-hover:text-pv-blue transition-colors">{book.title}</h4>
+        <p className="text-[12px] text-[#1B3F72] leading-snug line-clamp-1">{book.author} · <span className="tabular-nums text-text-3">{book.year}</span>{book.origin === "fr" && <span className="text-text-3" title={french}> · FR</span>}</p>
+        <p className="text-[12px] text-text-2 leading-relaxed line-clamp-4">{summaryLabel(book, language)}</p>
+        <div className="mt-auto pt-2 flex items-center justify-between gap-2 text-[12px]">
+          <span className="text-text-3 truncate">{tagLabel(book, language)}</span>
+          <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 font-semibold text-pv-blue hover:underline shrink-0">{find} <ArrowUpRight size={12} /></a>
         </div>
       </div>
     </motion.article>

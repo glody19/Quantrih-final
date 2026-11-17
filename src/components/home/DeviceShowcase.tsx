@@ -91,8 +91,8 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, tabletMp4, tabletW
   const run = useInView(ref, { once: true, margin: "0px 0px -120px 0px" });
 
   return (
-    <div ref={ref} className="relative w-full max-w-[1240px] mx-auto select-none">
-      <div className="relative z-10 flex items-center justify-center gap-[3%] py-6 [perspective:1600px]">
+    <div ref={ref} className="relative w-full select-none">
+      <div className="relative z-10 flex items-center justify-start gap-[2.5%] py-6 [perspective:1600px]">
         {/* ── Tablet, held horizontally: backtest recording in the tablet layout ── */}
         <motion.div style={{ y: sideY }} className="relative w-[27%] hidden md:block z-10">
           <motion.div
@@ -117,19 +117,18 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, tabletMp4, tabletW
           </motion.div>
         </motion.div>
 
-        {/* ── Desktop display: backtest recording, moves forward once the others have landed ── */}
+        {/* ── Laptop: backtest recording, moves forward once the others have landed ── */}
         <motion.div
-          className="relative w-[94%] md:w-[50%] z-20"
+          className="relative w-[94%] md:w-[54%] z-20"
           style={{ transformOrigin: "50% 50%" }}
           initial={{ opacity: 0, y: 100, rotateX: 30, scale: 0.88 }}
-          animate={run ? { opacity: 1, y: [100, 0, 0, -6], rotateX: [30, 0, 0, 0], scale: [0.88, 1, 1, 1.12] } : undefined}
+          animate={run ? { opacity: 1, y: [100, 0, 0, -6], rotateX: [30, 0, 0, 0], scale: [0.88, 1, 1, 1.06] } : undefined}
           transition={{ opacity: { duration: 0.6 }, default: { duration: ZOOM_AT + 1.2, times: [0, 0.3, 0.72, 1], ease: EASE } }}
         >
-          {/* body: aluminium edge, ultra thin black border, depth layer behind */}
+          {/* laptop: aluminium lid with a thin black bezel, then the base with its opening notch */}
           <div className="relative">
-            <div className="absolute inset-0 translate-y-[6px] translate-x-[4px] rounded-[16px] bg-[linear-gradient(135deg,#C8CCD3,#8F959E)] -z-10" />
-            <div className="relative rounded-[16px] p-[2.5px] bg-[linear-gradient(180deg,#F3F4F6,#B7BCC4)] shadow-[0_70px_110px_-55px_rgba(15,23,42,0.8)]">
-              <div className="relative rounded-[14px] bg-[#050507] p-[0.8%]">
+            <div className="relative mx-[4%] rounded-t-[16px] rounded-b-[4px] p-[2.5px] bg-[linear-gradient(180deg,#F3F4F6,#B7BCC4)]">
+              <div className="relative rounded-t-[14px] rounded-b-[3px] bg-[#050507] p-[1.2%] pb-[1.8%]">
                 <span className="absolute left-1/2 top-[0.35%] -translate-x-1/2 w-1 h-1 rounded-full bg-[#1d2027] z-10" />
                 <div className="relative overflow-hidden rounded-[9px] bg-white aspect-[16/10]">
                   <video className="absolute inset-0 w-full h-full object-cover object-top" autoPlay muted loop playsInline preload="metadata" poster={poster} aria-label={desktopAlt}>
@@ -140,6 +139,9 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, tabletMp4, tabletW
                   <Glare />
                 </div>
               </div>
+            </div>
+            <div className="relative h-[11px] md:h-[15px] rounded-t-[3px] rounded-b-[16px] bg-[linear-gradient(180deg,#F1F2F4_0%,#C5C9D0_45%,#8F959E_100%)] shadow-[0_34px_50px_-22px_rgba(15,23,42,0.75)]">
+              <span className="absolute left-1/2 top-0 -translate-x-1/2 w-[13%] h-[42%] rounded-b-[6px] bg-[#9AA0A9]" />
             </div>
           </div>
         </motion.div>

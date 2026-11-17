@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronDown, User, LogOut, Heart, Menu, X, Settings, TrendingUp, FileText, LogIn } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../../lib/utils";
@@ -88,13 +88,22 @@ export function Header({
     { id: "platforms", label: t("nav.platforms") },
   ];
 
+  // on the home page the bar is transparent over the hero, then turns solid once the page scrolls
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 40);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+
   return (
     <header 
       data-theme={currentPage === "home" ? "dark" : undefined}
       className={cn(
         "z-[100] transition-all duration-300 ease-in-out w-full border-b backdrop-blur-md",
         currentPage === "home"
-          ? "absolute top-0 left-0 bg-transparent border-white/10"
+          ? cn("fixed top-0 left-0 border-white/10", scrolled ? "bg-[#081A28]/92 shadow-[0_8px_30px_-18px_rgba(0,0,0,0.8)]" : "bg-transparent")
           : "sticky top-0 bg-white/90 border-border shadow-[0_1px_0_rgba(17,17,24,0.02)]"
       )}
     >

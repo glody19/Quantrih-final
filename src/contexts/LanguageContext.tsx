@@ -11,7 +11,7 @@ interface LanguageContextType {
 const translations: Record<Language, Record<string, string>> = {
   en: {
     "home.explore_pages": "Explore our other pages and interesting data",
-    "home.tools.subtitle": "Discover our 4 simplified analysis tools to design, test, and secure your investment portfolio.",
+    "home.tools.subtitle": "Four tools to build, test and stress an allocation.",
 
     "pb.editConfig": "Edit Configuration",
     "pb.portfolio": "Portfolio",
@@ -356,7 +356,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   fr: {
     "home.explore_pages": "Explorez nos autres pages et données intéressantes",
-    "home.tools.subtitle": "Découvrez nos 4 outils d'analyse simplifiés pour concevoir, tester et sécuriser votre portefeuille d'investissement.",
+    "home.tools.subtitle": "Quatre outils pour construire, tester et éprouver une allocation.",
 
     "pb.editConfig": "Modifier la configuration",
     "pb.portfolio": "Portefeuille",

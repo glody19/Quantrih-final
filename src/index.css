@@ -385,9 +385,22 @@ html.phone-desktop header .h-\[calc\(100dvh-84px\)\] { height: calc(100dvh / var
 .home-page table .font-mono,
 .home-page table .font-mono * { font-family: var(--font-sans); font-variant-numeric: tabular-nums; }
 
-/* Backtesting pages: no frame line around tables and cards, a soft shadow instead */
-.tool-page div.border,
-.tool-page div.border-2 { border-color: transparent !important; box-shadow: 0 16px 40px -32px rgba(6, 18, 27, 0.35); }
+/* Backtesting pages: no frame line and no shadow around tables and cards */
+/* (floating menus and tooltips, which are absolutely positioned, keep theirs) */
+.tool-page div.border:not(.absolute):not(.fixed),
+.tool-page div.border-2:not(.absolute):not(.fixed),
+.tool-page section.border,
+.tool-page .card { border-color: transparent !important; box-shadow: none !important; }
+.tool-page div[class*="shadow-"]:not(.absolute):not(.fixed),
+.tool-page section[class*="shadow-"] { box-shadow: none !important; }
+
+/* One typeface everywhere: titles and figures use the same sans as the text (figures keep aligned digits) */
+h1, h2, h3, h4, .font-serif, .font-display { font-family: var(--font-sans) !important; }
+.font-mono, .num { font-family: var(--font-sans) !important; font-variant-numeric: tabular-nums; }
+code, pre, kbd { font-family: var(--font-mono) !important; }
+
+/* Market page: tighter tables */
+.market-page table th, .market-page table td { padding-top: 0.45rem !important; padding-bottom: 0.45rem !important; padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
 
 /* Desktop and tablet: page content and footer shown at 80%, the top header stays at full size.
    Phones keep their own scaling (html.phone-desktop). */

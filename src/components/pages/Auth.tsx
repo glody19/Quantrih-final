@@ -309,12 +309,9 @@ export function Auth({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="min-h-screen grid md:grid-cols-2 bg-white font-sans">
-      {/* Photo half: business towers, full height, splits the screen in two */}
+      {/* Photo half: a price chart on a phone, full height, splits the screen in two */}
       <aside className="relative hidden md:block overflow-hidden min-h-screen bg-[#0A1E2D]">
-        <picture>
-          <source srcSet="/media/skyline.webp" type="image/webp" />
-          <img src="/media/skyline.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-[46%_center]" />
-        </picture>
+        <img src="/media/login-chart.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-[94%_center]" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#06111A] via-[#0A1E2D]/55 to-[#0A1E2D]/15" />
         <div className="relative h-full flex flex-col justify-between p-10 xl:p-16 text-white">
           <button onClick={onBack} className="self-start inline-flex items-center gap-2.5">
@@ -350,7 +347,7 @@ export function Auth({ onBack }: { onBack: () => void }) {
 
         <div className="w-full max-w-[420px]">
           <div className="md:hidden relative mb-8 h-36 rounded-3xl overflow-hidden">
-            <img src="/media/skyline.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <img src="/media/login-chart.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-[70%_center]" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#06111A]/85 to-[#0A1E2D]/10" />
             <span className="absolute left-5 bottom-4 inline-flex items-center gap-2 text-white">
               <span className="w-8 h-8 rounded-lg bg-white flex items-center justify-center"><img src="/icon.svg" alt="" className="w-5 h-5" /></span>
