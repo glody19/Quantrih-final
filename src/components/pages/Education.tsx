@@ -8,7 +8,7 @@ import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { SUMMARY_TRANSLATIONS, type Book } from "../../data/books";
 import { CATEGORIES, LIBRARY, BEST_SELLERS, RECENT, PAPERS, MEDIA, categoryOf, type CategoryId, type Media } from "../../data/learning";
 import { BookCard } from "../education/BookCard";
-import { HeroBand, HeroStats, Donut, Columns, BarList, CountUp, LibraryArt, PALETTE } from "../education/Viz";
+import { HeroBand, HeroStats, LibraryArt, PALETTE } from "../education/Viz";
 
 type Tab = "books" | "research" | "media";
 
@@ -168,16 +168,6 @@ export function Education() {
   const filtering = !!q || cat !== "all";
   const catName = (id: CategoryId) => CATEGORIES.find((c) => c.id === id)![lang];
 
-  // figures for the infographics, all computed from the library itself
-  const byTopic = CATEGORIES.map((c) => ({ label: c[lang], value: LIBRARY.filter((b) => categoryOf(b) === c.id).length, color: CAT_COLOR[c.id] })).filter((d) => d.value > 0);
-  const decades = (() => {
-    const m = new Map<number, number>();
-    PAPERS.forEach((p) => { const d = Math.floor(Number(p.year) / 10) * 10; if (d) m.set(d, (m.get(d) || 0) + 1); });
-    return [...m.entries()].sort((a, b) => a[0] - b[0]).map(([d, v]) => ({ label: `${d}s`, value: v }));
-  })();
-  const byKind = (["video", "podcast", "course"] as const).map((k) => ({ label: L.kinds[k], value: MEDIA.filter((m) => m.kind === k).length, color: KIND_COLOR[k] }));
-  const frBooks = LIBRARY.filter((b) => b.origin === "fr").length;
-
   const grid = (list: typeof LIBRARY) => (
     <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-x-8 gap-y-12">
       {list.map((b, i) => (
@@ -213,31 +203,6 @@ export function Education() {
             </span>
             <span className="relative shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0C2233] text-[15px] font-semibold group-hover:gap-3 transition-all">{lang === "fr" ? "Lire le dossier" : "Read the feature"} →</span>
           </motion.a>
-
-          {/* infographics */}
-          <section className="mt-14">
-            <GroupTitle color={PALETTE.teal}>{L.glance}</GroupTitle>
-            <div className="grid lg:grid-cols-3 gap-6">
-              <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className={cn(CARD, "p-6")}>
-                <h3 className="text-[18px] font-semibold text-slate-900">{L.byTopic}</h3>
-                <div className="mt-5 flex items-center gap-6">
-                  <Donut data={byTopic} size={190} thickness={24} center={<><CountUp value={LIBRARY.length} className="text-[32px] font-semibold text-slate-900" /><span className="text-[12px] uppercase tracking-[0.14em] text-slate-500">{L.statBooks}</span></>} />
-                  <ul className="grid gap-1.5 text-[14px]">
-                    {byTopic.map((d) => <li key={d.label} className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: d.color }} /><span className="text-slate-700 leading-tight">{d.label}</span><span className="ml-auto pl-2 font-semibold tabular-nums text-slate-900">{d.value}</span></li>)}
-                  </ul>
-                </div>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.15 }} className={cn(CARD, "p-6")}>
-                <h3 className="text-[18px] font-semibold text-slate-900">{L.byDecade}</h3>
-                <div className="mt-6"><Columns data={decades} color={PALETTE.sky} height={200} /></div>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.3 }} className={cn(CARD, "p-6 grid gap-7 content-start")}>
-                <div><h3 className="mb-4 text-[18px] font-semibold text-slate-900">{L.byKind}</h3><BarList data={byKind} /></div>
-                <div><h3 className="mb-4 text-[18px] font-semibold text-slate-900">{L.langs}</h3>
-                  <BarList data={[{ label: L.english, value: LIBRARY.length - frBooks, color: PALETTE.blue }, { label: L.frenchL, value: frBooks, color: PALETTE.gold }]} /></div>
-              </motion.div>
-            </div>
-          </section>
 
           {/* Tabs, search, topics */}
           <div className="mt-16 flex flex-col gap-5">

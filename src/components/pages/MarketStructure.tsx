@@ -8,6 +8,13 @@ import { OffExchangeData } from "../market/OffExchangeData";
 const CARD = "rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)]";
 const NAVY = { backgroundColor: "#0A1E2D", backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(180deg,#0A1E2D 0%,#14466B 60%,#0A1E2D 100%)", backgroundSize: "56px 56px, 56px 56px, 100% 100%" };
 
+/** Covers supplied for the reading list, served from /public/media/books. */
+const COVERS: Record<string, string> = {
+  "Dark Pools": "/media/books/dark-pools.jpg",
+  "Flash Boys": "/media/books/flash-boys.jpg",
+  "Trading and Exchanges": "/media/books/trading-and-exchanges.jpg",
+};
+
 const T = {
   en: {
     kicker: "Market structure",
@@ -284,7 +291,9 @@ export function MarketStructure() {
               <motion.a key={title} href={`https://openlibrary.org/search?q=${encodeURIComponent(title + " " + by.split(",")[0])}`} target="_blank" rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}
                 className={cn(CARD, "group p-5 flex gap-4")}>
-                <span className="w-14 h-20 shrink-0 rounded-md bg-gradient-to-br from-[#0C2233] to-[#1D6FA8] text-white text-[9px] font-semibold p-1.5 leading-tight shadow-md">{title}</span>
+                {COVERS[title]
+                  ? <img src={COVERS[title]} alt={title} loading="lazy" className="w-[72px] h-[108px] shrink-0 rounded-r-md rounded-l-sm object-cover shadow-[6px_10px_22px_rgba(6,18,27,0.3)]" />
+                  : <span className="w-[72px] h-[108px] shrink-0 rounded-md bg-gradient-to-br from-[#0C2233] to-[#1D6FA8] text-white text-[10px] font-semibold p-2 leading-tight shadow-md">{title}</span>}
                 <span>
                   <b className="block text-[15px] text-slate-900 group-hover:text-[#1B3F72]">{title}</b>
                   <span className="block text-[12.5px] text-slate-500">{by}</span>
