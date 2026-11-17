@@ -1201,8 +1201,9 @@ export function createApp() {
       if (!week) return res.status(503).json({ error: "no recent week" });
       const firms: any[] = await weekRows(week, "ATS_W_FIRM", [], 1000);
       const byMpid = new Map<string, any>();
+      // NMS stocks only (tiers T1 and T2): OTC equities are a different market
       for (const r of Array.isArray(firms) ? firms : []) {
-        if (!r.MPID) continue;
+        if (!r.MPID || r.tierIdentifier === "OTCE") continue;
         const v = toVenue(r);
         const prev = byMpid.get(v.mpid);
         if (prev) { prev.shares += v.shares; prev.trades += v.trades; prev.notional += v.notional; } else byMpid.set(v.mpid, v);
@@ -1211,7 +1212,7 @@ export function createApp() {
       const weeks = recentMondays(16).filter((w) => w <= week).slice(0, 12).reverse();
       const history = (await Promise.all(weeks.map(async (w) => {
         const r: any[] = await weekRows(w, "ATS_W_VOL_STATS", [], 20);
-        const shares = (Array.isArray(r) ? r : []).reduce((a, x) => a + (Number(x.totalWeeklyShareQuantity) || 0), 0);
+        const shares = (Array.isArray(r) ? r : []).filter((x) => x.tierIdentifier !== "OTCE").reduce((a, x) => a + (Number(x.totalWeeklyShareQuantity) || 0), 0);
         return shares ? { week: w, shares } : null;
       }))).filter(Boolean);
       res.set("Cache-Control", "public, s-maxage=21600, stale-while-revalidate=86400");
@@ -1229,7 +1230,7 @@ export function createApp() {
       const week = await findLatestWeek();
       if (!week) return res.status(503).json({ error: "no recent week" });
       const rows: any[] = await weekRows(week, "ATS_W_SMBL_FIRM", [eq("issueSymbolIdentifier", symbol)], 200);
-      const venues = (Array.isArray(rows) ? rows : []).filter((r) => r.MPID).map(toVenue).sort((a, b) => b.shares - a.shares);
+      const venues = (Array.isArray(rows) ? rows : []).filter((r) => r.MPID && r.tierIdentifier !== "OTCE").map(toVenue).sort((a, b) => b.shares - a.shares);
       const total = venues.reduce((a, v) => a + v.shares, 0);
       res.set("Cache-Control", "public, s-maxage=21600, stale-while-revalidate=86400");
       res.json({ symbol, name: rows?.[0]?.issueName || symbol, week, total, venues });
