@@ -1162,7 +1162,9 @@ export function createApp() {
       const filters: any[] = [];
       if (req.query.type) filters.push({ compareType: "EQUAL", fieldName: "summaryTypeCode", fieldValue: String(req.query.type) });
       if (req.query.symbol) filters.push({ compareType: "EQUAL", fieldName: "issueSymbolIdentifier", fieldValue: String(req.query.symbol).toUpperCase() });
-      const rows = await finraQuery(dataset, { limit: Math.min(50, Number(req.query.limit) || 5), ...(filters.length ? { compareFilters: filters } : {}) });
+      if (req.query.week) filters.push({ compareType: "EQUAL", fieldName: "weekStartDate", fieldValue: String(req.query.week) });
+      if (req.query.tier) filters.push({ compareType: "EQUAL", fieldName: "tierIdentifier", fieldValue: String(req.query.tier) });
+      const rows = await finraQuery(dataset, { limit: Math.min(50, Number(req.query.limit) || 5), sortFields: ["-weekStartDate"], ...(filters.length ? { compareFilters: filters } : {}) });
       res.json(rows);
     } catch (e: any) {
       res.status(502).json({ error: String(e?.message || e) });
