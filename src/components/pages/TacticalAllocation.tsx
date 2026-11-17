@@ -822,6 +822,9 @@ export function TacticalAllocation() {
     "ta_momSafeAsset",
     "CASH",
   );
+  const [maBuySignal, setMaBuySignal] = useLocalStorage<"gt" | "gte">("ta_maBuySignal", "gt");
+  const [maType, setMaType] = useLocalStorage<"sma" | "ema">("ta_maType", "sma");
+  const [absMomentum, setAbsMomentum] = useLocalStorage<"no" | "yes">("ta_absMomentum", "no");
   const [seasonalStart, setSeasonalStart] = useLocalStorage("ta_seasonalStart", 5);
   const [seasonalEnd, setSeasonalEnd] = useLocalStorage("ta_seasonalEnd", 10);
   const [momOutMarket, setMomOutMarket] = useLocalStorage(
@@ -1628,14 +1631,18 @@ export function TacticalAllocation() {
       if (activeTab === "ma_single") {
         tacticalModel = {
           type: "moving_average",
-          movingAverageMonths: maSingleMonths,
+          movingAverageMonths: Number(maSingleMonths) || 10,
           safeAsset: momSafeAsset,
+          buySignal: maBuySignal,
+          maType,
         };
       } else if (activeTab === "ma_portfolio") {
         tacticalModel = {
           type: "moving_average",
-          movingAverageMonths: 10,
+          movingAverageMonths: Number(maSingleMonths) || 10,
           safeAsset: momSafeAsset,
+          buySignal: maBuySignal,
+          maType,
         };
       } else if (activeTab === "seasonal") {
         tacticalModel = {
@@ -1657,6 +1664,8 @@ export function TacticalAllocation() {
           type: "relative_momentum",
           lookbackMonths: momLookback,
           topK: momTopK,
+          absoluteMomentum: absMomentum === "yes",
+          safeAsset: momSafeAsset,
         };
       } else if (activeTab === "mom_dual") {
         const symbols = dualTickers
@@ -2218,9 +2227,9 @@ export function TacticalAllocation() {
                         currentLabels.buySignalTooltip || "The condition necessary to trigger a buy signal."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>Price &gt;= Moving average</option>
-                      <option>Price &gt; Moving average</option>
+                    <select value={maBuySignal} onChange={(e) => setMaBuySignal(e.target.value as "gt" | "gte")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value="gte">Price &gt;= Moving average</option>
+                      <option value="gt">Price &gt; Moving average</option>
                     </select>
                   </div>
                   <div className="space-y-4">
@@ -2230,9 +2239,9 @@ export function TacticalAllocation() {
                         currentLabels.typeOfMovingAverageTooltip || "The smoothing method (Simple or Exponential) of the moving average."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.simpleMovingAverage || "Simple Moving Average"}</option>
-                      <option>{currentLabels.exponentialMovingAverage || "Exponential Moving Average"}</option>
+                    <select value={maType} onChange={(e) => setMaType(e.target.value as "sma" | "ema")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value="sma">{currentLabels.simpleMovingAverage || "Simple Moving Average"}</option>
+                      <option value="ema">{currentLabels.exponentialMovingAverage || "Exponential Moving Average"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
@@ -2242,10 +2251,9 @@ export function TacticalAllocation() {
                         currentLabels.lookbackPeriodTooltip || "The past observation period to calculate signals (e.g. 10 months, 200 days)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.months10 || "10 months"}</option>
-                      <option>{currentLabels.months12 || "12 months"}</option>
-                      <option>{currentLabels.days200 || "200 days"}</option>
+                    <select value={Number(maSingleMonths)} onChange={(e) => setMaSingleMonths(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value={10}>{currentLabels.months10 || "10 months"}</option>
+                      <option value={12}>{currentLabels.months12 || "12 months"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
@@ -2343,7 +2351,7 @@ export function TacticalAllocation() {
                         currentLabels.singleAbsoluteMomentumTooltip || "Apply a single absolute momentum filter to the entire portfolio."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={absMomentum} onChange={(e) => setAbsMomentum(e.target.value as "no" | "yes")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option value="no">{currentLabels.no || "No"}</option>
                       <option value="yes">{currentLabels.yes || "Yes"}</option>
                     </select>
@@ -2384,10 +2392,10 @@ export function TacticalAllocation() {
                         currentLabels.lookbackPeriodTooltip || "The past observation period to calculate signals (e.g. 10 months, 200 days)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.months12 || "12 months"}</option>
-                      <option>{currentLabels.months6 || "6 months"}</option>
-                      <option>{currentLabels.months3 || "3 months"}</option>
+                    <select value={Number(momLookback)} onChange={(e) => setMomLookback(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value={12}>{currentLabels.months12 || "12 months"}</option>
+                      <option value={6}>{currentLabels.months6 || "6 months"}</option>
+                      <option value={3}>{currentLabels.months3 || "3 months"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
@@ -2519,10 +2527,10 @@ export function TacticalAllocation() {
                         currentLabels.lookbackPeriodTooltip || "The past observation period to calculate signals (e.g. 10 months, 200 days)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.months12 || "12 months"}</option>
-                      <option>{currentLabels.months6 || "6 months"}</option>
-                      <option>{currentLabels.months3 || "3 months"}</option>
+                    <select value={Number(momLookback)} onChange={(e) => setMomLookback(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value={12}>{currentLabels.months12 || "12 months"}</option>
+                      <option value={6}>{currentLabels.months6 || "6 months"}</option>
+                      <option value={3}>{currentLabels.months3 || "3 months"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
