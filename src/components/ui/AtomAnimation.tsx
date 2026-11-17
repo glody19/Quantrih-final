@@ -58,7 +58,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
       canvas.height = Math.max(1, Math.round(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const count = 1000; // fewer, clearer spikes; same density on phones and computers
+      const count = 440; // sparse enough that every spike and digit reads on its own; same density on phones and computers
       const golden = Math.PI * (3 - Math.sqrt(5));
       spikes = Array.from({ length: count }, (_, i) => {
         // Fibonacci sphere: even coverage without clumps
@@ -67,7 +67,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
         const a = golden * i;
         return {
           x: Math.cos(a) * r, y, z: Math.sin(a) * r,
-          len: 0.74 + Math.random() * 0.32,
+          len: 0.78 + Math.random() * 0.26,
           phase: Math.random() * Math.PI * 2,
           color: (i % 7 === 0 ? 2 : i % 2) as 0 | 1 | 2,
           char: String(Math.floor(Math.random() * 10)),
@@ -151,7 +151,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
 
       // soft core glow
       const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.75);
-      glow.addColorStop(0, `rgba(${colors[0]},${variant === "light" ? 0.1 : 0.16})`);
+      glow.addColorStop(0, `rgba(${colors[0]},${variant === "light" ? 0.05 : 0.08})`);
       glow.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, width, height);
@@ -162,22 +162,24 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
       ctx.textBaseline = "middle";
       for (let d = 0; d < DEPTH_LEVELS; d++) {
         const k = d / (DEPTH_LEVELS - 1); // 0 far .. 1 near
-        ctx.lineWidth = (0.9 + k * 1.6) * fs;
+        ctx.lineWidth = (1 + k * 1.4) * fs;
         for (let c = 0; c < 3; c++) {
           const seg = lineBuckets[d][c];
           if (!seg.length) continue;
-          ctx.strokeStyle = `rgba(${colors[c]},${(0.3 + k * 0.6).toFixed(2)})`;
+          ctx.strokeStyle = `rgba(${colors[c]},${(0.5 + k * 0.5).toFixed(2)})`;
           ctx.beginPath();
           for (let i = 0; i < seg.length; i += 4) { ctx.moveTo(seg[i], seg[i + 1]); ctx.lineTo(seg[i + 2], seg[i + 3]); }
           ctx.stroke();
         }
-        ctx.font = `600 ${((9 + k * 7) * fs).toFixed(1)}px "JetBrains Mono", ui-monospace, monospace`;
+        // only the front half carries digits: far digits overlapped into a blur
+        if (d < 2) continue;
+        ctx.font = `600 ${((10 + k * 6) * fs).toFixed(1)}px "JetBrains Mono", ui-monospace, monospace`;
         for (let c = 0; c < 3; c++) {
           const items = textBuckets[d][c];
           if (!items.length) continue;
           // near digits use the lightest palette colour so they stand out against the spikes
-          ctx.fillStyle = `rgba(${k > 0.6 ? colors[2] : colors[c]},${(0.25 + k * 0.75).toFixed(2)})`;
-          for (const it of items) ctx.fillText(it.c, it.x, it.y);
+          ctx.fillStyle = `rgba(${k > 0.6 ? colors[2] : colors[c]},${(0.7 + k * 0.3).toFixed(2)})`;
+          for (const it of items) ctx.fillText(it.c, Math.round(it.x), Math.round(it.y));
         }
       }
 
@@ -185,7 +187,7 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
       spawnIn -= dt;
       if (spawnIn <= 0 && flows.length < 12) { spawn(); spawnIn = 22 + Math.random() * 26; }
       const light = variant === "light";
-      ctx.font = `600 ${Math.max(11, Math.round(R * 0.075))}px "JetBrains Mono", ui-monospace, monospace`;
+      ctx.font = `700 ${Math.max(12, Math.round(R * 0.075))}px "JetBrains Mono", ui-monospace, monospace`;
       for (let i = flows.length - 1; i >= 0; i--) {
         const f = flows[i];
         f.d -= f.speed * dt;
@@ -197,8 +199,6 @@ export const AtomAnimation: React.FC<{ className?: string; fullScreen?: boolean;
         const col = f.up ? (light ? "5,150,105" : "52,211,153") : (light ? "159,18,57" : "225,29,72");
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.shadowColor = `rgba(${col},0.8)`;
-        ctx.shadowBlur = 10;
         ctx.fillStyle = `rgb(${col})`;
         const k = 0.55 + 0.45 * f.d;
         ctx.translate(x, y);
