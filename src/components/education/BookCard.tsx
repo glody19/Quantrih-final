@@ -83,25 +83,16 @@ export function BookCard({ book, summary, tag, tagColor, find, index }: {
       className={loaded ? "group flex flex-col" : "group flex flex-col pointer-events-none"}
       style={loaded ? undefined : { position: "absolute", width: 1, height: 1, overflow: "hidden" }}
     >
-      <a href={link} target="_blank" rel="noopener noreferrer" className="relative mx-auto w-[148px] h-[222px] [perspective:1100px]">
-        {/* the book turns around on hover: front is the real cover, back shows the summary */}
-        <div className="relative w-full h-full transition-transform duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)] [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-          <div className="absolute inset-0 [backface-visibility:hidden] rounded-r-md rounded-l-sm overflow-hidden shadow-[8px_12px_26px_rgba(6,18,27,0.32)] bg-slate-100">
-            {src && (
-              <img src={src} alt={book.title} loading="lazy" referrerPolicy="no-referrer"
-                onLoad={(e) => { if (e.currentTarget.naturalWidth < 40) fail(); else setLoaded(true); }}
-                onError={fail} className="w-full h-full object-cover" />
-            )}
-            <span className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-black/30 to-transparent" />
-            <span className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent" />
-          </div>
-          <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-l-md rounded-r-sm p-3.5 flex flex-col text-white shadow-[8px_12px_26px_rgba(6,18,27,0.32)]"
-            style={{ background: `linear-gradient(160deg, #0C2233 0%, #14466B 70%, ${tagColor} 160%)` }}>
-            <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: tagColor }}>{tag}</span>
-            <span className="mt-1.5 text-[13px] font-semibold leading-snug line-clamp-3">{book.title}</span>
-            <span className="mt-1 text-[11.5px] text-white/70 line-clamp-1">{book.author} · {book.year}</span>
-            <span className="mt-2 text-[11.5px] leading-snug text-white/85 line-clamp-6">{summary}</span>
-          </div>
+      <a href={link} target="_blank" rel="noopener noreferrer" title={summary} className="relative mx-auto w-[148px] h-[222px]">
+        {/* static cover: no page turn on hover, only a gentle lift */}
+        <div className="absolute inset-0 rounded-r-md rounded-l-sm overflow-hidden shadow-[8px_12px_26px_rgba(6,18,27,0.32)] bg-slate-100 transition-transform duration-300 group-hover:-translate-y-1">
+          {src && (
+            <img src={src} alt={book.title} loading="lazy" referrerPolicy="no-referrer"
+              onLoad={(e) => { if (e.currentTarget.naturalWidth < 40) fail(); else setLoaded(true); }}
+              onError={fail} className="w-full h-full object-cover" />
+          )}
+          <span className="absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-black/30 to-transparent" />
+          <span className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent" />
         </div>
       </a>
       <div className="pt-4 flex flex-col gap-1 flex-grow">

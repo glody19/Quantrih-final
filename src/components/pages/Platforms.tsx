@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Check, ExternalLink, Minus, Star, ShieldCheck, Receipt, Landmark, Megaphone, LayoutGrid, Table2, Search, ArrowRight } from "lucide-react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
-import { HeroBand, HeroStats, Donut, BarList, CountUp, NetworkArt, SectionHead, PALETTE } from "../education/Viz";
+import { HeroBand, HeroStats, NetworkArt, SectionHead, PALETTE } from "../education/Viz";
 import { cn } from "../../lib/utils";
 import { PLATFORMS } from "./platformsData";
 import { INVESTMENT_PLATFORMS, PLATFORM_SOURCES, type InvestmentPlatform, type Market, type PlatformType } from "../../data/investmentPlatforms";
@@ -300,15 +300,6 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
     { id: "FR", label: l.tabFR, flag: "🇫🇷", n: count("FR") },
   ];
   const typeFilters: TypeFilter[] = ["all", "broker", "bank", "neobank"];
-  const typeMix = ([
-    ["broker", l.broker, PALETTE.sky], ["crypto", l.crypto, PALETTE.coral], ["neobank", l.neobank, PALETTE.teal], ["bank", l.bank, PALETTE.gold],
-  ] as const).map(([k, label, color]) => ({ label, color, value: popular.filter((p) => p.type === k).length })).filter((d) => d.value > 0);
-  const productMix = ([
-    ["ETF", /^ETF$/, PALETTE.sky], [lang === "fr" ? "Actions" : "Shares", /^Actions/, PALETTE.blue], [lang === "fr" ? "Obligations" : "Bonds", /^Obligations$/, PALETTE.teal],
-    [lang === "fr" ? "Fonds" : "Funds", /^Fonds$/, PALETTE.green], ["Options", /^Options$/, PALETTE.coral], ["Futures", /^Futures$/, PALETTE.navy],
-    ["PEA", /PEA/, PALETTE.gold], [lang === "fr" ? "Épargne-pension" : "Pension savings", /pargne-pension/, PALETTE.green],
-  ] as const).map(([label, re, color]) => ({ label, color, value: INVESTMENT_PLATFORMS.filter((p) => p.products.some((x) => re.test(x))).length }))
-    .filter((d) => d.value > 0).sort((a, b) => b.value - a.value);
 
   return (
     <MobileZoomWrapper scaleMobile={0.8}>
@@ -322,29 +313,6 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
           ]} />
         </HeroBand>
         <div className="max-w-[1720px] mx-auto px-5 sm:px-8 lg:px-14 pt-12">
-
-        {/* Infographics computed from the platforms listed on this page */}
-        <section className="mb-14 grid lg:grid-cols-[1fr_1.35fr] gap-6 items-start">
-          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="rounded-[1.5rem] bg-white shadow-[0_22px_60px_-40px_rgba(6,18,27,0.45)] p-7">
-            <h3 className="text-[19px] font-semibold text-slate-900">{lang === "fr" ? "Les plateformes par type" : "Platforms by type"}</h3>
-            <div className="mt-6 flex flex-wrap items-center gap-8">
-              <Donut size={200} thickness={26} data={typeMix} center={<><CountUp value={popular.length} className="text-[34px] font-semibold text-slate-900" /><span className="text-[12px] uppercase tracking-[0.14em] text-slate-500">{lang === "fr" ? "plateformes" : "platforms"}</span></>} />
-              <ul className="grid gap-2.5 text-[16px]">
-                {typeMix.map((d, i) => (
-                  <motion.li key={d.label} initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 + i * 0.12 }} className="flex items-center gap-2.5">
-                    <span className="w-3 h-3 rounded-full" style={{ background: d.color }} /><span className="text-slate-700">{d.label}</span>
-                    <CountUp value={d.value} delay={0.4 + i * 0.12} className="ml-4 font-semibold text-slate-900" />
-                  </motion.li>
-                ))}
-              </ul>
-            </div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.15 }} className="rounded-[1.5rem] bg-white shadow-[0_22px_60px_-40px_rgba(6,18,27,0.45)] p-7">
-            <h3 className="text-[19px] font-semibold text-slate-900">{lang === "fr" ? "Ce que proposent les fiches détaillées" : "What the detailed profiles offer"}</h3>
-            <p className="mt-1 text-[14.5px] text-slate-500">{lang === "fr" ? `Nombre de plateformes, sur ${INVESTMENT_PLATFORMS.length}, qui donnent accès à chaque produit.` : `Number of platforms, out of ${INVESTMENT_PLATFORMS.length}, giving access to each product.`}</p>
-            <div className="mt-5"><BarList data={productMix} unit={`/ ${INVESTMENT_PLATFORMS.length}`} /></div>
-          </motion.div>
-        </section>
 
         {/* Market tabs */}
         <div className="flex flex-wrap items-center gap-2 mb-5">
