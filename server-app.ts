@@ -1287,7 +1287,7 @@ export function createApp() {
       const assets = (Array.isArray(list?.peggedAssets) ? list.peggedAssets : []).map((a: any) => {
         const circ = a?.circulating && typeof a.circulating === "object" ? Object.values(a.circulating).reduce((s: number, v: any) => s + (num(v) || 0), 0) : 0;
         return {
-          name: String(a?.name || ""), symbol: String(a?.symbol || ""), pegType: String(a?.pegType || ""), mechanism: String(a?.pegMechanism || ""),
+          name: String(a?.name || ""), symbol: String(a?.symbol || ""), pegType: String(a?.pegType || ""), mechanism: String(a?.pegMechanism || "").replace("crytpo", "crypto"),
           supply: circ as number, price: num(a?.price), chains: Array.isArray(a?.chains) ? a.chains.length : null,
         };
       }).filter((a: any) => a.name && a.supply > 0).sort((a: any, b: any) => b.supply - a.supply);
