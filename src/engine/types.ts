@@ -3,17 +3,42 @@ export interface AssetAllocation {
   weight: number; // between 0 and 1
 }
 
+/** Options shared by the momentum models. */
+export interface MomentumOptions {
+  /** Months skipped before measuring momentum (1 = the classic 12-1 momentum). */
+  skipMonths?: number;
+  /** Average of the 1, 3, 6 and 12 month returns instead of a single lookback. */
+  multiPeriod?: boolean;
+}
+
 export type TacticalModel =
-    | { type: 'moving_average', movingAverageMonths: number, safeAsset: string, buySignal?: 'gt' | 'gte', maType?: 'sma' | 'ema' }
+    | { type: 'moving_average', movingAverageMonths: number, safeAsset: string, buySignal?: 'gt' | 'gte', maType?: 'sma' | 'ema', signalSymbol?: string }
     | { type: 'seasonal', outOfMarketStartMonth: number, outOfMarketEndMonth: number, safeAsset: string }
-    | { type: 'relative_momentum', lookbackMonths: number, topK: number, absoluteMomentum?: boolean, safeAsset?: string }
-    | { type: 'dual_momentum', lookbackMonths: number, safeAsset: string }
-    | { type: 'adaptive_allocation', lookbackMonths: number, volatilityMonths: number }
+    | ({ type: 'relative_momentum', lookbackMonths: number, topK: number, absoluteMomentum?: boolean, safeAsset?: string, weighting?: 'equal' | 'inverse_vol', volatilityMonths?: number } & MomentumOptions)
+    | ({ type: 'dual_momentum', lookbackMonths: number, safeAsset: string } & MomentumOptions)
+    | ({ type: 'adaptive_allocation', lookbackMonths: number, volatilityMonths: number, weighting?: 'risk_parity' | 'min_variance', topK?: number, safeAsset?: string } & MomentumOptions)
     | { type: 'target_volatility', targetVolatility: number, safeAsset: string, lookbackMonths: number }
     | { type: 'pe10', baselineEquity: string, baselineBond: string };
 
+/** How a tactical portfolio is traded. */
+export interface ExecutionOptions {
+  /** Months between two decisions: 1 monthly, 3 quarterly, 12 yearly. */
+  frequencyMonths?: number;
+  /** 0: trade at the close the signal is computed on; 1: trade one month later. */
+  signalLagMonths?: number;
+  /** Trailing stop on the portfolio value, e.g. 0.15 for 15%. 0 = none. */
+  trailingStop?: number;
+  /** Asset held after a stop when the model has no safe asset. */
+  stopAsset?: string;
+  /** Exposure multiple, e.g. 1.5. 1 = no leverage. */
+  leverage?: number;
+  /** Annual borrowing rate for the leveraged part, e.g. 0.05. */
+  borrowRate?: number;
+}
+
 export interface Portfolio {
   tacticalModel?: TacticalModel;
+  execution?: ExecutionOptions;
   id: string;
   name: string;
   allocations: AssetAllocation[];
