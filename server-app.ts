@@ -1164,8 +1164,75 @@ export function createApp() {
       if (req.query.symbol) filters.push({ compareType: "EQUAL", fieldName: "issueSymbolIdentifier", fieldValue: String(req.query.symbol).toUpperCase() });
       if (req.query.week) filters.push({ compareType: "EQUAL", fieldName: "weekStartDate", fieldValue: String(req.query.week) });
       if (req.query.tier) filters.push({ compareType: "EQUAL", fieldName: "tierIdentifier", fieldValue: String(req.query.tier) });
-      const rows = await finraQuery(dataset, { limit: Math.min(50, Number(req.query.limit) || 5), sortFields: ["-weekStartDate"], ...(filters.length ? { compareFilters: filters } : {}) });
+      const rows = await finraQuery(dataset, { limit: Math.min(50, Number(req.query.limit) || 5), ...(filters.length ? { compareFilters: filters } : {}) });
       res.json(rows);
+    } catch (e: any) {
+      res.status(502).json({ error: String(e?.message || e) });
+    }
+  });
+
+  // Weekly data is partitioned by week, so the newest week is found by trying recent Mondays.
+  const recentMondays = (n: number) => {
+    const out: string[] = [];
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); // this week's Monday
+    for (let i = 0; i < n; i++) { out.push(d.toISOString().slice(0, 10)); d.setUTCDate(d.getUTCDate() - 7); }
+    return out;
+  };
+  const eq = (fieldName: string, fieldValue: string) => ({ compareType: "EQUAL", fieldName, fieldValue });
+  const weekRows = (week: string, type: string, extra: any[] = [], limit = 500) =>
+    finraQuery("weeklySummary", { limit, compareFilters: [eq("weekStartDate", week), eq("summaryTypeCode", type), ...extra] }).catch(() => []);
+  let latestWeek: { at: number; week: string } | null = null;
+  async function findLatestWeek() {
+    if (latestWeek && Date.now() - latestWeek.at < 6 * 3600_000) return latestWeek.week;
+    for (const w of recentMondays(10)) {
+      const r = await weekRows(w, "ATS_W_VOL_STATS", [], 5);
+      if (Array.isArray(r) && r.length) { latestWeek = { at: Date.now(), week: w }; return w; }
+    }
+    return null;
+  }
+  const toVenue = (r: any) => ({ mpid: r.MPID, name: r.marketParticipantName || r.MPID, shares: Number(r.totalWeeklyShareQuantity) || 0, trades: Number(r.totalWeeklyTradeCount) || 0, notional: Number(r.totalNotionalSum) || 0 });
+
+  // /api/finra/ats : latest week, venues ranked by shares, and the weekly total over the last 12 weeks
+  app.get("/api/finra/ats", async (_req, res) => {
+    try {
+      const week = await findLatestWeek();
+      if (!week) return res.status(503).json({ error: "no recent week" });
+      const firms: any[] = await weekRows(week, "ATS_W_FIRM", [], 1000);
+      const byMpid = new Map<string, any>();
+      for (const r of Array.isArray(firms) ? firms : []) {
+        if (!r.MPID) continue;
+        const v = toVenue(r);
+        const prev = byMpid.get(v.mpid);
+        if (prev) { prev.shares += v.shares; prev.trades += v.trades; prev.notional += v.notional; } else byMpid.set(v.mpid, v);
+      }
+      const venues = [...byMpid.values()].filter((v) => v.shares > 0).sort((a, b) => b.shares - a.shares);
+      const weeks = recentMondays(16).filter((w) => w <= week).slice(0, 12).reverse();
+      const history = (await Promise.all(weeks.map(async (w) => {
+        const r: any[] = await weekRows(w, "ATS_W_VOL_STATS", [], 20);
+        const shares = (Array.isArray(r) ? r : []).reduce((a, x) => a + (Number(x.totalWeeklyShareQuantity) || 0), 0);
+        return shares ? { week: w, shares } : null;
+      }))).filter(Boolean);
+      res.set("Cache-Control", "public, s-maxage=21600, stale-while-revalidate=86400");
+      res.json({ week, total: null, venues, history });
+    } catch (e: any) {
+      res.status(502).json({ error: String(e?.message || e) });
+    }
+  });
+
+  // /api/finra/ats/stock?symbol=AAPL : venues that traded this stock in the latest week
+  app.get("/api/finra/ats/stock", async (req, res) => {
+    try {
+      const symbol = String(req.query.symbol || "").toUpperCase().replace(/[^A-Z0-9.]/g, "").slice(0, 12);
+      if (!symbol) return res.status(400).json({ error: "symbol" });
+      const week = await findLatestWeek();
+      if (!week) return res.status(503).json({ error: "no recent week" });
+      const rows: any[] = await weekRows(week, "ATS_W_SMBL_FIRM", [eq("issueSymbolIdentifier", symbol)], 200);
+      const venues = (Array.isArray(rows) ? rows : []).filter((r) => r.MPID).map(toVenue).sort((a, b) => b.shares - a.shares);
+      const total = venues.reduce((a, v) => a + v.shares, 0);
+      res.set("Cache-Control", "public, s-maxage=21600, stale-while-revalidate=86400");
+      res.json({ symbol, name: rows?.[0]?.issueName || symbol, week, total, venues });
     } catch (e: any) {
       res.status(502).json({ error: String(e?.message || e) });
     }

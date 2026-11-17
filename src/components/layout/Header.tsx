@@ -81,6 +81,7 @@ export function Header({
       children: [
         { id: "market", label: t("nav.markets.equity") },
         { id: "etf-overview", label: t("nav.markets.etf") },
+        { id: "market-structure", label: language === "fr" ? "Dark pools et microstructure" : "Dark pools and market structure" },
         { id: "virtual-portfolio", label: language === "fr" ? "Portefeuille virtuel" : "Virtual portfolio" },
       ],
     },

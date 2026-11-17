@@ -348,6 +348,42 @@ const CORE_BOOKS: Book[] = [
     link: "https://www.amazon.com/Flash-Boys-Wall-Street-Revolt/dp/0393244660"
   },
   {
+    title: "Dark Pools",
+    author: "Scott Patterson",
+    year: "2012",
+    tag: "Market Microstructure",
+    tagFr: "Microstructure du Marché",
+    summary: "How electronic and algorithmic trading, dark pools and high frequency firms reshaped the US equity market.",
+    summaryFr: "Comment le trading électronique et algorithmique, les dark pools et la haute fréquence ont transformé le marché actions américain.",
+    coverColor: "#111827",
+    featured: false,
+    link: "#"
+  },
+  {
+    title: "Trading and Exchanges: Market Microstructure for Practitioners",
+    author: "Larry Harris",
+    year: "2003",
+    tag: "Market Microstructure",
+    tagFr: "Microstructure du Marché",
+    summary: "The reference textbook on how markets work: order types, liquidity, market makers, dealers and trading venues.",
+    summaryFr: "Le manuel de référence sur le fonctionnement des marchés : types d'ordres, liquidité, teneurs de marché et plateformes.",
+    coverColor: "#1e3a5f",
+    featured: false,
+    link: "#"
+  },
+  {
+    title: "Broken Markets",
+    author: "Sal Arnuk and Joseph Saluzzi",
+    year: "2012",
+    tag: "Market Microstructure",
+    tagFr: "Microstructure du Marché",
+    summary: "Two brokers' critique of market fragmentation, dark pools and high frequency trading.",
+    summaryFr: "La critique de deux courtiers sur la fragmentation des marchés, les dark pools et le trading haute fréquence.",
+    coverColor: "#7f1d1d",
+    featured: false,
+    link: "#"
+  },
+  {
     title: "The Man Who Solved the Market",
     level: "beginner",
     author: "Gregory Zuckerman",

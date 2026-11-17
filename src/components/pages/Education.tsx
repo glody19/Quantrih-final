@@ -159,6 +159,18 @@ export function Education() {
           <p className="mt-4 text-[15px] md:text-[17px] leading-relaxed text-text-2">{L.sub}</p>
         </header>
 
+        {/* feature: market structure and dark pools */}
+        <a href="/market-structure" onClick={(e) => { e.preventDefault(); window.history.pushState({}, "", "/market-structure"); window.dispatchEvent(new PopStateEvent("popstate")); window.scrollTo(0, 0); }}
+          className="group mt-8 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-[1.5rem] px-6 py-5 text-white shadow-[0_18px_50px_-30px_rgba(6,18,27,0.6)]"
+          style={{ background: "linear-gradient(110deg,#0A1E2D 0%,#14466B 70%,#1D6FA8 100%)" }}>
+          <span>
+            <span className="block text-[12px] font-semibold uppercase tracking-[0.16em] text-[#A9C8EA]">{lang === "fr" ? "Dossier" : "Feature"}</span>
+            <span className="mt-1 block text-[20px] md:text-[22px] font-semibold">{lang === "fr" ? "Dark pools et microstructure de marché" : "Dark pools and market structure"}</span>
+            <span className="mt-1 block text-[14px] text-white/70">{lang === "fr" ? "Le trajet d'un ordre, les plateformes, les données hebdomadaires de la FINRA, Euronext et les règles européennes." : "How an order travels, the venues, FINRA weekly data, Euronext and the European rules."}</span>
+          </span>
+          <span className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#0C2233] text-[14px] font-semibold group-hover:gap-3 transition-all">{lang === "fr" ? "Lire le dossier" : "Read the feature"} →</span>
+        </a>
+
         {/* Tabs, search, topics */}
         <div className="mt-8 flex flex-col gap-4">
           <div className="flex flex-col lg:flex-row lg:items-center gap-3">

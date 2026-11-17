@@ -216,6 +216,25 @@ export const SEO_ROUTES: SeoRoute[] = [
     },
   },
   {
+    path: "/market-structure",
+    section: "markets",
+    indexable: true,
+    priority: 0.6,
+    changefreq: "weekly",
+    fr: {
+      title: "Dark pools et microstructure de marché | Quantrih",
+      description: "Comment un ordre est exécuté : bourses, dark pools, wholesalers. Plateformes, volumes hebdomadaires publics, règles américaines et européennes, Euronext.",
+      h1: "Dark pools et négociation hors bourse",
+      summary: "Le trajet d'un ordre, les raisons du trading caché, les principales plateformes et ce que montrent les données publiques.",
+    },
+    en: {
+      title: "Dark Pools and Market Structure | Quantrih",
+      description: "How an order is executed: exchanges, dark pools and wholesalers. Venues, public weekly volumes, US and European rules, Euronext.",
+      h1: "Dark pools and off-exchange trading",
+      summary: "How an order travels, why institutions trade in the dark, the main venues and what the public data shows.",
+    },
+  },
+  {
     path: "/etf-overview",
     section: "markets",
     indexable: true,
