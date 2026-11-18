@@ -121,7 +121,7 @@ export function Header({
       <div className="h-[84px] lg:h-16 flex items-center justify-between px-4 md:px-8 max-w-full mx-auto text-sm font-normal">
         
         {/* Left & Center: Logo + Navigation Bar */}
-        <div className="flex items-center gap-3 lg:gap-6 h-full">
+        <div className="flex items-center gap-3 2xl:gap-6 h-full min-w-0">
           <div
             onClick={() => onPageChange("home")}
             className="cursor-pointer flex items-center transition-all hover:opacity-80 px-2 h-10 lg:h-12 shrink-0"
@@ -130,7 +130,7 @@ export function Header({
           </div>
           
           {/* Desktop Nav Bar */}
-          <nav className="hidden xl:flex items-center gap-1 h-full">
+          <nav className="hidden min-[1360px]:flex items-center gap-0.5 2xl:gap-1 h-full">
             {menus.map((menu) => {
               const hasChildren = !!menu.children;
               const isGroupActive = hasChildren && menu.children?.some((c) => c.id === currentPage);
@@ -147,7 +147,7 @@ export function Header({
                           if (menu.id === "platforms-group") onPageChange("platforms");
                         }}
                         className={cn(
-                          "px-2.5 py-1.5 lg:px-3 lg:py-2 rounded-2xl whitespace-nowrap text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all flex items-center gap-1 relative overflow-visible",
+                          "px-2.5 py-1.5 lg:px-2 2xl:px-3 lg:py-2 rounded-2xl whitespace-nowrap text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all flex items-center gap-1 relative overflow-visible",
                           isActive 
                             ? "text-white bg-blue-600 shadow-md shadow-blue-500/20 scale-105 font-bold" 
                             : "text-text-2 hover:bg-surface-2 hover:text-text"
@@ -183,7 +183,7 @@ export function Header({
                     <button
                       onClick={() => onPageChange(menu.id)}
                       className={cn(
-                        "px-2.5 py-1.5 lg:px-3 lg:py-2 rounded-2xl whitespace-nowrap text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all relative overflow-visible",
+                        "px-2.5 py-1.5 lg:px-2 2xl:px-3 lg:py-2 rounded-2xl whitespace-nowrap text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all relative overflow-visible",
                         isActive 
                           ? "text-white bg-blue-600 shadow-md shadow-blue-500/20 scale-105 font-bold" 
                           : "text-text-2 hover:bg-surface-2 hover:text-text"
@@ -212,7 +212,7 @@ export function Header({
           <div className="h-4 w-[1px] bg-border/50 mx-0.5 hidden sm:block" />
           
           {/* Donate */}
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden 2xl:flex items-center gap-2">
             <button
               onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')}
               className="flex items-center gap-1.5 px-3.5 py-2 bg-pv-blue hover:bg-pv-blue-d text-white rounded-lg transition-all duration-300 text-xs font-semibold tracking-wide shadow-[0_6px_16px_-6px_rgba(27,63,114,0.7)]"
@@ -384,7 +384,7 @@ export function Header({
 
           {/* Mobile Menu Toggle */}
           <button 
-            className="xl:hidden w-12 h-12 flex items-center justify-center rounded-2xl text-text hover:bg-surface-2 transition-colors ml-1"
+            className="min-[1360px]:hidden w-12 h-12 flex items-center justify-center rounded-2xl text-text hover:bg-surface-2 transition-colors ml-1"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
@@ -401,7 +401,7 @@ export function Header({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="xl:hidden absolute top-full left-0 right-0 w-full bg-white border-b border-border px-5 pt-4 pb-8 shadow-2xl z-[150] flex flex-col gap-1.5 h-[calc(100dvh-84px)] overflow-y-auto scroll-smooth"
+            className="min-[1360px]:hidden absolute top-full left-0 right-0 w-full bg-white border-b border-border px-5 pt-4 pb-8 shadow-2xl z-[150] flex flex-col gap-1.5 h-[calc(100dvh-84px)] overflow-y-auto scroll-smooth"
           >
             {menus.map((menu) => {
               const hasChildren = "children" in menu && !!menu.children;
