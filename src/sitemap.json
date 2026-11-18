@@ -19,7 +19,7 @@
       { "name": "ETF Overview", "path": "/etf-overview" }
     ]},
     { "name": "Education", "path": "/education" },
-    { "name": "Donate", "path": "/donate" },
+    { "name": "Pricing", "path": "/pricing" },
     { "name": "About", "path": "/about" },
     { "name": "Cookies Policy", "path": "/cookies" },
     { "name": "Privacy Policy", "path": "/privacy" }

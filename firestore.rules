@@ -100,8 +100,10 @@ service cloud.firestore {
 
       match /profiles/{profileId} {
         allow list, get: if isOwner(userId);
-        allow create, update: if isOwner(userId) && isValidId(profileId);
-        allow delete: if isOwner(userId);
+        // "subscription" is written only by the server (Stripe webhook, Admin SDK): a member
+        // must never be able to give themselves a paid plan.
+        allow create, update: if isOwner(userId) && isValidId(profileId) && profileId != 'subscription';
+        allow delete: if isOwner(userId) && profileId != 'subscription';
       }
     }
     

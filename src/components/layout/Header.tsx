@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ChevronDown, User, LogOut, Heart, Menu, X, Settings, TrendingUp, FileText, LogIn, FolderOpen, CreditCard } from "lucide-react";
+import { ChevronDown, User, LogOut, Menu, X, Settings, TrendingUp, FileText, LogIn, FolderOpen, CreditCard } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../../lib/utils";
 import { useAuth } from "../../contexts/AuthContext";
@@ -211,18 +211,6 @@ export function Header({
 
           <div className="h-4 w-[1px] bg-border/50 mx-0.5 hidden sm:block" />
           
-          {/* Donate */}
-          <div className="hidden 2xl:flex items-center gap-2">
-            <button
-              onClick={() => window.open('https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00', '_blank', 'noopener,noreferrer')}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-pv-blue hover:bg-pv-blue-d text-white rounded-lg transition-all duration-300 text-xs font-semibold tracking-wide shadow-[0_6px_16px_-6px_rgba(27,63,114,0.7)]"
-            >
-              <Heart size={12} className="fill-white text-white animate-[pulse_2s_ease-in-out_infinite]" />
-              <span>{t("header.donate")}</span>
-            </button>
-            <div className="h-4 w-[1px] bg-border/50 mx-1" />
-          </div>
-
           {/* User Profile / Sign In Dropdown */}
           <div className="relative z-50">
             <button
