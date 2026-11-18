@@ -75,6 +75,7 @@ export function Header({
     { id: "portfolio-backtest", label: t("home.pages.portfolio_backtest.title") },
     { id: "tactical-allocation", label: t("home.pages.tactical_allocation.title") },
     { id: "montecarlo", label: t("home.pages.montecarlo.title") },
+    { id: "portfolio-optimization", label: language === "fr" ? "Optimisation" : "Optimization" },
     {
       id: "fmp-group",
       label: t("nav.markets"),

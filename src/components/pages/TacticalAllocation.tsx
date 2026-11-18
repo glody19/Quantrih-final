@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { CashflowFrequencyOptions, CashflowSummary } from "../ui/CashflowFrequencyOptions";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { cn } from "../../lib/utils";
@@ -38,6 +39,7 @@ import { collection, query, getDocs, orderBy, doc, deleteDoc } from "firebase/fi
 import { db, auth } from "../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useSearchParams } from "react-router-dom";
+import { StrategyExecutionPanel, type ExecutionSettings } from "../tactical/StrategyExecutionPanel";
 
 ChartJS.register(
   CategoryScale,
@@ -783,7 +785,7 @@ export function TacticalAllocation() {
   const [includeYtd, setIncludeYtd] = useLocalStorage("ta_includeYtd", "no");
   const [cashflowType, setCashflowType] = useLocalStorage<"none" | "contribute" | "withdraw">("ta_cashflowType", "none");
   const [cashflowAmount, setCashflowAmount] = useLocalStorage("ta_cashflowAmount", 500);
-  const [cashflowFrequency, setCashflowFrequency] = useLocalStorage<"monthly" | "annually">("ta_cashflowFrequency", "monthly");
+  const [cashflowFrequency, setCashflowFrequency] = useLocalStorage<string>("ta_cashflowFrequency", "monthly");
 
   const [maPortfolioAssets, setMaPortfolioAssets] = useLocalStorage(
     "ta_maPortfolioAssets_v2", [
@@ -822,6 +824,15 @@ export function TacticalAllocation() {
     "ta_momSafeAsset",
     "CASH",
   );
+  const [execSettings, setExecSettings] = useLocalStorage<ExecutionSettings>("ta_exec", {
+    frequency: 1, lag: 0, stop: 0, leverage: 1, borrowRate: 5, compared: "buyhold", benchmark: "none",
+  });
+  const [maSignal, setMaSignal] = useLocalStorage<"same" | "SPY">("ta_maSignal", "same");
+  const [perfPeriods, setPerfPeriods] = useLocalStorage<"single" | "multiple">("ta_perfPeriods", "single");
+  const [skipMonth, setSkipMonth] = useLocalStorage<"no" | "yes">("ta_skipMonth", "no");
+  const [relWeighting, setRelWeighting] = useLocalStorage<"equal" | "inverse_vol">("ta_relWeighting", "equal");
+  const [adaptiveVolMonths, setAdaptiveVolMonths] = useLocalStorage("ta_adaptiveVolMonths", 6);
+  const [adaptiveWeighting, setAdaptiveWeighting] = useLocalStorage<"risk_parity" | "min_variance">("ta_adaptiveWeighting", "risk_parity");
   const [maBuySignal, setMaBuySignal] = useLocalStorage<"gt" | "gte">("ta_maBuySignal", "gt");
   const [maType, setMaType] = useLocalStorage<"sma" | "ema">("ta_maType", "sma");
   const [absMomentum, setAbsMomentum] = useLocalStorage<"no" | "yes">("ta_absMomentum", "no");
@@ -1635,6 +1646,7 @@ export function TacticalAllocation() {
           safeAsset: momSafeAsset,
           buySignal: maBuySignal,
           maType,
+          signalSymbol: maSignal === "SPY" ? "SPY" : undefined,
         };
       } else if (activeTab === "ma_portfolio") {
         tacticalModel = {
@@ -1643,6 +1655,7 @@ export function TacticalAllocation() {
           safeAsset: momSafeAsset,
           buySignal: maBuySignal,
           maType,
+          signalSymbol: maSignal === "SPY" ? "SPY" : undefined,
         };
       } else if (activeTab === "seasonal") {
         tacticalModel = {
@@ -1663,7 +1676,11 @@ export function TacticalAllocation() {
         tacticalModel = {
           type: "relative_momentum",
           lookbackMonths: momLookback,
-          topK: momTopK,
+          topK: Number(momTopK) || 1,
+          weighting: relWeighting,
+          volatilityMonths: 3,
+          skipMonths: skipMonth === "yes" ? 1 : 0,
+          multiPeriod: perfPeriods === "multiple",
           absoluteMomentum: absMomentum === "yes",
           safeAsset: momSafeAsset,
         };
@@ -1679,6 +1696,8 @@ export function TacticalAllocation() {
         tacticalModel = {
           type: "dual_momentum",
           lookbackMonths: momLookback,
+          skipMonths: skipMonth === "yes" ? 1 : 0,
+          multiPeriod: perfPeriods === "multiple",
           safeAsset: momSafeAsset,
         };
       } else if (activeTab === "mom_adaptive") {
@@ -1693,7 +1712,10 @@ export function TacticalAllocation() {
         tacticalModel = {
           type: "adaptive_allocation",
           lookbackMonths: momLookback,
-          volatilityMonths: 6,
+          volatilityMonths: Number(adaptiveVolMonths) || 6,
+          weighting: adaptiveWeighting,
+          skipMonths: skipMonth === "yes" ? 1 : 0,
+          multiPeriod: perfPeriods === "multiple",
         };
       } else if (activeTab === "valuation_pe10") {
         currentAssets = [
@@ -1754,6 +1776,31 @@ export function TacticalAllocation() {
         ];
       }
 
+      const execution = {
+        frequencyMonths: Number(execSettings.frequency) || 1,
+        signalLagMonths: Number(execSettings.lag) || 0,
+        trailingStop: Number(execSettings.stop) || 0,
+        leverage: Number(execSettings.leverage) || 1,
+        borrowRate: (Number(execSettings.borrowRate) || 0) / 100,
+      };
+      const isFr = language === "fr";
+      const strategyCount = enginePortfolios.length;
+      enginePortfolios = enginePortfolios.map((p) => ({ ...p, execution }));
+      if (execSettings.compared === "buyhold") {
+        enginePortfolios = enginePortfolios.concat(
+          enginePortfolios.slice(0, strategyCount).map((p) => ({
+            id: `${p.id}-bh`,
+            name: `${p.name} (${isFr ? "achat-conservation" : "buy and hold"})`,
+            allocations: p.allocations,
+          })),
+        );
+      }
+      if (execSettings.benchmark === "SPY") {
+        enginePortfolios.push({ id: "bench-spy", name: "S&P 500 (SPY)", allocations: [{ symbol: "SPY", weight: 1 }] });
+      } else if (execSettings.benchmark === "6040") {
+        enginePortfolios.push({ id: "bench-6040", name: isFr ? "60/40 actions et obligations" : "60/40 stocks and bonds", allocations: [{ symbol: "VFINX", weight: 0.6 }, { symbol: "VBMFX", weight: 0.4 }] });
+      }
+
       const engineOptions = {
         initialBalance: initialAmount,
         startDate: `${startYear}-01-01`,
@@ -1788,8 +1835,16 @@ export function TacticalAllocation() {
           new Set(r.equityCurve.map((e) => parseInt(e.date.split("-")[0]))),
         );
         const annualReturns: number[] = [];
+        // Year returns compound the monthly time-weighted returns, so money added or withdrawn is not counted as gain or loss
+        const monthly = r.metrics?.monthlyReturns;
+        if (monthly && monthly.length) {
+          for (const yr of yearsInteger) {
+            const rows = monthly.filter((m) => m.date.startsWith(yr.toString()));
+            annualReturns.push((rows.reduce((acc, m) => acc * (1 + m.value / 100), 1) - 1) * 100);
+          }
+        }
         let prevYearValue = initialAmount;
-        for (const yr of yearsInteger) {
+        if (!annualReturns.length) for (const yr of yearsInteger) {
           const yearData = r.equityCurve.filter((e) =>
             e.date.startsWith(yr.toString()),
           );
@@ -2042,7 +2097,8 @@ export function TacticalAllocation() {
                     <input
                       type="number"
                       value={cashflowAmount}
-                      onChange={(e) => setCashflowAmount(Number(e.target.value))}
+                      onChange={(e) => setCashflowAmount(Math.abs(Number(e.target.value) || 0))}
+                      min={0}
                       className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                       placeholder="500"
                     />
@@ -2056,9 +2112,9 @@ export function TacticalAllocation() {
                       onChange={(e: any) => setCashflowFrequency(e.target.value as any)}
                       className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                     >
-                      <option value="monthly">{t("aa.monthly") || "Monthly"}</option>
-                      <option value="annually">{t("aa.annually") || "Annually"}</option>
+                      <CashflowFrequencyOptions lang={language} />
                     </CustomSelect>
+                    <CashflowSummary lang={language} amount={cashflowAmount} frequency={cashflowFrequency} direction={cashflowType === "withdraw" ? "withdraw" : "contribute"} />
                   </div>
                 </div>
               )}
@@ -2152,43 +2208,6 @@ export function TacticalAllocation() {
                       <option value="SHV">{currentLabels.shv || "SHV (Short Term Treasuries)"}</option>
                     </select>
                   </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.leverageType || "Leverage Type"}
-                      tooltip={
-                        currentLabels.leverageTypeTooltip || "Use of leverage or margin to increase exposure."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option value="none">{currentLabels.none || "None"}</option>
-                      <option>{currentLabels.marginFactor || "Margin Factor"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.comparedAllocation || "Compared Allocation"}
-                      tooltip={
-                        currentLabels.comparedAllocationTooltip || "The reference allocation used for comparison (Benchmark)."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>Default</option>
-                      <option>Custom</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.benchmarkLabel || "Benchmark"}
-                      tooltip={
-                        currentLabels.benchmarkTooltip || "The benchmark index to compare overall performance."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option value="none">{currentLabels.none || "None"}</option>
-                      <option>S&P 500</option>
-                      <option>Vanguard 60/40</option>
-                    </select>
-                  </div>
                 </div>
               </div>
 
@@ -2258,63 +2277,14 @@ export function TacticalAllocation() {
                   </div>
                   <div className="space-y-4">
                     <TooltipLabel
-                      label={currentLabels.stopLoss || "Stop Loss"}
-                      tooltip={
-                        currentLabels.stopLossTooltip || "Maximum drawdown level tolerated before automatic liquidation of a position."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.noStopLoss || "No stop-loss"}</option>
-                      <option>{currentLabels.trailingStopLoss || "Trailing stop-loss"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.tradingFrequency || "Trading Frequency"}
-                      tooltip={
-                        currentLabels.tradingFrequencyTooltip || "How often the strategy checks its signals to potentially readjust positions."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.monthly || "Monthly"}</option>
-                      <option>{currentLabels.weekly || "Weekly"}</option>
-                      <option>Daily</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
                       label={currentLabels.signalAsset || "Signal Asset"}
                       tooltip={
                         currentLabels.signalAssetTooltip || "The asset observed to generate market signals (may be different from the invested asset)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>Same as investment</option>
-                      <option>S&P 500 (SPY)</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.tradeExecution || "Trade Execution"}
-                      tooltip={
-                        currentLabels.tradeExecutionTooltip || "Determines if the trade is executed at the closing price or at the opening of the next period."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.tradeAtEndOfMonth || "Trade at end of month price"}</option>
-                      <option>{currentLabels.tradeAtNextMonthOpen || "Trade at next month open"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.leverageType || "Leverage Type"}
-                      tooltip={
-                        currentLabels.leverageTypeTooltip || "Use of leverage or margin to increase exposure."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option value="none">{currentLabels.none || "None"}</option>
-                      <option>{currentLabels.marginFactor || "Margin Factor"}</option>
+                    <select value={maSignal} onChange={(e) => setMaSignal(e.target.value as "same" | "SPY")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value="same">{language === "fr" ? "Le même actif que l'investissement" : "Same as investment"}</option>
+                      <option value="SPY">S&amp;P 500 (SPY)</option>
                     </select>
                   </div>
                 </div>
@@ -2380,9 +2350,9 @@ export function TacticalAllocation() {
                         currentLabels.performancePeriodsTooltip || "Calculate momentum over one or more performance periods."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.singlePeriod || "Single Period"}</option>
-                      <option>{currentLabels.multiplePeriods || "Multiple Periods"}</option>
+                    <select value={perfPeriods} onChange={(e) => setPerfPeriods(e.target.value as "single" | "multiple")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value="single">{currentLabels.singlePeriod || "Single Period"}</option>
+                      <option value="multiple">{language === "fr" ? "Moyenne 1, 3, 6 et 12 mois" : "Average of 1, 3, 6 and 12 months"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
@@ -2405,7 +2375,7 @@ export function TacticalAllocation() {
                         currentLabels.excludePreviousMonthTooltip || "Excludes the most recent month in momentum calculation to avoid short-term stock market mean reversion."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={skipMonth} onChange={(e) => setSkipMonth(e.target.value as "no" | "yes")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option value="no">{currentLabels.no || "No"}</option>
                       <option value="yes">{currentLabels.yes || "Yes"}</option>
                     </select>
@@ -2430,57 +2400,9 @@ export function TacticalAllocation() {
                         currentLabels.allocationWeightsTooltip || "The method to distribute capital (equal weight, risk parity, inverse volatility)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.equalWeight || "Equal Weight"}</option>
-                      <option>{currentLabels.inverseVolatility || "Inverse Volatility"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.stopLoss || "Stop Loss"}
-                      tooltip={
-                        currentLabels.stopLossTooltip || "Maximum drawdown level tolerated before automatic liquidation of a position."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.noStopLoss || "No stop-loss"}</option>
-                      <option>{currentLabels.trailingStopLoss || "Trailing stop-loss"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.tradingFrequency || "Trading Frequency"}
-                      tooltip={
-                        currentLabels.tradingFrequencyTooltip || "How often the strategy checks its signals to potentially readjust positions."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.monthly || "Monthly"}</option>
-                      <option>{currentLabels.weekly || "Weekly"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.tradeExecution || "Trade Execution"}
-                      tooltip={
-                        currentLabels.tradeExecutionTooltip || "Determines if the trade is executed at the closing price or at the opening of the next period."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.tradeAtEndOfMonth || "Trade at end of month price"}</option>
-                      <option>{currentLabels.tradeAtNextMonthOpen || "Trade at next month open"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.leverageType || "Leverage Type"}
-                      tooltip={
-                        currentLabels.leverageTypeTooltip || "Use of leverage or margin to increase exposure."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option value="none">{currentLabels.none || "None"}</option>
-                      <option>{currentLabels.margin || "Margin"}</option>
+                    <select value={relWeighting} onChange={(e) => setRelWeighting(e.target.value as "equal" | "inverse_vol")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value="equal">{currentLabels.equalWeight || "Equal Weight"}</option>
+                      <option value="inverse_vol">{currentLabels.inverseVolatility || "Inverse Volatility"}</option>
                     </select>
                   </div>
                 </div>
@@ -2515,9 +2437,9 @@ export function TacticalAllocation() {
                         currentLabels.performancePeriodsTooltip || "Calculate momentum over one or more performance periods."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.singlePeriod || "Single Period"}</option>
-                      <option>{currentLabels.multiplePeriods || "Multiple Periods"}</option>
+                    <select value={perfPeriods} onChange={(e) => setPerfPeriods(e.target.value as "single" | "multiple")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value="single">{currentLabels.singlePeriod || "Single Period"}</option>
+                      <option value="multiple">{language === "fr" ? "Moyenne 1, 3, 6 et 12 mois" : "Average of 1, 3, 6 and 12 months"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
@@ -2540,7 +2462,7 @@ export function TacticalAllocation() {
                         currentLabels.excludePreviousMonthTooltip || "Excludes the most recent month in momentum calculation to avoid short-term stock market mean reversion."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={skipMonth} onChange={(e) => setSkipMonth(e.target.value as "no" | "yes")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
                       <option value="no">{currentLabels.no || "No"}</option>
                       <option value="yes">{currentLabels.yes || "Yes"}</option>
                     </select>
@@ -2552,10 +2474,10 @@ export function TacticalAllocation() {
                         currentLabels.volatilityPeriodTooltip || "Observation period to estimate recent historical volatility."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.months3 || "3 months"}</option>
-                      <option>{currentLabels.months6 || "6 months"}</option>
-                      <option>{currentLabels.months1 || "1 month"}</option>
+                    <select value={Number(adaptiveVolMonths)} onChange={(e) => setAdaptiveVolMonths(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value={3}>{currentLabels.months3 || "3 months"}</option>
+                      <option value={6}>{currentLabels.months6 || "6 months"}</option>
+                      <option value={12}>{currentLabels.months12 || "12 months"}</option>
                     </select>
                   </div>
                   <div className="space-y-4">
@@ -2578,63 +2500,22 @@ export function TacticalAllocation() {
                         currentLabels.allocationWeightsTooltip || "The method to distribute capital (equal weight, risk parity, inverse volatility)."
                       }
                     />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.riskParity || "Risk Parity"}</option>
-                      <option>{currentLabels.minimumVariance || "Minimum Variance"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.stopLoss || "Stop Loss"}
-                      tooltip={
-                        currentLabels.stopLossTooltip || "Maximum drawdown level tolerated before automatic liquidation of a position."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.noStopLoss || "No stop-loss"}</option>
-                      <option>{currentLabels.trailingStopLoss || "Trailing stop-loss"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.tradingFrequency || "Trading Frequency"}
-                      tooltip={
-                        currentLabels.tradingFrequencyTooltip || "How often the strategy checks its signals to potentially readjust positions."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.monthly || "Monthly"}</option>
-                      <option>{currentLabels.weekly || "Weekly"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.tradeExecution || "Trade Execution"}
-                      tooltip={
-                        currentLabels.tradeExecutionTooltip || "Determines if the trade is executed at the closing price or at the opening of the next period."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option>{currentLabels.tradeAtEndOfMonth || "Trade at end of month price"}</option>
-                      <option>{currentLabels.tradeAtNextMonthOpen || "Trade at next month open"}</option>
-                    </select>
-                  </div>
-                  <div className="space-y-4">
-                    <TooltipLabel
-                      label={currentLabels.leverageType || "Leverage Type"}
-                      tooltip={
-                        currentLabels.leverageTypeTooltip || "Use of leverage or margin to increase exposure."
-                      }
-                    />
-                    <select className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
-                      <option value="none">{currentLabels.none || "None"}</option>
-                      <option>{currentLabels.margin || "Margin"}</option>
+                    <select value={adaptiveWeighting} onChange={(e) => setAdaptiveWeighting(e.target.value as "risk_parity" | "min_variance")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                      <option value="risk_parity">{currentLabels.riskParity || "Risk Parity"}</option>
+                      <option value="min_variance">{currentLabels.minimumVariance || "Minimum Variance"}</option>
                     </select>
                   </div>
                 </div>
               </div>
             </>
           )}
+
+          <StrategyExecutionPanel
+            lang={language === "fr" ? "fr" : "en"}
+            value={{ ...execSettings, topK: Number(momTopK) || 1 }}
+            onChange={(v) => { const { topK, ...rest } = v; setExecSettings(rest); if (topK) setMomTopK(topK); }}
+            showTopK={activeTab === "mom_relative"}
+          />
 
           <div className="flex justify-between pt-4 items-center">
             
@@ -2792,7 +2673,7 @@ export function TacticalAllocation() {
                                     key={sym}
                                     className="text-[10px] px-1.5 py-0.5 rounded bg-surface-3 text-text-3 font-medium"
                                   >
-                                    {sym} {String(w)}%
+                                    {sym} {Number(w).toLocaleString(language === "fr" ? "fr-FR" : "en-US", { maximumFractionDigits: 1 })}%
                                   </span>
                                 ))}
                               {Object.keys(r.alloc).length > 3 && (

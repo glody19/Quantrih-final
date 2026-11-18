@@ -8,6 +8,7 @@
     { "name": "Portfolio", "path": "/portfolio" },
     { "name": "Portfolio Backtesting", "path": "/portfolio-backtest" },
     { "name": "Monte Carlo", "path": "/montecarlo" },
+    { "name": "Portfolio Optimization", "path": "/portfolio-optimization" },
     { "name": "Tactical Allocation", "path": "/tactical-allocation" },
     { "name": "Moving Average", "path": "/moving-average" },
     { "name": "Dual Momentum", "path": "/dual-momentum" },

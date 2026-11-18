@@ -1,3 +1,4 @@
+import { isCashflowMonth, cashflowStepMonths, cashflowMonthlyMultiplier } from './cashflow';
 import { MonthlyPrice } from './types';
 import { boxMuller } from '../utils';
 
@@ -8,12 +9,22 @@ export interface SimulationOptions {
   initialBalance: number;
   cashflow: number;
   cashflowType?: 'none' | 'fixed' | 'percentage' | 'contribute';
-  cashflowFreq?: 'annual' | 'monthly';
+  cashflowFreq?: 'annual' | import('./cashflow').CashflowFrequency;
   spendingRule?: 'none' | 'rolling_avg' | 'geometric';
   sequenceOfReturnsYears?: number;
   inflationModel?: 'historical' | 'fixed';
   inflationRate?: number;
   blockSize?: number; // months for BlockBootstrap
+  /** Fixed cashflows grow with inflation (inflationRate per year). */
+  inflationIndexed?: boolean;
+  /** How the weights are restored. Monthly is implied by the statistical (Normal) model. */
+  rebalance?: 'monthly' | 'annual' | 'none';
+  /** Annual fees (fund costs, advice), e.g. 0.005 for 0.5%. Taken monthly. */
+  annualFee?: number;
+  /** Tax on each year's investment gain (taxable account), e.g. 0.3. 0 = pre-tax. */
+  taxRate?: number;
+  /** When given, receives each path's annualized time-weighted return (flows excluded). */
+  twrOut?: number[];
 }
 
 export function runSimulation(
@@ -74,116 +85,116 @@ export function runSimulation(
   }
   const portfolioStdDev = Math.sqrt(portfolioVar);
 
+  const w = symbols.map(sym => (weights[sym] || 0) / 100);
+  const wSum = w.reduce((a, b) => a + b, 0) || 1;
+  const wn = w.map(x => x / wSum);
+  const trackAssets = model !== 'Normal' && options.rebalance !== undefined && options.rebalance !== 'monthly';
+  const fee = Math.max(0, options.annualFee || 0);
+  const taxRate = Math.max(0, options.taxRate || 0);
+  const infRate = options.inflationRate ?? 0.025;
+  const indexed = options.inflationIndexed ?? options.inflationModel === 'fixed';
+  // The cashflow amount is a size: its direction comes from cashflowType
+  const amount = Math.abs(cashflow || 0);
+
   for (let s = 0; s < simulations; s++) {
     const rawReturns: number[] = [];
-    
-    // Step 1: Generate Raw Returns
+    const rawAsset: number[][] = [];
+
+    // Step 1: Generate raw returns (per asset for the historical models)
     for (let m = 1; m <= horizonMonths; m++) {
-      let monthReturn = 0;
       if (model === 'Normal') {
-        monthReturn = portfolioMean + portfolioStdDev * boxMuller();
-      } else if (model === 'Bootstrap') {
-        const randomIndex = Math.floor(Math.random() * returnsMatrix.length);
-        const selectedReturns = returnsMatrix[randomIndex];
-        monthReturn = selectedReturns.reduce((acc, r, i) => acc + r * (weights[symbols[i]] / 100), 0);
-      } else if (model === 'BlockBootstrap') {
-        const blockStart = Math.floor(Math.random() * (returnsMatrix.length - blockSize));
-        const blockIndex = (m - 1) % blockSize;
-        const selectedReturns = returnsMatrix[blockStart + blockIndex];
-        monthReturn = selectedReturns.reduce((acc, r, i) => acc + r * (weights[symbols[i]] / 100), 0);
+        rawReturns.push(portfolioMean + portfolioStdDev * boxMuller());
+        rawAsset.push([]);
+      } else {
+        let row: number[];
+        if (model === 'BlockBootstrap' && returnsMatrix.length > blockSize) {
+          // A new random block starts every blockSize months
+          if ((m - 1) % blockSize === 0) (rawAsset as any).blockStart = Math.floor(Math.random() * (returnsMatrix.length - blockSize));
+          row = returnsMatrix[(rawAsset as any).blockStart + ((m - 1) % blockSize)];
+        } else {
+          row = returnsMatrix[Math.floor(Math.random() * returnsMatrix.length)];
+        }
+        rawAsset.push(row);
+        rawReturns.push(row.reduce((acc, r, k) => acc + r * wn[k], 0));
       }
-      rawReturns.push(monthReturn);
     }
 
-    // Step 2: Sequence of Returns Risk Adjustment
+    // Step 2: Sequence of returns risk: the worst years first
     if (options.sequenceOfReturnsYears && options.sequenceOfReturnsYears > 0) {
-      const yearsData = [];
-      for(let y = 0; y < horizonYears; y++) {
-         const mStart = y * 12;
-         const yrReturns = rawReturns.slice(mStart, mStart + 12);
-         const cmpReturn = yrReturns.reduce((acc, r) => acc * (1 + r), 1) - 1;
-         yearsData.push({ idx: y, cmp: cmpReturn, rets: yrReturns });
+      const years = [];
+      for (let y = 0; y < horizonYears; y++) {
+        const a = y * 12;
+        years.push({ idx: y, cmp: rawReturns.slice(a, a + 12).reduce((acc, r) => acc * (1 + r), 1) - 1 });
       }
-      // Sort by cmp return
-      const sortedYears = [...yearsData].sort((a,b) => a.cmp - b.cmp);
-      const worstN = sortedYears.slice(0, options.sequenceOfReturnsYears);
-      const worstIdxs = new Set(worstN.map(x => x.idx));
-      const remainingYears = yearsData.filter(x => !worstIdxs.has(x.idx));
-      
-      const adjustedReturns: number[] = [];
-      worstN.forEach(yr => adjustedReturns.push(...yr.rets));
-      remainingYears.forEach(yr => adjustedReturns.push(...yr.rets));
-      
-      // replace rawReturns
-      for(let i=0; i<horizonMonths; i++) {
-        rawReturns[i] = adjustedReturns[i];
-      }
+      const worst = [...years].sort((a, b) => a.cmp - b.cmp).slice(0, options.sequenceOfReturnsYears).map(x => x.idx);
+      const order = [...worst, ...years.map(x => x.idx).filter(y => !worst.includes(y))];
+      const r2: number[] = [], a2: number[][] = [];
+      for (const y of order) { r2.push(...rawReturns.slice(y * 12, y * 12 + 12)); a2.push(...rawAsset.slice(y * 12, y * 12 + 12)); }
+      for (let k = 0; k < horizonMonths; k++) { rawReturns[k] = r2[k]; rawAsset[k] = a2[k]; }
     }
 
-    // Step 3: Apply to balance & Inflation
+    // Step 3: Balance, fees, cashflows, taxes, rebalancing
+    let holdings = wn.map(x => x * initialBalance);
     let balance = initialBalance;
     const path = [balance];
-    let rollingSum = initialBalance;
-    let prevSpending = 0;
+    let inflationIndex = 1;
+    let yearGain = 0;
+    let growth = 1; // compounded investment return, net of fees and taxes, flows excluded
+    const scale = (f: number) => { holdings = holdings.map(h => h * f); };
+    const setBalance = (b: number) => {
+      b = Math.max(0, b);
+      if (trackAssets) { if (balance > 0) scale(b / balance); else holdings = wn.map(x => x * b); }
+      balance = b;
+    };
 
-    let currentInflationAgg = 1;
-    const fixedInfMonthly = options.inflationModel === 'fixed' && options.inflationRate !== undefined ? Math.pow(1 + options.inflationRate, 1/12) - 1 : 0;
-    
     for (let m = 1; m <= horizonMonths; m++) {
-      const monthReturn = rawReturns[m - 1];
-      balance *= (1 + monthReturn);
-
-      // Simple Fixed Inflation Model
-      if (options.inflationModel === 'fixed') {
-         currentInflationAgg *= (1 + fixedInfMonthly);
+      const before = balance;
+      if (trackAssets) {
+        const row = rawAsset[m - 1];
+        holdings = holdings.map((h, k) => h * (1 + row[k]));
+        balance = holdings.reduce((a, b) => a + b, 0);
+      } else {
+        balance *= 1 + rawReturns[m - 1];
       }
+      yearGain += balance - before;
+      if (before > 0) growth *= balance / before;
+      if (fee > 0) { setBalance(balance * (1 - fee / 12)); growth *= 1 - fee / 12; }
+      inflationIndex *= Math.pow(1 + infRate, 1 / 12);
 
-      // Handle monthly cashflows
-      let mcf = 0;
-      if (options.cashflowType !== 'none' && options.cashflowFreq === 'monthly') {
-         if (options.cashflowType === 'percentage') {
-             mcf = (balance * (options.cashflow / 100)) / 12;
-             balance -= mcf;
-         } else {
-             mcf = options.cashflow;
-             const adjMcf = options.inflationModel === 'fixed' ? mcf * currentInflationAgg : mcf;
-             if (options.cashflowType === 'contribute') {
-                 balance += adjMcf;
-             } else {
-                 balance -= adjMcf;
-             }
-         }
-      }
+      const flow = (yearShare: number, times: number) => {
+        const yearly = yearShare >= 1;
+        if (options.cashflowType === 'none' || !options.cashflowType || amount === 0) return;
+        let cf: number;
+        if (options.cashflowType === 'percentage') {
+          if (yearly && options.spendingRule === 'rolling_avg') {
+            const n = Math.min(3, path.length);
+            cf = (path.slice(-n).reduce((a, b) => a + b, 0) / n) * (amount / 100);
+          } else {
+            cf = balance * (amount / 100) * yearShare;
+          }
+        } else {
+          cf = amount * times * (indexed ? inflationIndex : 1);
+        }
+        setBalance(options.cashflowType === 'contribute' ? balance + cf : balance - cf);
+      };
+      // Fixed amounts are paid at each due month (weekly = 52/12 a month); a percentage is a yearly rate spread over the payments
+      const cfFreq = options.cashflowFreq === 'annual' || !options.cashflowFreq ? 'annually' : options.cashflowFreq;
+      if (cfFreq !== 'annually' && isCashflowMonth(cfFreq, m)) flow(cashflowStepMonths(cfFreq) / 12, cashflowMonthlyMultiplier(cfFreq));
 
-      // Handle annual
       if (m % 12 === 0) {
-         if (options.cashflowType !== 'none' && (!options.cashflowFreq || options.cashflowFreq === 'annual')) {
-             let acf = 0;
-             if (options.spendingRule === 'rolling_avg') {
-                 // Simplified rolling 3-year avg (or 1 year if earlier)
-                 const pathLen = Math.min(3, path.length);
-                 const sum = path.slice(-pathLen).reduce((a,b)=>a+b, 0);
-                 acf = (sum / pathLen) * (options.cashflow / 100);
-             } else {
-                 if (options.cashflowType === 'percentage') {
-                     acf = balance * (options.cashflow / 100);
-                 } else {
-                     acf = options.cashflow;
-                 }
-             }
-             const adjAcf = (options.inflationModel === 'fixed' && options.cashflowType !== 'percentage') ? acf * currentInflationAgg : acf;
-             if (options.cashflowType === 'contribute') {
-                 balance += adjAcf;
-             } else {
-                 balance -= adjAcf;
-             }
-         }
-         path.push(balance > 0 ? balance : 0);
+        if (taxRate > 0 && yearGain > 0 && balance > 0) {
+          const after = balance - yearGain * taxRate;
+          growth *= Math.max(0, after) / balance;
+          setBalance(after);
+        }
+        yearGain = 0;
+        if (cfFreq === 'annually') flow(1, 1);
+        if (trackAssets && options.rebalance === 'annual') holdings = wn.map(x => x * balance);
+        path.push(balance);
       }
-
-      if (balance <= 0) balance = 0;
     }
     paths.push(path);
+    if (options.twrOut) options.twrOut.push(Math.pow(Math.max(growth, 0), 1 / Math.max(horizonYears, 1)) - 1);
   }
 
   return paths;

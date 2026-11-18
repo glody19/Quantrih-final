@@ -11,7 +11,7 @@ interface LanguageContextType {
 const translations: Record<Language, Record<string, string>> = {
   en: {
     "home.explore_pages": "Explore our other pages and interesting data",
-    "home.tools.subtitle": "Four tools to build, test and stress an allocation.",
+    "home.tools.subtitle": "Five tools to build, test, optimize and stress an allocation.",
 
     "pb.editConfig": "Edit Configuration",
     "pb.portfolio": "Portfolio",
@@ -143,6 +143,9 @@ const translations: Record<Language, Record<string, string>> = {
     "home.pages.montecarlo.title": "Monte Carlo",
     "home.pages.montecarlo.cta": "Simulate Future",
     "home.pages.montecarlo.desc": "Forecast the future of your capital through 1,000 to 10,000 random stochastic simulations. Evaluate the success rate (survival probability) of your financial goals by modeling future volatility, sequence-of-returns risk, and the impact of inflation. Essential for retirement planning and stress-testing your scheduled withdrawal strategy.",
+    "home.pages.optimization.title": "Portfolio Optimization",
+    "home.pages.optimization.cta": "Optimize Weights",
+    "home.pages.optimization.desc": "Find the optimal weights of your assets: maximum Sharpe ratio, minimum volatility, risk parity, maximum diversification or a target return. Visualize the efficient frontier and each asset's risk contribution, then check the result with an out-of-sample walk-forward backtest that only uses the data known at each date.",
     "home.why_backtest.title": "Why Backtest Before Investing?",
     "home.why_backtest.desc": "Before you commit your capital to the markets, it is crucial to understand how your investment strategy would have performed historically. Backtesting allows you to simulate your strategy against real market data from the past, helping you identify strengths, understand risks, and refine your approach to build a more resilient portfolio. Test your ideas first, invest with confidence later.",
     "home.tools.title": "Tools & Strategies",
@@ -356,7 +359,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   fr: {
     "home.explore_pages": "Explorez nos autres pages et données intéressantes",
-    "home.tools.subtitle": "Quatre outils pour construire, tester et éprouver une allocation.",
+    "home.tools.subtitle": "Cinq outils pour construire, tester, optimiser et éprouver une allocation.",
 
     "pb.editConfig": "Modifier la configuration",
     "pb.portfolio": "Portefeuille",
@@ -586,6 +589,9 @@ const translations: Record<Language, Record<string, string>> = {
     "home.pages.montecarlo.title": "Monte Carlo",
     "home.pages.montecarlo.cta": "Simuler l'Avenir",
     "home.pages.montecarlo.desc": "Projetez l'avenir de votre capital à travers 1 000 à 10 000 simulations stochastiques aléatoires. Évaluez le taux de réussite (probabilité de survie) de vos objectifs financiers en modélisant la volatilité future, la séquence des rendements et l'impact de l'inflation. Indispensable pour préparer sa retraite et tester la solidité de ses retraits programmés.",
+    "home.pages.optimization.title": "Optimisation de portefeuille",
+    "home.pages.optimization.cta": "Optimiser les poids",
+    "home.pages.optimization.desc": "Trouvez les poids optimaux de vos actifs : ratio de Sharpe maximal, volatilité minimale, parité des risques, diversification maximale ou rendement cible. Visualisez la frontière efficiente et la contribution au risque de chaque actif, puis vérifiez le résultat avec un backtest glissant hors échantillon qui n'utilise que les données connues à chaque date.",
     "home.why_backtest.title": "Pourquoi Backtester Avant d'Investir ?",
     "home.why_backtest.desc": "Avant d'engager votre capital sur les marchés, il est crucial de comprendre comment votre stratégie d'investissement se serait comportée historiquement. Le backtesting vous permet de simuler votre stratégie par rapport à des données de marché réelles du passé, vous aidant ainsi à identifier les points forts, à comprendre les risques et à affiner votre approche pour construire un portefeuille plus résilient. Testez d'abord vos idées, investissez ensuite avec confiance.",
     "home.tools.title": "Outils & Stratégies",
@@ -701,7 +707,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   de: {
     "home.explore_pages": "Erkunden Sie unsere anderen Seiten und interessante Daten",
-    "home.tools.subtitle": "Entdecken Sie unsere 4 vereinfachten Analysewerkzeuge zur Entwicklung, Prüfung und Absicherung Ihres Investmentportfolios.",
+    "home.tools.subtitle": "Entdecken Sie unsere 5 vereinfachten Analysewerkzeuge zur Entwicklung, Prüfung und Absicherung Ihres Investmentportfolios.",
 
     "pb.setup": "Konfiguration",
     "pb.assets": "Anlagegewichte",
@@ -968,6 +974,9 @@ const translations: Record<Language, Record<string, string>> = {
     "home.pages.montecarlo.title": "Monte Carlo",
     "home.pages.montecarlo.cta": "Zukunft Simulieren",
     "home.pages.montecarlo.desc": "Prognostizieren Sie die Zukunft Ihrer Ersparnisse. Simulieren Sie Tausende von zukünftigen Marktszenarien, um die Widerstandsfähigkeit Ihrer Finanzstrategie gegen Krisen und unvorhergesehene Ereignisse genau zu bewerten.",
+    "home.pages.optimization.title": "Portfolio-Optimierung",
+    "home.pages.optimization.cta": "Gewichte optimieren",
+    "home.pages.optimization.desc": "Finden Sie die optimalen Gewichte Ihrer Anlagen: maximale Sharpe Ratio, minimale Volatilität, Risikoparität oder Zielrendite, mit Effizienzgrenze und Walk-Forward-Backtest.",
     "home.why_backtest.title": "Warum vor dem Investieren backtesten?",
     "home.why_backtest.desc": "Bevor Sie Ihr Kapital auf den Märkten einsetzen, ist es wichtig zu verstehen, wie sich Ihre Anlagestrategie in der Vergangenheit entwickelt hätte. Durch Backtesting können Sie Ihre Strategie anhand realer Marktdaten aus der Vergangenheit simulieren, um Stärken zu identifizieren, Risiken zu verstehen und Ihren Ansatz zu verfeinern, um ein widerstandsfähigeres Portfolio aufzubauen. Testen Sie zuerst Ihre Ideen und investieren Sie später mit Zuversicht.",
     "home.tools.title": "Werkzeuge & Strategien",
@@ -1045,7 +1054,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   nl: {
     "home.explore_pages": "Verken onze andere pagina's en interessante gegevens",
-    "home.tools.subtitle": "Ontdek onze 4 vereenvoudigde analysetools om uw beleggingsportefeuille te ontwerpen, testen en beveiligen.",
+    "home.tools.subtitle": "Ontdek onze 5 vereenvoudigde analysetools om uw beleggingsportefeuille te ontwerpen, testen en beveiligen.",
 
     "pb.editConfig": "Configuratie bewerken",
     "pb.portfolio": "Portefeuille",
@@ -1275,6 +1284,9 @@ const translations: Record<Language, Record<string, string>> = {
     "home.pages.montecarlo.title": "Monte Carlo",
     "home.pages.montecarlo.cta": "Toekomst Simuleren",
     "home.pages.montecarlo.desc": "Voorspel de toekomst van uw spaargeld. Simuleer duizenden toekomstige marktscenario's om nauwkeurig de veerkracht van uw financiële strategie tegen crises en onvoorziene gebeurtenissen te evalueren.",
+    "home.pages.optimization.title": "Portefeuille-optimalisatie",
+    "home.pages.optimization.cta": "Gewichten optimaliseren",
+    "home.pages.optimization.desc": "Vind de optimale gewichten van uw beleggingen: maximale Sharpe-ratio, minimale volatiliteit, risicopariteit of doelrendement, met efficiënte grens en walk-forward backtest.",
     "home.why_backtest.title": "Waarom Backtesten Voordat U Investeert?",
     "home.why_backtest.desc": "Voordat u uw kapitaal in de markten steekt, is het cruciaal om te begrijpen hoe uw beleggingsstrategie historisch zou hebben gepresteerd. Met backtesting kunt u uw strategie simuleren met echte marktgegevens uit het verleden, wat u helpt bij het identificeren van sterke punten, het begrijpen van risico's en het verfijnen van uw aanpak om een veerkrachtiger portefeuille op te bouwen. Test eerst uw ideeën, investeer daarna met vertrouwen.",
     "home.tools.title": "Gereedschappen & Strategieën",
@@ -1390,7 +1402,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   es: {
     "home.explore_pages": "Explore nuestras otras páginas y datos interesantes",
-    "home.tools.subtitle": "Descubra nuestras 4 herramientas de análisis simplificadas para diseñar, probar y asegurar su cartera de inversión.",
+    "home.tools.subtitle": "Descubra nuestras 5 herramientas de análisis simplificadas para diseñar, probar y asegurar su cartera de inversión.",
 
     "pb.editConfig": "Editar configuración",
     "pb.portfolio": "Cartera",
@@ -1620,6 +1632,9 @@ const translations: Record<Language, Record<string, string>> = {
     "home.pages.montecarlo.title": "Monte Carlo",
     "home.pages.montecarlo.cta": "Simular Futuro",
     "home.pages.montecarlo.desc": "Pronostique el futuro de sus ahorros. Simule miles de futuros escenarios de mercado para evaluar con precisión la resiliencia de su estrategia financiera frente a crisis y eventos imprevistos.",
+    "home.pages.optimization.title": "Optimización de cartera",
+    "home.pages.optimization.cta": "Optimizar pesos",
+    "home.pages.optimization.desc": "Encuentre los pesos óptimos de sus activos: ratio de Sharpe máximo, volatilidad mínima, paridad de riesgo o rentabilidad objetivo, con frontera eficiente y backtest walk-forward.",
     "home.why_backtest.title": "¿Por qué Backtest antes de Invertir?",
     "home.why_backtest.desc": "Antes de comprometer su capital en los mercados, es crucial comprender cómo se habría comportado históricamente su estrategia de inversión. El backtesting le permite simular su estrategia frente a datos de mercado reales del pasado, ayudándole a identificar fortalezas, comprender riesgos y perfeccionar su enfoque para construir una cartera más resistente. Pruebe primero sus ideas, invierta después con confianza.",
     "home.tools.title": "Herramientas y Estrategias",
