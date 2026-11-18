@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { CashflowFrequencyOptions, CashflowSummary } from "../ui/CashflowFrequencyOptions";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import {
   Plus,
@@ -142,9 +143,20 @@ export function AssetAllocations({
     "aa_cashflowAmount",
     0,
   );
-  const [cashflowFrequency, setCashflowFrequency] = useLocalStorage<
-    "monthly" | "annually" | "none"
-  >("aa_cashflowFrequency", "none");
+  const [cashflowFrequency, setCashflowFrequency] = useLocalStorage<string>("aa_cashflowFrequency", "monthly");
+  // Add or withdraw money; older settings stored a signed amount with frequency "none" meaning off
+  const [cashflowType, setCashflowType] = useLocalStorage<"none" | "contribute" | "withdraw">(
+    "aa_cashflowType",
+    (() => {
+      try {
+        const f = JSON.parse(localStorage.getItem("aa_cashflowFrequency") || '"none"');
+        const a = Number(JSON.parse(localStorage.getItem("aa_cashflowAmount") || "0"));
+        return f === "none" || !a ? "none" : a < 0 ? "withdraw" : "contribute";
+      } catch {
+        return "none";
+      }
+    })(),
+  );
   const [inflationAdjusted, setInflationAdjusted] = useLocalStorage(
     "aa_inflationAdjusted",
     false,
@@ -157,6 +169,7 @@ export function AssetAllocations({
     "aa_rebalancing",
     "annual",
   ); // "annual", "none"
+  const [annualFeePct, setAnnualFeePct] = useLocalStorage("aa_annualFeePct", 0);
   const [rebalanceThreshold, setRebalanceThreshold] = useLocalStorage(
     "aa_rebalanceThreshold",
     0,
@@ -752,7 +765,9 @@ export function AssetAllocations({
                     {comparedConfigs.map(c => (
                       <td key={c.id} className="px-6 py-3 border-l border-slate-100 text-center text-[10px] text-slate-600 font-medium">
                         <div>{c.startYear} - {c.endYear}</div>
-                        {c.cashflowAmount > 0 && <div className="text-emerald-600 font-bold">+{c.cashflowAmount}$ ({c.cashflowFrequency})</div>}
+                        {c.cashflowAmount !== 0 && c.cashflowType !== "none" && (c.cashflowType === "withdraw" || c.cashflowAmount < 0
+                          ? <div className="text-rose-600 font-bold">-{Math.abs(c.cashflowAmount)}$ ({c.cashflowFrequency})</div>
+                          : <div className="text-emerald-600 font-bold">+{c.cashflowAmount}$ ({c.cashflowFrequency})</div>)}
                       </td>
                     ))}
                   </tr>
@@ -1008,8 +1023,12 @@ export function AssetAllocations({
     setEndYear(data.endYear);
     setEndMonth(data.endMonth || 12);
     setInitialAmount(data.initialAmount);
-    setCashflowAmount(data.cashflowAmount || 0);
-    setCashflowFrequency(data.cashflowFrequency || "none");
+    setCashflowAmount(Math.abs(data.cashflowAmount || 0));
+    setCashflowFrequency(data.cashflowFrequency && data.cashflowFrequency !== "none" ? data.cashflowFrequency : "monthly");
+    setCashflowType(
+      data.cashflowType ||
+        (!data.cashflowAmount || data.cashflowFrequency === "none" ? "none" : data.cashflowAmount < 0 ? "withdraw" : "contribute"),
+    );
     setRebalancing(data.rebalancing || "annual");
     setReinvestDividends(
       data.reinvestDividends !== undefined ? data.reinvestDividends : true,
@@ -1109,12 +1128,14 @@ export function AssetAllocations({
         rebalanceFrequency:
           rebalancing === "none" ? "none" : (rebalancing as any),
         rebalanceThreshold: rebalanceThreshold / 100,
-        cashflowAmount: cashflowAmount,
-        cashflowFrequency: cashflowFrequency,
+        cashflowAmount:
+          cashflowType === "none" ? 0 : (cashflowType === "withdraw" ? -1 : 1) * Math.abs(Number(cashflowAmount) || 0),
+        cashflowFrequency: cashflowType === "none" ? "none" : (cashflowFrequency as any),
         reinvestDividends: reinvestDividends,
         dividendTaxRate: dividendTaxRate / 100,
         capitalGainsTaxRate: capitalGainsTaxRate / 100,
         transactionFeeAmount: broker === "custom" ? customFee : 0,
+        annualFeeRate: (Number(annualFeePct) || 0) / 100,
       };
 
       const res = await engineRunBacktest(enginePortfolios, engineOptions);
@@ -1138,8 +1159,16 @@ export function AssetAllocations({
           new Set(r.equityCurve.map((e) => parseInt(e.date.split("-")[0]))),
         );
         const annualReturns: number[] = [];
+        // Year returns compound the monthly time-weighted returns, so money added or withdrawn is not counted as gain or loss
+        const monthly = r.metrics?.monthlyReturns;
+        if (monthly && monthly.length) {
+          for (const yr of yearsInteger) {
+            const rows = monthly.filter((m) => m.date.startsWith(yr.toString()));
+            annualReturns.push((rows.reduce((acc, m) => acc * (1 + m.value / 100), 1) - 1) * 100);
+          }
+        }
         let prevYearValue = initialAmount;
-        for (const yr of yearsInteger) {
+        if (!annualReturns.length) for (const yr of yearsInteger) {
           const yearData = r.equityCurve.filter((e) =>
             e.date.startsWith(yr.toString()),
           );
@@ -1228,8 +1257,11 @@ export function AssetAllocations({
     if (data.initialAmount !== undefined) setInitialAmount(data.initialAmount);
     if (data.broker) setBroker(data.broker);
     if (data.customFee !== undefined) setCustomFee(data.customFee);
-    if (data.cashflowAmount !== undefined) setCashflowAmount(data.cashflowAmount);
-    if (data.cashflowFrequency) setCashflowFrequency(data.cashflowFrequency);
+    if (data.cashflowAmount !== undefined) setCashflowAmount(Math.abs(data.cashflowAmount));
+    if (data.cashflowFrequency && data.cashflowFrequency !== "none") setCashflowFrequency(data.cashflowFrequency);
+    if (data.cashflowType) setCashflowType(data.cashflowType);
+    else if (data.cashflowAmount !== undefined)
+      setCashflowType(!data.cashflowAmount || data.cashflowFrequency === "none" ? "none" : data.cashflowAmount < 0 ? "withdraw" : "contribute");
     if (data.inflationAdjusted !== undefined) setInflationAdjusted(data.inflationAdjusted);
     if (data.benchmarkTicker) setBenchmarkTicker(data.benchmarkTicker);
     if (data.rebalancing) setRebalancing(data.rebalancing);
@@ -1408,33 +1440,50 @@ export function AssetAllocations({
               </div>
               <div className="space-y-1.5">
                 <TooltipLabel
-                  label={t("dashboard.period_contribution").split(" ")[0]}
-                  tooltip={t("aa.tt.cont")}
-                />
-                <input
-                  type="number"
-                  value={cashflowAmount}
-                  onChange={(e) =>
-                    setCashflowAmount(parseFloat(e.target.value))
-                  }
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <TooltipLabel
-                  label={t("lazy.frequency").split(" ")[0]}
-                  tooltip={t("aa.tt.freq")}
+                  label={language === "fr" ? "Versements ou retraits" : "Contributions or withdrawals"}
+                  tooltip={language === "fr" ? "Ajouter de l'argent régulièrement, en retirer, ou ne rien faire. Un retrait vend la même part de chaque actif." : "Add money on a schedule, take money out, or do neither. A withdrawal sells the same share of every holding."}
                 />
                 <CustomSelect
-                  value={cashflowFrequency}
-                  onChange={(e: any) => setCashflowFrequency(e.target.value as any)}
+                  value={cashflowType}
+                  onChange={(e: any) => setCashflowType(e.target.value as any)}
                   className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                 >
                   <option value="none">{t("aa.none")}</option>
-                  <option value="monthly">{t("aa.monthly")}</option>
-                  <option value="annually">{t("aa.annually")}</option>
+                  <option value="contribute">{language === "fr" ? "Ajouter de l'argent" : "Add money"}</option>
+                  <option value="withdraw">{language === "fr" ? "Retirer de l'argent" : "Withdraw money"}</option>
                 </CustomSelect>
               </div>
+              {cashflowType !== "none" && (
+                <>
+                  <div className="space-y-1.5">
+                    <TooltipLabel
+                      label={language === "fr" ? "Montant par versement" : "Amount each time"}
+                      tooltip={t("aa.tt.cont")}
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      value={cashflowAmount}
+                      onChange={(e) => setCashflowAmount(Math.abs(parseFloat(e.target.value) || 0))}
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <TooltipLabel
+                      label={language === "fr" ? "Fréquence" : "Frequency"}
+                      tooltip={t("aa.tt.freq")}
+                    />
+                    <CustomSelect
+                      value={cashflowFrequency === "none" ? "monthly" : cashflowFrequency}
+                      onChange={(e: any) => setCashflowFrequency(e.target.value)}
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
+                    >
+                      <CashflowFrequencyOptions lang={language} />
+                    </CustomSelect>
+                    <CashflowSummary lang={language} amount={cashflowAmount} frequency={cashflowFrequency} direction={cashflowType} />
+                  </div>
+                </>
+              )}
               <div className="space-y-1.5">
                 <TooltipLabel
                   label={t("pb.reb")}
@@ -1450,6 +1499,25 @@ export function AssetAllocations({
                   <option value="monthly">{t("aa.monthly")}</option>
                   <option value="none">{t("aa.none")}</option>
                 </CustomSelect>
+              </div>
+              <div className="space-y-1.5">
+                <TooltipLabel
+                  label={language === "fr" ? "Bandes de rééquilibrage" : "Rebalancing bands"}
+                  tooltip={language === "fr" ? "Rééquilibre aussi dès qu'un actif s'écarte de sa cible de plus de cet écart, en plus du calendrier choisi." : "Also rebalances as soon as an asset drifts from its target by more than this, on top of the schedule."}
+                />
+                <CustomSelect value={Number(rebalanceThreshold)} onChange={(e: any) => setRebalanceThreshold(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors">
+                  <option value={0}>{language === "fr" ? "Aucune" : "None"}</option>
+                  <option value={5}>± 5 %</option>
+                  <option value={10}>± 10 %</option>
+                  <option value={20}>± 20 %</option>
+                </CustomSelect>
+              </div>
+              <div className="space-y-1.5">
+                <TooltipLabel
+                  label={language === "fr" ? "Frais annuels (%)" : "Annual fees (%)"}
+                  tooltip={language === "fr" ? "Frais courants des fonds (TER) et de garde, prélevés chaque mois sur le portefeuille. 0,2 % est typique pour des ETF indiciels." : "Fund running costs (TER) and custody, taken monthly from the portfolio. 0.2% is typical for index ETFs."}
+                />
+                <input type="number" step={0.05} min={0} value={annualFeePct} onChange={(e) => setAnnualFeePct(Math.max(0, Number(e.target.value) || 0))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors" />
               </div>
               <div className="space-y-1.5">
                 <TooltipLabel
@@ -2501,7 +2569,7 @@ export function AssetAllocations({
                 pageId="asset-allocation" 
                 currentData={{
                   startYear, startMonth, endYear, endMonth, initialAmount, broker, customFee,
-                  cashflowAmount, cashflowFrequency, inflationAdjusted, benchmarkTicker,
+                  cashflowAmount, cashflowFrequency, cashflowType, inflationAdjusted, benchmarkTicker,
                   rebalancing, rebalanceThreshold, reinvestDividends, dividendTaxRate, capitalGainsTaxRate,
                   portfolioNames, portfolioAssets,
                   portNames: portfolioNames.map(p => p.name),

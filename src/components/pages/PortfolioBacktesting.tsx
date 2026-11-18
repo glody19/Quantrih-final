@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { CashflowFrequencyOptions, CashflowSummary } from "../ui/CashflowFrequencyOptions";
 import {
   Play,
   Activity,
@@ -292,6 +293,8 @@ export function PortfolioBacktesting({
     if (setBaseCcy) setBaseCcy(c);
   };
   const [applyEUTaxes, setApplyEUTaxes] = useState(true);
+  const [annualFeePct, setAnnualFeePct] = useState(0.2);
+
 
   // Market Conditions
   const [broker, setBroker] = useState("free");
@@ -516,10 +519,16 @@ export function PortfolioBacktesting({
             : cashflowType === "contribute"
               ? cashflowAmount
               : -cashflowAmount,
-        cashflowFrequency: cashflowFreq as "monthly" | "annually" | "none",
+        cashflowFrequency: cashflowType === "none" ? "none" : (cashflowFreq as any),
         inflationAdjusted,
         benchmarkId: includeBenchmark ? "benchmark" : undefined,
         transactionFeeAmount: broker === "custom" ? customFee : 0,
+        reinvestDividends: dividendHandling !== "distribute",
+        // European taxes: 30% Belgian withholding on dividends and the 0.12% stock exchange tax (TOB) on each trade
+        dividendTaxRate: applyEUTaxes ? 0.3 : 0,
+        tradingCostRate: (Math.max(0, Number(slippage) || 0) + (applyEUTaxes ? 0.12 : 0)) / 100,
+        annualFeeRate: (Number(annualFeePct) || 0) / 100,
+        baseCurrency: (baseCurrency === "EUR" ? "EUR" : "USD") as "EUR" | "USD",
       };
 
       const res = await engineRunBacktest(enginePortfolios, engineOptions);
@@ -547,8 +556,16 @@ export function PortfolioBacktesting({
           new Set(r.equityCurve.map((e) => parseInt(e.date.split("-")[0]))),
         );
         const annualReturns: number[] = [];
+        // Year returns compound the monthly time-weighted returns, so money added or withdrawn is not counted as gain or loss
+        const monthly = r.metrics?.monthlyReturns;
+        if (monthly && monthly.length) {
+          for (const yr of yearsInteger) {
+            const rows = monthly.filter((m) => m.date.startsWith(yr.toString()));
+            annualReturns.push((rows.reduce((acc, m) => acc * (1 + m.value / 100), 1) - 1) * 100);
+          }
+        }
         let prevYearValue = initialAmount;
-        for (const yr of yearsInteger) {
+        if (!annualReturns.length) for (const yr of yearsInteger) {
           const yearData = r.equityCurve.filter((e) =>
             e.date.startsWith(yr.toString()),
           );
@@ -927,20 +944,21 @@ export function PortfolioBacktesting({
                     className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                   >
                     <option value="none">{t("aa.none")}</option>
-                    <option value="contribute">Contribute</option>
-                    <option value="withdraw">Withdraw</option>
+                    <option value="contribute">{language === "fr" ? "Ajouter de l'argent" : "Add money"}</option>
+                    <option value="withdraw">{language === "fr" ? "Retirer de l'argent" : "Withdraw money"}</option>
                   </CustomSelect>
                 </div>
                 {cashflowType !== "none" && (
                   <div className="space-y-1.5">
                     <TooltipLabel label={t("pb.amount_freq")} tooltip={t("aa.tt.amount_freq")} />
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <input
                         type="number"
                         value={cashflowAmount}
                         onChange={(e) =>
-                          setCashflowAmount(Number(e.target.value))
+                          setCashflowAmount(Math.abs(Number(e.target.value) || 0))
                         }
+                        min={0}
                         className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2 text-base font-mono outline-none focus:border-pv-blue transition-colors font-bold"
                       />
                       <CustomSelect
@@ -948,10 +966,10 @@ export function PortfolioBacktesting({
                         onChange={(e: any) => setCashflowFreq(e.target.value)}
                         className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2 text-sm font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
                       >
-                        <option value="monthly">{t("aa.monthly")}</option>
-                        <option value="annually">{t("aa.annually")}</option>
+                        <CashflowFrequencyOptions lang={language} />
                       </CustomSelect>
                     </div>
+                    <CashflowSummary lang={language} amount={cashflowAmount} frequency={cashflowFreq} direction={cashflowType === "withdraw" ? "withdraw" : "contribute"} />
                     <label className="flex items-center gap-2 mt-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -1055,6 +1073,13 @@ export function PortfolioBacktesting({
                     className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                   />
                 </div>
+              <div className="space-y-1.5">
+                <TooltipLabel
+                  label={language === "fr" ? "Frais annuels (%)" : "Annual fees (%)"}
+                  tooltip={language === "fr" ? "Frais courants des fonds (TER) et de garde, prélevés chaque mois sur le portefeuille. 0,2 % est typique pour des ETF indiciels." : "Fund running costs (TER) and custody, taken monthly from the portfolio. 0.2% is typical for index ETFs."}
+                />
+                <input type="number" step={0.05} min={0} value={annualFeePct} onChange={(e) => setAnnualFeePct(Math.max(0, Number(e.target.value) || 0))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors" />
+              </div>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2 pt-1">
                     <input

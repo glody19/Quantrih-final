@@ -1,7 +1,18 @@
+import { isCashflowMonth, cashflowMonthlyMultiplier } from './cashflow';
 import { Portfolio, BacktestOptions, BacktestResult, EquityDataPoint, MonthlyPrice, AssetResult } from './types';
 import { fetchMonthlyPrices, fetchDividends } from './data';
 import { calculateMetrics, calculateMonteCarlo, calculateCorrelationMatrix, calculateRelativeMetrics } from './metrics';
 import { evaluateTacticalModel } from './tactical';
+import { FX_TO_USD } from '../constants';
+
+const EUR_SUFFIXES = ['.AS', '.DE', '.PA', '.MI', '.MC', '.BR', '.F', '.VI', '.LS', '.IR', '.HE'];
+/** Trading currency of a ticker: euro for euro-area exchanges, US dollar otherwise (GBP and others are left as they are). */
+export function tickerCurrency(sym: string): 'EUR' | 'USD' | 'OTHER' {
+  const u = sym.toUpperCase();
+  if (EUR_SUFFIXES.some(x => u.endsWith(x))) return 'EUR';
+  if (/\.[A-Z]{1,3}$/.test(u)) return 'OTHER';
+  return 'USD';
+}
 
 export async function runBacktest(
   portfolios: Portfolio[],
@@ -16,6 +27,8 @@ export async function runBacktest(
        if ('safeAsset' in tm && tm.safeAsset) symbols.add(tm.safeAsset);
        if ('baselineEquity' in tm) symbols.add(tm.baselineEquity);
        if ('baselineBond' in tm) symbols.add(tm.baselineBond);
+       if (p.execution?.trailingStop && !('safeAsset' in tm && tm.safeAsset)) symbols.add(p.execution.stopAsset || 'CASH');
+       if ('signalSymbol' in tm && tm.signalSymbol && tm.signalSymbol !== 'same') symbols.add(tm.signalSymbol);
     }
   });
 
@@ -41,6 +54,32 @@ export async function runBacktest(
     pricesBySymbol.set(sym, normalizedData);
     dividendsBySymbol.set(sym, divData);
   }));
+
+  // 2b. Currency: express US dollar assets in euro, month by month (EURUSD=X), annual rates as a fallback
+  if (options.baseCurrency === 'EUR') {
+    let fx = new Map<string, number>();
+    try {
+      const eurusd = await fetchMonthlyPrices('EURUSD=X', options.startDate, options.endDate, { noFallback: true } as any);
+      fx = new Map(eurusd.map(p => [p.date.substring(0, 7), p.close]));
+    } catch { /* annual fallback below */ }
+    const annual = FX_TO_USD.EUR || {};
+    const years = Object.keys(annual).map(Number).sort((a, b) => a - b);
+    const rate = (month: string) => {
+      const r = fx.get(month);
+      if (r) return r;
+      const y = Number(month.substring(0, 4));
+      let best = years[0];
+      for (const yy of years) if (yy <= y) best = yy;
+      return annual[best] || 1;
+    };
+    for (const sym of symbols) {
+      if (tickerCurrency(sym) !== 'USD') continue;
+      const pr = pricesBySymbol.get(sym);
+      if (pr) pricesBySymbol.set(sym, pr.map(p => ({ ...p, close: p.close / rate(p.normalizedDate) })));
+      const dv = dividendsBySymbol.get(sym);
+      if (dv) dividendsBySymbol.set(sym, dv.map(d => ({ ...d, amount: d.amount / rate(d.date.substring(0, 7)) })));
+    }
+  }
 
   // 3. (Skipped global common months check)
   const symbolList = Array.from(symbols);
@@ -138,7 +177,15 @@ export async function runBacktest(
       // Compute common months for this specific portfolio
       const portfolioSymbols = portfolio.allocations.map(a => a.symbol);
       if (portfolioSymbols.length === 0) continue;
-      let commonMonths = findCommonMonths(pricesBySymbol, portfolioSymbols);
+      // A tactical portfolio also needs prices for its safe asset and signal asset every month
+      const tmSyms: string[] = [];
+      if (portfolio.tacticalModel) {
+        const tm: any = portfolio.tacticalModel;
+        if (tm.safeAsset) tmSyms.push(tm.safeAsset);
+        if (tm.signalSymbol && tm.signalSymbol !== 'same') tmSyms.push(tm.signalSymbol);
+        if (portfolio.execution?.trailingStop && !tm.safeAsset) tmSyms.push(portfolio.execution.stopAsset || 'CASH');
+      }
+      let commonMonths = findCommonMonths(pricesBySymbol, [...portfolioSymbols, ...tmSyms.filter(x => !portfolioSymbols.includes(x))]);
       
       if (commonMonths.length === 0) {
          // Skip if no common months, but add a synthetic result or warning
@@ -174,6 +221,10 @@ export async function runBacktest(
       let totalContributions = options.initialBalance;
       let cashBalance = 0;
       const shares = new Map<string, number>();
+      // Tactical execution state: borrowed amount (leverage), peak for the trailing stop
+      let debt = 0;
+      let peakEquity = options.initialBalance;
+      let stopped = false;
 
       const firstMonth = commonMonths[0];
     
@@ -198,20 +249,62 @@ export async function runBacktest(
 
         // Update allocations based on Tactical Model (at start of the month before dividends/prices)
         if (portfolio.tacticalModel) {
-            // Decide with the closes known at the end of the previous month (no look-ahead),
-            // then move the whole portfolio to the new targets at those closes.
+            // Decide with closes already known (no look-ahead), trade at the previous month's close.
+            const ex = portfolio.execution || {};
+            const tm: any = portfolio.tacticalModel;
             const prevMonth = commonMonths[i - 1];
-            const next = evaluateTacticalModel(portfolio, i - 1, commonMonths, priceLookup);
-            const key = (a: { symbol: string; weight: number }[]) => a.map(x => `${x.symbol}:${x.weight.toFixed(6)}`).sort().join("|");
-            if (key(next) !== key(allocations) || i === 1) {
-              let value = 0;
-              for (const [sym, sh] of shares) value += sh * (priceLookup.get(sym)?.get(prevMonth) || 0);
-              const priced = next.filter(a => (priceLookup.get(a.symbol)?.get(prevMonth) || 0) > 0);
-              if (value > 0 && priced.length) {
-                const tw = priced.reduce((t, a) => t + a.weight, 0) || 1;
-                shares.clear();
-                for (const a of priced) shares.set(a.symbol, (value * a.weight / tw) / priceLookup.get(a.symbol)!.get(prevMonth)!);
-                allocations = priced.map(a => ({ symbol: a.symbol, weight: a.weight / tw }));
+            const freq = Math.max(1, ex.frequencyMonths || 1);
+            const lag = Math.max(0, ex.signalLagMonths || 0);
+            const lev = Math.max(1, ex.leverage || 1);
+            const safeSym: string = tm.safeAsset || ex.stopAsset || 'CASH';
+            const px = (sym: string) => priceLookup.get(sym)?.get(prevMonth) || 0;
+            let gross = 0;
+            for (const [sym, sh] of shares) gross += sh * px(sym);
+            const equity = gross - debt + cashBalance;
+
+            // Trailing stop on the portfolio value
+            let forceSafe = false;
+            if (ex.trailingStop && ex.trailingStop > 0) {
+              if (!stopped) {
+                peakEquity = Math.max(peakEquity, equity);
+                if (equity < peakEquity * (1 - ex.trailingStop)) { stopped = true; forceSafe = true; }
+              }
+            }
+
+            const isTradeMonth = (i - 1) % freq === 0;
+            let next: { symbol: string; weight: number }[] | null = null;
+            if (forceSafe) {
+              next = [{ symbol: safeSym, weight: 1 }];
+            } else if (isTradeMonth && i - 1 - lag >= 0) {
+              next = evaluateTacticalModel(portfolio, i - 1 - lag, commonMonths, priceLookup);
+              if (stopped) { stopped = false; peakEquity = equity; }
+            } else if (stopped) {
+              next = [{ symbol: safeSym, weight: 1 }];
+            }
+
+            if (next) {
+              const key = (a: { symbol: string; weight: number }[]) => a.map(x => `${x.symbol}:${x.weight.toFixed(6)}`).sort().join("|");
+              const allSafe = next.every(a => a.symbol === safeSym);
+              const L = allSafe ? 1 : lev;
+              if (key(next) !== key(allocations) || i === 1 || L > 1 || debt > 0) {
+                const priced = next.filter(a => px(a.symbol) > 0);
+                if (equity > 0 && priced.length) {
+                  const tw = priced.reduce((t, a) => t + a.weight, 0) || 1;
+                  const fee = key(next) !== key(allocations) ? (options.transactionFeeAmount || 0) * priced.length : 0;
+                  let eq = equity - fee;
+                  if (options.tradingCostRate && options.tradingCostRate > 0) {
+                    let turnover = 0;
+                    const target = new Map(priced.map(a => [a.symbol, eq * L * a.weight / tw]));
+                    const syms = new Set([...shares.keys(), ...target.keys()]);
+                    for (const sym of syms) turnover += Math.abs((target.get(sym) || 0) - (shares.get(sym) || 0) * px(sym));
+                    eq -= turnover * options.tradingCostRate;
+                  }
+                  shares.clear();
+                  for (const a of priced) shares.set(a.symbol, (eq * L * a.weight / tw) / px(a.symbol));
+                  debt = eq * (L - 1);
+                  cashBalance = 0;
+                  allocations = priced.map(a => ({ symbol: a.symbol, weight: a.weight / tw }));
+                }
               }
             }
         }
@@ -237,28 +330,48 @@ export async function runBacktest(
         }
         
         // Handle Cashflow BEFORE price change (contribution at start of month)
-      const cashflow = options.cashflowAmount || 0;
       const freq = options.cashflowFrequency || 'none';
       const monthInt = parseInt(month.split('-')[1], 10);
-      const isFirstMonthOfYear = monthInt === 1;
 
-      if (freq === 'monthly' || (freq === 'annually' && isFirstMonthOfYear)) {
-          totalContributions += cashflow;
-          currentCashflow = cashflow;
-          
-          let netCashflow = cashflow;
-          if (cashflow > 0 && options.transactionFeeAmount) {
-             netCashflow -= (options.transactionFeeAmount * allocations.length); // Assume fee is charged per asset bought
-          }
-          
-          for (const alloc of allocations) {
-              const prevMonth = commonMonths[i - 1];
-              const price = priceLookup.get(alloc.symbol)?.get(prevMonth) || 1;
-              const currentShares = shares.get(alloc.symbol) || 0;
-              shares.set(alloc.symbol, currentShares + (netCashflow * alloc.weight) / price);
+      if (isCashflowMonth(freq, monthInt) && options.cashflowAmount) {
+          const prevMonth = commonMonths[i - 1];
+          const priceOf = (sym: string) => priceLookup.get(sym)?.get(prevMonth) || 1;
+          const cashflow = options.cashflowAmount * cashflowMonthlyMultiplier(freq);
+
+          if (cashflow > 0) {
+            totalContributions += cashflow;
+            currentCashflow = cashflow;
+            let netCashflow = cashflow;
+            if (options.transactionFeeAmount) {
+               netCashflow -= (options.transactionFeeAmount * allocations.length); // Assume fee is charged per asset bought
+            }
+            for (const alloc of allocations) {
+                const currentShares = shares.get(alloc.symbol) || 0;
+                shares.set(alloc.symbol, currentShares + (Math.max(0, netCashflow) * alloc.weight) / priceOf(alloc.symbol));
+            }
+          } else {
+            // Withdrawal: sell the same fraction of every holding, never more than the portfolio holds
+            let gross = cashBalance;
+            for (const [sym, sh] of shares) gross += sh * priceOf(sym);
+            const wanted = -cashflow;
+            const taken = Math.min(wanted, Math.max(0, gross));
+            if (taken > 0 && gross > 0) {
+              const keep = 1 - taken / gross;
+              for (const [sym, sh] of shares) shares.set(sym, sh * keep);
+              cashBalance *= keep;
+            }
+            totalContributions -= taken;
+            currentCashflow = -taken;
           }
       }
       
+        // Running costs: a twelfth of the yearly fee comes off the holdings each month
+        if (options.annualFeeRate && options.annualFeeRate > 0) {
+          const keep = 1 - options.annualFeeRate / 12;
+          for (const [k, v] of shares) shares.set(k, v * keep);
+          cashBalance *= keep;
+        }
+
         // Calculate new balance based on updated shares and current price
         for (const alloc of allocations) {
           const price = priceLookup.get(alloc.symbol)?.get(month) || 0;
@@ -268,15 +381,22 @@ export async function runBacktest(
         }
         
         newBalance += cashBalance; // Add undistributed dividends
+        if (debt > 0) {
+          debt *= 1 + (portfolio.execution?.borrowRate ?? 0.05) / 12;
+          newBalance -= debt;
+        }
         currentBalance = newBalance;
         equityCurve.push({ date: month + "-01", value: currentBalance, holdings: currentHoldings, cashflow: currentCashflow });
 
-      // Check for rebalancing
+      // Check for rebalancing (a leveraged tactical portfolio is re-targeted by the model at each trade date instead)
       let shouldRebalance = false;
+      const tacticalManaged = !!portfolio.tacticalModel && debt > 0;
       const currentMonthInt = parseInt(month.split('-')[1], 10);
       const prevMonthInt = parseInt(commonMonths[i-1].split('-')[1], 10);
       
-      if (options.rebalanceFrequency === 'monthly') {
+      if (tacticalManaged) {
+        shouldRebalance = false;
+      } else if (options.rebalanceFrequency === 'monthly') {
         shouldRebalance = true;
       } else if (options.rebalanceFrequency === 'quarterly' && currentMonthInt % 3 === 1 && currentMonthInt !== prevMonthInt) {
         shouldRebalance = true;
@@ -285,7 +405,7 @@ export async function runBacktest(
       }
 
       // Drift-based rebalancing (Phase 3.3)
-      if (!shouldRebalance && options.rebalanceThreshold && options.rebalanceThreshold > 0) {
+      if (!tacticalManaged && !shouldRebalance && options.rebalanceThreshold && options.rebalanceThreshold > 0) {
         for (const alloc of allocations) {
           const targetWeight = alloc.weight;
           const currentWeight = currentHoldings[alloc.symbol] / currentBalance;
@@ -315,6 +435,14 @@ export async function runBacktest(
            }
          }
 
+         if (options.tradingCostRate && options.tradingCostRate > 0) {
+           let turnover = 0;
+           for (const alloc of allocations) {
+             const price = priceLookup.get(alloc.symbol)?.get(month) || 0;
+             turnover += Math.abs(currentBalance * alloc.weight - (shares.get(alloc.symbol) || 0) * price);
+           }
+           currentBalance -= turnover * options.tradingCostRate;
+         }
          for (const alloc of allocations) {
            const price = priceLookup.get(alloc.symbol)?.get(month) || 1;
            // Deduct transaction fee on rebalance (assumes you have to sell and buy, so 2 * fee, or just a simplified flat fee)
