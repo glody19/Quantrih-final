@@ -112,7 +112,7 @@ export function DualMomentum() {
                 <TickerInput
                   value={usEquity}
                   onChange={setUsEquity}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors"
                 />
                 
 </div>
@@ -125,7 +125,7 @@ export function DualMomentum() {
                 <TickerInput
                   value={intlEquity}
                   onChange={setIntlEquity}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors"
                 />
                 
 </div>
@@ -138,7 +138,7 @@ export function DualMomentum() {
                 <TickerInput
                   value={bonds}
                   onChange={setBonds}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-sm font-bold outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors"
                 />
                 
 </div>
@@ -152,7 +152,7 @@ export function DualMomentum() {
                   type="number"
                   value={lookback}
                   onChange={(e) => setLookback(parseInt(e.target.value) || 12)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
                 />
                 
 </div>

@@ -17,7 +17,7 @@ export interface ExecutionSettings {
 }
 
 const SELECT =
-  "w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors";
+  "w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-2 text-sm font-medium text-slate-900 outline-none focus:border-slate-400 transition-colors";
 
 type L = "en" | "fr";
 const T = {
@@ -75,7 +75,7 @@ const T = {
 function Field({ label, help, children }: { label: string; help: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold text-text block">{label}</label>
+      <label className="text-[13px] font-medium text-slate-600 block">{label}</label>
       {children}
       <p className="text-[12.5px] leading-snug text-text-3">{help}</p>
     </div>
