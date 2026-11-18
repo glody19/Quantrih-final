@@ -5,6 +5,7 @@ import { db } from "../../firebase";
 import { collection, doc, getDocs, query, setDoc } from "firebase/firestore";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
+import { usePlan, PLAN_NAMES } from "../../lib/plans";
 
 interface CloudSaveLoadProps {
   pageId: string;
@@ -35,6 +36,9 @@ export function CloudSaveLoad({ pageId, currentData, onListUpdate, savedOpen, on
   const [justSaved, setJustSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [count, setCount] = useState<number | null>(null);
+  const [total, setTotal] = useState(0);
+  const { plan, limits } = usePlan();
+  const full = Number.isFinite(limits.maxSaved) && total >= limits.maxSaved;
 
   const refreshCount = async () => {
     if (!user) return;
@@ -46,6 +50,7 @@ export function CloudSaveLoad({ pageId, currentData, onListUpdate, savedOpen, on
         if (data.pageId === pageId || (!data.pageId && pageId === "backtest")) n++;
       });
       setCount(n);
+      setTotal(snap.size);
     } catch {
       setCount(null);
     }
@@ -57,7 +62,7 @@ export function CloudSaveLoad({ pageId, currentData, onListUpdate, savedOpen, on
   }, [user, pageId]);
 
   const handleSave = async () => {
-    if (!user || !saveName.trim()) return;
+    if (!user || !saveName.trim() || full) return;
     setIsSaving(true);
     setError(null);
     try {
@@ -113,13 +118,19 @@ export function CloudSaveLoad({ pageId, currentData, onListUpdate, savedOpen, on
           />
           <button
             type="submit"
-            disabled={isSaving || !saveName.trim()}
+            disabled={isSaving || !saveName.trim() || full}
             className="h-8 px-3 rounded-lg text-sm font-medium text-text-2 border border-border hover:border-pv-blue hover:text-pv-blue transition-colors disabled:opacity-40 inline-flex items-center gap-1.5"
           >
             {isSaving ? <span className="w-3.5 h-3.5 border-2 border-text-4 border-t-transparent rounded-full animate-spin" /> : justSaved ? <Check size={14} /> : null}
             {justSaved ? l.saved : l.btn}
           </button>
           {error && <span className="text-rose-600 text-xs">{error}</span>}
+          {full && (
+            <span className="text-xs text-[#14466B]">
+              {language === "fr" ? `Limite de la formule ${PLAN_NAMES[plan]} atteinte (${limits.maxSaved} analyses). ` : `${PLAN_NAMES[plan]} plan limit reached (${limits.maxSaved} analyses). `}
+              <a href="/pricing" className="font-semibold underline">{language === "fr" ? "Voir les tarifs" : "See pricing"}</a>
+            </span>
+          )}
         </form>
         {onToggleSaved && (
           <button
