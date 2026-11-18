@@ -25,6 +25,8 @@ import { topETFs } from './etfData';
 import { assetClasses, majorIndices, megatrends } from './assetClassesData';
 import { lazyPortfolios } from './lazyPortfoliosData';
 import { MarketTickerBar } from '../market/MarketTickerBar';
+import { MarketOverview } from '../market/MarketOverview';
+import { ProGate } from '../market/ProGate';
 
 // One accent per lazy portfolio row
 const LAZY_COLORS = ['#1B3F72', '#14B8A6', '#C9A24A', '#E5484D', '#0EA5E9', '#3B6EA8', '#F97316', '#10B981', '#EC4899', '#64748B'];
@@ -674,42 +676,6 @@ const isEuropeanMarketOpen = () => {
    if (import.meta.env.DEV) console.warn("Market news fetch error:", e);
  })
  .finally(() => setMarketNewsLoading(false));
- }, []);
-
- // Major indices: performance computed from real monthly closes (no hardcoded figures)
- const [liveIndices, setLiveIndices] = useState<Record<string, { m1: number | null; m6: number | null; y1: number | null; y5: number | null; y10: number | null }>>({});
-
- useEffect(() => {
- let cancelled = false;
- const from = new Date();
- from.setFullYear(from.getFullYear() - 11);
- const fromStr = from.toISOString().split('T')[0];
- const pct = (v: number | null) => (v == null || !isFinite(v) ? null : v * 100);
- Promise.all(majorIndices.map(async (idx) => {
- try {
- const r = await fetch(`/api/prices/monthly/${encodeURIComponent(idx.ticker)}?from=${fromStr}`);
- if (!r.ok) return [idx.ticker, null] as const;
- const rows: { date: string; close: number }[] = await r.json();
- const closes = (Array.isArray(rows) ? rows : [])
- .filter(x => typeof x.close === 'number' && x.close > 0)
- .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
- .map(x => x.close);
- if (closes.length < 2) return [idx.ticker, null] as const;
- const last = closes[closes.length - 1];
- const back = (n: number) => (closes.length > n ? closes[closes.length - 1 - n] : null);
- const cum = (n: number) => { const b = back(n); return b ? last / b - 1 : null; };
- const ann = (years: number) => { const b = back(years * 12); return b ? Math.pow(last / b, 1 / years) - 1 : null; };
- return [idx.ticker, { m1: pct(cum(1)), m6: pct(cum(6)), y1: pct(cum(12)), y5: pct(ann(5)), y10: pct(ann(10)) }] as const;
- } catch {
- return [idx.ticker, null] as const;
- }
- })).then(results => {
- if (cancelled) return;
- const next: Record<string, any> = {};
- results.forEach(([t, v]) => { if (v) next[t] = v; });
- setLiveIndices(next);
- });
- return () => { cancelled = true; };
  }, []);
 
  const [newCompareInput, setNewCompareInput] = useState('');
@@ -1533,8 +1499,8 @@ const isEuropeanMarketOpen = () => {
  <p className="text-base md:text-lg text-text-3 mt-2 max-w-3xl leading-relaxed">{language === 'fr' ? "Cours, analyse financière et états financiers des actions, ETF et indices, à partir de données de marché réelles." : 'Prices, financial analysis and financial statements for stocks, ETFs and indices, from real market data.'}</p>
  </div>
  {/* Premium Top Navigation Tabs */}
- <div className="w-full bg-surface border-b border-border sticky top-0 z-40 shrink-0">
- <div className="max-w-7xl mx-auto px-6 md:px-12 py-3 flex gap-3 overflow-x-auto no-scrollbar items-center">
+ <div className="w-full bg-white/95 backdrop-blur border-b border-slate-100 sticky top-[84px] lg:top-[68px] z-40 shrink-0">
+ <div className="max-w-[2400px] mx-auto px-4 md:px-8 xl:px-12 py-2 flex gap-3 overflow-x-auto no-scrollbar items-center">
  <button 
  onClick={() => setMarketPageUrl('stocks')} 
  className={cn("px-4 h-9 flex items-center gap-1 md:gap-1.5 text-[13px] font-medium transition-all rounded-xl shrink-0 border", 
@@ -1543,7 +1509,7 @@ const isEuropeanMarketOpen = () => {
  : "text-text bg-transparent border-transparent hover:bg-surface-2 hover:text-text")}
  >
  <Activity size={14} className={marketPageUrl === 'stocks' ? "text-bg" : "text-text"} />
- Equities
+ {language === 'fr' ? 'Actions' : 'Equities'}
  </button>
  <button 
  onClick={() => setMarketPageUrl('etfs')} 
@@ -1553,8 +1519,20 @@ const isEuropeanMarketOpen = () => {
  : "text-text bg-transparent border-transparent hover:bg-surface-2 hover:text-text")}
  >
  <PieChart size={14} className={marketPageUrl === 'etfs' ? "text-bg" : "text-text"} />
- ETF Overview
+ {language === 'fr' ? 'ETF' : 'ETF Overview'}
  </button>
+ {marketPageUrl === 'stocks' && (
+ <>
+ <span className="mx-2 h-5 w-px bg-slate-200 shrink-0" aria-hidden />
+ {(language === 'fr'
+  ? [['analysis', 'Analyse'], ['fundamentals', 'Fondamentaux'], ['indices', 'Indices'], ['asset-classes', "Classes d'actifs"], ['themes', 'Thématiques'], ['top-etfs', 'Top 20 ETF'], ['news', 'Actualités'], ['lazy-portfolios', 'Portefeuilles types']]
+  : [['analysis', 'Analysis'], ['fundamentals', 'Fundamentals'], ['indices', 'Indices'], ['asset-classes', 'Asset classes'], ['themes', 'Themes'], ['top-etfs', 'Top 20 ETFs'], ['news', 'News'], ['lazy-portfolios', 'Model portfolios']]
+ ).map(([id, label]) => (
+  <a key={id} href={`#${id}`} onClick={(e) => { const el = document.getElementById(id); if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }}
+   className="shrink-0 px-3 h-8 inline-flex items-center rounded-full text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">{label}</a>
+ ))}
+ </>
+ )}
  </div>
  </div>
 
@@ -1563,7 +1541,7 @@ const isEuropeanMarketOpen = () => {
   {marketPageUrl === 'stocks' && (
   <div className="flex-1 min-h-0 overflow-auto">
   {/* STOCK SEARCH BAR */}
-  <div ref={searchSectionRef} className="w-full px-4 md:px-8 mt-4 mb-8 max-w-[2400px] xl:px-12 mx-auto flex justify-start relative z-50">
+  <div id="analysis" ref={searchSectionRef} className="scroll-mt-36 w-full px-4 md:px-8 mt-4 mb-8 max-w-[2400px] xl:px-12 mx-auto flex justify-start relative z-50">
     <StockSearchBar
       value={searchInput}
       onChange={setSearchInput}
@@ -1890,8 +1868,10 @@ const isEuropeanMarketOpen = () => {
  </div>
  </div>
 
- {/* In-depth financial analysis (real data only) */}
- <div className="mt-10">
+ {/* Fundamental analysis (Pro): ratios, peers, consensus and financial statements */}
+ <div id="fundamentals" className="mt-10 scroll-mt-36">
+ <ProGate language={language} symbol={quote.symbol}>
+ <div>
  <StockAnalysis
  quote={quote}
  profile={profile}
@@ -1920,6 +1900,8 @@ const isEuropeanMarketOpen = () => {
  language={language}
  />
  </div>
+ </ProGate>
+ </div>
 
 {/* WATCHLIST COMPARISON SECTION */}
  <div ref={comparisonSectionRef} className="mt-6 space-y-3 border-t border-border/80 pt-4">
@@ -1933,7 +1915,7 @@ const isEuropeanMarketOpen = () => {
 
  <div className="flex flex-col gap-4">
  <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
- <div className="xl:col-span-7 flex flex-col gap-0">
+ <div className="xl:col-span-12 flex flex-col gap-0">
  <div className="bg-surface border border-border rounded-2xl p-2.5 pb-1 flex flex-col h-[320px] xl:h-[400px] relative shadow-sm group transition-all duration-300 hover:shadow-md hover:border-pv-blue/20">
  <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-b from-transparent to-pv-blue/[0.01] pointer-events-none rounded-2xl"></div>
  <div className="flex bg-slate-100 p-1 rounded-lg w-fit mb-2 mt-1 ml-1 z-10 relative shadow-inner">
@@ -2078,324 +2060,9 @@ const isEuropeanMarketOpen = () => {
 </div>
 </div> {/* closes xl:col-span-7 */}
 
-{/* Market News Column */}
-  <div className="xl:col-span-5 flex flex-col items-stretch h-[600px] xl:h-[850px] max-h-[850px]">
- <div className="bg-gradient-to-b from-white to-slate-50/50 border flex flex-col border-border/80 rounded-[24px] p-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full overflow-hidden relative group/news transition-all duration-300">
- {/* Decorative glow */}
- <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-pv-blue/[0.04] blur-[80px] rounded-full pointer-events-none"></div>
-
- <div className="p-8 pb-6 border-b border-border/60 relative z-10 flex-shrink-0 flex justify-between items-center bg-white/80 backdrop-blur-xl">
- <div>
- <h3 className="text-xl font-bold text-text tracking-tight flex items-center gap-3">
- Market News
- </h3>
- <p className="text-text text-sm font-bold mt-1">Global Financial Insights</p>
- </div>
- <div className="flex items-center gap-2">
- <span className="relative flex h-2 w-2">
- <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pv-blue opacity-75"></span>
- <span className="relative inline-flex rounded-full h-2 w-2 bg-pv-blue"></span>
- </span>
- <span className="text-sm font-medium text-pv-blue">Live</span>
- </div>
- </div>
-
- <div className="flex-1 overflow-y-auto px-4 py-2 relative z-10 custom-scrollbar">
- {marketNewsLoading ? (
- <div className="absolute inset-0 flex items-center justify-center text-text font-mono text-sm font-bold animate-pulse">
-  
- </div>
- ) : (
- <div className="space-y-0">
- {marketNews.length === 0 && (
- <div className="py-10 text-center text-sm font-medium text-text-3">News unavailable right now.</div>
- )}
- {marketNews.map((n, idx) => (
- <motion.a
- key={n.id || idx}
- href={n.url || '#'}
- target="_blank"
- rel="noopener noreferrer"
- initial={{ opacity: 0, y: 16 }}
- whileInView={{ opacity: 1, y: 0 }}
- viewport={{ once: true }}
- transition={{ duration: 0.4, delay: Math.min(idx, 6) * 0.05 }}
- className={"group border-b border-border/40 last:border-0 hover:bg-black/[0.02] transition-colors px-3 rounded-2xl " + (idx === 0 && n.image ? "block py-4" : "flex gap-4 items-start py-4")}
- >
- {n.image && (
- <span className={"block overflow-hidden rounded-xl bg-surface-3 shrink-0 " + (idx === 0 ? "w-full aspect-[16/8] mb-3" : "w-28 h-20")}>
- <img src={n.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
- </span>
- )}
- <span className="flex flex-col gap-2 min-w-0">
- <h4 className={(idx === 0 && n.image ? "text-lg " : "text-[15px] ") + "leading-snug font-semibold text-text group-hover:text-pv-blue transition-colors"}>
- {n.headline || n.summary}
- </h4>
- <span className="flex items-center text-xs font-semibold gap-2 text-text-3">
- <span className="text-pv-blue">{n.source || 'Yahoo Finance'}</span>
- <span>·</span>
- <span>{n.date || ''}</span>
- </span>
- </span>
- </motion.a>
- ))}
- </div>
- )}
- </div>
-  </div>
  </div>
  </div>
  </div>
- </div>
-
- {/* TABLES SECTION: ASSET CLASSES & ETFs */}
- <div ref={macroTrendsSectionRef} className="mt-8 mb-8 w-full grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
- 
- {/* ASSET CLASSES COLUMN (LEFT) */}
- <div className="xl:col-span-7 flex flex-col gap-12 w-full">
- 
- {/* ASSET CLASSES TABLE */}
- <div className="w-full">
- <div className="mb-6 flex flex-col border-b border-border/80 pb-4 gap-2">
- <div className="flex items-center gap-2">
- <BarChart2 size={24} className="text-pv-blue" />
- <h3 className="text-2xl font-bold text-text tracking-tight uppercase">
- ASSET CLASSES - USD CURRENCY
- </h3>
- </div>
- <p className="text-sm font-semibold text-pv-blue tracking-wide uppercase mt-1">
- Return - Risk - Drawdown
- </p>
- </div>
- 
- <div className="flex flex-col gap-3 mb-6 text-sm text-text leading-relaxed bg-[#f8f9fa] p-4 rounded-[1.5rem] border border-border/60">
- <p className="font-bold text-text flex items-center gap-2">
- <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
- Last Update as of 30 June 2026
- </p>
- </div>
-
- <div className="w-full bg-white rounded-[2rem] border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
- <div className="overflow-x-auto scrollbar-thin">
- <table className="w-full min-w-[1000px] text-left border-none relative">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-xs font-semibold text-text uppercase tracking-normal md:tracking-wider">
- <tr>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-left whitespace-nowrap">Ticker</th>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-left whitespace-nowrap ">USD • ETF</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">1M</th>
-  <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">6M</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">1Y</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">5Y</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">10Y</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">20Y</th>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-right whitespace-nowrap">30Y▾</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-border/40 text-xs md:text-sm">
- {assetClasses.map((item, idx) => {
- const checkInf = (val: number, target: number) => val < target;
- return (
- <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-bold text-text bg-white/50 transition-colors flex items-center gap-1 md:gap-1.5">
- {item.ticker}
- </td>
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-semibold text-text whitespace-nowrap" title={item.asset}>{item.asset}</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.m1 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m1 >= 0 ? "+" : ""}{item.m1 != null ? item.m1.toFixed(2) : "-"}%</td>
-  <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.m6 >= 0 ? "text-emerald-600" : "text-rose-600")}>{item.m6 >= 0 ? "+" : ""}{item.m6 != null ? item.m6.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-semibold whitespace-nowrap", checkInf(item.y1, 3.69) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y1 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y1 != null ? item.y1.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-semibold whitespace-nowrap", checkInf(item.y5, 4.37) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y5 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y5 != null ? item.y5.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-semibold whitespace-nowrap", checkInf(item.y10, 3.33) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y10 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y10 != null ? item.y10.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-semibold whitespace-nowrap", checkInf(item.y20, 2.90) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y20 >= 0 ? "text-emerald-600" : "text-rose-600"))}>{item.y20 != null ? item.y20.toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0.5 md:py-2 md:px-2.5 text-right font-bold whitespace-nowrap bg-emerald-50/10", checkInf(item.y30, 2.55) ? "text-rose-700 bg-rose-50/50 px-1 rounded border border-rose-100" : (item.y30 >= 0 ? "text-emerald-700" : "text-rose-700"))}>{item.y30 != null ? item.y30.toFixed(2) : "-"}%</td>
- </tr>
- )
- })}
- </tbody>
- </table>
- </div>
- </div>
- </div>
- 
- {/* INDICES TABLE */}
- <div className="w-full">
- <div className="mb-6 flex flex-col border-b border-border/80 pb-4">
- <h3 className="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
- <BarChart2 size={20} className="text-pv-blue" />
- Major Global Indices
- </h3>
- <p className="text-sm text-text/60 mt-1">
- Track the most referenced equity benchmark indices reflecting global macroeconomic stability and corporate health. Performance figures are native to local currencies.
- </p>
- </div>
- 
- <div className="w-full bg-white rounded-[2rem] border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
- <div className="overflow-x-auto scrollbar-thin">
- <table className="w-full min-w-[800px] text-left border-none relative">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-xs font-semibold text-text uppercase tracking-normal md:tracking-wider">
- <tr>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-left whitespace-nowrap">Ticker</th>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-left whitespace-nowrap ">Index ▾</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">1M</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">6M</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">1Y</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">5Y</th>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-right whitespace-nowrap">10Y</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-border/40 text-xs md:text-sm">
- {majorIndices.map((idxItem, idx) => {
- const live = liveIndices[idxItem.ticker];
- const cell = (v: number | null | undefined, last = false) => (
- <td className={cn(last ? "py-0 px-0.5 md:py-2 md:px-2.5" : "py-0 px-0 md:py-2 md:px-1.5", "text-right font-medium whitespace-nowrap", v == null ? "text-text-3" : v >= 0 ? "text-emerald-600" : "text-rose-600")}>
- {v == null ? "-" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`}
- </td>
- );
- return (
- <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-bold text-text bg-white/50 transition-colors flex items-center gap-1 md:gap-1.5">
- {idxItem.ticker}
- </td>
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-medium text-text whitespace-nowrap" title={idxItem.asset}>{idxItem.asset}</td>
- {cell(live?.m1)}
- {cell(live?.m6)}
- {cell(live?.y1)}
- {cell(live?.y5)}
- {cell(live?.y10, true)}
- </tr>
- )
- })}
- </tbody>
- </table>
- </div>
- </div>
- </div>
-
- {/* MEGATRENDS TABLE */}
- <div className="w-full">
- <div className="mb-6 flex flex-col border-b border-border/80 pb-4 gap-2">
- <div className="flex items-center gap-2">
- <BarChart2 size={24} className="text-[#635BFF]" />
- <h3 className="text-2xl font-bold text-text tracking-tight uppercase">
- MEGATRENDS - USD CURRENCY
- </h3>
- </div>
- <p className="text-sm font-semibold text-pv-blue tracking-wide uppercase mt-1">
- Return - Risk - Drawdown
- </p>
- </div>
-
- <div className="flex flex-col gap-2 mb-6 text-sm text-text leading-relaxed bg-[#f8f9fa] p-4 rounded-[1.5rem] border border-border/60">
- <div className="flex flex-wrap items-center justify-between gap-3">
- <p className="font-bold text-text flex items-center gap-2">
- <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
- Last Update as of 30 June 2026
- </p>
- <div className="text-xs font-semibold text-[#635BFF] flex items-center gap-1 md:gap-1.5">
- <span>Filters:</span>
- <span className="bg-[#635BFF]/10 text-[#635BFF] px-2.5 py-0.5 rounded-md">Return (%) - Jun 30, 2026</span>
- </div>
- </div>
- </div>
-
- <div className="w-full bg-white rounded-[2rem] border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
- <div className="overflow-x-auto scrollbar-thin">
- <table className="w-full min-w-[800px] text-left border-none relative">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-xs font-semibold text-text uppercase tracking-normal md:tracking-wider">
- <tr>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-left whitespace-nowrap">Ticker</th>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-left whitespace-nowrap ">USD • ETF</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">1M</th>
-  <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">6M</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">1Y▾</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">5Y</th>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-right whitespace-nowrap">10Y</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-border/40 text-xs md:text-sm">
- {megatrends.map((item, idx) => {
- return (
- <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-bold text-text bg-white/50 transition-colors">
- {item.ticker}
- </td>
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-semibold text-text whitespace-nowrap" title={item.asset}>
- {item.asset}
- </td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.m1 >= 0 ? "text-emerald-600" : "text-rose-600")}>
- {item.m1 >= 0 ? "+" : ""}{item.m1 != null ? item.m1.toFixed(2) : "-"}%
- </td>
-  <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.m6 >= 0 ? "text-emerald-600" : "text-rose-600")}>
- {item.m6 >= 0 ? "+" : ""}{item.m6 != null ? item.m6.toFixed(2) : "-"}%
- </td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-bold whitespace-nowrap bg-emerald-50/10", item.y1 >= 0 ? "text-emerald-600" : "text-rose-600")}>
- {item.y1 >= 0 ? "+" : ""}{item.y1 != null ? item.y1.toFixed(2) : "-"}%
- </td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", item.y5 >= 0 ? "text-[#635BFF]" : "text-rose-600")}>
- {item.y5 != null ? `${item.y5 >= 0 ? "+" : ""}${item.y5 != null ? item.y5.toFixed(2) : "-"}%` : "-"}
- </td>
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 text-right font-medium whitespace-nowrap text-text/80">
- {item.y10 != null ? `${item.y10 >= 0 ? "+" : ""}${item.y10 != null ? item.y10.toFixed(2) : "-"}%` : "-"}
- </td>
- </tr>
- );
- })}
- </tbody>
- </table>
- </div>
- </div>
- </div>
- 
- </div>
- 
- {/* ETFs COLUMN (RIGHT) */}
- <div className="xl:col-span-5 flex flex-col gap-8 w-full">
- 
- {/* BEST ETFs TABLE */}
- <div className="w-full">
- <div className="mb-6 flex flex-col border-b border-border/80 pb-4">
- <h3 className="text-xl font-semibold text-text tracking-tight flex items-center gap-2">
- <BarChart2 size={20} className="text-pv-blue" />
- BEST 100 ETF RETURNS - LAST 12 MONTHS
- </h3>
- <p className="text-sm text-text/60 mt-1">
- Top performing global ETFs over the trailing 12 months, sorted by highest 1-Year return. Track leading thematic indexes. Last Update: 30 June 2026.
- </p>
- </div>
- 
- <div className="w-full bg-white rounded-[2rem] border border-border/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
- <div className="overflow-x-auto scrollbar-thin">
- <table className="w-full min-w-[550px] text-left border-none relative">
- <thead className="bg-[#f8f9fa] border-b border-border/80 text-xs font-semibold text-text uppercase tracking-normal md:tracking-wider">
- <tr>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-left whitespace-nowrap">Ticker</th>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-left ">ETF</th>
- <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">1M</th>
-  <th className="py-0 px-0 md:py-2.5 md:px-1.5 text-right whitespace-nowrap">6M</th>
- <th className="py-0 px-0.5 md:py-2.5 md:px-2.5 text-right whitespace-nowrap text-text">1Y ▾</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-border/40 text-xs md:text-sm">
- {topETFs.map((etf, idx) => (
- <tr key={idx} className="hover:bg-pv-blue/5 transition-colors group">
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-bold text-text bg-white/50 transition-colors flex items-center gap-1 md:gap-1.5">
- {etf.symbol}
- </td>
- <td className="py-0 px-0.5 md:py-2 md:px-2.5 font-medium text-text whitespace-nowrap" title={etf.name}>{etf.name}</td>
- <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", parseFloat(etf.m1) >= 0 ? "text-emerald-600" : "text-rose-600")}>{parseFloat(etf.m1) >= 0 ? "+" : ""}{etf.m1 != null ? parseFloat(etf.m1).toFixed(2) : "-"}%</td>
-  <td className={cn("py-0 px-0 md:py-2 md:px-1.5 text-right font-medium whitespace-nowrap", parseFloat(etf.m6) >= 0 ? "text-emerald-600" : "text-rose-600")}>{parseFloat(etf.m6) >= 0 ? "+" : ""}{etf.m6 != null ? parseFloat(etf.m6).toFixed(2) : "-"}%</td>
- <td className={cn("py-0 px-0.5 md:py-2 md:px-2.5 text-right font-bold whitespace-nowrap bg-emerald-50/10", parseFloat(etf.y1) >= 0 ? "text-emerald-700" : "text-rose-700")}>{etf.y1 != null ? parseFloat(etf.y1).toFixed(2) : "-"}%</td>
- </tr>
- ))}
- </tbody>
- </table>
- </div>
- </div>
- </div>
- 
- </div>
- 
- </div>
-
 
 
  </motion.div>
@@ -2425,8 +2092,15 @@ const isEuropeanMarketOpen = () => {
  </div>
  )}
 
- </div>
-  </MobileZoomWrapper>
+  {/* Market overview: indices, asset classes, themes, top 20 ETFs and news (live data, shown even if the stock lookup fails) */}
+  {marketPageUrl === 'stocks' && (
+  <MarketOverview
+   language={language}
+   news={marketNews}
+   newsLoading={marketNewsLoading}
+   onSelect={(sym) => { setSelectedLazyPortfolio(null); setSearchInput(sym); fetchStockData(sym); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+  />
+  )}
   {/* Lazy portfolios: at the bottom of the stocks view only, not under the ETF overview */}
   {marketPageUrl === 'stocks' && (
   <section className="w-full bg-white border-t border-border mt-10 py-14">
@@ -2435,6 +2109,8 @@ const isEuropeanMarketOpen = () => {
    </div>
   </section>
   )}
+ </div>
+  </MobileZoomWrapper>
   {/* Scrolling market quotes + exchange hours: only on the Market page, at the bottom */}
   <div className="h-14" aria-hidden />
   <MarketTickerBar
