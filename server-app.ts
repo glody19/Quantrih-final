@@ -8,6 +8,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { cacheService } from "./src/services/cacheService.js";
 import db, { initDb, getLazyPortfolios, getPortfolioPerfs } from "./src/backend/db.js";
+import { registerStripeWebhook, registerBillingRoutes } from "./src/backend/billing.js";
 
 const yfClass = (yahooFinance as any).default || yahooFinance;
 const yf = new yfClass({
@@ -143,40 +144,8 @@ export function createApp() {
   // Apply rate limiter to all API routes
   app.use("/api/", apiLimiter);
 
-  // Stripe Webhook MUST be placed BEFORE express.json() to preserve raw body
-  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    
-    if (!stripeKey || !endpointSecret) {
-      return res.status(500).send("Stripe config missing");
-    }
-
-    try {
-      const Stripe = (await import('stripe')).default;
-      const stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' as any });
-      const sig = req.headers['stripe-signature'];
-      
-      let event;
-      try {
-        event = stripe.webhooks.constructEvent(req.body, sig as string, endpointSecret);
-      } catch (err: any) {
-        console.error("Webhook signature verification failed:", err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-      }
-
-      // Handle the event
-      if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        console.log(`Payment successful for session ${session.id}`);
-        // Optionally update database
-      }
-      res.json({ received: true });
-    } catch (e: any) {
-      console.error("Stripe Webhook error:", e);
-      res.status(500).send("Internal Server Error");
-    }
-  });
+  // Stripe webhook MUST be registered BEFORE express.json() to keep the raw body for the signature check.
+  registerStripeWebhook(app);
 
   app.use('/api/', express.json());
 
@@ -381,45 +350,8 @@ export function createApp() {
     res.json([]);
   });
 
-  // STRIPE CHECKOUT FOR DONATIONS
-  app.post('/api/stripe/create-checkout-session', async (req, res) => {
-    const { amount, currency = 'eur' } = req.body;
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    
-    if (!stripeKey) {
-      return res.status(500).json({ error: "Stripe key is not configured on the server." });
-    }
-
-    try {
-      const Stripe = (await import('stripe')).default;
-      const stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' as any });
-      
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price_data: {
-              currency: currency,
-              product_data: {
-                name: 'Quantrih Support Contribution',
-                description: 'Thank you for supporting the development of institutional-grade backtesting tools.',
-              },
-              unit_amount: Math.round(amount * 100), // amount in cents
-            },
-            quantity: 1,
-          },
-        ],
-        mode: 'payment',
-        success_url: `${process.env.APP_URL || 'http://localhost:3000'}?payment=success`,
-        cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}?payment=cancelled`,
-      });
-
-      res.json({ id: session.id, url: session.url });
-    } catch (e: any) {
-      console.error("Stripe error:", e);
-      res.status(500).json({ error: e.message });
-    }
-  });
+  // Subscriptions (Premium and Pro): checkout, customer portal, cancel and resume.
+  registerBillingRoutes(app);
 
   // === EXISTING ROUTES ===
 
@@ -1081,6 +1013,69 @@ export function createApp() {
       res.json(out);
     } catch {
       res.status(500).json({ error: "Failed to compute performance" });
+    }
+  });
+
+  // Trailing total returns for the Market page tables, refreshed every hour:
+  // 1M, 3M, 6M, YTD and 1Y from daily adjusted closes (calendar offsets), 3Y, 5Y and 10Y annualised
+  // from month-end adjusted closes. Each symbol carries the date of its last close.
+  app.get("/api/stock/returns", async (req, res) => {
+    try {
+      const symbols = String(req.query.symbols || "")
+        .split(",").map((x) => x.trim().toUpperCase())
+        .filter((x) => /^[A-Z0-9.\-^=]{1,15}$/.test(x))
+        .slice(0, 40);
+      if (symbols.length === 0) return res.json({});
+      const cacheKey = symbols.slice().sort().join(",");
+      const cached = getCached('ret1', cacheKey, 60 * 60_000);
+      if (cached) return res.json(cached);
+      const today = new Date();
+      const iso = (d: Date) => d.toISOString().split("T")[0];
+      const dailyFrom = new Date(today); dailyFrom.setUTCMonth(dailyFrom.getUTCMonth() - 13);
+      const monthlyFrom = new Date(today); monthlyFrom.setUTCFullYear(monthlyFrom.getUTCFullYear() - 10); monthlyFrom.setUTCMonth(monthlyFrom.getUTCMonth() - 2);
+      type Row = { m1: number | null; m3: number | null; m6: number | null; ytd: number | null; y1: number | null; y3: number | null; y5: number | null; y10: number | null; last: number; asOf: string };
+      const out: Record<string, Row | null> = {};
+      const series = (chart: any) => (chart?.quotes || [])
+        .filter((x: any) => x && x.date && (typeof x.adjclose === "number" || typeof x.close === "number"))
+        .map((x: any) => ({ t: new Date(x.date).getTime(), p: typeof x.adjclose === "number" ? x.adjclose : x.close }))
+        .filter((x: any) => x.p > 0)
+        .sort((a: any, b: any) => a.t - b.t);
+      await Promise.all(symbols.map(async (sym) => {
+        try {
+          const [daily, monthly] = await Promise.all([
+            safeYfChart(sym, { period1: iso(dailyFrom), period2: iso(today), interval: "1d" }),
+            safeYfChart(sym, { period1: iso(monthlyFrom), period2: iso(today), interval: "1mo" }),
+          ]);
+          const d = series(daily);
+          if (d.length < 2) { out[sym] = null; return; }
+          const last = d[d.length - 1];
+          // last close on or before a date
+          const at = (t: number) => { let v: number | null = null; for (const x of d) { if (x.t <= t) v = x.p; else break; } return v; };
+          const back = (months: number) => { const x = new Date(last.t); x.setUTCMonth(x.getUTCMonth() - months); return x.getTime(); };
+          const ret = (b: number | null) => (b ? (last.p / b - 1) * 100 : null);
+          const firstT = d[0].t;
+          const safe = (months: number) => (back(months) >= firstT ? ret(at(back(months))) : null);
+          const yearStart = Date.UTC(new Date(last.t).getUTCFullYear(), 0, 1);
+          // one point per calendar month (the latest), so "36 months back" is exact
+          const byMonth = new Map<string, number>();
+          series(monthly).forEach((x: any) => byMonth.set(new Date(x.t).toISOString().slice(0, 7), x.p));
+          const m = Array.from(byMonth.entries()).sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
+          const ann = (months: number) => (m.length > months ? (Math.pow(last.p / m[m.length - 1 - months], 12 / months) - 1) * 100 : null);
+          out[sym] = {
+            m1: safe(1), m3: safe(3), m6: safe(6), y1: safe(12),
+            ytd: yearStart > firstT ? ret(at(yearStart - 1)) : null,
+            y3: ann(36), y5: ann(60), y10: ann(120), last: last.p,
+            asOf: iso(new Date(last.t)),
+          };
+        } catch {
+          out[sym] = null;
+        }
+      }));
+      if (Object.values(out).some(Boolean)) setCached('ret1', cacheKey, out);
+      res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+      res.json(out);
+    } catch {
+      res.status(500).json({ error: "Failed to compute returns" });
     }
   });
 

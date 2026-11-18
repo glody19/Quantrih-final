@@ -22,22 +22,22 @@ const POPULAR = [
 
 /** Analyse: fundamental analysis of a company. Price and key figures for everyone, full statements with Pro. */
 export default function Analysis() {
-  const { plan } = useAuth();
+  const { limits } = useAuth();
   return (
     <Screen title="Analyse" subtitle="Analyse fondamentale des sociétés cotées">
       <Pressable onPress={() => router.push("/search")} style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 9, paddingVertical: 10, paddingHorizontal: 12 }} accessibilityRole="search">
         <Text style={[font.small, { color: colors.text4 }]}>⌕  Rechercher une société</Text>
       </Pressable>
 
-      {plan !== "pro" ? (
+      {limits.fundamentals === "none" ? (
         <Card style={{ marginTop: 14 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <Text style={{ fontSize: 15, fontWeight: "600", color: colors.text }}>Analyse fondamentale complète</Text>
-            <ProBadge />
+            <ProBadge label="PREMIUM" />
           </View>
-          <Text style={[font.small, { marginTop: 6, lineHeight: 18 }]}>Valorisation, marges, croissance, dette, flux de trésorerie et 5 ans de comptes. Le cours et les chiffres clés restent gratuits.</Text>
+          <Text style={[font.small, { marginTop: 6, lineHeight: 18 }]}>Marges, rentabilité, dette, croissance et 5 ans de comptes avec Premium ; objectifs des analystes en plus avec Pro. Le cours et les chiffres clés restent gratuits.</Text>
           <Pressable onPress={() => router.push("/subscribe")} style={{ marginTop: 10 }}>
-            <Text style={{ color: colors.navy, fontWeight: "600" }}>Voir la formule Pro</Text>
+            <Text style={{ color: colors.navy, fontWeight: "600" }}>Voir les formules</Text>
           </Pressable>
         </Card>
       ) : null}

@@ -49,7 +49,7 @@ Les achats intégrés (RevenueCat) ont besoin d'une *development build* :
    `premium` et `pro` ; offre `default`.
 3. Mettre les clés publiques dans `app.json` (`revenueCatIosKey`, `revenueCatAndroidKey`).
 4. Webhook RevenueCat vers le serveur du site, qui écrit `users/{uid}/profiles/subscription`
-   (`{ plan: "premium" | "pro" }`) avec l'Admin SDK, comme le webhook Stripe. L'app ne l'écrit jamais.
+   (`{ plan: "premium" | "pro" }`) avec l'Admin SDK, comme le webhook Stripe (`src/backend/billing.ts`). L'app ne l'écrit jamais.
 
 Tant que les clés sont vides, le bouton d'abonnement ouvre `quantrih.com/pricing` : un abonnement
 pris sur le site est reconnu dans l'app avec le même compte.

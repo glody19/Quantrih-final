@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 
 /**
  * Subscription plans and their limits.
  *
- * There is no payment system yet: limits are applied in the browser only. Once Stripe is wired,
- * the plan must be written server side (webhook + Admin SDK) to users/{uid}/profiles/subscription
- * and the Firestore rules must forbid the client from writing that document.
+ * The plan is written server side by the Stripe webhook (src/backend/billing.ts, Admin SDK) to
+ * users/{uid}/profiles/subscription. The Firestore rules forbid the browser from writing it.
+ * Limits are applied in the browser.
  */
 export * from "./planLimits";
 import type { PlanId } from "./planLimits";
@@ -34,12 +34,37 @@ export function setPlanPreview(p: PlanId | null) {
   window.dispatchEvent(new CustomEvent("quantrih-plan"));
 }
 
-let cache: { uid: string; plan: PlanId } | null = null;
+/** What the Stripe webhook stores in users/{uid}/profiles/subscription. */
+export interface SubscriptionInfo {
+  plan: PlanId;
+  status: string | null;
+  interval: "month" | "year" | null;
+  currentPeriodEnd: number | null;
+  cancelAtPeriodEnd: boolean;
+  hasCustomer: boolean;
+}
 
-/** Current plan of the signed-in member (free for visitors). */
+const EMPTY_SUB: SubscriptionInfo = { plan: "free", status: null, interval: null, currentPeriodEnd: null, cancelAtPeriodEnd: false, hasCustomer: false };
+
+function parseSub(data: any): SubscriptionInfo {
+  if (!data) return EMPTY_SUB;
+  const p = data.plan;
+  return {
+    plan: p === "premium" || p === "pro" ? p : "free",
+    status: typeof data.status === "string" ? data.status : null,
+    interval: data.interval === "month" || data.interval === "year" ? data.interval : null,
+    currentPeriodEnd: typeof data.currentPeriodEnd === "number" ? data.currentPeriodEnd : null,
+    cancelAtPeriodEnd: !!data.cancelAtPeriodEnd,
+    hasCustomer: !!data.customerId,
+  };
+}
+
+let cache: { uid: string; sub: SubscriptionInfo } | null = null;
+
+/** Current plan of the signed-in member (free for visitors). Updates live when Stripe confirms a payment. */
 export function usePlan() {
   const { user, isAdmin } = useAuth();
-  const [stored, setStored] = useState<PlanId>(() => (user && cache?.uid === user.uid ? cache.plan : "free"));
+  const [sub, setSub] = useState<SubscriptionInfo>(() => (user && cache?.uid === user.uid ? cache.sub : EMPTY_SUB));
   const [preview, setPreview] = useState<PlanId | null>(() => readPlanPreview());
   const [loading, setLoading] = useState(!!user && cache?.uid !== user?.uid);
 
@@ -50,24 +75,24 @@ export function usePlan() {
   }, []);
 
   useEffect(() => {
-    if (!user) { setStored("free"); setLoading(false); return; }
-    if (cache?.uid === user.uid) { setStored(cache.plan); setLoading(false); return; }
-    let live = true;
-    getDoc(doc(db, `users/${user.uid}/profiles/subscription`))
-      .then((d) => {
-        const p = d.exists() ? (d.data() as any).plan : null;
-        const plan: PlanId = p === "premium" || p === "pro" ? p : "free";
-        cache = { uid: user.uid, plan };
-        if (live) setStored(plan);
-      })
-      .catch(() => { if (live) setStored("free"); })
-      .finally(() => { if (live) setLoading(false); });
-    return () => { live = false; };
+    if (!user) { setSub(EMPTY_SUB); setLoading(false); return; }
+    if (cache?.uid === user.uid) { setSub(cache.sub); setLoading(false); }
+    const unsub = onSnapshot(
+      doc(db, `users/${user.uid}/profiles/subscription`),
+      (d) => {
+        const next = parseSub(d.exists() ? d.data() : null);
+        cache = { uid: user.uid, sub: next };
+        setSub(next);
+        setLoading(false);
+      },
+      () => { setSub(EMPTY_SUB); setLoading(false); },
+    );
+    return () => unsub();
   }, [user]);
 
   // Admins see everything as Pro unless they preview another plan.
-  const plan: PlanId = isAdmin ? (preview || "pro") : stored;
-  return { plan, limits: PLAN_LIMITS[plan], loading, isAdmin, signedIn: !!user };
+  const plan: PlanId = isAdmin ? (preview || "pro") : sub.plan;
+  return { plan, limits: PLAN_LIMITS[plan], loading, isAdmin, signedIn: !!user, subscription: sub };
 }
 
 /* ── Monthly PDF counter ─────────────────────────────────────────────── */

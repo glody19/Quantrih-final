@@ -145,7 +145,7 @@ function AppContent() {
 
   const handleNavigate = (page: string) => {
     if (page === "donate") {
-      window.open("https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00", "_blank", "noopener,noreferrer");
+      navigate("/pricing");
       return;
     }
     if (page === "home" || page === "") {
@@ -179,7 +179,12 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home onGoPage={handleNavigate} />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
-          <Route path="/auth" element={<Auth onBack={() => handleNavigate("home")} />} />
+          <Route path="/auth" element={<Auth onBack={() => {
+            // Return to the page that asked for a sign-in (e.g. pricing before a checkout).
+            let next = "";
+            try { next = sessionStorage.getItem("quantrih_after_auth") || ""; sessionStorage.removeItem("quantrih_after_auth"); } catch { /* storage unavailable */ }
+            if (next.startsWith("/")) navigate(next); else handleNavigate("home");
+          }} />} />
           <Route path="/profile" element={<Profile onBack={() => handleNavigate("home")} />} />
           <Route path="/investor-profile" element={<InvestorProfilePage onBack={() => handleNavigate("home")} />} />
           <Route path="/asset-allocation" element={<AssetAllocations baseCcy={baseCcy} onNavigate={handleNavigate} />} />
@@ -199,7 +204,7 @@ function AppContent() {
           <Route path="/lazy-portfolios" element={<Navigate to="/market#lazy-portfolios" replace />} />
           <Route path="/virtual-portfolio" element={<VirtualPortfolio />} />
           <Route path="/education" element={<Education />} />
-          <Route path="/donate" element={<Navigate to="/" replace />} />
+          <Route path="/donate" element={<Navigate to="/pricing" replace />} />
           <Route path="/about" element={<About />} />
           <Route path="/pricing" element={<Pricing onNavigate={handleNavigate} />} />
           <Route path="/tarifs" element={<Navigate to="/pricing" replace />} />

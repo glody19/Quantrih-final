@@ -1,4 +1,4 @@
-import { RunButton } from "../ui/AllocationInputs";
+import { RunButton, ResultsPlaceholder } from "../ui/AllocationInputs";
 import React, { useState } from "react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
@@ -112,27 +112,27 @@ export function RelativeStrength() {
                 <input
                   type="text"
                   defaultValue="SPY"
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-sm font-bold transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                 />
                 <input
                   type="text"
                   defaultValue="QQQ"
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-sm font-bold transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                 />
                 <input
                   type="text"
                   defaultValue="TLT"
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-sm font-bold transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                 />
                 <input
                   type="text"
                   defaultValue="GLD"
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-sm font-bold transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                 />
                 <input
                   type="text"
                   defaultValue="EFA"
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-sm font-bold transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
                 />
                 <button className="w-full py-2 border border-dashed border-border text-sm font-semibold text-text rounded-[1.5rem] hover:text-text transition-colors">
                   + Add Asset
@@ -149,7 +149,7 @@ export function RelativeStrength() {
                   type="number"
                   value={lookback}
                   onChange={(e) => setLookback(parseInt(e.target.value) || 6)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
                 />
                 
 </div>
@@ -163,7 +163,7 @@ export function RelativeStrength() {
                   type="number"
                   value={topN}
                   onChange={(e) => setTopN(parseInt(e.target.value) || 2)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold outline-none focus:border-text transition-all num"
                 />
                 
 </div>
@@ -354,13 +354,7 @@ export function RelativeStrength() {
             
 </div>
         ) : (
-          <div className="lg:col-span-3 h-full min-h-[500px] border border-border/30 rounded-[2rem] relative overflow-hidden bg-surface-2/20">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale">  
-</div>
-            <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90">  
-</div>
-            
-</div>
+          <ResultsPlaceholder className="lg:col-span-3" />
         )}
         
 </div>

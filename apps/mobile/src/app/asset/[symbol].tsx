@@ -21,8 +21,10 @@ const n = (r: Ratios | null, k: string) => (r && typeof r[k] === "number" ? (r[k
 
 export default function Asset() {
   const { symbol, name } = useLocalSearchParams<{ symbol: string; name?: string }>();
-  const { plan } = useAuth();
-  const pro = plan === "pro";
+  const { limits } = useAuth();
+  // Premium: key ratios and statements. Pro: everything, including analyst targets.
+  const pro = limits.fundamentals !== "none";
+  const full = limits.fundamentals === "full";
   const [q, setQ] = useState<AssetQuote | null>(null);
   const [range, setRange] = useState<HistoryRange>("1y");
   const [hist, setHist] = useState<{ date: string; close: number }[] | null>(null);
@@ -116,13 +118,13 @@ export default function Asset() {
 
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 22 }}>
             <Text style={font.h2}>Analyse fondamentale</Text>
-            <ProBadge />
+            <ProBadge label="PREMIUM" />
           </View>
 
           {!pro ? (
             <Card style={{ marginTop: 10 }}>
-              <Text style={[font.small, { lineHeight: 18 }]}>Marges, rentabilité, dette, croissance et 5 ans de chiffre d'affaires et de bénéfices sont réservés à la formule Pro.</Text>
-              <Button title="Passer à Pro" onPress={() => router.push("/subscribe")} style={{ marginTop: 12 }} />
+              <Text style={[font.small, { lineHeight: 18 }]}>Marges, rentabilité, dette, croissance et 5 ans de chiffre d'affaires et de bénéfices sont inclus dans Premium et Pro.</Text>
+              <Button title="Voir les formules" onPress={() => router.push("/subscribe")} style={{ marginTop: 12 }} />
             </Card>
           ) : (
             <>
@@ -146,7 +148,7 @@ export default function Asset() {
                 </>
               ) : <Notice text="Comptes annuels indisponibles pour ce titre." />}
 
-              {n(ratios, "targetMeanPrice") != null ? (
+              {full && n(ratios, "targetMeanPrice") != null ? (
                 <>
                   <Label>Objectif moyen des analystes</Label>
                   <Text style={[font.body, font.num]}>

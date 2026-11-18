@@ -22,12 +22,14 @@ export interface PlanLimits {
   csv: boolean;
   /** Notes and tags on saved analyses. */
   notes: boolean;
+  /** Fundamental analysis: none, core (statements and key ratios) or full (history, valuation, peers). */
+  fundamentals: "none" | "core" | "full";
 }
 
 export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
-  free: { maxPortfolios: 3, maxYears: 20, pdfPerMonth: 1, branding: false, whiteLabel: false, maxSaved: 5, compareMax: 2, csv: false, notes: false },
-  premium: { maxPortfolios: 6, maxYears: Infinity, pdfPerMonth: 10, branding: true, whiteLabel: false, maxSaved: 100, compareMax: 4, csv: true, notes: true },
-  pro: { maxPortfolios: 10, maxYears: Infinity, pdfPerMonth: Infinity, branding: true, whiteLabel: true, maxSaved: Infinity, compareMax: 8, csv: true, notes: true },
+  free: { maxPortfolios: 3, maxYears: 20, pdfPerMonth: 1, branding: false, whiteLabel: false, maxSaved: 5, compareMax: 2, csv: false, notes: false, fundamentals: "none" },
+  premium: { maxPortfolios: 6, maxYears: Infinity, pdfPerMonth: 10, branding: true, whiteLabel: false, maxSaved: 100, compareMax: 4, csv: true, notes: true, fundamentals: "core" },
+  pro: { maxPortfolios: 10, maxYears: Infinity, pdfPerMonth: Infinity, branding: true, whiteLabel: true, maxSaved: Infinity, compareMax: 8, csv: true, notes: true, fundamentals: "full" },
 };
 
 export const PLAN_PRICES: Record<PlanId, { monthly: number; yearly: number }> = {

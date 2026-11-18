@@ -9,8 +9,8 @@ import { colors, font, radius } from "@/theme";
 
 const FEATURES: Record<PlanId, string[]> = {
   free: ["3 portefeuilles par backtest", "20 ans d'historique", "5 analyses enregistrées", "1 rapport PDF par mois"],
-  premium: ["6 portefeuilles, historique complet", "100 analyses, 10 PDF par mois à votre logo", "Notes, export CSV, comparaison de 4"],
-  pro: ["10 portefeuilles, tout illimité", "Analyse fondamentale des sociétés", "PDF en marque blanche, comparaison de 8"],
+  premium: ["6 portefeuilles, historique complet", "100 analyses, 10 PDF par mois à votre logo", "Analyse fondamentale essentielle", "Notes, export CSV, comparaison de 4"],
+  pro: ["10 portefeuilles, tout illimité", "Analyse fondamentale complète", "PDF en marque blanche, comparaison de 8"],
 };
 
 type Period = "monthly" | "yearly";

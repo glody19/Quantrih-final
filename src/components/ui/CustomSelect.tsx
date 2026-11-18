@@ -16,7 +16,22 @@ export const CustomSelect = ({ value, onChange, children, className, disabled }:
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const childrenArray = React.Children.toArray(children);
+  // Expand fragments and small option-list components (e.g. <CashflowFrequencyOptions />)
+  // so their <option> children are found; otherwise the menu would be empty.
+  const expand = (nodes: React.ReactNode): React.ReactNode[] =>
+    React.Children.toArray(nodes).flatMap((c) => {
+      if (!React.isValidElement(c)) return [c];
+      if (c.type === React.Fragment) return expand((c.props as any).children);
+      if (typeof c.type === "function") {
+        try {
+          return expand((c.type as any)(c.props));
+        } catch {
+          return [c];
+        }
+      }
+      return [c];
+    });
+  const childrenArray = expand(children);
   
   let allOptions: { value: any; label: React.ReactNode; disabled?: boolean; groupLabel?: string }[] = [];
   let groupedOptions: { groupLabel: string; options: { value: any; label: React.ReactNode; disabled?: boolean }[] }[] = [];
