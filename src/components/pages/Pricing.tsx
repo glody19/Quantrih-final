@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "motion/react";
-import { Check, Minus, ChevronDown, Sparkles } from "lucide-react";
+import { Check, Minus, ChevronDown, Sparkles, Loader2, Lock } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { usePlan, PLAN_PRICES, type PlanId } from "../../lib/plans";
+import { billingErrorMessage, openBillingPortal, startCheckout, syncSubscription } from "../../lib/billing";
 
 const NAVY: React.CSSProperties = {
   backgroundColor: "#0A1E2D",
@@ -23,14 +25,16 @@ const T = {
     perMonth: "/ mois", perYear: "/ an", billedYearly: "soit {x} par mois, facturé annuellement",
     plans: {
       free: { name: "Freemium", tag: "Pour découvrir", desc: "Tous les outils de Quantrih pour tester vos premières allocations.", cta: "Créer un compte gratuit" },
-      premium: { name: "Premium", tag: "Le plus choisi", desc: "Pour l'investisseur qui suit ses portefeuilles et les compare dans le temps.", cta: "Me prévenir du lancement" },
-      pro: { name: "Pro", tag: "Conseillers et cabinets", desc: "Pour présenter des analyses à vos clients, à votre marque et sans limite.", cta: "Me prévenir du lancement" },
+      premium: { name: "Premium", tag: "Le plus choisi", desc: "Pour l'investisseur qui suit ses portefeuilles et les compare dans le temps.", cta: "Choisir Premium" },
+      pro: { name: "Pro", tag: "Conseillers et cabinets", desc: "Pour présenter des analyses à vos clients, à votre marque et sans limite.", cta: "Choisir Pro" },
     },
-    current: "Votre formule",
+    current: "Votre formule", manage: "Gérer mon abonnement", switchTo: "Passer à {p}",
+    success: "Merci ! Votre abonnement est actif. Vos nouvelles limites s'appliquent tout de suite.", cancelled: "Paiement interrompu. Aucun montant n'a été prélevé.",
+    secure: "Paiement sécurisé par Stripe. Sans engagement, annulable à tout moment.",
     highlights: {
       free: ["3 portefeuilles par backtest", "20 ans d'historique", "5 analyses enregistrées", "1 rapport PDF par mois"],
-      premium: ["6 portefeuilles par backtest", "Historique complet des données", "100 analyses enregistrées et comparaison", "10 rapports PDF par mois à votre nom", "Notes, étiquettes et export CSV"],
-      pro: ["10 portefeuilles par backtest", "Analyses et rapports illimités", "Rapports en marque blanche à vos couleurs", "Analyses avancées des sauvegardes", "Support prioritaire"],
+      premium: ["6 portefeuilles par backtest", "Historique complet des données", "100 analyses enregistrées et comparaison", "10 rapports PDF par mois à votre nom", "Analyse fondamentale essentielle", "Notes, étiquettes et export CSV"],
+      pro: ["10 portefeuilles par backtest", "Analyses et rapports illimités", "Rapports en marque blanche à vos couleurs", "Analyse fondamentale complète", "Analyses avancées des sauvegardes", "Support prioritaire"],
     },
     compareTitle: "Comparer les formules en détail",
     groups: [
@@ -50,6 +54,13 @@ const T = {
         { k: "Graphiques de croissance et tableau comparatif", v: [true, true, true] },
         { k: "Carte rendement-risque, courbes de pertes, grille des rendements annuels", v: [false, false, true] },
         { k: "Export CSV des résultats", v: [false, true, true] },
+      ] },
+      { title: "Analyse fondamentale", rows: [
+        { k: "Fiche société : profil, cours, capitalisation, dividende", v: [true, true, true] },
+        { k: "États financiers : compte de résultat, bilan, flux de trésorerie", v: [false, "5 ans", "Historique complet"], soon: true },
+        { k: "Ratios clés : marges, ROE, ROIC, endettement, PER, EV/EBITDA", v: [false, true, true], soon: true },
+        { k: "Valorisation : DCF, multiples historiques, comparaison aux concurrents", v: [false, false, true], soon: true },
+        { k: "Score de qualité et alertes sur les publications de résultats", v: [false, false, true], soon: true },
       ] },
       { title: "Rapports PDF", rows: [
         { k: "Rapports PDF par mois", v: ["1", "10", "Illimité"] },
@@ -75,13 +86,14 @@ const T = {
     ],
     faqTitle: "Questions fréquentes",
     faq: [
-      ["Quand pourrai-je souscrire à Premium ou Pro ?", "Le paiement en ligne est en préparation. Laissez-nous votre adresse avec le bouton « Me prévenir du lancement » et nous vous écrirons dès l'ouverture."],
-      ["Puis-je annuler à tout moment ?", "Oui. L'abonnement mensuel s'arrête à la fin du mois en cours, l'abonnement annuel à la fin de l'année payée."],
+      ["Comment se passe le paiement ?", "Le paiement est traité par Stripe, par carte bancaire ou par les moyens de paiement proposés dans votre pays. Quantrih ne voit jamais vos données de carte. Une facture est envoyée à chaque prélèvement."],
+      ["Puis-je annuler à tout moment ?", "Oui, en un clic depuis votre espace client, rubrique Abonnement. Vous gardez votre formule jusqu'à la fin de la période payée, puis vous revenez au Freemium. Aucun autre prélèvement n'a lieu."],
+      ["Puis-je changer de formule ?", "Oui. Le passage de Premium à Pro, ou du mensuel à l'annuel, se fait depuis votre espace client. Le montant est calculé au prorata."],
       ["Que deviennent mes analyses si je reviens au Freemium ?", "Elles restent dans votre compte et visibles. Vous pourrez en enregistrer de nouvelles une fois revenu sous la limite de la formule."],
       ["Pourquoi 20 ans d'historique en Freemium ?", "Vingt ans couvrent déjà plusieurs cycles, dont 2008 et 2020. L'historique complet, jusqu'aux années 1970 pour certaines classes d'actifs, est réservé aux formules payantes."],
       ["Quantrih donne-t-il des conseils en investissement ?", "Non. Quantrih fournit des outils de simulation sur données historiques. Les performances passées ne préjugent pas des performances futures."],
     ],
-    note: "Prix en euros. Les limites sont appliquées dès aujourd'hui ; le paiement en ligne ouvrira prochainement.",
+    note: "Prix en euros, toutes taxes comprises lorsque la TVA s'applique.",
   },
   en: {
     kicker: "Pricing",
@@ -91,14 +103,16 @@ const T = {
     perMonth: "/ month", perYear: "/ year", billedYearly: "{x} per month, billed yearly",
     plans: {
       free: { name: "Freemium", tag: "To get started", desc: "Every Quantrih tool to test your first allocations.", cta: "Create a free account" },
-      premium: { name: "Premium", tag: "Most popular", desc: "For investors who track their portfolios and compare them over time.", cta: "Notify me at launch" },
-      pro: { name: "Pro", tag: "Advisors and firms", desc: "To present analyses to your clients, under your brand and without limits.", cta: "Notify me at launch" },
+      premium: { name: "Premium", tag: "Most popular", desc: "For investors who track their portfolios and compare them over time.", cta: "Choose Premium" },
+      pro: { name: "Pro", tag: "Advisors and firms", desc: "To present analyses to your clients, under your brand and without limits.", cta: "Choose Pro" },
     },
-    current: "Your plan",
+    current: "Your plan", manage: "Manage my subscription", switchTo: "Switch to {p}",
+    success: "Thank you! Your subscription is active. Your new limits apply right away.", cancelled: "Payment interrupted. Nothing was charged.",
+    secure: "Secure payment by Stripe. No commitment, cancel at any time.",
     highlights: {
       free: ["3 portfolios per backtest", "20 years of history", "5 saved analyses", "1 PDF report per month"],
-      premium: ["6 portfolios per backtest", "Full data history", "100 saved analyses and comparison", "10 PDF reports a month under your name", "Notes, tags and CSV export"],
-      pro: ["10 portfolios per backtest", "Unlimited analyses and reports", "White-label reports in your colours", "Advanced analysis of saved backtests", "Priority support"],
+      premium: ["6 portfolios per backtest", "Full data history", "100 saved analyses and comparison", "10 PDF reports a month under your name", "Core fundamental analysis", "Notes, tags and CSV export"],
+      pro: ["10 portfolios per backtest", "Unlimited analyses and reports", "White-label reports in your colours", "Complete fundamental analysis", "Advanced analysis of saved backtests", "Priority support"],
     },
     compareTitle: "Compare plans in detail",
     groups: [
@@ -118,6 +132,13 @@ const T = {
         { k: "Growth charts and comparison table", v: [true, true, true] },
         { k: "Risk-return map, drawdown curves, annual returns grid", v: [false, false, true] },
         { k: "CSV export of results", v: [false, true, true] },
+      ] },
+      { title: "Fundamental analysis", rows: [
+        { k: "Company page: profile, price, market cap, dividend", v: [true, true, true] },
+        { k: "Financial statements: income, balance sheet, cash flow", v: [false, "5 years", "Full history"], soon: true },
+        { k: "Key ratios: margins, ROE, ROIC, leverage, P/E, EV/EBITDA", v: [false, true, true], soon: true },
+        { k: "Valuation: DCF, historical multiples, peer comparison", v: [false, false, true], soon: true },
+        { k: "Quality score and earnings alerts", v: [false, false, true], soon: true },
       ] },
       { title: "PDF reports", rows: [
         { k: "PDF reports per month", v: ["1", "10", "Unlimited"] },
@@ -143,13 +164,14 @@ const T = {
     ],
     faqTitle: "Frequently asked questions",
     faq: [
-      ["When can I subscribe to Premium or Pro?", "Online payment is being prepared. Leave us your address with \"Notify me at launch\" and we will write to you when it opens."],
-      ["Can I cancel at any time?", "Yes. A monthly plan stops at the end of the current month, a yearly plan at the end of the paid year."],
+      ["How does payment work?", "Payment is handled by Stripe, by card or the payment methods available in your country. Quantrih never sees your card details. An invoice is sent with every charge."],
+      ["Can I cancel at any time?", "Yes, in one click from your account, Subscription section. You keep your plan until the end of the paid period, then return to Freemium. No further charge is taken."],
+      ["Can I change plan?", "Yes. Moving from Premium to Pro, or from monthly to yearly, is done from your account. The amount is prorated."],
       ["What happens to my analyses if I go back to Freemium?", "They stay in your account and visible. You can save new ones once you are back under the plan's limit."],
       ["Why 20 years of history on Freemium?", "Twenty years already cover several cycles, including 2008 and 2020. The full history, back to the 1970s for some asset classes, is kept for paid plans."],
       ["Does Quantrih give investment advice?", "No. Quantrih provides simulation tools on historical data. Past performance does not guarantee future results."],
     ],
-    note: "Prices in euros. Limits apply today; online payment opens soon.",
+    note: "Prices in euros, including VAT where it applies.",
   },
 };
 
@@ -168,16 +190,54 @@ export function Pricing({ onNavigate }: { onNavigate: (page: string) => void }) 
   const { language } = useTranslation();
   const lang: "fr" | "en" = language === "fr" ? "fr" : "en";
   const t = T[lang];
-  const { plan, signedIn } = usePlan();
-  const [yearly, setYearly] = useState(false);
+  const { plan, signedIn, subscription, loading } = usePlan();
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const [yearly, setYearly] = useState(params.get("interval") === "year");
+  const [busy, setBusy] = useState<PlanId | null>(null);
+  const [banner, setBanner] = useState<{ ok: boolean; text: string } | null>(null);
+  const paying = signedIn && subscription.plan !== "free";
   const [open, setOpen] = useState<number | null>(0);
   const fmt = (v: number) => new Intl.NumberFormat(lang === "fr" ? "fr-BE" : "en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: v % 1 ? 2 : 0 }).format(v);
 
-  const cta = (id: PlanId) => {
+  const cta = async (id: PlanId) => {
     if (id === "free") { onNavigate(signedIn ? "profile" : "auth"); return; }
-    const subject = encodeURIComponent(`Quantrih ${T[lang].plans[id].name}`);
-    window.location.href = `mailto:contact@quantrih.com?subject=${subject}`;
+    const interval = yearly ? "year" : "month";
+    if (!signedIn) {
+      // Sign in first, then come back here and open the checkout automatically.
+      try { sessionStorage.setItem("quantrih_after_auth", `/pricing?plan=${id}&interval=${interval}`); } catch { /* storage unavailable */ }
+      navigate("/auth");
+      return;
+    }
+    setBusy(id); setBanner(null);
+    try {
+      if (paying) await openBillingPortal();
+      else await startCheckout(id, interval, lang);
+    } catch (e: any) {
+      setBanner({ ok: false, text: billingErrorMessage(e?.message || "", lang) });
+      setBusy(null);
+    }
   };
+
+  // Return from Stripe Checkout, or arrival after sign-in with a chosen plan.
+  useEffect(() => {
+    const status = params.get("checkout");
+    if (status === "success") {
+      setBanner({ ok: true, text: t.success });
+      syncSubscription(params.get("session_id")).catch(() => { /* the webhook will sync */ });
+      setParams({}, { replace: true });
+    } else if (status === "cancelled") {
+      setBanner({ ok: false, text: t.cancelled });
+      setParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const wanted = params.get("plan");
+    if (!signedIn || loading || (wanted !== "premium" && wanted !== "pro")) return;
+    setParams({}, { replace: true });
+    if (!paying) cta(wanted);
+  }, [signedIn, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cell = (v: Cell, featured: boolean) =>
     v === true ? <Check className={cn("w-5 h-5 mx-auto", featured ? "text-[#1D6FA8]" : "text-emerald-600")} /> :
@@ -205,6 +265,9 @@ export function Pricing({ onNavigate }: { onNavigate: (page: string) => void }) 
 
       {/* Plan cards */}
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-12 -mt-28">
+        {banner && (
+          <div className={cn("relative z-10 mb-5 mx-auto max-w-2xl rounded-2xl px-5 py-3.5 text-[15px] font-medium text-center shadow-lg", banner.ok ? "bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200" : "bg-white text-slate-700 ring-1 ring-slate-200")}>{banner.text}</div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6 items-stretch">
           {ORDER.map((id, i) => {
             const p = t.plans[id];
@@ -224,10 +287,18 @@ export function Pricing({ onNavigate }: { onNavigate: (page: string) => void }) 
                   <span className="text-slate-500">{yearly ? t.perYear : t.perMonth}</span>
                 </div>
                 <p className="mt-2 text-sm text-slate-500 min-h-[20px]">{yearly && price.yearly > 0 ? t.billedYearly.replace("{x}", fmt(Math.round((price.yearly / 12) * 100) / 100)) : ""}</p>
-                <button type="button" onClick={() => cta(id)} disabled={isCurrent}
-                  className={cn("mt-6 h-12 rounded-full text-[15px] font-semibold transition-colors", isCurrent ? "bg-slate-100 text-slate-500" : featured ? "bg-[#1D6FA8] text-white hover:bg-[#14466B]" : id === "pro" ? "bg-[#0A1E2D] text-white hover:bg-[#14466B]" : "bg-white text-[#0A1E2D] ring-1 ring-slate-300 hover:ring-[#0A1E2D]")}>
-                  {isCurrent ? t.current : p.cta}
-                </button>
+                {isCurrent && paying ? (
+                  <button type="button" onClick={() => cta(id)} disabled={!!busy}
+                    className="mt-6 h-12 rounded-full text-[15px] font-semibold transition-colors bg-white text-[#0A1E2D] ring-1 ring-slate-300 hover:ring-[#0A1E2D] inline-flex items-center justify-center gap-2">
+                    {busy === id && <Loader2 className="w-4 h-4 animate-spin" />}{t.manage}
+                  </button>
+                ) : (
+                  <button type="button" onClick={() => cta(id)} disabled={isCurrent || !!busy}
+                    className={cn("mt-6 h-12 rounded-full text-[15px] font-semibold transition-colors inline-flex items-center justify-center gap-2 disabled:cursor-default", isCurrent ? "bg-slate-100 text-slate-500" : featured ? "bg-[#1D6FA8] text-white hover:bg-[#14466B]" : id === "pro" ? "bg-[#0A1E2D] text-white hover:bg-[#14466B]" : "bg-white text-[#0A1E2D] ring-1 ring-slate-300 hover:ring-[#0A1E2D]")}>
+                    {busy === id && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {isCurrent ? t.current : paying && id !== "free" ? t.switchTo.replace("{p}", p.name) : p.cta}
+                  </button>
+                )}
                 <ul className="mt-7 space-y-3 text-[15px] text-slate-700">
                   {t.highlights[id].map((h) => (
                     <li key={h} className="flex gap-3"><Check className={cn("w-5 h-5 shrink-0 mt-0.5", featured ? "text-[#1D6FA8]" : "text-emerald-600")} />{h}</li>
@@ -237,7 +308,7 @@ export function Pricing({ onNavigate }: { onNavigate: (page: string) => void }) 
             );
           })}
         </div>
-        <p className="mt-6 text-center text-sm text-slate-500">{t.note}</p>
+        <p className="mt-6 text-center text-sm text-slate-500 inline-flex w-full items-center justify-center gap-1.5"><Lock className="w-3.5 h-3.5" />{t.secure} {t.note}</p>
       </div>
 
       {/* Detailed comparison */}

@@ -21,7 +21,7 @@ const DARK_GRID: React.CSSProperties = {
     "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(ellipse 90% 70% at 50% 0%, #123247 0%, #0A1B27 45%, #06111A 100%)",
   backgroundSize: "64px 64px, 64px 64px, 100% 100%",
 };
-// The same three-step gradient (dark, lighter navy, dark) on "Where to invest" and on "Support":
+// The same three-step gradient (dark, lighter navy, dark) on "Where to invest" and on "Plans":
 // both sections look identical and join without a seam; the footer continues the same dark navy.
 const NAVY_TRIPLE: React.CSSProperties = {
   backgroundColor: "#0A1E2D",
@@ -440,7 +440,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </ZoomSection>
 
-      {/* ── Where to invest and Support: each on the same three-step navy gradient ── */}
+      {/* ── Where to invest and Plans: each on the same three-step navy gradient ── */}
       <ZoomSection style={NAVY_TRIPLE} className="relative w-full pt-20 lg:pt-28 pb-16 overflow-hidden">
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-12 mb-6">
           <SectionTitle dark text={fr ? "Où investir : courtiers et banques" : "Where to invest: brokers and banks"} sub={fr ? "Les courtiers internationaux et les banques qui donnent accès aux marchés." : "The international brokers and the banks that give access to the markets."} />
@@ -458,17 +458,21 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
 
       <ZoomSection style={NAVY_TRIPLE} className="w-full px-6 lg:px-24 pt-20 pb-12">
         <div className="max-w-4xl mx-auto text-center">
-          <SectionTitle dark text={t("home.support.title")} sub={t("home.support.desc")} />
+          <SectionTitle
+            dark
+            text={fr ? "Commencez gratuitement, passez à la vitesse supérieure quand vous voulez." : "Start for free, step up whenever you want."}
+            sub={fr ? "Freemium pour découvrir. Premium et Pro pour enregistrer, comparer, analyser les fondamentaux et présenter vos rapports. Sans engagement, annulable à tout moment." : "Freemium to discover. Premium and Pro to save, compare, analyse fundamentals and present your reports. No commitment, cancel at any time."}
+          />
           <motion.button
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => window.open("https://buy.stripe.com/4gM5kEdrjbS6cWpf2heIw00", "_blank", "noopener,noreferrer")}
-            className="px-10 py-4 bg-white hover:bg-white/90 text-[#0C2233] rounded-full text-base font-bold tracking-wide uppercase shadow-[0_15px_30px_-12px_rgba(0,0,0,0.6)]"
+            onClick={() => onGoPage("pricing")}
+            className="px-8 py-3.5 bg-white hover:bg-white/90 text-[#0C2233] rounded-full text-[15px] font-semibold inline-flex items-center gap-2"
           >
-            {t("home.support.button")}
+            {fr ? "Voir les formules" : "See the plans"} <ArrowRight size={15} />
           </motion.button>
           <div className="text-sm text-white/60 mt-4">
-            {t("home.support.inquiry")}: <a href="mailto:contact@quantrih.com" className="text-[#A9C8EA] font-semibold underline underline-offset-4">contact@quantrih.com</a>
+            {fr ? "Une question" : "A question"}: <a href="mailto:contact@quantrih.com" className="text-[#A9C8EA] font-semibold underline underline-offset-4">contact@quantrih.com</a>
           </div>
         </div>
       </ZoomSection>

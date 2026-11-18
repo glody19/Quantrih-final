@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Check, Minus } from "lucide-react";
+import { Check, Minus, Loader2 } from "lucide-react";
 import { cn } from "../../lib/utils";
-import { PLAN_LIMITS, PLAN_NAMES, PLAN_PRICES, readPdfUsage, setPlanPreview, type PlanId } from "../../lib/plans";
+import { PLAN_LIMITS, PLAN_NAMES, PLAN_PRICES, readPdfUsage, setPlanPreview, type PlanId, type SubscriptionInfo } from "../../lib/plans";
+import { billingErrorMessage, cancelSubscription, openBillingPortal, resumeSubscription } from "../../lib/billing";
 import { CARD } from "./shared";
 
 const L = {
@@ -9,20 +10,46 @@ const L = {
     current: "Votre formule", perMonth: "/ mois", free: "Gratuit", change: "Voir toutes les formules", usage: "Utilisation ce mois-ci",
     saved: "Analyses enregistrées", pdf: "Rapports PDF", portfolios: "Portefeuilles par backtest", years: "Durée maximale d'un backtest", compare: "Portefeuilles comparés",
     branding: "Rapports à votre marque", white: "Marque blanche", csv: "Export CSV", notes: "Notes et étiquettes", unlimited: "Illimité", full: "Historique complet", yrs: "ans",
-    admin: "Aperçu administrateur", adminLead: "Voir le site comme chaque formule. Visible uniquement par les administrateurs.", payment: "Le paiement en ligne n'est pas encore ouvert : toutes les formules payantes sont annoncées sur la page Tarifs.",
+    admin: "Aperçu administrateur", adminLead: "Voir le site comme chaque formule. Visible uniquement par les administrateurs.",
+    fundamentals: "Analyse fondamentale", fundCore: "Essentielle", fundFull: "Complète",
+    billing: "Abonnement et facturation", monthly: "Facturé chaque mois", yearly: "Facturé chaque année", renews: "Prochain renouvellement le {d}", ends: "Accès jusqu'au {d}, puis retour au Freemium",
+    pastDue: "Le dernier paiement a échoué. Mettez à jour votre carte pour garder votre formule.",
+    portal: "Factures et moyen de paiement", cancel: "Annuler l'abonnement", resume: "Reprendre l'abonnement",
+    confirmTitle: "Annuler votre abonnement ?", confirmLead: "Vous gardez toutes les fonctions {p} jusqu'au {d}. Aucun autre paiement ne sera prélevé. Vos analyses restent dans votre compte.",
+    confirmYes: "Oui, annuler", confirmNo: "Garder mon abonnement", cancelled: "Abonnement annulé. Il reste actif jusqu'à la fin de la période payée.", resumed: "Abonnement repris.",
+    freeLead: "Passez à Premium ou Pro quand vous voulez. Sans engagement, annulable à tout moment.", upgrade: "Choisir une formule",
   },
   en: {
     current: "Your plan", perMonth: "/ month", free: "Free", change: "See all plans", usage: "Usage this month",
     saved: "Saved analyses", pdf: "PDF reports", portfolios: "Portfolios per backtest", years: "Longest backtest", compare: "Portfolios compared",
     branding: "Reports under your brand", white: "White label", csv: "CSV export", notes: "Notes and tags", unlimited: "Unlimited", full: "Full history", yrs: "years",
-    admin: "Admin preview", adminLead: "See the site as each plan does. Visible to administrators only.", payment: "Online payment is not open yet: paid plans are announced on the Pricing page.",
+    admin: "Admin preview", adminLead: "See the site as each plan does. Visible to administrators only.",
+    fundamentals: "Fundamental analysis", fundCore: "Core", fundFull: "Complete",
+    billing: "Subscription and billing", monthly: "Billed monthly", yearly: "Billed yearly", renews: "Renews on {d}", ends: "Access until {d}, then back to Freemium",
+    pastDue: "The last payment failed. Update your card to keep your plan.",
+    portal: "Invoices and payment method", cancel: "Cancel subscription", resume: "Resume subscription",
+    confirmTitle: "Cancel your subscription?", confirmLead: "You keep every {p} feature until {d}. No further payment will be taken. Your analyses stay in your account.",
+    confirmYes: "Yes, cancel", confirmNo: "Keep my subscription", cancelled: "Subscription cancelled. It stays active until the end of the paid period.", resumed: "Subscription resumed.",
+    freeLead: "Move to Premium or Pro whenever you like. No commitment, cancel at any time.", upgrade: "Choose a plan",
   },
 };
 
-export function PlanPanel({ plan, isAdmin, savedCount, uid, language, onPricing }: { plan: PlanId; isAdmin: boolean; savedCount: number; uid?: string; language: "fr" | "en"; onPricing: () => void }) {
+export function PlanPanel({ plan, subscription, isAdmin, savedCount, uid, language, onPricing }: { plan: PlanId; subscription?: SubscriptionInfo; isAdmin: boolean; savedCount: number; uid?: string; language: "fr" | "en"; onPricing: () => void }) {
   const l = L[language];
   const lim = PLAN_LIMITS[plan];
   const [pdf, setPdf] = useState(0);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState(false);
+  const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
+  const sub = subscription;
+  const paying = !!sub && sub.plan !== "free";
+  const date = (ms: number | null) => (ms ? new Intl.DateTimeFormat(language === "fr" ? "fr-BE" : "en-GB", { day: "numeric", month: "long", year: "numeric" }).format(new Date(ms)) : "");
+  const run = async (key: string, fn: () => Promise<unknown>, ok?: string) => {
+    setBusy(key); setNotice(null);
+    try { await fn(); if (ok) setNotice({ ok: true, text: ok }); }
+    catch (e: any) { setNotice({ ok: false, text: billingErrorMessage(e?.message || "", language) }); }
+    finally { setBusy(null); }
+  };
   useEffect(() => { readPdfUsage(uid).then(setPdf); }, [uid]);
   const n = (v: number) => (Number.isFinite(v) ? String(v) : l.unlimited);
 
@@ -43,6 +70,7 @@ export function PlanPanel({ plan, isAdmin, savedCount, uid, language, onPricing 
     [l.white, lim.whiteLabel],
     [l.csv, lim.csv],
     [l.notes, lim.notes],
+    [l.fundamentals, lim.fundamentals === "full" ? l.fundFull : lim.fundamentals === "core" ? l.fundCore : false],
   ];
 
   return (
@@ -77,7 +105,57 @@ export function PlanPanel({ plan, isAdmin, savedCount, uid, language, onPricing 
         </table>
       </section>
 
-      <p className="text-sm text-slate-500">{l.payment}</p>
+      {/* Subscription and billing */}
+      <section className={cn(CARD, "p-6")}>
+        <h3 className="text-lg font-semibold text-slate-900">{l.billing}</h3>
+        {paying ? (
+          <>
+            <p className="mt-2 text-[15px] text-slate-600">
+              {PLAN_NAMES[sub!.plan]} · {sub!.interval === "year" ? l.yearly : l.monthly}
+              {sub!.currentPeriodEnd ? <> · {(sub!.cancelAtPeriodEnd ? l.ends : l.renews).replace("{d}", date(sub!.currentPeriodEnd))}</> : null}
+            </p>
+            {sub!.status === "past_due" && <p className="mt-3 text-sm text-rose-700 bg-rose-50 rounded-lg px-3 py-2">{l.pastDue}</p>}
+            <div className="mt-5 flex flex-wrap gap-2">
+              <button type="button" disabled={!!busy} onClick={() => run("portal", openBillingPortal)} className="h-10 px-4 rounded-full text-sm font-semibold border border-slate-300 text-slate-800 hover:border-slate-500 disabled:opacity-60 inline-flex items-center gap-2">
+                {busy === "portal" && <Loader2 className="w-4 h-4 animate-spin" />}{l.portal}
+              </button>
+              {sub!.cancelAtPeriodEnd ? (
+                <button type="button" disabled={!!busy} onClick={() => run("resume", resumeSubscription, l.resumed)} className="h-10 px-4 rounded-full text-sm font-semibold bg-[#0A1E2D] text-white hover:bg-[#14466B] disabled:opacity-60 inline-flex items-center gap-2">
+                  {busy === "resume" && <Loader2 className="w-4 h-4 animate-spin" />}{l.resume}
+                </button>
+              ) : (
+                <button type="button" disabled={!!busy} onClick={() => setConfirm(true)} className="h-10 px-4 rounded-full text-sm font-semibold text-slate-500 hover:text-rose-700 disabled:opacity-60">{l.cancel}</button>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 text-[15px] text-slate-600">{l.freeLead}</p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <button type="button" onClick={onPricing} className="h-10 px-4 rounded-full text-sm font-semibold bg-[#0A1E2D] text-white hover:bg-[#14466B]">{l.upgrade}</button>
+              {sub?.hasCustomer && (
+                <button type="button" disabled={!!busy} onClick={() => run("portal", openBillingPortal)} className="h-10 px-4 rounded-full text-sm font-semibold border border-slate-300 text-slate-800 hover:border-slate-500 disabled:opacity-60">{l.portal}</button>
+              )}
+            </div>
+          </>
+        )}
+        {notice && <p className={cn("mt-4 text-sm rounded-lg px-3 py-2", notice.ok ? "text-emerald-800 bg-emerald-50" : "text-rose-700 bg-rose-50")}>{notice.text}</p>}
+      </section>
+
+      {confirm && paying && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40" role="dialog" aria-modal="true" onClick={() => setConfirm(false)}>
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h4 className="text-lg font-semibold text-slate-900">{l.confirmTitle}</h4>
+            <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{l.confirmLead.replace("{p}", PLAN_NAMES[sub!.plan]).replace("{d}", date(sub!.currentPeriodEnd))}</p>
+            <div className="mt-6 flex flex-wrap justify-end gap-2">
+              <button type="button" onClick={() => setConfirm(false)} className="h-10 px-4 rounded-full text-sm font-semibold bg-[#0A1E2D] text-white hover:bg-[#14466B]">{l.confirmNo}</button>
+              <button type="button" disabled={!!busy} onClick={async () => { await run("cancel", cancelSubscription, l.cancelled); setConfirm(false); }} className="h-10 px-4 rounded-full text-sm font-semibold border border-rose-200 text-rose-700 hover:bg-rose-50 disabled:opacity-60 inline-flex items-center gap-2">
+                {busy === "cancel" && <Loader2 className="w-4 h-4 animate-spin" />}{l.confirmYes}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isAdmin && (
         <section className={cn(CARD, "p-6 border-dashed")}>

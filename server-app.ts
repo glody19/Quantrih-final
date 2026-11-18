@@ -8,6 +8,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { cacheService } from "./src/services/cacheService.js";
 import db, { initDb, getLazyPortfolios, getPortfolioPerfs } from "./src/backend/db.js";
+import { registerStripeWebhook, registerBillingRoutes } from "./src/backend/billing.js";
 
 const yfClass = (yahooFinance as any).default || yahooFinance;
 const yf = new yfClass({
@@ -143,40 +144,8 @@ export function createApp() {
   // Apply rate limiter to all API routes
   app.use("/api/", apiLimiter);
 
-  // Stripe Webhook MUST be placed BEFORE express.json() to preserve raw body
-  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    
-    if (!stripeKey || !endpointSecret) {
-      return res.status(500).send("Stripe config missing");
-    }
-
-    try {
-      const Stripe = (await import('stripe')).default;
-      const stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' as any });
-      const sig = req.headers['stripe-signature'];
-      
-      let event;
-      try {
-        event = stripe.webhooks.constructEvent(req.body, sig as string, endpointSecret);
-      } catch (err: any) {
-        console.error("Webhook signature verification failed:", err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-      }
-
-      // Handle the event
-      if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        console.log(`Payment successful for session ${session.id}`);
-        // Optionally update database
-      }
-      res.json({ received: true });
-    } catch (e: any) {
-      console.error("Stripe Webhook error:", e);
-      res.status(500).send("Internal Server Error");
-    }
-  });
+  // Stripe webhook MUST be registered BEFORE express.json() to keep the raw body for the signature check.
+  registerStripeWebhook(app);
 
   app.use('/api/', express.json());
 
@@ -381,45 +350,8 @@ export function createApp() {
     res.json([]);
   });
 
-  // STRIPE CHECKOUT FOR DONATIONS
-  app.post('/api/stripe/create-checkout-session', async (req, res) => {
-    const { amount, currency = 'eur' } = req.body;
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    
-    if (!stripeKey) {
-      return res.status(500).json({ error: "Stripe key is not configured on the server." });
-    }
-
-    try {
-      const Stripe = (await import('stripe')).default;
-      const stripe = new Stripe(stripeKey, { apiVersion: '2025-02-24.acacia' as any });
-      
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price_data: {
-              currency: currency,
-              product_data: {
-                name: 'Quantrih Support Contribution',
-                description: 'Thank you for supporting the development of institutional-grade backtesting tools.',
-              },
-              unit_amount: Math.round(amount * 100), // amount in cents
-            },
-            quantity: 1,
-          },
-        ],
-        mode: 'payment',
-        success_url: `${process.env.APP_URL || 'http://localhost:3000'}?payment=success`,
-        cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}?payment=cancelled`,
-      });
-
-      res.json({ id: session.id, url: session.url });
-    } catch (e: any) {
-      console.error("Stripe error:", e);
-      res.status(500).json({ error: e.message });
-    }
-  });
+  // Subscriptions (Premium and Pro): checkout, customer portal, cancel and resume.
+  registerBillingRoutes(app);
 
   // === EXISTING ROUTES ===
 
