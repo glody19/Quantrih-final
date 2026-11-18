@@ -32,6 +32,10 @@ import { EfficientFrontier } from "../ui/EfficientFrontier";
 import { AssetPicker, RunButton, toOptions } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
+import { usePlan, clampStartDate } from "../../lib/plans";
+import { summarizeResults } from "../../lib/savedSummary";
+import { usePendingLoad } from "../../lib/pendingLoad";
+import { PlanNotice, planMessages } from "../account/PlanNotice";
 import { InfoTooltip } from "../ui/InfoTooltip";
 import { PresetPortfoliosSelector } from "../ui/PresetPortfoliosSelector";
 import { CustomSelect } from "../ui/CustomSelect";
@@ -260,7 +264,7 @@ export function PortfolioBacktesting({
   const [cashflowAmount, setCashflowAmount] = useState(0);
 
   const applyPredefinedPortfolio = (preset: any) => {
-    if (portfolioNames.length >= 6) return;
+    if (portfolioNames.length >= planLimits.maxPortfolios) return;
     const newId = `p${Date.now()}`;
     let currentAssets = [...portfolioAssets];
     currentAssets = currentAssets.map((a) => ({
@@ -308,6 +312,8 @@ export function PortfolioBacktesting({
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<PortfolioResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const { limits: planLimits } = usePlan();
+  const [planNotes, setPlanNotes] = useState<string[]>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [activeResIdx, setActiveResIdx] = useState(0);
 
@@ -353,8 +359,11 @@ export function PortfolioBacktesting({
     if (data.portfolioAssets) setPortfolioAssets(data.portfolioAssets);
   };
 
+  // Opened from the client area
+  usePendingLoad(["backtest"], (d) => handleCloudLoad(d));
+
   const addPortfolio = () => {
-    if (portfolioNames.length >= 6) return;
+    if (portfolioNames.length >= planLimits.maxPortfolios) return;
     const newId = Date.now().toString();
     setPortfolioNames([
       ...portfolioNames,
@@ -449,12 +458,16 @@ export function PortfolioBacktesting({
 
   const runBacktest = async () => {
     setError(null);
+    setPlanNotes([]);
     setIsRunning(true);
     setHasRun(false);
     try {
-      const activePortfolios = portfolios.filter(
+      const allActive = portfolios.filter(
         (p) => p.assets.reduce((sum, a) => sum + Number(a.weight), 0) > 0,
       );
+      // The plan caps how many portfolios one backtest compares
+      const activePortfolios = allActive.slice(0, planLimits.maxPortfolios);
+      const dropped = allActive.length - activePortfolios.length;
 
       if (activePortfolios.length === 0) {
         throw new Error("Please configure at least one active portfolio.");
@@ -489,11 +502,15 @@ export function PortfolioBacktesting({
       }
 
       // Parse start and end dates from inputs
-      const parsedStart =
+      const requestedStart =
         startYearInput === "oldest"
           ? "1900-01-01"
           : `${startYearInput}-${startMonthInput}-01`;
       const parsedEnd = `${endYearInput}-${endMonthInput}-28`;
+      // Freemium: at most 20 years of history
+      const clamp = clampStartDate(requestedStart, parsedEnd, planLimits.maxYears);
+      const parsedStart = clamp.start;
+      setPlanNotes(planMessages(language, { clampedTo: clamp.clamped ? parsedStart : undefined, maxYears: planLimits.maxYears, dropped, maxPortfolios: planLimits.maxPortfolios }));
 
       const engineOptions = {
         initialBalance: initialAmount,
@@ -1114,7 +1131,7 @@ export function PortfolioBacktesting({
                     <button
                       key={idx}
                       onClick={() => applyPredefinedPortfolio(preset)}
-                      disabled={portfolioNames.length >= 6}
+                      disabled={portfolioNames.length >= planLimits.maxPortfolios}
                       className="text-xs bg-surface-2 border border-border px-3.5 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-all transform hover:scale-105 disabled:opacity-50 font-semibold shadow-sm cursor-pointer"
                     >
                       + {preset.name}
@@ -1287,6 +1304,7 @@ export function PortfolioBacktesting({
                 {error}
               </div>
             )}
+            <PlanNotice messages={planNotes} />
             <div className="flex flex-wrap gap-x-8 gap-y-3 pt-4 items-center">
               <p className="order-2 text-sm text-text-3 max-w-2xl">
                 {language === "fr"
@@ -1533,19 +1551,7 @@ export function PortfolioBacktesting({
       portfolioAssets,
       portNames: portfolioNames.map(p => p.name),
       allocRows: portfolioAssets.map(a => ({ symbol: a.symbol, allocations: a.weights.map(w => Number(w) || 0) })),
-      resultsSummary: results && results.length > 0 ? results.map(r => ({
-        name: r.name,
-        cagr: r.cagr,
-        stdev: r.stdev,
-        sharpe: r.sharpe,
-        sortino: r.sortino,
-        bestYear: r.bestYear,
-        worstYear: r.worstYear,
-        maxDrawdown: r.maxDrawdown,
-        endBalance: r.endBalance,
-        initialAmount: r.initialAmount,
-        alloc: r.alloc
-      })) : null
+      resultsSummary: summarizeResults(results)
     }} onLoad={handleCloudLoad} onListUpdate={loadSavedConfigs} />
         {activeMainView === "dashboard" && <div className="mt-8">{renderSavedScenarios()}</div>}
       </div>

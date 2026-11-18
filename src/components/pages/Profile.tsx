@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../contexts/LanguageContext';
 import { loadPrefs, savePrefs, type Preferences } from '../../lib/preferences';
@@ -43,6 +43,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { countries, Country } from '../../data/countries';
 import { InvestorProfileForm } from '../profile/InvestorProfileForm';
 import { CustomSelect } from '../ui/CustomSelect';
+import { FileText, GitCompare, CreditCard, FolderOpen } from 'lucide-react';
+import { usePlan, PLAN_NAMES } from '../../lib/plans';
+import { NAVY, useSavedAnalyses, useBranding, rowsOf, resizeImage } from '../account/shared';
+import { SavedLibrary } from '../account/SavedLibrary';
+import { CompareWorkspace } from '../account/CompareWorkspace';
+import { ReportStudio } from '../account/ReportStudio';
+import { PlanPanel } from '../account/PlanPanel';
 
 const profileLabels: Record<string, Record<string, string>> = {
   en: {
@@ -593,21 +600,28 @@ export function Profile({ onBack }: { onBack: () => void }) {
   };
 
   // Saved analyses (all tools) shown in the client area
-  const [savedItems, setSavedItems] = useState<any[]>([]);
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      try {
-        const snap = await getDocs(collection(db, `users/${user.uid}/backtests`));
-        const list: any[] = [];
-        snap.forEach((d) => list.push({ id: d.id, ...d.data() }));
-        list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-        setSavedItems(list);
-      } catch (e) {
-        console.error("Failed to load saved analyses:", e);
-      }
-    })();
-  }, [user]);
+  const saved = useSavedAnalyses(user?.uid);
+  const savedItems = saved.items;
+  const rows = React.useMemo(() => rowsOf(savedItems), [savedItems]);
+  const { plan, limits, isAdmin } = usePlan();
+  const brand = useBranding(user?.uid);
+  const [compareKeys, setCompareKeys] = useState<string[]>([]);
+  const [reportKeys, setReportKeys] = useState<string[]>([]);
+  const keysOf = (analysisId: string) => rows.filter((r) => r.analysisId === analysisId).map((r) => r.key);
+  const avatarRef = useRef<HTMLInputElement>(null);
+  const quickPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f || !user) return;
+    try {
+      const url = await resizeImage(f, 384, 'image/jpeg');
+      setPhotoURLState(url);
+      await setDoc(doc(db, `users/${user.uid}`), { photoURL: url, updatedAt: serverTimestamp() }, { merge: true });
+      setMessage({ text: isFr ? 'Photo de profil mise à jour.' : 'Profile photo updated.', type: 'success' });
+    } catch {
+      setMessage({ text: t.failedReadImg, type: 'error' });
+    }
+  };
 
   const TOOL_ROUTES: Record<string, { path: string; label: string }> = {
     backtest: { path: '/portfolio-backtest', label: 'Portfolio Backtesting' },
@@ -619,8 +633,22 @@ export function Profile({ onBack }: { onBack: () => void }) {
   };
   const toolOf = (pageId?: string) => TOOL_ROUTES[pageId || 'backtest'] || { path: '/portfolio-backtest', label: pageId || 'Backtest' };
 
-  type Section = 'overview' | 'account' | 'security' | 'preferences' | 'notifications' | 'saved' | 'privacy';
-  const [section, setSection] = useState<Section>('overview');
+  type Section = 'overview' | 'account' | 'security' | 'preferences' | 'notifications' | 'saved' | 'privacy' | 'compare' | 'reports' | 'plan';
+  const initialSection = (): Section => {
+    const h = (typeof window !== 'undefined' ? window.location.hash.slice(1) : '') as Section;
+    return ['overview', 'account', 'security', 'preferences', 'notifications', 'saved', 'privacy', 'compare', 'reports', 'plan'].includes(h) ? h : 'overview';
+  };
+  const [section, setSectionState] = useState<Section>(initialSection);
+  const location = useLocation();
+  useEffect(() => {
+    const h = location.hash.slice(1) as Section;
+    if (['overview', 'account', 'security', 'preferences', 'notifications', 'saved', 'privacy', 'compare', 'reports', 'plan'].includes(h)) setSectionState(h);
+  }, [location.hash]);
+  const setSection = (s: Section) => {
+    setSectionState(s);
+    try { window.history.replaceState(null, '', `#${s}`); } catch { /* ignore */ }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const [prefs, setPrefs] = useState<Preferences>(() => loadPrefs());
   const [investorDone, setInvestorDone] = useState<boolean | null>(null);
   useEffect(() => {
@@ -694,31 +722,51 @@ export function Profile({ onBack }: { onBack: () => void }) {
       { id: 'account', label: L2.account, icon: <User className="w-4 h-4" /> },
       { id: 'security', label: L2.security, icon: <Shield className="w-4 h-4" /> },
     ] },
+    { title: isFr ? 'Mes analyses' : 'My analyses', items: [
+      { id: 'saved', label: isFr ? 'Mes backtests' : 'My backtests', icon: <FolderOpen className="w-4 h-4" /> },
+      { id: 'compare', label: isFr ? 'Comparer' : 'Compare', icon: <GitCompare className="w-4 h-4" /> },
+      { id: 'reports', label: isFr ? 'Rapports PDF' : 'PDF reports', icon: <FileText className="w-4 h-4" /> },
+    ] },
     { title: isFr ? 'Paramètres du compte' : 'Account settings', items: [
+      { id: 'plan', label: isFr ? 'Abonnement' : 'Subscription', icon: <CreditCard className="w-4 h-4" /> },
       { id: 'preferences', label: isFr ? 'Préférences' : 'Preferences', icon: <SlidersHorizontal className="w-4 h-4" /> },
       { id: 'notifications', label: isFr ? 'Communications' : 'Communications', icon: <Bell className="w-4 h-4" /> },
-    ] },
-    { title: isFr ? 'Données' : 'Data', items: [
-      { id: 'saved', label: L2.saved, icon: <Save className="w-4 h-4" /> },
       { id: 'privacy', label: isFr ? 'Données et confidentialité' : 'Data and privacy', icon: <Database className="w-4 h-4" /> },
     ] },
   ];
 
   return (
-    <div className="w-full bg-white min-h-[80vh]">
-      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-10 pb-24">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border">
-          <div>
-            <h1 className="font-serif text-3xl md:text-[2.6rem] leading-tight font-semibold tracking-tight text-text">{L2.title}</h1>
-            <p className="text-base md:text-lg text-text-3 mt-2">{L2.subtitle}</p>
+    <div className="w-full bg-white min-h-[80vh] -mt-4 lg:-mt-6">
+      {/* Header band, same language as the Dark Pools page */}
+      <div className="w-full" style={NAVY}>
+        <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-10 pb-9 flex flex-col md:flex-row md:items-end gap-6 justify-between">
+          <div className="flex items-center gap-5 min-w-0">
+            <div className="relative shrink-0">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden ring-4 ring-white/15 bg-white/10 flex items-center justify-center text-3xl font-semibold uppercase text-white">
+                {photoURLState ? <img src={photoURLState} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : (firstName.charAt(0) || email.charAt(0) || '?')}
+              </div>
+              <button type="button" onClick={() => avatarRef.current?.click()} title={L2.photo} className="absolute -bottom-0.5 -right-0.5 w-8 h-8 rounded-full bg-white text-[#0A1E2D] shadow-lg flex items-center justify-center hover:bg-[#E6F0FA]">
+                <Camera className="w-4 h-4" />
+              </button>
+              <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={quickPhoto} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#A9C8EA]">{L2.title}</p>
+              <h1 className="mt-1.5 text-[28px] md:text-[40px] leading-[1.08] font-semibold tracking-tight !text-white truncate">{[firstName, lastName].filter(Boolean).join(' ') || user.email}</h1>
+              <p className="mt-1.5 text-[15px] text-white/65 truncate">{user.email}{company ? ` · ${company}` : ''}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3 text-sm text-text-3">
-            <span>{L2.memberSince} <b className="text-text font-medium">{user.email}</b></span>
+          <div className="flex items-center gap-3">
+            <button type="button" onClick={() => setSection('plan')} className="h-10 px-4 rounded-full bg-white/10 ring-1 ring-white/20 text-white text-sm font-semibold hover:bg-white/15">
+              {isFr ? 'Formule' : 'Plan'} <span className="ml-1 text-[#E2B84F]">{PLAN_NAMES[plan]}</span>
+            </button>
+            {plan !== 'pro' && <button type="button" onClick={() => navigate('/pricing')} className="h-10 px-4 rounded-full bg-white text-[#0A1E2D] text-sm font-semibold hover:bg-[#E6F0FA]">{isFr ? 'Passer à la formule supérieure' : 'Upgrade'}</button>}
           </div>
         </div>
+      </div>
+      <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-24">
 
-        <div className="grid grid-cols-1 md:grid-cols-[230px_1fr] gap-8 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-[230px_1fr] gap-8">
           {/* Sidebar */}
           <nav className="flex md:flex-col gap-1 overflow-x-auto no-scrollbar md:sticky md:top-24 md:self-start">
             {navGroups.map((g) => (
@@ -767,17 +815,6 @@ export function Profile({ onBack }: { onBack: () => void }) {
               ];
               return (
                 <div className="space-y-6">
-                  <section className="rounded-2xl p-6 text-white bg-[radial-gradient(ellipse_at_0%_0%,#123A55_0%,#0C2233_55%,#06121B_100%)]">
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-white/10 overflow-hidden flex items-center justify-center text-xl font-semibold uppercase">
-                        {photoURLState ? <img src={photoURLState} alt="" className="w-full h-full object-cover" /> : (firstName.charAt(0) || email.charAt(0) || '?')}
-                      </div>
-                      <div>
-                        <p className="text-xl font-semibold">{[firstName, lastName].filter(Boolean).join(' ') || user.email}</p>
-                        <p className="text-sm text-white/65">{isFr ? 'Membre depuis' : 'Member since'} {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString(isFr ? 'fr-BE' : 'en-GB', { month: 'long', year: 'numeric' }) : '-'}{residenceCountry ? ` · ${residenceCountry}` : ''}</p>
-                      </div>
-                    </div>
-                  </section>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {tiles.map((x) => (
                       <button key={x.k} type="button" onClick={() => (x.go ? setSection(x.go) : navigate('/investor-profile'))} className="text-left border border-border rounded-2xl p-5 hover:border-pv-blue/50 hover:shadow-sm transition-all">
@@ -788,6 +825,31 @@ export function Profile({ onBack }: { onBack: () => void }) {
                       </button>
                     ))}
                   </div>
+                  <section className="border border-border rounded-2xl p-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <h2 className="text-lg font-semibold text-text">{isFr ? 'Dernières analyses' : 'Latest analyses'}</h2>
+                      <button type="button" onClick={() => setSection('saved')} className="text-sm font-semibold text-pv-blue hover:underline">{isFr ? 'Tout voir' : 'See all'}</button>
+                    </div>
+                    {savedItems.length === 0 ? (
+                      <p className="mt-3 text-text-3">{L2.none}</p>
+                    ) : (
+                      <ul className="mt-3 divide-y divide-border">
+                        {savedItems.slice(0, 4).map((it) => {
+                          const best = (it.resultsSummary || []).filter(Boolean)[0];
+                          return (
+                            <li key={it.id} className="py-3 flex items-center gap-4">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-text truncate">{it.name}</p>
+                                <p className="text-sm text-text-3">{toolOf(it.pageId).label} · {it.updatedAt ? new Date(it.updatedAt).toLocaleDateString(isFr ? 'fr-BE' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</p>
+                              </div>
+                              {best && typeof best.cagr === 'number' && <span className="font-mono text-sm text-emerald-700">{best.cagr.toFixed(2)} %</span>}
+                              <button type="button" disabled={!best} onClick={() => { setCompareKeys(keysOf(it.id)); setSection('compare'); }} className="h-8 px-3 rounded-full border border-border text-xs font-semibold text-text-2 hover:border-pv-blue hover:text-pv-blue disabled:opacity-40">{isFr ? 'Comparer' : 'Compare'}</button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </section>
                   <section className="border border-border rounded-2xl p-6">
                     <h2 className="text-lg font-semibold text-text">{isFr ? 'Accès rapides' : 'Quick links'}</h2>
                     <div className="mt-4 flex flex-wrap gap-2">
@@ -1004,46 +1066,65 @@ export function Profile({ onBack }: { onBack: () => void }) {
               </form>
             )}
 
+            {section !== 'overview' && ['saved', 'compare', 'reports', 'plan'].includes(section) && (
+              <div className="mb-6">
+                <h2 className="text-[24px] md:text-[30px] font-semibold tracking-tight text-slate-900">
+                  {section === 'saved' ? (isFr ? 'Mes backtests' : 'My backtests') : section === 'compare' ? (isFr ? 'Comparer mes analyses' : 'Compare my analyses') : section === 'reports' ? (isFr ? 'Rapports PDF pour vos clients' : 'PDF reports for your clients') : (isFr ? 'Abonnement' : 'Subscription')}
+                </h2>
+                <span className="block mt-3 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]" />
+                <p className="mt-3 text-[16px] text-slate-500 leading-relaxed max-w-3xl">
+                  {section === 'saved' ? (isFr ? "L'historique de toutes vos analyses enregistrées, tous outils confondus. Ouvrez-les, comparez-les ou transformez-les en rapport." : 'The history of every analysis you saved, across all tools. Open, compare or turn them into a report.')
+                    : section === 'compare' ? (isFr ? 'Mettez côte à côte des portefeuilles issus de différentes analyses : courbes de croissance, indicateurs et tableau comparatif.' : 'Put portfolios from different analyses side by side: growth curves, metrics and a comparison table.')
+                    : section === 'reports' ? (isFr ? 'Un rapport prêt à présenter : votre logo, votre cabinet, le nom du client, puis les graphiques et tableaux de performance.' : 'A report ready to present: your logo, your firm, the client name, then the performance charts and tables.')
+                    : (isFr ? 'Votre formule, son utilisation ce mois-ci et ses limites.' : 'Your plan, its usage this month and its limits.')}
+                </p>
+              </div>
+            )}
+
             {section === 'saved' && (
-              <section className="border border-border rounded-2xl overflow-hidden">
-                <div className="px-6 py-5 border-b border-border">
-                  <h2 className="text-xl font-semibold text-text">{L2.saved}</h2>
-                </div>
-                {savedItems.length === 0 ? (
-                  <p className="px-6 py-10 text-center text-text-3">{L2.none}</p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[720px] text-sm">
-                      <thead className="bg-surface-2 text-left text-xs uppercase tracking-wider text-text-3">
-                        <tr>
-                          <th className="px-6 py-3 font-semibold">{L2.name}</th>
-                          <th className="px-6 py-3 font-semibold">{L2.tool}</th>
-                          <th className="px-6 py-3 font-semibold">{L2.metrics}</th>
-                          <th className="px-6 py-3 font-semibold">{L2.date}</th>
-                          <th className="px-6 py-3" />
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {savedItems.map((it) => {
-                          const tool = toolOf(it.pageId);
-                          const r = Array.isArray(it.resultsSummary) ? it.resultsSummary[0] : null;
-                          return (
-                            <tr key={it.id} className="hover:bg-surface-2/50">
-                              <td className="px-6 py-3.5 font-semibold text-text">{it.name || '-'}</td>
-                              <td className="px-6 py-3.5 text-text-2">{tool.label}</td>
-                              <td className="px-6 py-3.5 font-mono text-text-2">
-                                {r ? `CAGR ${Number(r.cagr ?? 0).toFixed(2)}% · Max DD ${(-Math.abs(Number(r.maxDrawdown ?? 0))).toFixed(2)}% · Sharpe ${Number(r.sharpe ?? 0).toFixed(2)}` : '-'}
-                              </td>
-                              <td className="px-6 py-3.5 text-text-3">{it.updatedAt ? new Date(it.updatedAt).toLocaleDateString(isEn ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
-                              <td className="px-6 py-3.5 text-right"><button onClick={() => navigate(tool.path)} className="text-pv-blue font-medium hover:underline">{L2.open}</button></td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </section>
+              <SavedLibrary
+                items={savedItems}
+                loading={saved.loading}
+                limits={limits}
+                language={isFr ? 'fr' : 'en'}
+                onRemove={saved.remove}
+                onPatch={saved.patch}
+                onCompare={(id) => { setCompareKeys(keysOf(id)); setSection('compare'); }}
+                onReport={(id) => { setReportKeys(keysOf(id)); setSection('reports'); }}
+                onUpgrade={() => navigate('/pricing')}
+              />
+            )}
+
+            {section === 'compare' && (
+              <CompareWorkspace
+                rows={rows}
+                limits={limits}
+                plan={plan}
+                language={isFr ? 'fr' : 'en'}
+                currency={prefs.baseCcy || 'EUR'}
+                preselect={compareKeys}
+                onReport={(keys) => { setReportKeys(keys); setSection('reports'); }}
+                onUpgrade={() => navigate('/pricing')}
+              />
+            )}
+
+            {section === 'reports' && (
+              <ReportStudio
+                rows={rows}
+                preselect={reportKeys}
+                limits={limits}
+                plan={plan}
+                language={isFr ? 'fr' : 'en'}
+                currency={prefs.baseCcy || 'EUR'}
+                uid={user.uid}
+                branding={brand.branding}
+                onSaveBranding={brand.save}
+                onUpgrade={() => navigate('/pricing')}
+              />
+            )}
+
+            {section === 'plan' && (
+              <PlanPanel plan={plan} isAdmin={isAdmin} savedCount={savedItems.length} uid={user.uid} language={isFr ? 'fr' : 'en'} onPricing={() => navigate('/pricing')} />
             )}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ChevronDown, User, LogOut, Heart, Menu, X, Settings, TrendingUp, FileText, LogIn } from "lucide-react";
+import { ChevronDown, User, LogOut, Heart, Menu, X, Settings, TrendingUp, FileText, LogIn, FolderOpen, CreditCard } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../../lib/utils";
 import { useAuth } from "../../contexts/AuthContext";
@@ -95,6 +95,7 @@ export function Header({
         { id: "virtual-portfolio", label: language === "fr" ? "Trading virtuel" : "Paper trading" },
       ],
     },
+    { id: "pricing", label: language === "fr" ? "Tarifs" : "Pricing" },
   ];
 
   // on the home page the bar is transparent over the hero, then turns solid once the page scrolls
@@ -302,6 +303,28 @@ export function Header({
                       >
                         <Settings size={15} className="text-blue-500 shrink-0" />
                         <span>{t("header.account_settings") || "Paramètres du compte"}</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          onPageChange("profile#saved");
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2.5 text-xs font-semibold text-text hover:text-blue-600 hover:bg-blue-500/10 rounded-xl transition-all duration-200 flex items-center gap-2.5"
+                      >
+                        <FolderOpen size={15} className="text-blue-500 shrink-0" />
+                        <span>{language === "fr" ? "Mes backtests et rapports" : "My backtests and reports"}</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          onPageChange("profile#plan");
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2.5 text-xs font-semibold text-text hover:text-blue-600 hover:bg-blue-500/10 rounded-xl transition-all duration-200 flex items-center gap-2.5"
+                      >
+                        <CreditCard size={15} className="text-amber-500 shrink-0" />
+                        <span>{language === "fr" ? "Abonnement" : "Subscription"}</span>
                       </button>
 
                       <button

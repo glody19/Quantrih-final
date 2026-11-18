@@ -27,6 +27,7 @@ const Auth = lazy(() => import("./components/pages/Auth").then((m) => ({ default
 const Profile = lazy(() => import("./components/pages/Profile").then((m) => ({ default: m.Profile })));
 const InvestorProfilePage = lazy(() => import("./components/pages/InvestorProfilePage").then((m) => ({ default: m.InvestorProfilePage })));
 const About = lazy(() => import("./components/pages/About").then((m) => ({ default: m.About })));
+const Pricing = lazy(() => import("./components/pages/Pricing").then((m) => ({ default: m.Pricing })));
 const Legal = lazy(() => import("./components/pages/Legal").then((m) => ({ default: m.Legal })));
 import { cn } from "./lib/utils";
 import { MotionConfig } from "motion/react";
@@ -200,6 +201,8 @@ function AppContent() {
           <Route path="/education" element={<Education />} />
           <Route path="/donate" element={<Navigate to="/" replace />} />
           <Route path="/about" element={<About />} />
+          <Route path="/pricing" element={<Pricing onNavigate={handleNavigate} />} />
+          <Route path="/tarifs" element={<Navigate to="/pricing" replace />} />
           <Route path="/cookies" element={<Legal page="cookies" />} />
           <Route path="/sitemap" element={<SiteMap onNavigate={handleNavigate} />} />
           <Route path="/privacy" element={<Legal page="privacy" />} />

@@ -22,6 +22,7 @@ import { auth, db } from "../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { collection, query, where, getDocs, orderBy, doc, deleteDoc } from "firebase/firestore";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
+import { usePlan } from "../../lib/plans";
 import { PresetPortfoliosSelector } from "../ui/PresetPortfoliosSelector";
 
 import {
@@ -568,6 +569,7 @@ const localLabels: Record<string, Record<string, string>> = {
 
 export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
   const { t, language } = useTranslation();
+  const { limits: planLimits } = usePlan();
   const currentLabels = localLabels[language] || localLabels["en"];
   const [activeMainView, setActiveMainView] = useState<"simulator" | "dashboard">("simulator");
   const [user] = useAuthState(auth);
@@ -993,7 +995,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
   );
   
   const applyPredefinedPortfolio = (preset: any) => {
-    if (portfolioNames.length >= 6) return;
+    if (portfolioNames.length >= planLimits.maxPortfolios) return;
     const newId = `p${Date.now()}`;
     let currentAssets = [...portfolioAssets];
     currentAssets = currentAssets.map(a => ({ ...a, weights: [...a.weights, "0"] }));
@@ -1077,7 +1079,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
   const [activeResIdx, setActiveResIdx] = useState(0);
 
   const addPortfolio = () => {
-    if (portfolioNames.length >= 6) return;
+    if (portfolioNames.length >= planLimits.maxPortfolios) return;
     const newId = Date.now().toString();
     setPortfolioNames([
       ...portfolioNames,
@@ -1565,7 +1567,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                         <button
                           key={idx}
                           onClick={() => applyPredefinedPortfolio(preset)}
-                          disabled={portfolioNames.length >= 6}
+                          disabled={portfolioNames.length >= planLimits.maxPortfolios}
                           className="text-xs bg-surface-2 border border-border px-3.5 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-all transform hover:scale-105 disabled:opacity-50 font-semibold shadow-sm cursor-pointer"
                         >
                           + {preset.name}
@@ -1588,7 +1590,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                 </div>
                 <button
                   onClick={addPortfolio}
-                  disabled={portfolioNames.length >= 6}
+                  disabled={portfolioNames.length >= planLimits.maxPortfolios}
                   className="text-base bg-gradient-to-r from-sky-500/10 to-blue-500/10 text-sky-500 px-4 py-2 border border-sky-500/30 rounded-2xl font-bold hover:from-sky-500/20 hover:to-blue-500/20 transition-all shadow-sm flex items-center justify-center gap-1.5 overflow-hidden relative disabled:opacity-50"
                 >
                   {t("pb.add")}

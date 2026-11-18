@@ -57,6 +57,10 @@ import { CountUp } from "../ui/CountUp";
 import { AssetPicker, RunButton, toOptions } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
+import { usePlan, clampStartDate } from "../../lib/plans";
+import { summarizeResults } from "../../lib/savedSummary";
+import { usePendingLoad } from "../../lib/pendingLoad";
+import { PlanNotice, planMessages } from "../account/PlanNotice";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -286,7 +290,7 @@ export function AssetAllocations({
   ];
 
   const applyPredefinedPortfolio = (preset: any) => {
-    if (portfolioNames.length >= 6) return;
+    if (portfolioNames.length >= planLimits.maxPortfolios) return;
     const newId = `p${Date.now()}`;
     let currentAssets = [...portfolioAssets];
     currentAssets = currentAssets.map((a) => ({
@@ -327,6 +331,8 @@ export function AssetAllocations({
 
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { limits: planLimits } = usePlan();
+  const [planNotes, setPlanNotes] = useState<string[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -1075,13 +1081,17 @@ export function AssetAllocations({
 
   const runBacktest = async () => {
     setError(null);
+    setPlanNotes([]);
     setIsRunning(true);
 
     try {
       const colors = ["#2c6cad", "#1a467a", "#d97757", "#10b981"];
       const enginePortfolios: any[] = [];
+      // The plan caps how many portfolios one backtest compares
+      const runCount = Math.min(portfolios.length, planLimits.maxPortfolios);
+      const droppedPortfolios = portfolios.length - runCount;
 
-      for (let pIdx = 0; pIdx < portfolios.length; pIdx++) {
+      for (let pIdx = 0; pIdx < runCount; pIdx++) {
         const p = portfolios[pIdx];
         const allocations: { symbol: string; weight: number }[] = [];
         let totalWeight = 0;
@@ -1121,10 +1131,15 @@ export function AssetAllocations({
         });
       }
 
+      // Freemium: at most 20 years of history
+      const planEnd = `${endYear}-${String(endMonth).padStart(2, "0")}-28`;
+      const planStart = clampStartDate(`${startYear}-${String(startMonth).padStart(2, "0")}-01`, planEnd, planLimits.maxYears);
+      setPlanNotes(planMessages(language, { clampedTo: planStart.clamped ? planStart.start : undefined, maxYears: planLimits.maxYears, dropped: droppedPortfolios, maxPortfolios: planLimits.maxPortfolios }));
+
       const engineOptions = {
         initialBalance: initialAmount,
-        startDate: `${startYear}-${String(startMonth).padStart(2, "0")}-01`,
-        endDate: `${endYear}-${String(endMonth).padStart(2, "0")}-28`,
+        startDate: planStart.start,
+        endDate: planEnd,
         rebalanceFrequency:
           rebalancing === "none" ? "none" : (rebalancing as any),
         rebalanceThreshold: rebalanceThreshold / 100,
@@ -1249,6 +1264,9 @@ export function AssetAllocations({
     }
   };
 
+  // Opened from the client area
+  usePendingLoad(["asset-allocation", "allocations"], (d) => handleCloudLoad(d));
+
   const handleCloudLoad = (data: any) => {
     if (data.startYear) setStartYear(data.startYear);
     if (data.startMonth) setStartMonth(data.startMonth);
@@ -1274,7 +1292,7 @@ export function AssetAllocations({
   };
 
   const addPortfolio = () => {
-    if (portfolioNames.length >= 6) return;
+    if (portfolioNames.length >= planLimits.maxPortfolios) return;
     const newId = Date.now().toString();
     setPortfolioNames([
       ...portfolioNames,
@@ -1633,7 +1651,7 @@ export function AssetAllocations({
                   <button
                     key={idx}
                     onClick={() => applyPredefinedPortfolio(preset)}
-                    disabled={portfolioNames.length >= 6}
+                    disabled={portfolioNames.length >= planLimits.maxPortfolios}
                     className="text-xs bg-surface-2 border border-border px-3.5 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-all transform hover:scale-105 disabled:opacity-50 font-semibold shadow-sm cursor-pointer"
                   >
                     + {preset.name}
@@ -1656,7 +1674,7 @@ export function AssetAllocations({
               </div>
               <button
                 onClick={addPortfolio}
-                disabled={portfolioNames.length >= 6}
+                disabled={portfolioNames.length >= planLimits.maxPortfolios}
                 className="text-base bg-gradient-to-r from-sky-500/10 to-blue-500/10 text-sky-500 px-4 py-2 border border-sky-500/30 rounded-2xl font-bold hover:from-sky-500/20 hover:to-blue-500/20 transition-all shadow-sm flex items-center justify-center gap-1.5 overflow-hidden relative disabled:opacity-50"
               >
                 {t("pb.add")}
@@ -1800,6 +1818,7 @@ export function AssetAllocations({
                 {error}
               </div>
             )}
+            <PlanNotice messages={planNotes} />
             <div className="flex justify-between pt-4 items-center">
               
               <RunButton onClick={runBacktest} running={isRunning} label={t("pb.run")} runningLabel={t("pb.running")} />
@@ -2574,7 +2593,7 @@ export function AssetAllocations({
                   portfolioNames, portfolioAssets,
                   portNames: portfolioNames.map(p => p.name),
                   allocRows: portfolioAssets.map(a => ({ symbol: a.symbol, allocations: a.weights.map(w => Number(w) || 0) })),
-                  resultsSummary: results ? results.map(r => ({ name: r.name, cagr: r.metrics.cagr, sharpe: r.metrics.sharpe, maxDrawdown: r.metrics.maxDrawdown })) : []
+                  resultsSummary: summarizeResults(results) || []
                 }} 
                 onLoad={handleCloudLoad}
                 onListUpdate={loadSavedConfigs}

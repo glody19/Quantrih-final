@@ -301,6 +301,25 @@ export const SEO_ROUTES: SeoRoute[] = [
     },
   },
   {
+    path: "/pricing",
+    section: "company",
+    indexable: true,
+    priority: 0.6,
+    changefreq: "monthly",
+    fr: {
+      title: "Tarifs | Quantrih Freemium, Premium et Pro",
+      description: "Freemium gratuit, Premium à 15 € par mois, Pro à 40 € par mois : backtests, analyses enregistrées, comparaisons et rapports PDF à votre marque.",
+      h1: "Tarifs Quantrih",
+      summary: "Trois formules : Freemium pour découvrir, Premium pour enregistrer et comparer ses analyses, Pro pour présenter des rapports à ses clients sans limite.",
+    },
+    en: {
+      title: "Pricing | Quantrih Freemium, Premium and Pro",
+      description: "Free Freemium, Premium at 15 EUR a month, Pro at 40 EUR a month: backtests, saved analyses, comparisons and branded PDF reports.",
+      h1: "Quantrih pricing",
+      summary: "Three plans: Freemium to get started, Premium to save and compare analyses, Pro to present reports to clients without limits.",
+    },
+  },
+  {
     path: "/about",
     section: "company",
     indexable: true,
