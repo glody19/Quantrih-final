@@ -194,8 +194,9 @@ export function evaluateTacticalModel(
      return weightAssets(selected.map(s => s.symbol));
 
      function weightAssets(syms: string[]): AssetAllocation[] {
-       const months = Math.max(2, model.type === 'adaptive_allocation' ? model.volatilityMonths : 3);
-       if (model.type === 'adaptive_allocation' && model.weighting === 'min_variance' && syms.length > 1) {
+       const m = model!;
+       const months = Math.max(2, m.type === 'adaptive_allocation' ? m.volatilityMonths : 3);
+       if (m.type === 'adaptive_allocation' && m.weighting === 'min_variance' && syms.length > 1) {
          const w = minVarianceWeights(syms.map(sym => monthlyReturns(sym, months)));
          if (w) return syms.map((symbol, i) => ({ symbol, weight: w[i] }));
        }

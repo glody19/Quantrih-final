@@ -10,7 +10,10 @@
       "DOM.Iterable"
     ],
     "skipLibCheck": true,
-    "strict": false, "noImplicitAny": false, "strictNullChecks": false, "noEmitOnError": false,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noEmitOnError": false,
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -23,5 +26,10 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "apps"
+  ]
 }
