@@ -10,6 +10,7 @@ import { Home } from "./components/pages/Home";
 const AssetAllocations = lazy(() => import("./components/pages/AssetAllocations").then((m) => ({ default: m.AssetAllocations })));
 const MonteCarlo = lazy(() => import("./components/pages/MonteCarlo").then((m) => ({ default: m.MonteCarlo })));
 const Portfolio = lazy(() => import("./components/pages/Portfolio").then((m) => ({ default: m.Portfolio })));
+const PortfolioOptimization = lazy(() => import("./components/pages/PortfolioOptimization").then((m) => ({ default: m.PortfolioOptimization })));
 const TacticalAllocation = lazy(() => import("./components/pages/TacticalAllocation").then((m) => ({ default: m.TacticalAllocation })));
 const MovingAverage = lazy(() => import("./components/pages/MovingAverage").then((m) => ({ default: m.MovingAverage })));
 const DualMomentum = lazy(() => import("./components/pages/DualMomentum").then((m) => ({ default: m.DualMomentum })));
@@ -39,7 +40,7 @@ import { findSeoRoute, SITE_URL } from "./seo/routes";
 
 // Analysis tools get a plain white background and larger text (see .tool-page in index.css).
 const TOOL_PAGES = new Set([
-  "asset-allocation", "portfolio", "portfolio-backtest", "tactical-allocation", "montecarlo",
+  "asset-allocation", "portfolio", "portfolio-backtest", "tactical-allocation", "montecarlo", "portfolio-optimization",
   "moving-average", "dual-momentum", "relative-strength", "market", "etf-overview",
 ]);
 
@@ -184,6 +185,7 @@ function AppContent() {
           <Route path="/portfolio" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="portfolio" />} />
           <Route path="/portfolio-backtest" element={<Portfolio baseCcy={baseCcy} setBaseCcy={setBaseCcy} onNavigate={handleNavigate} initialTab="portfolio-backtest" />} />
           <Route path="/montecarlo" element={<MonteCarlo baseCcy={baseCcy} />} />
+          <Route path="/portfolio-optimization" element={<PortfolioOptimization baseCcy={baseCcy} />} />
           <Route path="/tactical-allocation" element={<TacticalAllocation />} />
           <Route path="/moving-average" element={<MovingAverage />} />
           <Route path="/dual-momentum" element={<DualMomentum />} />

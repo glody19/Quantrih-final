@@ -127,6 +127,30 @@ export const SEO_ROUTES: SeoRoute[] = [
     },
   },
   {
+    path: "/portfolio-optimization",
+    section: "tools",
+    app: true,
+    indexable: true,
+    priority: 0.8,
+    changefreq: "weekly",
+    fr: {
+      title: "Optimisation de portefeuille et frontière efficiente | Quantrih",
+      description:
+        "Optimisez les poids de vos ETF et actions : ratio de Sharpe maximal, volatilité minimale, parité des risques, rendement cible. Frontière efficiente et backtest glissant hors échantillon.",
+      h1: "Optimisation de portefeuille",
+      summary:
+        "Calculez la répartition optimale de vos actifs selon votre objectif, visualisez la frontière efficiente et vérifiez le résultat avec un backtest glissant qui n'utilise que les données connues à chaque date.",
+    },
+    en: {
+      title: "Portfolio Optimization and Efficient Frontier | Quantrih",
+      description:
+        "Optimize the weights of your ETFs and stocks: maximum Sharpe ratio, minimum volatility, risk parity, target return. Efficient frontier and out-of-sample walk-forward backtest.",
+      h1: "Portfolio optimization",
+      summary:
+        "Compute the optimal mix of your assets for your goal, visualise the efficient frontier and check the result with a walk-forward backtest that only uses the data known at each date.",
+    },
+  },
+  {
     path: "/tactical-allocation",
     section: "tools",
     app: true,

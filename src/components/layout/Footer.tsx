@@ -29,6 +29,7 @@ export function Footer({ onNavigate }: FooterProps) {
         { label: 'Portfolio Backtesting', page: 'portfolio-backtest' },
         { label: 'Tactical Allocation', page: 'tactical-allocation' },
         { label: 'Monte Carlo', page: 'montecarlo' },
+        { label: fr ? 'Optimisation de portefeuille' : 'Portfolio optimization', page: 'portfolio-optimization' },
         { label: fr ? 'Portefeuille virtuel' : 'Virtual portfolio', page: 'virtual-portfolio' },
       ],
     },
