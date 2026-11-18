@@ -1499,7 +1499,7 @@ const isEuropeanMarketOpen = () => {
  <p className="text-base md:text-lg text-text-3 mt-2 max-w-3xl leading-relaxed">{language === 'fr' ? "Cours, analyse financière et états financiers des actions, ETF et indices, à partir de données de marché réelles." : 'Prices, financial analysis and financial statements for stocks, ETFs and indices, from real market data.'}</p>
  </div>
  {/* Premium Top Navigation Tabs */}
- <div className="w-full bg-white/95 backdrop-blur border-b border-slate-100 sticky top-[84px] lg:top-[68px] z-40 shrink-0">
+ <div className="w-full bg-white/95 backdrop-blur border-b border-slate-100 sticky top-[84px] lg:top-[69px] z-40 shrink-0">
  <div className="max-w-[2400px] mx-auto px-4 md:px-8 xl:px-12 py-2 flex gap-3 overflow-x-auto no-scrollbar items-center">
  <button 
  onClick={() => setMarketPageUrl('stocks')} 
