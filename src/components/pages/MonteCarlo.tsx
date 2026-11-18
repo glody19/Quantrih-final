@@ -41,7 +41,7 @@ import { Line } from "react-chartjs-2";
 import { fetchTotalReturnPrices } from "../../engine/data";
 import { runSimulation } from "../../engine/simulation";
 import { calculateCorrelationMatrix } from "../../engine/metrics";
-import { AssetPicker, RunButton, toOptions, WeightInput, WeightTotal, AllocationBar } from "../ui/AllocationInputs";
+import { AssetPicker, RunButton, toOptions, WeightInput, WeightTotal, AllocationBar, EuropeanSwitch } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { ASSET_DATA } from "../../constants";
 import { InfoTooltip } from "../ui/InfoTooltip";
@@ -1588,13 +1588,16 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     </h3>
                   </div>
                 </div>
-                <button
-                  onClick={addPortfolio}
-                  disabled={portfolioNames.length >= planLimits.maxPortfolios}
-                  className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-                >
-                  {t("pb.add")}
-                </button>
+                <div className="flex items-start justify-end gap-2">
+                  <EuropeanSwitch rows={portfolioAssets} onChange={setPortfolioAssets} />
+                  <button
+                    onClick={addPortfolio}
+                    disabled={portfolioNames.length >= planLimits.maxPortfolios}
+                    className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  >
+                    {t("pb.add")}
+                  </button>
+                </div>
               </div>
 
               <div className="w-full max-w-full mx-auto overflow-x-auto bg-white rounded-xl border border-slate-200 mt-3">

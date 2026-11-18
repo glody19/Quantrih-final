@@ -1,5 +1,7 @@
 import React from "react";
-import { Play, Search } from "lucide-react";
+import { Play, Search, Link2, Check } from "lucide-react";
+import { buildShareUrl } from "../../lib/shareLink";
+import { toUcits, hasUsEtf } from "../../data/ucitsEquivalents";
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { TickerInput, ClassChip, type TickerOption } from "./TickerInput";
@@ -172,6 +174,88 @@ export function AllocationBar({ rows }: { rows: { symbol: string; weight: number
       {parts.map(([c, w]) => (
         <span key={c} style={{ width: `${(w / Math.max(100, total)) * 100}%`, background: ASSET_CLASS_META[c].color }} />
       ))}
+    </div>
+  );
+}
+
+/** Copies a link that reopens the tool with exactly the same settings. */
+export function ShareLinkButton({ prefix, className }: { prefix: string; className?: string }) {
+  const { language } = useTranslation();
+  const fr = language === "fr";
+  const [copied, setCopied] = React.useState(false);
+  const copy = async () => {
+    const url = buildShareUrl(prefix);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      window.prompt(fr ? "Copiez ce lien :" : "Copy this link:", url);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2200);
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      title={fr ? "Le lien rouvre cet outil avec les mêmes réglages et portefeuilles" : "The link reopens this tool with the same settings and portfolios"}
+      className={cn(
+        "inline-flex items-center gap-1.5 h-9 rounded-lg px-3 text-[13px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors",
+        className,
+      )}
+    >
+      {copied ? <Check size={14} className="text-emerald-600" /> : <Link2 size={14} />}
+      <span>{copied ? (fr ? "Lien copié" : "Link copied") : (fr ? "Copier le lien" : "Copy link")}</span>
+    </button>
+  );
+}
+
+/**
+ * European investor mode: one click swaps the US ETFs of the table for their UCITS equivalents
+ * listed in euros, with an undo. Results are then in euros and include the currency effect.
+ */
+export function EuropeanSwitch<T extends { symbol: string }>({ rows, onChange, className }: { rows: T[]; onChange: (rows: T[]) => void; className?: string }) {
+  const { language } = useTranslation();
+  const fr = language === "fr";
+  const [undo, setUndo] = React.useState<{ rows: T[]; swapped: { from: string; to: string; note?: { fr?: string; en?: string } }[] } | null>(null);
+  const canSwap = hasUsEtf(rows);
+  if (!canSwap && !undo) return null;
+  const apply = () => {
+    const res = toUcits(rows);
+    if (!res.swapped.length) return;
+    setUndo({ rows, swapped: res.swapped });
+    onChange(res.rows);
+  };
+  const notes = undo ? [...new Set(undo.swapped.map((x) => (fr ? x.note?.fr : x.note?.en)).filter(Boolean) as string[])] : [];
+  return (
+    <div className={cn("flex flex-col items-end gap-1", className)}>
+      {canSwap ? (
+        <button
+          type="button"
+          onClick={apply}
+          title={fr ? "Remplace les ETF américains par leurs équivalents UCITS achetables en Europe, cotés en euros" : "Swaps US ETFs for their UCITS equivalents that European investors can buy, listed in euros"}
+          className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors"
+        >
+          {fr ? "Version européenne (UCITS, €)" : "European version (UCITS, EUR)"}
+        </button>
+      ) : null}
+      {undo && (
+        <p className="text-[12px] text-slate-500 text-right max-w-[520px] leading-snug">
+          {fr
+            ? `${undo.swapped.length} ETF remplacé${undo.swapped.length > 1 ? "s" : ""} par des équivalents UCITS cotés en euros (${[...new Set(undo.swapped.map((x) => x.to))].join(", ")}). Résultats en euros, effet de change compris ; l'historique commence souvent entre 2009 et 2019.`
+            : `${undo.swapped.length} ETF${undo.swapped.length > 1 ? "s" : ""} swapped for UCITS equivalents listed in euros (${[...new Set(undo.swapped.map((x) => x.to))].join(", ")}). Results in euros, currency effect included; history often starts between 2009 and 2019.`}
+          {notes.length ? ` ${fr ? "Approximations :" : "Approximations:"} ${notes.join(fr ? " ; " : "; ")}.` : ""}{" "}
+          <button
+            type="button"
+            onClick={() => {
+              onChange(undo.rows);
+              setUndo(null);
+            }}
+            className="underline underline-offset-2 text-slate-700 hover:text-slate-900"
+          >
+            {fr ? "Annuler" : "Undo"}
+          </button>
+        </p>
+      )}
     </div>
   );
 }
