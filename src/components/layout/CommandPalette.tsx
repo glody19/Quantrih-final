@@ -20,6 +20,7 @@ export function CommandPalette({ onNavigate, isOpen, onClose }: CommandPalettePr
     { title: 'Portfolio Management', id: 'portfolio-backtest', icon: <Briefcase size={18} /> },
     { title: 'Tactical Allocation', id: 'tactical-allocation', icon: <Database size={18} /> },
     { title: 'Monte Carlo Simulation', id: 'montecarlo', icon: <Activity size={18} /> },
+    { title: 'Portfolio Optimization / Efficient Frontier', id: 'portfolio-optimization', icon: <PieChart size={18} /> },
     { title: 'Library / Education', id: 'education', icon: <PlayCircle size={18} /> },
   ];
 

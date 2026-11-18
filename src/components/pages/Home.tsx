@@ -230,6 +230,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
     { title: t("home.pages.portfolio_backtest.title"), id: "portfolio-backtest", cta: t("home.pages.portfolio_backtest.cta"), desc: t("home.pages.portfolio_backtest.desc"), accent: "#2DD4BF" },
     { title: t("home.pages.tactical_allocation.title"), id: "tactical-allocation", cta: t("home.pages.tactical_allocation.cta"), desc: t("home.pages.tactical_allocation.desc"), accent: "#F59E0B" },
     { title: t("home.pages.montecarlo.title"), id: "montecarlo", cta: t("home.pages.montecarlo.cta"), desc: t("home.pages.montecarlo.desc"), accent: "#60A5FA" },
+    { title: t("home.pages.optimization.title"), id: "portfolio-optimization", cta: t("home.pages.optimization.cta"), desc: t("home.pages.optimization.desc"), accent: "#A78BFA" },
   ];
 
   return (
@@ -340,7 +341,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
       <section className="relative w-full pt-20 lg:pt-24 pb-10">
         <div className="relative px-6 lg:px-16">
           <SectionTitle text={t("home.tools.title")} sub={t("home.tools.subtitle")} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full max-w-[86rem] mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4 w-full max-w-[86rem] mx-auto">
             {pages.map((p, i) => (
               <motion.div
                 key={p.id}
