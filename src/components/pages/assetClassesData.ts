@@ -7,6 +7,11 @@ export const majorIndices = [
   { ticker: "^FCHI", asset: "CAC 40" },
   { ticker: "^FTSE", asset: "FTSE 100" },
   { ticker: "^N225", asset: "Nikkei 225" },
+  { ticker: "^RUT", asset: "Russell 2000" },
+  { ticker: "^GDAXI", asset: "DAX" },
+  { ticker: "^HSI", asset: "Hang Seng" },
+  { ticker: "^BSESN", asset: "BSE Sensex" },
+  { ticker: "^BFX", asset: "BEL 20" },
 ];
 
 export const assetClasses = [
@@ -15,7 +20,6 @@ export const assetClasses = [
   { ticker: "VTI", asset: "US Total Stock Market", m1: -0.39, m3: 15.68, m6: 11.04, y1: 23.17, y3: 20.45, y5: 12.24, y10: 15.04, y20: 11.23, y30: 10.30 },
   { ticker: "SPY", asset: "US Large Cap Blend", m1: -1.03, m3: 15.12, m6: 10.09, y1: 22.21, y3: 20.48, y5: 13.30, y10: 15.40, y20: 11.28, y30: 10.25 },
   { ticker: "IJR", asset: "US Small Cap Blend", m1: 7.28, m3: 19.67, m6: 23.98, y1: 37.48, y3: 16.00, y5: 7.29, y10: 11.46, y20: 9.61, y30: 9.97 },
-  { ticker: "CWB", asset: "US Convertible Bonds", m1: -0.12, m3: 18.26, m6: 21.63, y1: 32.55, y3: 17.72, y5: 6.55, y10: 12.72, y20: 8.95, y30: 9.16 },
   { ticker: "VNQ", asset: "US REITs", m1: 1.65, m3: 9.67, m6: 11.11, y1: 12.47, y3: 9.13, y5: 2.79, y10: 4.91, y20: 6.25, y30: 9.02 },
   { ticker: "EMB", asset: "Emerg. Market Bonds", m1: 0.43, m3: 4.05, m6: 2.38, y1: 9.57, y3: 9.23, y5: 1.81, y10: 3.02, y20: 5.13, y30: 8.63 },
   { ticker: "VT", asset: "World All Countries", m1: -0.38, m3: 13.88, m6: 11.93, y1: 24.26, y3: 19.68, y5: 10.87, y10: 12.81, y20: 8.55, y30: 8.39 },
@@ -52,4 +56,39 @@ export const megatrends = [
   { ticker: "CGW", asset: "Global Water", m1: 5.22, m3: 2.80, m6: 4.32, y1: 6.83, y3: 10.50, y5: 5.92, y10: 10.01 },
   { ticker: "EBIZ", asset: "Global E-Commerce", m1: -0.64, m3: 3.45, m6: -14.78, y1: -9.33, y3: 14.71, y5: -3.96, y10: null },
   { ticker: "EMQQ", asset: "Emerging Markets E-Commerce", m1: -3.69, m3: -5.67, m6: -22.69, y1: -22.81, y3: 3.66, y5: -12.39, y10: 4.13 }
+];
+
+/**
+ * Universe ranked live on the Market page ("Top 20 ETF over 12 months"): liquid US-listed,
+ * unleveraged ETFs covering sectors, countries, themes, factors and commodities.
+ * The ranking and every figure are computed from real prices; at most 80 symbols (2 API calls).
+ */
+export const etfUniverse: { ticker: string; asset: string }[] = [
+  { ticker: "XLK", asset: "US Technology (SPDR)" }, { ticker: "XLF", asset: "US Financials" }, { ticker: "XLE", asset: "US Energy" },
+  { ticker: "XLV", asset: "US Health Care" }, { ticker: "XLI", asset: "US Industrials" }, { ticker: "XLY", asset: "US Consumer Discretionary" },
+  { ticker: "XLP", asset: "US Consumer Staples" }, { ticker: "XLU", asset: "US Utilities" }, { ticker: "XLB", asset: "US Materials" },
+  { ticker: "XLRE", asset: "US Real Estate" }, { ticker: "XLC", asset: "US Communication Services" }, { ticker: "SMH", asset: "Semiconductors (VanEck)" },
+  { ticker: "IBB", asset: "Biotechnology" }, { ticker: "ITA", asset: "US Aerospace and Defense" }, { ticker: "KRE", asset: "US Regional Banks" },
+  { ticker: "XME", asset: "US Metals and Mining" }, { ticker: "GDX", asset: "Gold Miners" }, { ticker: "GDXJ", asset: "Junior Gold Miners" },
+  { ticker: "SIL", asset: "Silver Miners" }, { ticker: "COPX", asset: "Copper Miners" }, { ticker: "URA", asset: "Uranium" },
+  { ticker: "LIT", asset: "Lithium and Battery Tech" }, { ticker: "TAN", asset: "Solar Energy" }, { ticker: "ICLN", asset: "Global Clean Energy" },
+  { ticker: "EWY", asset: "South Korea" }, { ticker: "EWT", asset: "Taiwan" }, { ticker: "EWJ", asset: "Japan" },
+  { ticker: "EWG", asset: "Germany" }, { ticker: "EWU", asset: "United Kingdom" }, { ticker: "EWQ", asset: "France" },
+  { ticker: "EWZ", asset: "Brazil" }, { ticker: "EWW", asset: "Mexico" }, { ticker: "INDA", asset: "India" },
+  { ticker: "MCHI", asset: "China" }, { ticker: "EWC", asset: "Canada" }, { ticker: "EWA", asset: "Australia" },
+  { ticker: "EWL", asset: "Switzerland" }, { ticker: "EWP", asset: "Spain" }, { ticker: "EWI", asset: "Italy" },
+  { ticker: "EIS", asset: "Israel" }, { ticker: "EPU", asset: "Peru" }, { ticker: "AFK", asset: "Africa" },
+  { ticker: "EWO", asset: "Austria" }, { ticker: "VGK", asset: "Europe (FTSE Developed Europe)" }, { ticker: "EEM", asset: "Emerging Markets" },
+  { ticker: "ARKK", asset: "ARK Innovation" }, { ticker: "ARKQ", asset: "Autonomous Tech and Robotics" }, { ticker: "ARKG", asset: "Genomic Revolution" },
+  { ticker: "QTUM", asset: "Quantum Computing" }, { ticker: "AIQ", asset: "Artificial Intelligence and Technology" }, { ticker: "BOTZ", asset: "Robotics and AI" },
+  { ticker: "ROBO", asset: "Robotics and Automation" }, { ticker: "IRBO", asset: "Robotics and AI (iShares)" }, { ticker: "HACK", asset: "Cyber Security" },
+  { ticker: "CIBR", asset: "Cyber Security (First Trust)" }, { ticker: "SKYY", asset: "Cloud Computing" }, { ticker: "IDRV", asset: "Self-Driving EV and Tech" },
+  { ticker: "BLOK", asset: "Blockchain" }, { ticker: "IDNA", asset: "Genomics and Immunology" }, { ticker: "UFO", asset: "Space" },
+  { ticker: "GLD", asset: "Gold" }, { ticker: "SLV", asset: "Silver" }, { ticker: "PPLT", asset: "Platinum" },
+  { ticker: "USO", asset: "WTI Crude Oil" }, { ticker: "BNO", asset: "Brent Crude Oil" }, { ticker: "DBC", asset: "Commodities" },
+  { ticker: "CPER", asset: "Copper" }, { ticker: "GLTR", asset: "Precious Metals Basket" }, { ticker: "MTUM", asset: "US Momentum Factor" },
+  { ticker: "QUAL", asset: "US Quality Factor" }, { ticker: "USMV", asset: "US Minimum Volatility" }, { ticker: "VLUE", asset: "US Value Factor" },
+  { ticker: "IWM", asset: "US Small Caps (Russell 2000)" }, { ticker: "AVUV", asset: "US Small Cap Value" }, { ticker: "IWC", asset: "US Micro Caps" },
+  { ticker: "QQQ", asset: "Nasdaq 100" }, { ticker: "SPY", asset: "S&P 500" },
+  { ticker: "TLT", asset: "US 20+ Year Treasuries" }, { ticker: "EMB", asset: "Emerging Market Bonds" },
 ];
