@@ -1,5 +1,6 @@
 import { MonthlyPrice } from './types';
 import { SIM_PROXIES, ASSET_DATA } from '../constants';
+import { apiUrl } from './apiBase';
 
 // Global cache to prevent duplicate requests for the same symbol/range
 const priceCache = new Map<string, MonthlyPrice[]>();
@@ -45,7 +46,7 @@ async function fetchRaw(symbol: string, fromDate: string, toDate: string, noFall
   if (actualSymbol.toUpperCase() === CASH_SYMBOL) return fetchCashSeries(fromDate, toDate);
   let data: MonthlyPrice[];
   try {
-    const cacheRes = await fetch(`/data/prices/${encodeURIComponent(actualSymbol)}.json`);
+    const cacheRes = await fetch(apiUrl(`/data/prices/${encodeURIComponent(actualSymbol)}.json`));
     if (cacheRes.ok) {
       const contentType = cacheRes.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
@@ -55,7 +56,7 @@ async function fetchRaw(symbol: string, fromDate: string, toDate: string, noFall
         if (data.length && new Date(toDate).getTime() - lastCached > STALE_MS) {
           try {
             const from = data[data.length - 1].date.substring(0, 7) + "-01";
-            const res = await fetch(`/api/prices/monthly/${encodeURIComponent(actualSymbol)}?from=${from}&to=${toDate}`);
+            const res = await fetch(apiUrl(`/api/prices/monthly/${encodeURIComponent(actualSymbol)}?from=${from}&to=${toDate}`));
             const ct = res.headers.get("content-type") || "";
             if (res.ok && ct.includes("application/json")) {
               const fresh: MonthlyPrice[] = await res.json();
@@ -79,7 +80,7 @@ async function fetchRaw(symbol: string, fromDate: string, toDate: string, noFall
     }
   } catch (e) {
     try {
-      const res = await fetch(`/api/prices/monthly/${encodeURIComponent(actualSymbol)}?from=${fromDate}&to=${toDate}`);
+      const res = await fetch(apiUrl(`/api/prices/monthly/${encodeURIComponent(actualSymbol)}?from=${fromDate}&to=${toDate}`));
       if (!res.ok) throw new Error(`Failed to fetch prices for ${actualSymbol}`);
       
       const contentType = res.headers.get("content-type");
@@ -161,7 +162,7 @@ export async function fetchDividends(symbol: string): Promise<{ date: string, am
   // The cash series already includes its interest.
   if (actualSymbol.toUpperCase() === CASH_SYMBOL) return [];
   try {
-    const res = await fetch(`/api/prices/divs/${encodeURIComponent(actualSymbol)}`);
+    const res = await fetch(apiUrl(`/api/prices/divs/${encodeURIComponent(actualSymbol)}`));
     if (!res.ok) return [];
     
     const contentType = res.headers.get("content-type");

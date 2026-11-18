@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Quantrih",
+    "slug": "quantrih",
+    "scheme": "quantrih",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FFFFFF",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.quantrih.app",
+      "usesAppleSignIn": true
+    },
+    "android": {
+      "package": "com.quantrih.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": ["expo-router", "expo-sharing"],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "apiBase": "https://quantrih.com",
+      "revenueCatIosKey": "",
+      "revenueCatAndroidKey": ""
+    }
+  }
+}

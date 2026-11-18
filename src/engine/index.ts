@@ -4,6 +4,7 @@ import { fetchMonthlyPrices, fetchDividends } from './data';
 import { calculateMetrics, calculateMonteCarlo, calculateCorrelationMatrix, calculateRelativeMetrics } from './metrics';
 import { evaluateTacticalModel } from './tactical';
 import { FX_TO_USD } from '../constants';
+import { apiUrl } from './apiBase';
 
 const EUR_SUFFIXES = ['.AS', '.DE', '.PA', '.MI', '.MC', '.BR', '.F', '.VI', '.LS', '.IR', '.HE'];
 /** Trading currency of a ticker: euro for euro-area exchanges, US dollar otherwise (GBP and others are left as they are). */
@@ -75,7 +76,7 @@ export async function runBacktest(
     for (const sym of symbols) {
       if (tickerCurrency(sym) !== 'USD') continue;
       const pr = pricesBySymbol.get(sym);
-      if (pr) pricesBySymbol.set(sym, pr.map(p => ({ ...p, close: p.close / rate(p.normalizedDate) })));
+      if (pr) pricesBySymbol.set(sym, pr.map(p => ({ ...p, close: p.close / rate(p.normalizedDate!) })));
       const dv = dividendsBySymbol.get(sym);
       if (dv) dividendsBySymbol.set(sym, dv.map(d => ({ ...d, amount: d.amount / rate(d.date.substring(0, 7)) })));
     }
@@ -93,7 +94,7 @@ export async function runBacktest(
   for (const [sym, data] of pricesBySymbol.entries()) {
     const lookup = new Map<string, number>();
     for (const d of data) {
-      lookup.set(d.normalizedDate, d.close);
+      lookup.set(d.normalizedDate!, d.close);
     }
     priceLookup.set(sym, lookup);
   }
@@ -134,7 +135,7 @@ export async function runBacktest(
   let cpiByMonth: Map<string, number> | null = null;
   if (options.inflationAdjusted) {
     try {
-      const res = await fetch('/api/macro/fred/CPIAUCSL?full=1');
+      const res = await fetch(apiUrl('/api/macro/fred/CPIAUCSL?full=1'));
       if (res.ok) {
         const data = await res.json();
         const obs: any[] = Array.isArray(data?.observations) ? data.observations : [];
@@ -468,7 +469,7 @@ export async function runBacktest(
          }
          equityCurve[j].value /= discount;
          if (equityCurve[j].cashflow) {
-            equityCurve[j].cashflow /= discount;
+            equityCurve[j].cashflow! /= discount;
          }
       }
     }
