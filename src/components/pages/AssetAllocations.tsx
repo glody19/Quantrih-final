@@ -54,6 +54,7 @@ import { InfoTooltip } from "../ui/InfoTooltip";
 import { lazyPortfolios } from "./lazyPortfoliosData";
 import { areaGradient, CHART_FONT, TOOLTIP } from "../ui/chartTheme";
 import { CountUp } from "../ui/CountUp";
+import { ResultInsights } from "../backtest/ResultInsights";
 import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
@@ -1852,7 +1853,8 @@ export function AssetAllocations({
               </div>
             </div>
 
-            {/* Portfolio Summaries (Charts + Metrics) */}
+            <ResultInsights portfolios={results} language={language} />
+              {/* Portfolio Summaries (Charts + Metrics) */}
             <div className="bg-white border border-slate-200 rounded-xl mb-8 overflow-hidden text-left">
               <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text tracking-tight">
