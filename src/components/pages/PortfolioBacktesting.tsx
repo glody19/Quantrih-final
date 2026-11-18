@@ -29,6 +29,7 @@ import { ReturnsHeatmap } from "../ui/ReturnsHeatmap";
 import { RollingReturnsTable } from "../ui/RollingReturnsTable";
 import { CorrelationMatrix } from "../ui/CorrelationMatrix";
 import { EfficientFrontier } from "../ui/EfficientFrontier";
+import { ResultInsights } from "../backtest/ResultInsights";
 import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
@@ -1349,6 +1350,7 @@ export function PortfolioBacktesting({
 
                   {/* Results report (Portfolio Visualizer style): summary, metrics, annual returns, drawdowns, rolling returns */}
                   <div className="mb-12 text-left">
+                    <ResultInsights portfolios={results} language={language} excludeFromRanking={includeBenchmark ? "benchmark" : undefined} />
                     <BacktestReport
                       portfolios={results}
                       benchmarkId={includeBenchmark ? "benchmark" : undefined}
