@@ -62,7 +62,14 @@ export function calculateMetrics(
     const cashflow = equityCurve[i].cashflow || 0;
     
     // Time-weighted return for the period
-    const ret = (curr - (prev + cashflow)) / (prev + cashflow);
+    // An emptied portfolio (all withdrawn) has no return left to measure
+    const base = prev + cashflow;
+    if (!(base > 1e-9)) {
+      // Once everything is withdrawn, later months do not count in the averages
+      drawdownsList.push(drawdownsList[drawdownsList.length - 1] ?? 0);
+      continue;
+    }
+    const ret = (curr - base) / base;
     returns.push(ret);
     monthlyReturnsList.push({ date: equityCurve[i].date, value: ret * 100 });
     

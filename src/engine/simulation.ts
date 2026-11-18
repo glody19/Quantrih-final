@@ -1,3 +1,4 @@
+import { isCashflowMonth, cashflowStepMonths, cashflowMonthlyMultiplier } from './cashflow';
 import { MonthlyPrice } from './types';
 import { boxMuller } from '../utils';
 
@@ -8,7 +9,7 @@ export interface SimulationOptions {
   initialBalance: number;
   cashflow: number;
   cashflowType?: 'none' | 'fixed' | 'percentage' | 'contribute';
-  cashflowFreq?: 'annual' | 'monthly';
+  cashflowFreq?: 'annual' | import('./cashflow').CashflowFrequency;
   spendingRule?: 'none' | 'rolling_avg' | 'geometric';
   sequenceOfReturnsYears?: number;
   inflationModel?: 'historical' | 'fixed';
@@ -160,7 +161,8 @@ export function runSimulation(
       if (fee > 0) { setBalance(balance * (1 - fee / 12)); growth *= 1 - fee / 12; }
       inflationIndex *= Math.pow(1 + infRate, 1 / 12);
 
-      const flow = (yearly: boolean) => {
+      const flow = (yearShare: number, times: number) => {
+        const yearly = yearShare >= 1;
         if (options.cashflowType === 'none' || !options.cashflowType || amount === 0) return;
         let cf: number;
         if (options.cashflowType === 'percentage') {
@@ -168,14 +170,16 @@ export function runSimulation(
             const n = Math.min(3, path.length);
             cf = (path.slice(-n).reduce((a, b) => a + b, 0) / n) * (amount / 100);
           } else {
-            cf = balance * (amount / 100) / (yearly ? 1 : 12);
+            cf = balance * (amount / 100) * yearShare;
           }
         } else {
-          cf = amount * (indexed ? inflationIndex : 1);
+          cf = amount * times * (indexed ? inflationIndex : 1);
         }
         setBalance(options.cashflowType === 'contribute' ? balance + cf : balance - cf);
       };
-      if (options.cashflowFreq === 'monthly') flow(false);
+      // Fixed amounts are paid at each due month (weekly = 52/12 a month); a percentage is a yearly rate spread over the payments
+      const cfFreq = options.cashflowFreq === 'annual' || !options.cashflowFreq ? 'annually' : options.cashflowFreq;
+      if (cfFreq !== 'annually' && isCashflowMonth(cfFreq, m)) flow(cashflowStepMonths(cfFreq) / 12, cashflowMonthlyMultiplier(cfFreq));
 
       if (m % 12 === 0) {
         if (taxRate > 0 && yearGain > 0 && balance > 0) {
@@ -184,7 +188,7 @@ export function runSimulation(
           setBalance(after);
         }
         yearGain = 0;
-        if (!options.cashflowFreq || options.cashflowFreq === 'annual') flow(true);
+        if (cfFreq === 'annually') flow(1, 1);
         if (trackAssets && options.rebalance === 'annual') holdings = wn.map(x => x * balance);
         path.push(balance);
       }

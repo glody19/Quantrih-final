@@ -1,3 +1,4 @@
+import { isCashflowMonth, cashflowMonthlyMultiplier } from './cashflow';
 import { Portfolio, BacktestOptions, BacktestResult, EquityDataPoint, MonthlyPrice, AssetResult } from './types';
 import { fetchMonthlyPrices, fetchDividends } from './data';
 import { calculateMetrics, calculateMonteCarlo, calculateCorrelationMatrix, calculateRelativeMetrics } from './metrics';
@@ -329,25 +330,38 @@ export async function runBacktest(
         }
         
         // Handle Cashflow BEFORE price change (contribution at start of month)
-      const cashflow = options.cashflowAmount || 0;
       const freq = options.cashflowFrequency || 'none';
       const monthInt = parseInt(month.split('-')[1], 10);
-      const isFirstMonthOfYear = monthInt === 1;
 
-      if (freq === 'monthly' || (freq === 'annually' && isFirstMonthOfYear)) {
-          totalContributions += cashflow;
-          currentCashflow = cashflow;
-          
-          let netCashflow = cashflow;
-          if (cashflow > 0 && options.transactionFeeAmount) {
-             netCashflow -= (options.transactionFeeAmount * allocations.length); // Assume fee is charged per asset bought
-          }
-          
-          for (const alloc of allocations) {
-              const prevMonth = commonMonths[i - 1];
-              const price = priceLookup.get(alloc.symbol)?.get(prevMonth) || 1;
-              const currentShares = shares.get(alloc.symbol) || 0;
-              shares.set(alloc.symbol, currentShares + (netCashflow * alloc.weight) / price);
+      if (isCashflowMonth(freq, monthInt) && options.cashflowAmount) {
+          const prevMonth = commonMonths[i - 1];
+          const priceOf = (sym: string) => priceLookup.get(sym)?.get(prevMonth) || 1;
+          const cashflow = options.cashflowAmount * cashflowMonthlyMultiplier(freq);
+
+          if (cashflow > 0) {
+            totalContributions += cashflow;
+            currentCashflow = cashflow;
+            let netCashflow = cashflow;
+            if (options.transactionFeeAmount) {
+               netCashflow -= (options.transactionFeeAmount * allocations.length); // Assume fee is charged per asset bought
+            }
+            for (const alloc of allocations) {
+                const currentShares = shares.get(alloc.symbol) || 0;
+                shares.set(alloc.symbol, currentShares + (Math.max(0, netCashflow) * alloc.weight) / priceOf(alloc.symbol));
+            }
+          } else {
+            // Withdrawal: sell the same fraction of every holding, never more than the portfolio holds
+            let gross = cashBalance;
+            for (const [sym, sh] of shares) gross += sh * priceOf(sym);
+            const wanted = -cashflow;
+            const taken = Math.min(wanted, Math.max(0, gross));
+            if (taken > 0 && gross > 0) {
+              const keep = 1 - taken / gross;
+              for (const [sym, sh] of shares) shares.set(sym, sh * keep);
+              cashBalance *= keep;
+            }
+            totalContributions -= taken;
+            currentCashflow = -taken;
           }
       }
       

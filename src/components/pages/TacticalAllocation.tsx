@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { CashflowFrequencyOptions, CashflowSummary } from "../ui/CashflowFrequencyOptions";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { cn } from "../../lib/utils";
@@ -784,7 +785,7 @@ export function TacticalAllocation() {
   const [includeYtd, setIncludeYtd] = useLocalStorage("ta_includeYtd", "no");
   const [cashflowType, setCashflowType] = useLocalStorage<"none" | "contribute" | "withdraw">("ta_cashflowType", "none");
   const [cashflowAmount, setCashflowAmount] = useLocalStorage("ta_cashflowAmount", 500);
-  const [cashflowFrequency, setCashflowFrequency] = useLocalStorage<"monthly" | "annually">("ta_cashflowFrequency", "monthly");
+  const [cashflowFrequency, setCashflowFrequency] = useLocalStorage<string>("ta_cashflowFrequency", "monthly");
 
   const [maPortfolioAssets, setMaPortfolioAssets] = useLocalStorage(
     "ta_maPortfolioAssets_v2", [
@@ -1834,8 +1835,16 @@ export function TacticalAllocation() {
           new Set(r.equityCurve.map((e) => parseInt(e.date.split("-")[0]))),
         );
         const annualReturns: number[] = [];
+        // Year returns compound the monthly time-weighted returns, so money added or withdrawn is not counted as gain or loss
+        const monthly = r.metrics?.monthlyReturns;
+        if (monthly && monthly.length) {
+          for (const yr of yearsInteger) {
+            const rows = monthly.filter((m) => m.date.startsWith(yr.toString()));
+            annualReturns.push((rows.reduce((acc, m) => acc * (1 + m.value / 100), 1) - 1) * 100);
+          }
+        }
         let prevYearValue = initialAmount;
-        for (const yr of yearsInteger) {
+        if (!annualReturns.length) for (const yr of yearsInteger) {
           const yearData = r.equityCurve.filter((e) =>
             e.date.startsWith(yr.toString()),
           );
@@ -2088,7 +2097,8 @@ export function TacticalAllocation() {
                     <input
                       type="number"
                       value={cashflowAmount}
-                      onChange={(e) => setCashflowAmount(Number(e.target.value))}
+                      onChange={(e) => setCashflowAmount(Math.abs(Number(e.target.value) || 0))}
+                      min={0}
                       className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                       placeholder="500"
                     />
@@ -2102,9 +2112,9 @@ export function TacticalAllocation() {
                       onChange={(e: any) => setCashflowFrequency(e.target.value as any)}
                       className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                     >
-                      <option value="monthly">{t("aa.monthly") || "Monthly"}</option>
-                      <option value="annually">{t("aa.annually") || "Annually"}</option>
+                      <CashflowFrequencyOptions lang={language} />
                     </CustomSelect>
+                    <CashflowSummary lang={language} amount={cashflowAmount} frequency={cashflowFrequency} direction={cashflowType === "withdraw" ? "withdraw" : "contribute"} />
                   </div>
                 </div>
               )}

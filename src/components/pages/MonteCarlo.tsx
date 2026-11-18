@@ -1,4 +1,5 @@
 import { Activity } from "lucide-react";
+import { CashflowFrequencyOptions, CashflowSummary, cashflowFrequencyLabel } from "../ui/CashflowFrequencyOptions";
 import React, { useState, useMemo, useEffect } from "react";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import {
@@ -1379,9 +1380,11 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                         onChange={(e: any) => setCashflowFreq(e.target.value)}
                         className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                       >
-                        <option value="annual">{currentLabels.annually}</option>
-                        <option value="monthly">{currentLabels.monthly}</option>
+                        <CashflowFrequencyOptions lang={language} annualValue="annual" />
                       </CustomSelect>
+                      {cashflowType !== "percentage" && (
+                        <CashflowSummary lang={language} amount={cashflowAmount} frequency={cashflowFreq} direction={cashflowType === "contribute" ? "contribute" : "withdraw"} />
+                      )}
                     </div>
                   </>
                 )}
@@ -1775,7 +1778,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     const cfStr = cashflowType !== "none"
                       ? currentLabels.cashflowPrefix
                           .replace("{amount}", formatValue(cashflowAmount))
-                          .replace("{freq}", cashflowFreq === "monthly" ? t("aa.monthly").toLowerCase() : t("aa.annually").toLowerCase())
+                          .replace("{freq}", cashflowFrequencyLabel(cashflowFreq, language))
                       : currentLabels.noCashflows;
 
                     return currentLabels.mcResultsTitle

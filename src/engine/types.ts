@@ -51,7 +51,7 @@ export interface BacktestOptions {
   rebalanceFrequency: 'monthly' | 'quarterly' | 'annually' | 'none';
   riskFreeRate?: number;
   cashflowAmount?: number;
-  cashflowFrequency?: 'monthly' | 'annually' | 'none';
+  cashflowFrequency?: import('./cashflow').CashflowFrequency;
   inflationAdjusted?: boolean;
   benchmarkId?: string;
   reinvestDividends?: boolean;
