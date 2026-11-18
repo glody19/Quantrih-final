@@ -1084,6 +1084,69 @@ export function createApp() {
     }
   });
 
+  // Trailing total returns for the Market page tables, refreshed every hour:
+  // 1M, 3M, 6M, YTD and 1Y from daily adjusted closes (calendar offsets), 3Y, 5Y and 10Y annualised
+  // from month-end adjusted closes. Each symbol carries the date of its last close.
+  app.get("/api/stock/returns", async (req, res) => {
+    try {
+      const symbols = String(req.query.symbols || "")
+        .split(",").map((x) => x.trim().toUpperCase())
+        .filter((x) => /^[A-Z0-9.\-^=]{1,15}$/.test(x))
+        .slice(0, 40);
+      if (symbols.length === 0) return res.json({});
+      const cacheKey = symbols.slice().sort().join(",");
+      const cached = getCached('ret1', cacheKey, 60 * 60_000);
+      if (cached) return res.json(cached);
+      const today = new Date();
+      const iso = (d: Date) => d.toISOString().split("T")[0];
+      const dailyFrom = new Date(today); dailyFrom.setUTCMonth(dailyFrom.getUTCMonth() - 13);
+      const monthlyFrom = new Date(today); monthlyFrom.setUTCFullYear(monthlyFrom.getUTCFullYear() - 10); monthlyFrom.setUTCMonth(monthlyFrom.getUTCMonth() - 2);
+      type Row = { m1: number | null; m3: number | null; m6: number | null; ytd: number | null; y1: number | null; y3: number | null; y5: number | null; y10: number | null; last: number; asOf: string };
+      const out: Record<string, Row | null> = {};
+      const series = (chart: any) => (chart?.quotes || [])
+        .filter((x: any) => x && x.date && (typeof x.adjclose === "number" || typeof x.close === "number"))
+        .map((x: any) => ({ t: new Date(x.date).getTime(), p: typeof x.adjclose === "number" ? x.adjclose : x.close }))
+        .filter((x: any) => x.p > 0)
+        .sort((a: any, b: any) => a.t - b.t);
+      await Promise.all(symbols.map(async (sym) => {
+        try {
+          const [daily, monthly] = await Promise.all([
+            safeYfChart(sym, { period1: iso(dailyFrom), period2: iso(today), interval: "1d" }),
+            safeYfChart(sym, { period1: iso(monthlyFrom), period2: iso(today), interval: "1mo" }),
+          ]);
+          const d = series(daily);
+          if (d.length < 2) { out[sym] = null; return; }
+          const last = d[d.length - 1];
+          // last close on or before a date
+          const at = (t: number) => { let v: number | null = null; for (const x of d) { if (x.t <= t) v = x.p; else break; } return v; };
+          const back = (months: number) => { const x = new Date(last.t); x.setUTCMonth(x.getUTCMonth() - months); return x.getTime(); };
+          const ret = (b: number | null) => (b ? (last.p / b - 1) * 100 : null);
+          const firstT = d[0].t;
+          const safe = (months: number) => (back(months) >= firstT ? ret(at(back(months))) : null);
+          const yearStart = Date.UTC(new Date(last.t).getUTCFullYear(), 0, 1);
+          // one point per calendar month (the latest), so "36 months back" is exact
+          const byMonth = new Map<string, number>();
+          series(monthly).forEach((x: any) => byMonth.set(new Date(x.t).toISOString().slice(0, 7), x.p));
+          const m = Array.from(byMonth.entries()).sort((a, b) => a[0].localeCompare(b[0])).map((x) => x[1]);
+          const ann = (months: number) => (m.length > months ? (Math.pow(last.p / m[m.length - 1 - months], 12 / months) - 1) * 100 : null);
+          out[sym] = {
+            m1: safe(1), m3: safe(3), m6: safe(6), y1: safe(12),
+            ytd: yearStart > firstT ? ret(at(yearStart - 1)) : null,
+            y3: ann(36), y5: ann(60), y10: ann(120), last: last.p,
+            asOf: iso(new Date(last.t)),
+          };
+        } catch {
+          out[sym] = null;
+        }
+      }));
+      if (Object.values(out).some(Boolean)) setCached('ret1', cacheKey, out);
+      res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+      res.json(out);
+    } catch {
+      res.status(500).json({ error: "Failed to compute returns" });
+    }
+  });
+
   // Monthly total-return series (dividend-adjusted closes), one point per calendar month.
   // Used to compute model-portfolio performance live instead of storing figures that go stale.
   app.get("/api/stock/monthly-adj", async (req, res) => {
