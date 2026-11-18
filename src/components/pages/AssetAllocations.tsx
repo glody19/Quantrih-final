@@ -54,7 +54,7 @@ import { InfoTooltip } from "../ui/InfoTooltip";
 import { lazyPortfolios } from "./lazyPortfoliosData";
 import { areaGradient, CHART_FONT, TOOLTIP } from "../ui/chartTheme";
 import { CountUp } from "../ui/CountUp";
-import { AssetPicker, RunButton, toOptions } from "../ui/AllocationInputs";
+import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
 import { usePlan, clampStartDate } from "../../lib/plans";
@@ -107,7 +107,7 @@ function TooltipLabel({
 }) {
   return (
     <div className="flex items-center gap-1.5 mb-1.5">
-      <label className={cn("text-base font-semibold text-text ", className)}>
+      <label className={cn("text-[13px] font-medium text-slate-600", className)}>
         {label}
       </label>
       <InfoTooltip content={<>{tooltip}</>} />
@@ -399,7 +399,7 @@ export function AssetAllocations({
   const renderSavedScenarios = () => {
     if (!user) {
       return (
-        <div className="bg-surface border border-border rounded-[2rem] p-12 text-center max-w-2xl mx-auto my-12 shadow-sm flex flex-col items-center gap-6 animate-fade-in">
+        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center max-w-2xl mx-auto my-12 flex flex-col items-center gap-6 animate-fade-in">
           <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
             <Database size={32} />
           </div>
@@ -1361,15 +1361,16 @@ export function AssetAllocations({
           {(
             <div className="simulator-view space-y-8">
               {/* PARAMETERS HEADER - HORIZONTAL (Matched to Backtesting) */}
-              <div className="bg-surface border border-border p-6 md:p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8 text-left">
+              <div className="bg-white border border-slate-200 p-5 md:p-7 rounded-xl mb-6 flex flex-col gap-8 text-left">
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
                   <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
-                    <Settings size={14} className="text-pv-blue" />
+                    <Settings size={14} className="text-slate-400" />
                     {"Strategy Parameters"}
                   </h2>
                 </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
+              <p className="col-span-full -mb-2 text-[11px] font-medium uppercase tracking-wider text-slate-400">{language === "fr" ? "Période et capital" : "Period and capital"}</p>
               <div className="space-y-1.5">
                 <TooltipLabel
                   label={t("pb.since")}
@@ -1379,7 +1380,7 @@ export function AssetAllocations({
                   <CustomSelect
                     value={startMonth}
                     onChange={(e: any) => setStartMonth(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-sm font-bold cursor-pointer"
+                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-2 py-2 text-sm font-medium cursor-pointer"
                   >
                     <option value={1}>01 - Jan</option>
                     <option value={2}>02 - Feb</option>
@@ -1397,7 +1398,7 @@ export function AssetAllocations({
                   <CustomSelect
                     value={startYear}
                     onChange={(e: any) => setStartYear(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-sm font-bold cursor-pointer"
+                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-2 py-2 text-sm font-medium cursor-pointer"
                   >
                     {YEARS.map((y) => (
                       <option key={y} value={y}>
@@ -1416,7 +1417,7 @@ export function AssetAllocations({
                   <CustomSelect
                     value={endMonth}
                     onChange={(e: any) => setEndMonth(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-sm font-bold cursor-pointer"
+                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-2 py-2 text-sm font-medium cursor-pointer"
                   >
                     <option value={1}>01 - Jan</option>
                     <option value={2}>02 - Feb</option>
@@ -1434,7 +1435,7 @@ export function AssetAllocations({
                   <CustomSelect
                     value={endYear}
                     onChange={(e: any) => setEndYear(parseInt(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-2 py-2.5 text-sm font-bold cursor-pointer"
+                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-2 py-2 text-sm font-medium cursor-pointer"
                   >
                     {YEARS.map((y) => (
                       <option key={y} value={y}>
@@ -1453,7 +1454,7 @@ export function AssetAllocations({
                   type="number"
                   value={initialAmount}
                   onChange={(e) => setInitialAmount(parseFloat(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
                 />
               </div>
               <div className="space-y-1.5">
@@ -1464,7 +1465,7 @@ export function AssetAllocations({
                 <CustomSelect
                   value={cashflowType}
                   onChange={(e: any) => setCashflowType(e.target.value as any)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
                 >
                   <option value="none">{t("aa.none")}</option>
                   <option value="contribute">{language === "fr" ? "Ajouter de l'argent" : "Add money"}</option>
@@ -1483,7 +1484,7 @@ export function AssetAllocations({
                       min={0}
                       value={cashflowAmount}
                       onChange={(e) => setCashflowAmount(Math.abs(parseFloat(e.target.value) || 0))}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -1494,7 +1495,7 @@ export function AssetAllocations({
                     <CustomSelect
                       value={cashflowFrequency === "none" ? "monthly" : cashflowFrequency}
                       onChange={(e: any) => setCashflowFrequency(e.target.value)}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
                     >
                       <CashflowFrequencyOptions lang={language} />
                     </CustomSelect>
@@ -1502,6 +1503,7 @@ export function AssetAllocations({
                   </div>
                 </>
               )}
+              <p className="col-span-full -mb-2 mt-2 pt-4 border-t border-slate-100 text-[11px] font-medium uppercase tracking-wider text-slate-400">{language === "fr" ? "Rééquilibrage, frais et fiscalité" : "Rebalancing, costs and taxes"}</p>
               <div className="space-y-1.5">
                 <TooltipLabel
                   label={t("pb.reb")}
@@ -1510,7 +1512,7 @@ export function AssetAllocations({
                 <CustomSelect
                   value={rebalancing}
                   onChange={(e: any) => setRebalancing(e.target.value)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
                 >
                   <option value="annually">{t("aa.annual")}</option>
                   <option value="quarterly">{t("aa.quarterly")}</option>
@@ -1523,7 +1525,7 @@ export function AssetAllocations({
                   label={language === "fr" ? "Bandes de rééquilibrage" : "Rebalancing bands"}
                   tooltip={language === "fr" ? "Rééquilibre aussi dès qu'un actif s'écarte de sa cible de plus de cet écart, en plus du calendrier choisi." : "Also rebalances as soon as an asset drifts from its target by more than this, on top of the schedule."}
                 />
-                <CustomSelect value={Number(rebalanceThreshold)} onChange={(e: any) => setRebalanceThreshold(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors">
+                <CustomSelect value={Number(rebalanceThreshold)} onChange={(e: any) => setRebalanceThreshold(Number(e.target.value))} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors">
                   <option value={0}>{language === "fr" ? "Aucune" : "None"}</option>
                   <option value={5}>± 5 %</option>
                   <option value={10}>± 10 %</option>
@@ -1535,7 +1537,7 @@ export function AssetAllocations({
                   label={language === "fr" ? "Frais annuels (%)" : "Annual fees (%)"}
                   tooltip={language === "fr" ? "Frais courants des fonds (TER) et de garde, prélevés chaque mois sur le portefeuille. 0,2 % est typique pour des ETF indiciels." : "Fund running costs (TER) and custody, taken monthly from the portfolio. 0.2% is typical for index ETFs."}
                 />
-                <input type="number" step={0.05} min={0} value={annualFeePct} onChange={(e) => setAnnualFeePct(Math.max(0, Number(e.target.value) || 0))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors" />
+                <input type="number" step={0.05} min={0} value={annualFeePct} onChange={(e) => setAnnualFeePct(Math.max(0, Number(e.target.value) || 0))} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors" />
               </div>
               <div className="space-y-1.5">
                 <TooltipLabel
@@ -1545,7 +1547,7 @@ export function AssetAllocations({
                 <CustomSelect
                   value={broker}
                   onChange={(e: any) => setBroker(e.target.value)}
-                  className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors cursor-pointer"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 text-text rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors cursor-pointer"
                 >
                   <option value="free">{t("aa.nofee")}</option>
                   <option value="custom">{t("aa.custom")}</option>
@@ -1560,7 +1562,7 @@ export function AssetAllocations({
                       step="0.1"
                       value={customFee}
                       onChange={(e) => setCustomFee(Number(e.target.value))}
-                      className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 text-text rounded-lg px-3 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
                     />
                   </div>
                 )}
@@ -1573,7 +1575,7 @@ export function AssetAllocations({
                 <TickerInput
                   value={benchmarkTicker}
                   onChange={setBenchmarkTicker}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2 text-base font-mono font-bold transition-colors outline-none focus:border-pv-blue"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium transition-colors outline-none focus:border-slate-400"
                   placeholder="e.g. SPY"
                 />
               </div>
@@ -1590,7 +1592,7 @@ export function AssetAllocations({
                       onChange={(e) =>
                         setDividendTaxRate(parseFloat(e.target.value))
                       }
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-2 text-sm tabular-nums font-medium"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1604,7 +1606,7 @@ export function AssetAllocations({
                       onChange={(e) =>
                         setCapitalGainsTaxRate(parseFloat(e.target.value))
                       }
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-3 py-2 text-sm tabular-nums font-medium"
                     />
                   </div>
                 </div>
@@ -1616,11 +1618,11 @@ export function AssetAllocations({
                     id="inf"
                     checked={inflationAdjusted}
                     onChange={(e) => setInflationAdjusted(e.target.checked)}
-                    className="w-4 h-4 accent-pv-blue rounded cursor-pointer"
+                    className="w-4 h-4 accent-slate-800 rounded cursor-pointer"
                   />
                   <label
                     htmlFor="inf"
-                    className="text-xs font-bold text-text cursor-pointer uppercase tracking-wider"
+                    className="text-[13px] font-medium text-slate-600 cursor-pointer"
                   >{t("aa.adj_inf")}</label>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1629,11 +1631,11 @@ export function AssetAllocations({
                     id="reiv"
                     checked={reinvestDividends}
                     onChange={(e) => setReinvestDividends(e.target.checked)}
-                    className="w-4 h-4 accent-pv-blue rounded cursor-pointer"
+                    className="w-4 h-4 accent-slate-800 rounded cursor-pointer"
                   />
                   <label
                     htmlFor="reiv"
-                    className="text-xs font-bold text-text cursor-pointer uppercase tracking-wider"
+                    className="text-[13px] font-medium text-slate-600 cursor-pointer"
                   >{t("aa.reinv_div")}</label>
                 </div>
               </div>
@@ -1643,7 +1645,7 @@ export function AssetAllocations({
           <div className="pt-4 border-t border-border mt-4 w-full">
             <div className="flex flex-col gap-2.5">
               <h3 className="text-sm font-semibold text-text flex items-center gap-2">
-                <Activity size={14} className="text-pv-blue" />
+                <Activity size={14} className="text-slate-400" />
                 {t("aa.sugg") || "Suggested Portfolios"}
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -1652,7 +1654,7 @@ export function AssetAllocations({
                     key={idx}
                     onClick={() => applyPredefinedPortfolio(preset)}
                     disabled={portfolioNames.length >= planLimits.maxPortfolios}
-                    className="text-xs bg-surface-2 border border-border px-3.5 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-all transform hover:scale-105 disabled:opacity-50 font-semibold shadow-sm cursor-pointer"
+                    className="text-[12.5px] bg-white border border-slate-200 px-3 py-1 rounded-full text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-colors disabled:opacity-50 font-medium cursor-pointer"
                   >
                     + {preset.name}
                   </button>
@@ -1665,8 +1667,8 @@ export function AssetAllocations({
           <div className="pt-6 border-t border-border space-y-6">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-pv-blue/10 flex items-center justify-center border border-pv-blue/20">
-                  <Database size={14} className="text-pv-blue" />
+                <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-200">
+                  <Database size={13} className="text-slate-500" />
                 </div>
                 <div>
                   <h3 className="text-base font-semibold text-text flex items-center gap-2">{t("aa.port_assets")}</h3>
@@ -1675,18 +1677,18 @@ export function AssetAllocations({
               <button
                 onClick={addPortfolio}
                 disabled={portfolioNames.length >= planLimits.maxPortfolios}
-                className="text-base bg-gradient-to-r from-sky-500/10 to-blue-500/10 text-sky-500 px-4 py-2 border border-sky-500/30 rounded-2xl font-bold hover:from-sky-500/20 hover:to-blue-500/20 transition-all shadow-sm flex items-center justify-center gap-1.5 overflow-hidden relative disabled:opacity-50"
+                className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
                 {t("pb.add")}
               </button>
             </div>
 
-            <div className="w-full max-w-full mx-auto overflow-x-auto bg-surface rounded-[2rem] border border-border mt-4 shadow-sm">
+            <div className="w-full max-w-full mx-auto overflow-x-auto bg-white rounded-xl border border-slate-200 mt-3">
               <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[800px]">
                 <thead>
-                  <tr className="border-b border-border bg-surface-2">
-                    <th className="py-2.5 px-2.5 text-xs lg:text-sm font-semibold text-text w-auto whitespace-nowrap">{t("aa.asset_class") || "Assets"}</th>
-                    <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Ticker & Name</th>
+                  <tr className="border-b border-slate-200 bg-white">
+                    <th className="py-2.5 px-2.5 text-[11px] font-medium uppercase tracking-wider text-slate-500 w-auto whitespace-nowrap">#</th>
+                    <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] text-[11px] font-medium uppercase tracking-wider text-slate-500 whitespace-nowrap">Ticker & Name</th>
                     {portfolioNames.map((pn, i) => (
                       <th
                         key={pn.id}
@@ -1699,7 +1701,7 @@ export function AssetAllocations({
                             onChange={(e) =>
                               updatePortfolioName(i, e.target.value)
                             }
-                            className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[120px] text-ellipsis"
+                            className="bg-transparent border-b border-dashed border-slate-300 outline-none focus:border-slate-600 transition-colors px-1 py-0.5 text-center text-[13.5px] font-semibold text-slate-900 w-full max-w-[120px] text-ellipsis"
                             placeholder={`Portfolio #${i + 1}`}
                           />
                           {portfolioNames.length > 1 && (
@@ -1712,6 +1714,7 @@ export function AssetAllocations({
                             </button>
                           )}
                         </div>
+                        <AllocationBar rows={portfolioAssets.map((a) => ({ symbol: a.symbol, weight: Number(a.weights[i]) || 0 }))} />
                       </th>
                     ))}
                   </tr>
@@ -1720,11 +1723,11 @@ export function AssetAllocations({
                   {portfolioAssets.map((asset, aIdx) => (
                     <tr
                       key={aIdx}
-                      className="border-b border-border last:border-0 hover:bg-surface-2/60 transition-colors"
+                      className="border-b border-border last:border-0 hover:bg-slate-50/70 transition-colors"
                     >
                       <td className="py-2 pl-2.5 pr-1 text-xs lg:text-sm text-text font-semibold whitespace-nowrap w-auto">
                         <div className="flex items-center gap-1">
-                          <span>Asset {aIdx + 1}</span>
+                          <span className="text-slate-400 tabular-nums">{aIdx + 1}</span>
                           {portfolioAssets.length > 1 && (
                             <button
                               onClick={() => removeAssetRow(aIdx)}
@@ -1738,7 +1741,7 @@ export function AssetAllocations({
                         {aIdx === portfolioAssets.length - 1 && (
                           <button
                             onClick={addAssetRow}
-                            className="text-pv-blue hover:underline text-[11px] font-semibold break-keep whitespace-nowrap block mt-1"
+                            className="text-slate-500 hover:text-slate-900 text-[12px] font-medium break-keep whitespace-nowrap block mt-1"
                           >+ {t("aa.add_more")}</button>
                         )}
                       </td>
@@ -1747,29 +1750,15 @@ export function AssetAllocations({
 </td>
                       {portfolioNames.map((pn, i) => (
                         <td key={pn.id} className="p-2 lg:p-3">
-                          <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
-                            <input
-                              type="number"
-                              step="any"
-                              value={asset.weights[i] || ""}
-                              onChange={(e) =>
-                                updateAssetWeight(aIdx, i, e.target.value)
-                              }
-                              placeholder="0"
-                              className="bg-surface text-sm p-2 lg:p-2.5 border border-border rounded-l-xl outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-bold text-center"
-                            />
-                            <div className="bg-surface-2 border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold text-text-2 shrink-0 select-none">
-                              %
-                            </div>
-                          </div>
+                          <WeightInput value={asset.weights[i]} onChange={(v) => updateAssetWeight(aIdx, i, v)} />
                         </td>
                       ))}
                     </tr>
                   ))}
 
                   {/* Totals Row */}
-                  <tr className="bg-surface-2 font-bold">
-                    <td className="p-3.5 text-sm lg:text-base font-bold text-text">{t("aa.totals")}</td>
+                  <tr className="border-t border-slate-200 bg-white">
+                    <td className="px-3 py-3 text-[13px] font-semibold text-slate-700">{t("aa.totals")}</td>
                     <td className="p-3.5"></td>
                     {portfolioNames.map((pn, i) => {
                       const totalWeight = portfolioAssets.reduce(
@@ -1780,32 +1769,7 @@ export function AssetAllocations({
                       const isOver = totalWeight > 100;
                       return (
                         <td key={"total-" + i} className="p-3.5">
-                          <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
-                            <div
-                              className={cn(
-                                "text-sm p-2 lg:p-2.5 border border-border rounded-l-xl w-full box-border text-center font-bold outline-none transition-colors",
-                                isOk
-                                  ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
-                                  : isOver
-                                  ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
-                                  : "bg-surface text-text",
-                              )}
-                            >
-                              {Math.round(totalWeight * 100) / 100}
-                            </div>
-                            <div
-                              className={cn(
-                                "border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold shrink-0 transition-colors",
-                                isOk
-                                  ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
-                                  : isOver
-                                  ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
-                                  : "bg-surface-2 text-text-2",
-                              )}
-                            >
-                              %
-                            </div>
-                          </div>
+                          <WeightTotal total={totalWeight} />
                         </td>
                       );
                     })}
@@ -1828,10 +1792,7 @@ export function AssetAllocations({
           <div id="bt-results-anchor" className="h-4"></div>
           {(!results || results.length === 0) && (
             <div className="w-full max-w-[1880px] mx-auto px-4 md:px-8">
-              <div className="h-full min-h-[500px] border border-border/30 rounded-[2rem] relative overflow-hidden bg-surface-2/20">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale"></div>
-                <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
-              </div>
+              <ResultsPlaceholder />
             </div>
           )}
 
@@ -1849,7 +1810,7 @@ export function AssetAllocations({
                   {results[0].yearsInteger[results[0].yearsInteger.length - 1]}
                 </p>
                 {results.some((r) => r.warnings && r.warnings.length > 0) && (
-                  <div className="flex flex-col gap-1 mt-4 text-gold bg-surface-3 px-4 py-2.5 rounded-[2rem] text-base font-semibold border border-gold/50 text-left">
+                  <div className="flex flex-col gap-1 mt-4 text-gold bg-surface-3 px-4 py-2.5 rounded-xl text-base font-semibold border border-gold/50 text-left">
                     {results
                       .flatMap((r) => r.warnings || [])
                       .filter((v, i, a) => a.indexOf(v) === i)
@@ -1867,7 +1828,7 @@ export function AssetAllocations({
                   onClick={() => {
                     window.scrollTo({ top: 380, behavior: "smooth" });
                   }}
-                  className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
+                  className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-3.5 py-1.5 rounded-lg flex items-center gap-2 "
                 >
                   {t("pb.editConfig")}
                 </button>
@@ -1884,7 +1845,7 @@ export function AssetAllocations({
                       ),
                     );
                   }}
-                  className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
+                  className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-3.5 py-1.5 rounded-lg flex items-center gap-2 "
                 >
                   {t("pb.export")}
                 </button>
@@ -1892,7 +1853,7 @@ export function AssetAllocations({
             </div>
 
             {/* Portfolio Summaries (Charts + Metrics) */}
-            <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 overflow-hidden text-left">
+            <div className="bg-white border border-slate-200 rounded-xl mb-8 overflow-hidden text-left">
               <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text tracking-tight">
                   {t("pb.portSummaries")}
@@ -2326,7 +2287,7 @@ export function AssetAllocations({
             </div>
 
             {/* Trailing Returns Table */}
-            <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 overflow-hidden text-left">
+            <div className="bg-white border border-slate-200 rounded-xl mb-8 overflow-hidden text-left">
               <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text tracking-tight">{t("aa.chart.trailing")}</h3>
               </div>
@@ -2399,7 +2360,7 @@ export function AssetAllocations({
             </div>
 
             {/* Annual Returns Table */}
-            <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 overflow-hidden text-left">
+            <div className="bg-white border border-slate-200 rounded-xl mb-8 overflow-hidden text-left">
               <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text tracking-tight">{t("aa.table.annual")}</h3>
               </div>
@@ -2534,7 +2495,7 @@ export function AssetAllocations({
 
             {/* Tabbed Detailed Analysis Container */}
             <div className="bg-surface border border-border rounded-3xl p-8 space-y-6 text-left">
-              <div className="flex border-b border-border flex-wrap gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem]">
+              <div className="flex border-b border-slate-200 flex-wrap gap-2 mb-6 bg-slate-50 p-1.5 rounded-xl">
                 {results.map((r, idx) => (
                   <button
                     key={r.id}

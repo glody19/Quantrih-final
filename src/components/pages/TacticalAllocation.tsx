@@ -9,7 +9,7 @@ import { InfoTooltip } from "../ui/InfoTooltip";
 import { Play, Settings, Activity, Database, Trash2, Save, FileDown, Search } from "lucide-react";
 import { areaGradient, CHART_FONT, TOOLTIP } from "../ui/chartTheme";
 import { CountUp } from "../ui/CountUp";
-import { AssetPicker, RunButton, toOptions } from "../ui/AllocationInputs";
+import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import {
   Chart as ChartJS,
@@ -65,7 +65,7 @@ function TooltipLabel({
 }) {
   return (
     <div className="flex items-center gap-1.5 mb-1.5">
-      <label className={cn("text-base font-bold text-text ", className)}>
+      <label className={cn("text-[13px] font-medium text-slate-600", className)}>
         {label}
       </label>
       <InfoTooltip content={<>{tooltip}</>} />
@@ -204,7 +204,7 @@ const localLabels: Record<string, Record<string, string>> = {
     riskParity: "Risk Parity",
     minimumVariance: "Minimum Variance",
     asset: "Asset",
-    addMoreAssets: "+ Add more assets",
+    addMoreAssets: "Add more assets",
     confirmDelete: "Confirm?",
     delete: "Delete",
     loadButton: "Load",
@@ -340,7 +340,7 @@ const localLabels: Record<string, Record<string, string>> = {
     riskParity: "Parité des Risques",
     minimumVariance: "Variance Minimale",
     asset: "Actif",
-    addMoreAssets: "+ Ajouter d'autres actifs",
+    addMoreAssets: "Ajouter d'autres actifs",
     confirmDelete: "Confirmer ?",
     delete: "Supprimer",
     loadButton: "Charger",
@@ -476,7 +476,7 @@ const localLabels: Record<string, Record<string, string>> = {
     riskParity: "Risikoparität",
     minimumVariance: "Minimum-Varianz",
     asset: "Wertpapier",
-    addMoreAssets: "+ Mehr hinzufügen",
+    addMoreAssets: "Mehr hinzufügen",
     confirmDelete: "Bestätigen?",
     delete: "Löschen",
     loadButton: "Laden",
@@ -612,7 +612,7 @@ const localLabels: Record<string, Record<string, string>> = {
     riskParity: "Risk Parity",
     minimumVariance: "Minimum Variantie",
     asset: "Activa",
-    addMoreAssets: "+ Activa toevoegen",
+    addMoreAssets: "Activa toevoegen",
     confirmDelete: "Bevestigen?",
     delete: "Verwijderen",
     loadButton: "Laden",
@@ -748,7 +748,7 @@ const localLabels: Record<string, Record<string, string>> = {
     riskParity: "Paridad de Riesgo",
     minimumVariance: "Mínima Varianza",
     asset: "Activo",
-    addMoreAssets: "+ Añadir más activos",
+    addMoreAssets: "Añadir más activos",
     confirmDelete: "¿Confirmar?",
     delete: "Eliminar",
     loadButton: "Cargar",
@@ -1023,7 +1023,7 @@ export function TacticalAllocation() {
       <div className="pt-2 border-t border-border mt-2 w-full mb-6">
         <div className="flex flex-col gap-2.5">
           <h3 className="text-sm font-semibold text-text flex items-center gap-2">
-            <Activity size={14} className="text-pv-blue" />
+            <Activity size={14} className="text-slate-400" />
             {t("aa.sugg") || "Suggested Portfolios"}
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -1038,7 +1038,7 @@ export function TacticalAllocation() {
                   });
                 }}
                 disabled={portfolioNames.length >= 6}
-                className="text-xs bg-surface-2 border border-border px-3.5 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-all transform hover:scale-105 disabled:opacity-50 font-semibold shadow-sm cursor-pointer"
+                className="text-[12.5px] bg-white border border-slate-200 px-3 py-1 rounded-full text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-colors disabled:opacity-50 font-medium cursor-pointer"
               >
                 + {preset.name}
               </button>
@@ -1050,8 +1050,8 @@ export function TacticalAllocation() {
       {/* Header & Add Portfolio Button */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-pv-blue/10 flex items-center justify-center border border-pv-blue/20">
-            <Database size={14} className="text-pv-blue" />
+          <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-200">
+            <Database size={13} className="text-slate-500" />
           </div>
           <div>
             <h3 className="text-base font-semibold text-text flex items-center gap-2">
@@ -1062,21 +1062,21 @@ export function TacticalAllocation() {
         <button
           onClick={addPortfolio}
           disabled={portfolioNames.length >= 6}
-          className="text-xs bg-gradient-to-r from-sky-500/10 to-blue-500/10 text-sky-500 px-4 py-2 border border-sky-500/30 rounded-2xl font-bold hover:from-sky-500/20 hover:to-blue-500/20 transition-all shadow-sm flex items-center justify-center gap-1.5 disabled:opacity-50"
+          className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
         >
-          + {t("pb.add") || "Add Portfolio"}
+          {t("pb.add") || "+ Add Portfolio"}
         </button>
       </div>
 
       {/* Main Portfolio Table */}
-      <div className="w-full max-w-full mx-auto overflow-x-auto bg-surface rounded-[2rem] border border-border mt-4 shadow-sm">
+      <div className="w-full max-w-full mx-auto overflow-x-auto bg-white rounded-xl border border-slate-200 mt-3">
         <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[700px]">
           <thead>
-            <tr className="border-b border-border bg-surface-2">
-              <th className="py-2.5 px-2.5 text-xs lg:text-sm font-semibold text-text w-auto whitespace-nowrap">
-                {currentLabels.asset || "Asset"}
+            <tr className="border-b border-slate-200 bg-white">
+              <th className="py-2.5 px-2.5 text-[11px] font-medium uppercase tracking-wider text-slate-500 w-auto whitespace-nowrap">
+                #
               </th>
-              <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] font-semibold text-text text-xs lg:text-sm whitespace-nowrap">
+              <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] text-[11px] font-medium uppercase tracking-wider text-slate-500 whitespace-nowrap">
                 Ticker & Name
               </th>
               {portfolioNames.map((pn, i) => (
@@ -1089,7 +1089,7 @@ export function TacticalAllocation() {
                       type="text"
                       value={pn.name}
                       onChange={(e) => updatePortfolioName(i, e.target.value)}
-                      className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[120px] text-ellipsis"
+                      className="bg-transparent border-b border-dashed border-slate-300 outline-none focus:border-slate-600 transition-colors px-1 py-0.5 text-center text-[13.5px] font-semibold text-slate-900 w-full max-w-[120px] text-ellipsis"
                       placeholder={`Portfolio #${i + 1}`}
                     />
                     {portfolioNames.length > 1 && (
@@ -1102,7 +1102,8 @@ export function TacticalAllocation() {
                       </button>
                     )}
                   </div>
-                </th>
+                  <AllocationBar rows={portfolioAssets.map((a) => ({ symbol: a.symbol, weight: Number(a.weights[i]) || 0 }))} />
+                      </th>
               ))}
             </tr>
           </thead>
@@ -1112,11 +1113,11 @@ export function TacticalAllocation() {
               return (
                 <tr
                   key={aIdx}
-                  className="border-b border-border last:border-0 hover:bg-surface-2/60 transition-colors"
+                  className="border-b border-border last:border-0 hover:bg-slate-50/70 transition-colors"
                 >
                   <td className="py-2 pl-2.5 pr-1 text-xs lg:text-sm text-text font-semibold whitespace-nowrap w-auto">
                     <div className="flex items-center gap-1">
-                      <span>{currentLabels.asset || "Asset"} {aIdx + 1}</span>
+                      <span className="text-slate-400 tabular-nums">{aIdx + 1}</span>
                       {portfolioAssets.length > 1 && (
                         <button
                           onClick={() => removeAssetRow(aIdx)}
@@ -1130,7 +1131,7 @@ export function TacticalAllocation() {
                     {aIdx === portfolioAssets.length - 1 && (
                       <button
                         onClick={addAssetRow}
-                        className="text-pv-blue hover:underline text-[11px] font-semibold break-keep whitespace-nowrap block mt-1"
+                        className="text-slate-500 hover:text-slate-900 text-[12px] font-medium break-keep whitespace-nowrap block mt-1"
                       >
                         + {currentLabels.addMoreAssets || "Add More"}
                       </button>
@@ -1141,27 +1142,15 @@ export function TacticalAllocation() {
 </td>
                   {portfolioNames.map((pn, i) => (
                     <td key={pn.id} className="p-2 lg:p-3">
-                      <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
-                        <input
-                          type="number"
-                          step="any"
-                          value={asset.weights[i] || ""}
-                          onChange={(e) => updateAssetWeight(aIdx, i, e.target.value)}
-                          placeholder="0"
-                          className="bg-surface text-sm p-2 lg:p-2.5 border border-border rounded-l-xl outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-bold text-center"
-                        />
-                        <div className="bg-surface-2 border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold text-text-2 shrink-0 select-none">
-                          %
-                        </div>
-                      </div>
+                      <WeightInput value={asset.weights[i]} onChange={(v) => updateAssetWeight(aIdx, i, v)} />
                     </td>
                   ))}
                 </tr>
               );
             })}
             {/* Totals Row */}
-            <tr className="bg-surface-2 font-bold">
-              <td className="p-3.5 text-sm lg:text-base font-bold text-text" colSpan={2}>
+            <tr className="border-t border-slate-200 bg-white">
+              <td className="px-3 py-3 text-[13px] font-semibold text-slate-700" colSpan={2}>
                 {t("aa.totals") || "Total Allocation"}
               </td>
               {portfolioNames.map((pn, i) => {
@@ -1173,32 +1162,7 @@ export function TacticalAllocation() {
                 const isOver = totalWeight > 100;
                 return (
                   <td key={"total-" + i} className="p-3.5">
-                    <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
-                      <div
-                        className={cn(
-                          "text-sm p-2 lg:p-2.5 border border-border rounded-l-xl w-full box-border text-center font-bold outline-none transition-colors",
-                          isOk
-                            ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
-                            : isOver
-                            ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
-                            : "bg-surface text-text",
-                        )}
-                      >
-                        {Math.round(totalWeight * 100) / 100}
-                      </div>
-                      <div
-                        className={cn(
-                          "border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold shrink-0 transition-colors",
-                          isOk
-                            ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
-                            : isOver
-                            ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
-                            : "bg-surface-2 text-text-2",
-                        )}
-                      >
-                        %
-                      </div>
-                    </div>
+                    <WeightTotal total={totalWeight} />
                   </td>
                 );
               })}
@@ -1305,7 +1269,7 @@ export function TacticalAllocation() {
 
     if (!user) {
       return (
-        <div className="bg-surface border border-border p-12 rounded-[2rem] text-center max-w-2xl mx-auto my-12 shadow-sm flex flex-col items-center gap-6 animate-fade-in">
+        <div className="bg-white border border-slate-200 p-12 rounded-xl text-center max-w-2xl mx-auto my-12 flex flex-col items-center gap-6 animate-fade-in">
           <div className="w-16 h-16 rounded-2xl bg-pv-blue/10 flex items-center justify-center text-pv-blue">
             <Database size={32} />
           </div>
@@ -1480,7 +1444,7 @@ export function TacticalAllocation() {
         {/* List & Analytics split layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Saved List */}
-          <div className="bg-surface border border-border rounded-[2rem] shadow-sm lg:col-span-8 flex flex-col overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-xl lg:col-span-8 flex flex-col overflow-hidden">
             <div className="px-6 py-4 border-b border-border bg-surface-2 flex items-center justify-between">
               <h3 className="font-bold text-text flex items-center gap-2">
                 <Database size={16} className="text-pv-blue" />
@@ -1535,7 +1499,7 @@ export function TacticalAllocation() {
                       };
 
                       return (
-                        <tr key={config.id} className="hover:bg-surface-2/60 transition-colors">
+                        <tr key={config.id} className="hover:bg-slate-50/70 transition-colors">
                           <td className="p-4 pl-6 font-bold text-text text-sm">
                             {config.name}
                           </td>
@@ -1599,7 +1563,7 @@ export function TacticalAllocation() {
           </div>
 
           {/* AI Analysis / Guidelines Panel */}
-          <div className="bg-surface border border-border p-6 rounded-[2rem] shadow-sm lg:col-span-4 flex flex-col gap-6 text-left">
+          <div className="bg-white border border-slate-200 p-6 rounded-xl lg:col-span-4 flex flex-col gap-6 text-left">
             <div className="border-b border-border pb-3">
               <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-text flex items-center gap-2">
                 <Activity size={16} className="text-pv-blue" />
@@ -1930,16 +1894,16 @@ export function TacticalAllocation() {
 
           {(
             <div className="simulator-view space-y-8">
-              <div className="flex flex-wrap gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem] border border-border/60">
+              <div className="flex flex-wrap gap-2 mb-6 bg-slate-50 p-1.5 rounded-xl border border-slate-200/60">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "px-6 py-3 text-base font-semibold whitespace-nowrap transition-all rounded-[1.5rem] cursor-pointer",
+                      "px-4 py-2 text-[13.5px] font-medium whitespace-nowrap transition-colors rounded-lg cursor-pointer",
                       activeTab === tab.id
-                        ? "bg-pv-blue text-white shadow-md font-extrabold"
-                        : "text-text hover:text-text hover:bg-surface-3",
+                        ? "bg-white text-slate-900 ring-1 ring-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
+                        : "text-slate-500 hover:text-slate-900",
                     )}
                   >
                     {tab.label}
@@ -1947,10 +1911,10 @@ export function TacticalAllocation() {
                 ))}
               </div>
 
-              <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8">
+              <div className="bg-white border border-slate-200 p-8 rounded-xl mb-6 flex flex-col gap-8">
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                   <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
-                    <Settings size={14} className="text-pv-blue" />
+                    <Settings size={14} className="text-slate-400" />
                     {currentLabels.strategyParameters || "Strategy Parameters"}
                   </h2>
                   <div className="flex flex-col md:flex-row flex-wrap items-stretch md:items-center gap-2 w-full xl:w-auto">
@@ -1962,7 +1926,7 @@ export function TacticalAllocation() {
                       placeholder={t("mc.portfolio_name")}
                       value={saveName}
                       onChange={(e) => setSaveName(e.target.value)}
-                      className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[200px]"
+                      className="bg-transparent border-b border-dashed border-slate-300 outline-none focus:border-slate-600 transition-colors px-1 py-0.5 text-center text-[13.5px] font-semibold text-slate-900 w-full max-w-[200px]"
                     />
                   </div>
                 </div>
@@ -1978,7 +1942,7 @@ export function TacticalAllocation() {
                 <CustomSelect
                   value={timePeriod}
                   onChange={(e: any) => setTimePeriod(e.target.value)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
                 >
                   <option value="year">{currentLabels.yearToYear || "Year-to-Year"}</option>
                   <option value="month">{currentLabels.monthToMonth || "Month-to-Month"}</option>
@@ -1994,7 +1958,7 @@ export function TacticalAllocation() {
                 <CustomSelect
                   value={includeYtd}
                   onChange={(e: any) => setIncludeYtd(e.target.value)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
                 >
                   <option value="no">{currentLabels.no || "No"}</option>
                   <option value="yes">{currentLabels.yes || "Yes"}</option>
@@ -2009,7 +1973,7 @@ export function TacticalAllocation() {
                   type="number"
                   value={startYear}
                   onChange={(e) => setStartYear(parseInt(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
                 />
               </div>
               <div className="space-y-1.5">
@@ -2021,7 +1985,7 @@ export function TacticalAllocation() {
                   type="number"
                   value={endYear}
                   onChange={(e) => setEndYear(parseInt(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
                 />
               </div>
               <div className="space-y-1.5">
@@ -2034,7 +1998,7 @@ export function TacticalAllocation() {
                   value={initialAmount}
                   onChange={(e) => setInitialAmount(parseFloat(e.target.value))}
                   step="0.01"
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
                 />
               </div>
               <div className="space-y-1.5">
@@ -2051,7 +2015,7 @@ export function TacticalAllocation() {
                 <CustomSelect
                   value={broker}
                   onChange={(e: any) => setBroker(e.target.value)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
                 >
                   <option value="free">{currentLabels.noFee || "No Fee (0€)"}</option>
                   <option value="custom">{currentLabels.otherCustom || "Other / Custom"}</option>
@@ -2066,7 +2030,7 @@ export function TacticalAllocation() {
                       step="0.1"
                       value={customFee}
                       onChange={(e) => setCustomFee(Number(e.target.value))}
-                      className="w-full bg-surface-2 border border-border text-text rounded-[1.5rem] px-3 py-2 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 text-text rounded-lg px-3 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
                     />
                   </div>
                 )}
@@ -2081,7 +2045,7 @@ export function TacticalAllocation() {
                 <CustomSelect
                   value={cashflowType}
                   onChange={(e: any) => setCashflowType(e.target.value as any)}
-                  className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
+                  className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
                 >
                   <option value="none">{currentLabels.none || "None"}</option>
                   <option value="contribute">{currentLabels.contributeFixed || "Contribute fixed amount"}</option>
@@ -2099,7 +2063,7 @@ export function TacticalAllocation() {
                       value={cashflowAmount}
                       onChange={(e) => setCashflowAmount(Math.abs(Number(e.target.value) || 0))}
                       min={0}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
                       placeholder="500"
                     />
                   </div>
@@ -2110,7 +2074,7 @@ export function TacticalAllocation() {
                     <CustomSelect
                       value={cashflowFrequency}
                       onChange={(e: any) => setCashflowFrequency(e.target.value as any)}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
                     >
                       <CashflowFrequencyOptions lang={language} />
                     </CustomSelect>
@@ -2122,9 +2086,9 @@ export function TacticalAllocation() {
 
           {activeTab === "seasonal" && (
             <>
-              <div className="bg-surface rounded-[2rem] shadow-sm border border-border p-6 flex flex-col gap-6 text-left mb-6">
+              <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col gap-6 text-left mb-6">
                 <h3 className="text-base font-semibold text-text flex items-center gap-2 mb-2">
-                  <Settings size={14} className="text-pv-blue" /> {currentLabels.parameters || "Parameters"}
+                  <Settings size={14} className="text-slate-400" /> {currentLabels.parameters || "Parameters"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   <div className="space-y-4">
@@ -2137,7 +2101,7 @@ export function TacticalAllocation() {
                     <select
                       value={Number(seasonalStart)}
                       onChange={(e) => setSeasonalStart(Number(e.target.value))}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors"
                     >
                       {[
                         "Jan",
@@ -2169,7 +2133,7 @@ export function TacticalAllocation() {
                     <select
                       value={Number(seasonalEnd)}
                       onChange={(e) => setSeasonalEnd(Number(e.target.value))}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors"
                     >
                       {[
                         "Jan",
@@ -2201,7 +2165,7 @@ export function TacticalAllocation() {
                     <select
                       value={momSafeAsset}
                       onChange={(e) => setMomSafeAsset(e.target.value)}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors"
                     >
                       <option value="CASH">{currentLabels.cash || "Cash"}</option>
                       <option value="BIL">{currentLabels.bil || "BIL (1-3 Month T-Bill)"}</option>
@@ -2217,9 +2181,9 @@ export function TacticalAllocation() {
 
           {(activeTab === "ma_single" || activeTab === "ma_portfolio") && (
             <>
-              <div className="bg-surface rounded-[2rem] shadow-sm border border-border p-6 flex flex-col gap-6 text-left mb-6">
+              <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col gap-6 text-left mb-6">
                 <h3 className="text-base font-semibold text-text flex items-center gap-2 mb-2">
-                  <Settings size={14} className="text-pv-blue" /> {currentLabels.parameters || "Parameters"}
+                  <Settings size={14} className="text-slate-400" /> {currentLabels.parameters || "Parameters"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   <div className="space-y-4">
@@ -2232,7 +2196,7 @@ export function TacticalAllocation() {
                     <select
                       value={momSafeAsset}
                       onChange={(e) => setMomSafeAsset(e.target.value)}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors"
                     >
                       <option value="CASH">{currentLabels.cash || "Cash"}</option>
                       <option value="BIL">{currentLabels.bil || "BIL (1-3 Month T-Bill)"}</option>
@@ -2246,7 +2210,7 @@ export function TacticalAllocation() {
                         currentLabels.buySignalTooltip || "The condition necessary to trigger a buy signal."
                       }
                     />
-                    <select value={maBuySignal} onChange={(e) => setMaBuySignal(e.target.value as "gt" | "gte")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={maBuySignal} onChange={(e) => setMaBuySignal(e.target.value as "gt" | "gte")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="gte">Price &gt;= Moving average</option>
                       <option value="gt">Price &gt; Moving average</option>
                     </select>
@@ -2258,7 +2222,7 @@ export function TacticalAllocation() {
                         currentLabels.typeOfMovingAverageTooltip || "The smoothing method (Simple or Exponential) of the moving average."
                       }
                     />
-                    <select value={maType} onChange={(e) => setMaType(e.target.value as "sma" | "ema")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={maType} onChange={(e) => setMaType(e.target.value as "sma" | "ema")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="sma">{currentLabels.simpleMovingAverage || "Simple Moving Average"}</option>
                       <option value="ema">{currentLabels.exponentialMovingAverage || "Exponential Moving Average"}</option>
                     </select>
@@ -2270,7 +2234,7 @@ export function TacticalAllocation() {
                         currentLabels.lookbackPeriodTooltip || "The past observation period to calculate signals (e.g. 10 months, 200 days)."
                       }
                     />
-                    <select value={Number(maSingleMonths)} onChange={(e) => setMaSingleMonths(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={Number(maSingleMonths)} onChange={(e) => setMaSingleMonths(Number(e.target.value))} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value={10}>{currentLabels.months10 || "10 months"}</option>
                       <option value={12}>{currentLabels.months12 || "12 months"}</option>
                     </select>
@@ -2282,7 +2246,7 @@ export function TacticalAllocation() {
                         currentLabels.signalAssetTooltip || "The asset observed to generate market signals (may be different from the invested asset)."
                       }
                     />
-                    <select value={maSignal} onChange={(e) => setMaSignal(e.target.value as "same" | "SPY")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={maSignal} onChange={(e) => setMaSignal(e.target.value as "same" | "SPY")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="same">{language === "fr" ? "Le même actif que l'investissement" : "Same as investment"}</option>
                       <option value="SPY">S&amp;P 500 (SPY)</option>
                     </select>
@@ -2296,9 +2260,9 @@ export function TacticalAllocation() {
 
           {(activeTab === "mom_relative" || activeTab === "mom_dual") && (
             <>
-              <div className="bg-surface rounded-[2rem] shadow-sm border border-border p-6 flex flex-col gap-6 text-left mb-6">
+              <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col gap-6 text-left mb-6">
                 <h3 className="text-base font-semibold text-text flex items-center gap-2 mb-2">
-                  <Settings size={14} className="text-pv-blue" /> {currentLabels.parameters || "Parameters"}
+                  <Settings size={14} className="text-slate-400" /> {currentLabels.parameters || "Parameters"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   <div className="space-y-4 col-span-1 md:col-span-2 lg:col-span-3">
@@ -2311,7 +2275,7 @@ export function TacticalAllocation() {
                       value={relativeTickers}
                       onChange={(e) => setRelativeTickers(e.target.value)}
                       placeholder="Ticker symbols (comma separated)..."
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums outline-none focus:border-slate-400 transition-colors"
                     />
                   </div>
                   <div className="space-y-4">
@@ -2321,7 +2285,7 @@ export function TacticalAllocation() {
                         currentLabels.singleAbsoluteMomentumTooltip || "Apply a single absolute momentum filter to the entire portfolio."
                       }
                     />
-                    <select value={absMomentum} onChange={(e) => setAbsMomentum(e.target.value as "no" | "yes")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={absMomentum} onChange={(e) => setAbsMomentum(e.target.value as "no" | "yes")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="no">{currentLabels.no || "No"}</option>
                       <option value="yes">{currentLabels.yes || "Yes"}</option>
                     </select>
@@ -2336,7 +2300,7 @@ export function TacticalAllocation() {
                     <select
                       value={momSafeAsset}
                       onChange={(e) => setMomSafeAsset(e.target.value)}
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors"
                     >
                       <option value="CASH">{currentLabels.cash || "Cash"}</option>
                       <option value="BIL">{currentLabels.bil || "BIL (1-3 Month T-Bill)"}</option>
@@ -2350,7 +2314,7 @@ export function TacticalAllocation() {
                         currentLabels.performancePeriodsTooltip || "Calculate momentum over one or more performance periods."
                       }
                     />
-                    <select value={perfPeriods} onChange={(e) => setPerfPeriods(e.target.value as "single" | "multiple")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={perfPeriods} onChange={(e) => setPerfPeriods(e.target.value as "single" | "multiple")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="single">{currentLabels.singlePeriod || "Single Period"}</option>
                       <option value="multiple">{language === "fr" ? "Moyenne 1, 3, 6 et 12 mois" : "Average of 1, 3, 6 and 12 months"}</option>
                     </select>
@@ -2362,7 +2326,7 @@ export function TacticalAllocation() {
                         currentLabels.lookbackPeriodTooltip || "The past observation period to calculate signals (e.g. 10 months, 200 days)."
                       }
                     />
-                    <select value={Number(momLookback)} onChange={(e) => setMomLookback(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={Number(momLookback)} onChange={(e) => setMomLookback(Number(e.target.value))} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value={12}>{currentLabels.months12 || "12 months"}</option>
                       <option value={6}>{currentLabels.months6 || "6 months"}</option>
                       <option value={3}>{currentLabels.months3 || "3 months"}</option>
@@ -2375,7 +2339,7 @@ export function TacticalAllocation() {
                         currentLabels.excludePreviousMonthTooltip || "Excludes the most recent month in momentum calculation to avoid short-term stock market mean reversion."
                       }
                     />
-                    <select value={skipMonth} onChange={(e) => setSkipMonth(e.target.value as "no" | "yes")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={skipMonth} onChange={(e) => setSkipMonth(e.target.value as "no" | "yes")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="no">{currentLabels.no || "No"}</option>
                       <option value="yes">{currentLabels.yes || "Yes"}</option>
                     </select>
@@ -2390,7 +2354,7 @@ export function TacticalAllocation() {
                     <input
                       type="number"
                       defaultValue="1"
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums outline-none focus:border-slate-400 transition-colors"
                     />
                   </div>
                   <div className="space-y-4">
@@ -2400,7 +2364,7 @@ export function TacticalAllocation() {
                         currentLabels.allocationWeightsTooltip || "The method to distribute capital (equal weight, risk parity, inverse volatility)."
                       }
                     />
-                    <select value={relWeighting} onChange={(e) => setRelWeighting(e.target.value as "equal" | "inverse_vol")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={relWeighting} onChange={(e) => setRelWeighting(e.target.value as "equal" | "inverse_vol")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="equal">{currentLabels.equalWeight || "Equal Weight"}</option>
                       <option value="inverse_vol">{currentLabels.inverseVolatility || "Inverse Volatility"}</option>
                     </select>
@@ -2412,9 +2376,9 @@ export function TacticalAllocation() {
 
           {activeTab === "mom_adaptive" && (
             <>
-              <div className="bg-surface rounded-[2rem] shadow-sm border border-border p-6 flex flex-col gap-6 text-left mb-6">
+              <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col gap-6 text-left mb-6">
                 <h3 className="text-base font-semibold text-text flex items-center gap-2 mb-2">
-                  <Settings size={14} className="text-pv-blue" /> {currentLabels.parameters || "Parameters"}
+                  <Settings size={14} className="text-slate-400" /> {currentLabels.parameters || "Parameters"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   <div className="space-y-4 col-span-1 md:col-span-2 lg:col-span-3">
@@ -2427,7 +2391,7 @@ export function TacticalAllocation() {
                       value={adaptiveTickers}
                       onChange={(e) => setAdaptiveTickers(e.target.value)}
                       placeholder="Ticker symbols (comma separated)..."
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums outline-none focus:border-slate-400 transition-colors"
                     />
                   </div>
                   <div className="space-y-4">
@@ -2437,7 +2401,7 @@ export function TacticalAllocation() {
                         currentLabels.performancePeriodsTooltip || "Calculate momentum over one or more performance periods."
                       }
                     />
-                    <select value={perfPeriods} onChange={(e) => setPerfPeriods(e.target.value as "single" | "multiple")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={perfPeriods} onChange={(e) => setPerfPeriods(e.target.value as "single" | "multiple")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="single">{currentLabels.singlePeriod || "Single Period"}</option>
                       <option value="multiple">{language === "fr" ? "Moyenne 1, 3, 6 et 12 mois" : "Average of 1, 3, 6 and 12 months"}</option>
                     </select>
@@ -2449,7 +2413,7 @@ export function TacticalAllocation() {
                         currentLabels.lookbackPeriodTooltip || "The past observation period to calculate signals (e.g. 10 months, 200 days)."
                       }
                     />
-                    <select value={Number(momLookback)} onChange={(e) => setMomLookback(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={Number(momLookback)} onChange={(e) => setMomLookback(Number(e.target.value))} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value={12}>{currentLabels.months12 || "12 months"}</option>
                       <option value={6}>{currentLabels.months6 || "6 months"}</option>
                       <option value={3}>{currentLabels.months3 || "3 months"}</option>
@@ -2462,7 +2426,7 @@ export function TacticalAllocation() {
                         currentLabels.excludePreviousMonthTooltip || "Excludes the most recent month in momentum calculation to avoid short-term stock market mean reversion."
                       }
                     />
-                    <select value={skipMonth} onChange={(e) => setSkipMonth(e.target.value as "no" | "yes")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={skipMonth} onChange={(e) => setSkipMonth(e.target.value as "no" | "yes")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="no">{currentLabels.no || "No"}</option>
                       <option value="yes">{currentLabels.yes || "Yes"}</option>
                     </select>
@@ -2474,7 +2438,7 @@ export function TacticalAllocation() {
                         currentLabels.volatilityPeriodTooltip || "Observation period to estimate recent historical volatility."
                       }
                     />
-                    <select value={Number(adaptiveVolMonths)} onChange={(e) => setAdaptiveVolMonths(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={Number(adaptiveVolMonths)} onChange={(e) => setAdaptiveVolMonths(Number(e.target.value))} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value={3}>{currentLabels.months3 || "3 months"}</option>
                       <option value={6}>{currentLabels.months6 || "6 months"}</option>
                       <option value={12}>{currentLabels.months12 || "12 months"}</option>
@@ -2490,7 +2454,7 @@ export function TacticalAllocation() {
                     <input
                       type="number"
                       defaultValue="2"
-                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono outline-none focus:border-pv-blue transition-colors"
+                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums outline-none focus:border-slate-400 transition-colors"
                     />
                   </div>
                   <div className="space-y-4">
@@ -2500,7 +2464,7 @@ export function TacticalAllocation() {
                         currentLabels.allocationWeightsTooltip || "The method to distribute capital (equal weight, risk parity, inverse volatility)."
                       }
                     />
-                    <select value={adaptiveWeighting} onChange={(e) => setAdaptiveWeighting(e.target.value as "risk_parity" | "min_variance")} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors">
+                    <select value={adaptiveWeighting} onChange={(e) => setAdaptiveWeighting(e.target.value as "risk_parity" | "min_variance")} className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors">
                       <option value="risk_parity">{currentLabels.riskParity || "Risk Parity"}</option>
                       <option value="min_variance">{currentLabels.minimumVariance || "Minimum Variance"}</option>
                     </select>
@@ -2525,10 +2489,7 @@ export function TacticalAllocation() {
         <div id="bt-results-anchor" className="h-4"></div>
 
         {(!results || results.length === 0) && (
-          <div className="h-full min-h-[500px] border border-border/30 rounded-[2rem] relative overflow-hidden bg-surface-2/20">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642543492481-44e81e3914a1?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20 mix-blend-screen transition-opacity duration-1000 grayscale"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-bg/50 to-bg/90"></div>
-          </div>
+          <ResultsPlaceholder />
         )}
 
         {results && results.length > 0 && (
@@ -2549,7 +2510,7 @@ export function TacticalAllocation() {
                     }
                   </p>
                   {results.some((r) => r.warnings && r.warnings.length > 0) && (
-                    <div className="flex flex-col gap-1 mt-4 text-gold bg-surface-3 px-4 py-2.5 rounded-[2rem] text-base font-semibold border border-gold/50 text-left">
+                    <div className="flex flex-col gap-1 mt-4 text-gold bg-surface-3 px-4 py-2.5 rounded-xl text-base font-semibold border border-gold/50 text-left">
                       {results
                         .flatMap((r) => r.warnings || [])
                         .filter((v, i, a) => a.indexOf(v) === i)
@@ -2565,7 +2526,7 @@ export function TacticalAllocation() {
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() => {}}
-                    className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
+                    className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-3.5 py-1.5 rounded-lg flex items-center gap-2 "
                   >
                     {currentLabels.modifyConfig}
                   </button>
@@ -2582,7 +2543,7 @@ export function TacticalAllocation() {
                         ),
                       );
                     }}
-                    className="text-base font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-4 py-2 rounded-[1.5rem] flex items-center gap-2 "
+                    className="text-sm font-medium text-text hover:text-text transition-colors bg-surface border border-border hover:bg-surface-2 px-3.5 py-1.5 rounded-lg flex items-center gap-2 "
                   >
                     {t("pb.export")}
                   </button>
@@ -2590,7 +2551,7 @@ export function TacticalAllocation() {
               </div>
 
               {/* Portfolio Summaries (Charts + Metrics) */}
-              <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 text-left">
+              <div className="bg-white border border-slate-200 rounded-xl mb-8 text-left">
                 <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                   <h3 className="text-base font-semibold text-text tracking-tight">
                     {t("pb.portSummaries")}
@@ -3047,7 +3008,7 @@ export function TacticalAllocation() {
               </div>
 
               {/* Trailing Returns Table */}
-              <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 text-left">
+              <div className="bg-white border border-slate-200 rounded-xl mb-8 text-left">
                 <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                   <h3 className="text-base font-semibold text-text tracking-tight">
                     {t("aa.chart.trailing")}
@@ -3129,7 +3090,7 @@ export function TacticalAllocation() {
               </div>
 
               {/* Annual Returns Table */}
-              <div className="bg-surface border border-border rounded-[2rem] shadow-md mb-8 text-left">
+              <div className="bg-white border border-slate-200 rounded-xl mb-8 text-left">
                 <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                   <h3 className="text-base font-semibold text-text tracking-tight">
                     {t("aa.table.annual")}
@@ -3272,7 +3233,7 @@ export function TacticalAllocation() {
 
               {/* Tabbed Detailed Analysis Container */}
               <div className="bg-surface border border-border rounded-3xl p-8 space-y-6 text-left">
-                <div className="flex border-b border-border flex-wrap gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem]">
+                <div className="flex border-b border-slate-200 flex-wrap gap-2 mb-6 bg-slate-50 p-1.5 rounded-xl">
                   {results.map((r, idx) => (
                     <button
                       key={r.id}

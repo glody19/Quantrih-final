@@ -454,7 +454,7 @@ export function PortfolioOptimization({ baseCcy = "USD" }: { baseCcy?: string })
       </div>
 
       {/* Settings */}
-      <section className="bg-surface border border-border p-6 md:p-8 rounded-[2rem] shadow-sm flex flex-col gap-8 text-left">
+      <section className="bg-white border border-slate-200 p-6 md:p-8 rounded-xl flex flex-col gap-8 text-left">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h2 className="text-base font-semibold text-text flex items-center gap-2">
             <Settings size={14} className="text-pv-blue" />
