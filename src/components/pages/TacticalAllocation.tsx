@@ -10,7 +10,8 @@ import { Play, Settings, Activity, Database, Trash2, Save, FileDown, Search } fr
 import { areaGradient, CHART_FONT, TOOLTIP } from "../ui/chartTheme";
 import { CountUp } from "../ui/CountUp";
 import { ResultInsights } from "../backtest/ResultInsights";
-import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar } from "../ui/AllocationInputs";
+import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar, ShareLinkButton, EuropeanSwitch } from "../ui/AllocationInputs";
+import { consumeSharedFlag } from "../../lib/shareLink";
 import { TickerInput } from "../ui/TickerInput";
 import {
   Chart as ChartJS,
@@ -1060,13 +1061,16 @@ export function TacticalAllocation() {
             </h3>
           </div>
         </div>
-        <button
-          onClick={addPortfolio}
-          disabled={portfolioNames.length >= 6}
-          className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-        >
-          {t("pb.add") || "+ Add Portfolio"}
-        </button>
+        <div className="flex items-start justify-end gap-2">
+          <EuropeanSwitch rows={portfolioAssets} onChange={setPortfolioAssets} />
+          <button
+            onClick={addPortfolio}
+            disabled={portfolioNames.length >= 6}
+            className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+          >
+            {t("pb.add") || "+ Add Portfolio"}
+          </button>
+        </div>
       </div>
 
       {/* Main Portfolio Table */}
@@ -1882,6 +1886,12 @@ export function TacticalAllocation() {
     }
   };
 
+  // Opened from a shared link: show the results straight away
+  React.useEffect(() => {
+    if (consumeSharedFlag("ta_")) handleRunBacktest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <MobileZoomWrapper scaleMobile={0.4}>
       <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
@@ -2484,7 +2494,7 @@ export function TacticalAllocation() {
 
           <div className="flex justify-between pt-4 items-center">
             
-            <RunButton onClick={handleRunBacktest} running={isRunning} label={t("pb.run")} runningLabel={t("pb.running")} />
+            <div className="flex items-center gap-1.5"><RunButton onClick={handleRunBacktest} running={isRunning} label={t("pb.run")} runningLabel={t("pb.running")} /><ShareLinkButton prefix="ta_" /></div>
           </div>
         </div>
         <div id="bt-results-anchor" className="h-4"></div>

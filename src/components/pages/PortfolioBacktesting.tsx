@@ -30,7 +30,7 @@ import { RollingReturnsTable } from "../ui/RollingReturnsTable";
 import { CorrelationMatrix } from "../ui/CorrelationMatrix";
 import { EfficientFrontier } from "../ui/EfficientFrontier";
 import { ResultInsights } from "../backtest/ResultInsights";
-import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar } from "../ui/AllocationInputs";
+import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar, EuropeanSwitch } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
 import { usePlan, clampStartDate } from "../../lib/plans";
@@ -1155,12 +1155,15 @@ export function PortfolioBacktesting({
                     </h3>
                   </div>
                 </div>
-                <button
-                  onClick={addPortfolio}
-                  className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-                >
-                  {t("pb.add")}
-                </button>
+                <div className="flex items-start justify-end gap-2">
+                  <EuropeanSwitch rows={portfolioAssets} onChange={setPortfolioAssets} />
+                  <button
+                    onClick={addPortfolio}
+                    className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  >
+                    {t("pb.add")}
+                  </button>
+                </div>
               </div>
 
               <div className="w-full max-w-full mx-auto overflow-x-auto bg-white rounded-xl border border-slate-200 mt-3">

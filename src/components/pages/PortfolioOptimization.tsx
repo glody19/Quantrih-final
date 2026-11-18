@@ -10,7 +10,8 @@ import { cn } from "../../lib/utils";
 import { PageHeader } from "../ui/PageHeader";
 import { InfoTooltip } from "../ui/InfoTooltip";
 import { TickerInput } from "../ui/TickerInput";
-import { RunButton } from "../ui/AllocationInputs";
+import { RunButton, ShareLinkButton } from "../ui/AllocationInputs";
+import { consumeSharedFlag } from "../../lib/shareLink";
 import { BacktestReport, ReportPortfolio } from "../backtest/BacktestReport";
 import { fetchTotalReturnPrices, fetchMonthlyPrices } from "../../engine/data";
 import { calculateMetrics, calculateRelativeMetrics } from "../../engine/metrics";
@@ -447,6 +448,12 @@ export function PortfolioOptimization({ baseCcy = "USD" }: { baseCcy?: string })
     }
   };
 
+  // Opened from a shared link: show the results straight away
+  React.useEffect(() => {
+    if (consumeSharedFlag("po_")) run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="space-y-8 animate-fade-up w-full max-w-[1600px] mx-auto px-4 md:px-12 pb-24 font-sans">
       <div className="mt-4">
@@ -460,7 +467,7 @@ export function PortfolioOptimization({ baseCcy = "USD" }: { baseCcy?: string })
             <Settings size={14} className="text-pv-blue" />
             {t.params}
           </h2>
-          <RunButton onClick={run} running={running} label={t.run} runningLabel={t.running} />
+          <div className="flex items-center gap-1.5"><RunButton onClick={run} running={running} label={t.run} runningLabel={t.running} /><ShareLinkButton prefix="po_" /></div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-8">

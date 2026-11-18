@@ -55,7 +55,8 @@ import { lazyPortfolios } from "./lazyPortfoliosData";
 import { areaGradient, CHART_FONT, TOOLTIP } from "../ui/chartTheme";
 import { CountUp } from "../ui/CountUp";
 import { ResultInsights } from "../backtest/ResultInsights";
-import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar } from "../ui/AllocationInputs";
+import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar, ShareLinkButton, EuropeanSwitch } from "../ui/AllocationInputs";
+import { consumeSharedFlag } from "../../lib/shareLink";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
 import { usePlan, clampStartDate } from "../../lib/plans";
@@ -1348,6 +1349,12 @@ export function AssetAllocations({
     setPortfolioAssets(newAssets);
   };
 
+  // Opened from a shared link: show the results straight away
+  React.useEffect(() => {
+    if (consumeSharedFlag("aa_")) runBacktest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <MobileZoomWrapper scaleMobile={0.4}>
       <div className="min-h-screen bg-bg text-text selection:bg-pv-blue selection:text-white font-sans overflow-x-hidden">
@@ -1675,13 +1682,16 @@ export function AssetAllocations({
                   <h3 className="text-base font-semibold text-text flex items-center gap-2">{t("aa.port_assets")}</h3>
                 </div>
               </div>
-              <button
-                onClick={addPortfolio}
-                disabled={portfolioNames.length >= planLimits.maxPortfolios}
-                className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
-              >
-                {t("pb.add")}
-              </button>
+              <div className="flex items-start justify-end gap-2">
+                <EuropeanSwitch rows={portfolioAssets} onChange={setPortfolioAssets} />
+                <button
+                  onClick={addPortfolio}
+                  disabled={portfolioNames.length >= planLimits.maxPortfolios}
+                  className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                >
+                  {t("pb.add")}
+                </button>
+              </div>
             </div>
 
             <div className="w-full max-w-full mx-auto overflow-x-auto bg-white rounded-xl border border-slate-200 mt-3">
@@ -1786,7 +1796,7 @@ export function AssetAllocations({
             <PlanNotice messages={planNotes} />
             <div className="flex justify-between pt-4 items-center">
               
-              <RunButton onClick={runBacktest} running={isRunning} label={t("pb.run")} runningLabel={t("pb.running")} />
+              <div className="flex items-center gap-1.5"><RunButton onClick={runBacktest} running={isRunning} label={t("pb.run")} runningLabel={t("pb.running")} /><ShareLinkButton prefix="aa_" /></div>
             </div>
           </div>
         </div>
