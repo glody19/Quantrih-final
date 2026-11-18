@@ -115,6 +115,10 @@ export interface BacktestMetrics {
   arithMean?: number;
   path?: number[];
   finalBalance?: number;
+  /** Money paid in fees over the backtest (running costs, broker fees, trading costs), before any inflation adjustment. */
+  feesPaid?: number;
+  /** Number of times the portfolio was rebalanced. */
+  rebalanceCount?: number;
   totalContributions?: number;
   realCagr?: number;
   rolling1Y?: { average: number, best: number, worst: number, count: number } | null;

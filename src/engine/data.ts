@@ -156,7 +156,21 @@ export async function fetchMonthlyPrices(symbol: string, fromDate: string, toDat
   return data;
 }
 
-export async function fetchDividends(symbol: string): Promise<{ date: string, amount: number }[]> {
+// Dividends of a symbol, kept for the session so repeated backtests (fee and rebalancing comparisons) do not refetch them
+const divCache = new Map<string, Promise<{ date: string, amount: number }[]>>();
+
+export function fetchDividends(symbol: string): Promise<{ date: string, amount: number }[]> {
+  const key = resolveSymbol(symbol);
+  if (!divCache.has(key)) {
+    const p = fetchDividendsUncached(symbol);
+    divCache.set(key, p);
+    // An empty answer may be a network error: do not keep it
+    p.then((d) => { if (!d.length) divCache.delete(key); });
+  }
+  return divCache.get(key)!;
+}
+
+async function fetchDividendsUncached(symbol: string): Promise<{ date: string, amount: number }[]> {
   const actualSymbol = resolveSymbol(symbol);
   // The cash series already includes its interest.
   if (actualSymbol.toUpperCase() === CASH_SYMBOL) return [];
