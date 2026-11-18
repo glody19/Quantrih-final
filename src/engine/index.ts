@@ -225,6 +225,9 @@ export async function runBacktest(
       let debt = 0;
       let peakEquity = options.initialBalance;
       let stopped = false;
+      // Money paid in fees and the number of rebalances, shown to the user as the real cost of fees
+      let feesPaid = 0;
+      let rebalanceCount = 0;
 
       const firstMonth = commonMonths[0];
     
@@ -232,6 +235,7 @@ export async function runBacktest(
     const initialHoldings: Record<string, number> = {};
     const initialFee = (options.transactionFeeAmount || 0) * allocations.length;
     currentBalance -= initialFee; // deduct initial broker fees
+    feesPaid += initialFee;
     for (const alloc of allocations) {
       const price = priceLookup.get(alloc.symbol)?.get(firstMonth) || 1;
       const s = (currentBalance * alloc.weight) / price;
@@ -292,12 +296,14 @@ export async function runBacktest(
                   const tw = priced.reduce((t, a) => t + a.weight, 0) || 1;
                   const fee = key(next) !== key(allocations) ? (options.transactionFeeAmount || 0) * priced.length : 0;
                   let eq = equity - fee;
+                  feesPaid += fee;
                   if (options.tradingCostRate && options.tradingCostRate > 0) {
                     let turnover = 0;
                     const target = new Map(priced.map(a => [a.symbol, eq * L * a.weight / tw]));
                     const syms = new Set([...shares.keys(), ...target.keys()]);
                     for (const sym of syms) turnover += Math.abs((target.get(sym) || 0) - (shares.get(sym) || 0) * px(sym));
                     eq -= turnover * options.tradingCostRate;
+                    feesPaid += turnover * options.tradingCostRate;
                   }
                   shares.clear();
                   for (const a of priced) shares.set(a.symbol, (eq * L * a.weight / tw) / px(a.symbol));
@@ -344,6 +350,7 @@ export async function runBacktest(
             let netCashflow = cashflow;
             if (options.transactionFeeAmount) {
                netCashflow -= (options.transactionFeeAmount * allocations.length); // Assume fee is charged per asset bought
+               feesPaid += Math.min(cashflow, options.transactionFeeAmount * allocations.length);
             }
             for (const alloc of allocations) {
                 const currentShares = shares.get(alloc.symbol) || 0;
@@ -368,6 +375,9 @@ export async function runBacktest(
         // Running costs: a twelfth of the yearly fee comes off the holdings each month
         if (options.annualFeeRate && options.annualFeeRate > 0) {
           const keep = 1 - options.annualFeeRate / 12;
+          let held = cashBalance;
+          for (const [k, v] of shares) held += v * (priceLookup.get(k)?.get(month) || 0);
+          feesPaid += held * (1 - keep);
           for (const [k, v] of shares) shares.set(k, v * keep);
           cashBalance *= keep;
         }
@@ -417,6 +427,7 @@ export async function runBacktest(
       }
 
       if (shouldRebalance) {
+         rebalanceCount++;
          // Apply Capital Gains Tax if enabled (Phase 3.2 Simplified)
          if (options.capitalGainsTaxRate && options.capitalGainsTaxRate > 0) {
            // Simplified: compare currentBalance to totalContributions (proxy for cost basis)
@@ -442,7 +453,9 @@ export async function runBacktest(
              turnover += Math.abs(currentBalance * alloc.weight - (shares.get(alloc.symbol) || 0) * price);
            }
            currentBalance -= turnover * options.tradingCostRate;
+           feesPaid += turnover * options.tradingCostRate;
          }
+         feesPaid += (options.transactionFeeAmount || 0) * allocations.length;
          for (const alloc of allocations) {
            const price = priceLookup.get(alloc.symbol)?.get(month) || 1;
            // Deduct transaction fee on rebalance (assumes you have to sell and buy, so 2 * fee, or just a simplified flat fee)
@@ -496,6 +509,8 @@ export async function runBacktest(
 
     // Post-calculation enhancements
     const porfolioMonthlyReturns = metrics.monthlyReturns?.map(m => m.value / 100) || [];
+    metrics.feesPaid = feesPaid;
+    metrics.rebalanceCount = rebalanceCount;
     metrics.monteCarlo = calculateMonteCarlo(porfolioMonthlyReturns, options.initialBalance, 120, 500); // 10Y projection
     metrics.correlationMatrix = calculateCorrelationMatrix(assetResults.map(a => ({ symbol: a.symbol, returns: a.monthlyReturns })));
     metrics.assetReturns = assetResults.map(a => ({ symbol: a.symbol, returns: a.monthlyReturns }));

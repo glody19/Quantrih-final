@@ -55,6 +55,7 @@ import { lazyPortfolios } from "./lazyPortfoliosData";
 import { areaGradient, CHART_FONT, TOOLTIP } from "../ui/chartTheme";
 import { CountUp } from "../ui/CountUp";
 import { ResultInsights } from "../backtest/ResultInsights";
+import { CostLab, type CostLabBase } from "../backtest/CostLab";
 import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar, ShareLinkButton, EuropeanSwitch } from "../ui/AllocationInputs";
 import { consumeSharedFlag } from "../../lib/shareLink";
 import { TickerInput } from "../ui/TickerInput";
@@ -173,8 +174,8 @@ export function AssetAllocations({
   );
   const [rebalancing, setRebalancing] = useLocalStorage(
     "aa_rebalancing",
-    "annual",
-  ); // "annual", "none"
+    "annually",
+  ); // "annually", "quarterly", "monthly", "none" (older saves may hold "annual")
   const [annualFeePct, setAnnualFeePct] = useLocalStorage("aa_annualFeePct", 0);
   const [rebalanceThreshold, setRebalanceThreshold] = useLocalStorage(
     "aa_rebalanceThreshold",
@@ -193,6 +194,7 @@ export function AssetAllocations({
     0,
   );
   const [results, setResults] = useState<any[] | null>(null);
+  const [costBase, setCostBase] = useState<CostLabBase | null>(null);
   const [activeResIdx, setActiveResIdx] = useState(0);
   const [activeMainView, setActiveMainView] = useState<"simulator" | "dashboard">("simulator");
   const [configsLoading, setConfigsLoading] = useState(false);
@@ -1037,7 +1039,7 @@ export function AssetAllocations({
       data.cashflowType ||
         (!data.cashflowAmount || data.cashflowFrequency === "none" ? "none" : data.cashflowAmount < 0 ? "withdraw" : "contribute"),
     );
-    setRebalancing(data.rebalancing || "annual");
+    setRebalancing(data.rebalancing === "annual" || !data.rebalancing ? "annually" : data.rebalancing);
     setReinvestDividends(
       data.reinvestDividends !== undefined ? data.reinvestDividends : true,
     );
@@ -1143,7 +1145,7 @@ export function AssetAllocations({
         startDate: planStart.start,
         endDate: planEnd,
         rebalanceFrequency:
-          rebalancing === "none" ? "none" : (rebalancing as any),
+          rebalancing === "none" ? "none" : rebalancing === "annual" ? "annually" : (rebalancing as any),
         rebalanceThreshold: rebalanceThreshold / 100,
         cashflowAmount:
           cashflowType === "none" ? 0 : (cashflowType === "withdraw" ? -1 : 1) * Math.abs(Number(cashflowAmount) || 0),
@@ -1156,6 +1158,7 @@ export function AssetAllocations({
       };
 
       const res = await engineRunBacktest(enginePortfolios, engineOptions);
+      setCostBase({ portfolios: enginePortfolios.filter((p) => p.id !== "benchmark"), options: engineOptions as any });
 
       const finalResults: any[] = res.map((r, i) => {
         const startY =
@@ -1518,7 +1521,7 @@ export function AssetAllocations({
                   tooltip={t("aa.tt.rebal")}
                 />
                 <CustomSelect
-                  value={rebalancing}
+                  value={rebalancing === "annual" ? "annually" : rebalancing}
                   onChange={(e: any) => setRebalancing(e.target.value)}
                   className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
                 >
@@ -2429,6 +2432,8 @@ export function AssetAllocations({
                 </table>
               </div>
             </div>
+
+            <CostLab base={costBase} language={language} currency="USD" results={results} />
 
             {/* Historical Stress Scenarios Table */}
             <div className="bg-surface border border-border rounded-3xl shadow-md mb-12 overflow-hidden border-2 border-border text-left">

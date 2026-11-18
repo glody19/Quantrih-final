@@ -30,6 +30,7 @@ import { RollingReturnsTable } from "../ui/RollingReturnsTable";
 import { CorrelationMatrix } from "../ui/CorrelationMatrix";
 import { EfficientFrontier } from "../ui/EfficientFrontier";
 import { ResultInsights } from "../backtest/ResultInsights";
+import { CostLab, type CostLabBase } from "../backtest/CostLab";
 import { AssetPicker, RunButton, toOptions, ResultsPlaceholder, WeightInput, WeightTotal, AllocationBar, EuropeanSwitch } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
@@ -312,6 +313,7 @@ export function PortfolioBacktesting({
   const [hasRun, setHasRun] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<PortfolioResult[]>([]);
+  const [costBase, setCostBase] = useState<CostLabBase | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { limits: planLimits } = usePlan();
   const [planNotes, setPlanNotes] = useState<string[]>([]);
@@ -550,6 +552,7 @@ export function PortfolioBacktesting({
       };
 
       const res = await engineRunBacktest(enginePortfolios, engineOptions);
+      setCostBase({ portfolios: enginePortfolios.filter((p) => p.id !== "benchmark"), options: engineOptions });
 
       const newResults: PortfolioResult[] = res.map((r, i) => {
         const isBenchmark = r.portfolioId === "benchmark";
@@ -1360,6 +1363,9 @@ export function PortfolioBacktesting({
                       currency={baseCcy}
                       language={language}
                     />
+                    <div className="mt-10">
+                      <CostLab base={costBase} language={language} currency={baseCcy === "EUR" ? "EUR" : "USD"} results={results} />
+                    </div>
                   </div>
 
                   {/* Historical Stress Scenarios Table */}
