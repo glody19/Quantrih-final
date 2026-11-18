@@ -603,7 +603,7 @@ export function Profile({ onBack }: { onBack: () => void }) {
   const saved = useSavedAnalyses(user?.uid);
   const savedItems = saved.items;
   const rows = React.useMemo(() => rowsOf(savedItems), [savedItems]);
-  const { plan, limits, isAdmin } = usePlan();
+  const { plan, limits, isAdmin, subscription } = usePlan();
   const brand = useBranding(user?.uid);
   const [compareKeys, setCompareKeys] = useState<string[]>([]);
   const [reportKeys, setReportKeys] = useState<string[]>([]);
@@ -1124,7 +1124,7 @@ export function Profile({ onBack }: { onBack: () => void }) {
             )}
 
             {section === 'plan' && (
-              <PlanPanel plan={plan} isAdmin={isAdmin} savedCount={savedItems.length} uid={user.uid} language={isFr ? 'fr' : 'en'} onPricing={() => navigate('/pricing')} />
+              <PlanPanel plan={plan} subscription={subscription} isAdmin={isAdmin} savedCount={savedItems.length} uid={user.uid} language={isFr ? 'fr' : 'en'} onPricing={() => navigate('/pricing')} />
             )}
           </div>
         </div>
