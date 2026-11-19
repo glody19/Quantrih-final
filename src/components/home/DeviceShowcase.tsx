@@ -95,7 +95,7 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, tabletMp4, tabletW
       <div className="relative z-10 flex items-center justify-start gap-0 py-4 [perspective:1600px]">
         {/* ── Laptop: backtest recording, moves forward once the others have landed ── */}
         <motion.div
-          className="relative w-full md:w-[84%] z-20"
+          className="relative w-full md:w-[86%] z-20"
           style={{ transformOrigin: "50% 50%" }}
           initial={{ opacity: 0, y: 100, rotateX: 30, scale: 0.88 }}
           animate={run ? { opacity: 1, y: [100, 0, 0, -6], rotateX: [30, 0, 0, 0], scale: [0.88, 1, 1, 1.03] } : undefined}
@@ -123,7 +123,7 @@ export function DeviceShowcase({ videoMp4, videoWebm, poster, tabletMp4, tabletW
         </motion.div>
 
         {/* ── Smartphone: stock analysis ── */}
-        <motion.div style={{ y: sideY }} className="relative w-[14%] hidden md:block z-10 ml-[2%]">
+        <motion.div style={{ y: sideY }} className="relative w-[12%] hidden md:block z-10 ml-[1.5%]">
           <motion.div
             initial={{ opacity: 0, x: 240, y: -60, rotateY: -360, rotateZ: 18, scale: 0.6 }}
             animate={run ? { opacity: [0, 1, 1], x: [240, 0, -20], y: [-60, 0, 0], rotateY: [-360, 0, 0], rotateZ: [18, 0, 0], scale: [0.6, 1, 0.96] } : undefined}

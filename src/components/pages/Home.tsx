@@ -274,7 +274,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
 
       {/* ── Why backtest: the three devices on the left (large), the case for it on the right ── */}
       <ZoomSection style={LARGE_GRID} className="relative w-full py-20 lg:py-24 overflow-hidden">
-        <div className="max-w-[1700px] mx-auto pl-2 pr-4 sm:pr-6 lg:pl-4 lg:pr-12 grid lg:grid-cols-[2.2fr_1fr] gap-8 lg:gap-10 items-center">
+        <div className="max-w-[1700px] mx-auto pl-2 pr-4 sm:pr-6 lg:pl-4 lg:pr-12 grid lg:grid-cols-[2.6fr_1fr] gap-8 lg:gap-10 items-center">
           <DeviceShowcase
             fr={fr}
             videoMp4="/media/demo-desktop.mp4"
@@ -286,46 +286,42 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             desktopAlt={fr ? "Démonstration : lancement d'un backtest Quantrih et lecture des résultats" : "Demo: running a Quantrih backtest and reading the results"}
           />
           <div>
-            <SectionTitle align="left" text={t("home.why_backtest.title")} />
-            {/* one direct line, larger than body text */}
-            <motion.p initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.7 }}
-              className="-mt-5 mb-8 text-[19px] md:text-[22px] leading-snug font-medium text-[#1B3F72]">
-              {fr ? "Mesurer ce qu'une allocation fait subir, avant d'y engager du capital." : "Measure what an allocation puts you through, before committing capital."}
+            {/* Why backtest: spoken to the visitor, one short proof per card */}
+            <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+              className="text-[30px] md:text-[38px] leading-[1.1] font-semibold tracking-tight text-slate-950">
+              {fr ? "Avant d'investir, voyez ce que vous auriez vécu." : "Before you invest, see what you would have lived through."}
+            </motion.h2>
+            <motion.p initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-4 text-[17px] md:text-[19px] leading-snug text-slate-900">
+              {fr ? "Un backtest rejoue votre portefeuille sur les vraies années de marché. Vous savez à quoi vous attendre avant d'engager votre argent." : "A backtest replays your portfolio through real market years. You know what to expect before you commit your money."}
             </motion.p>
-            {/* the reasons come in one after the other, in cascade */}
-            <motion.ul className="grid gap-4" initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }}
-              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.32, delayChildren: 1.1 } } }}>
+            <motion.ul className="mt-7 grid grid-cols-2 gap-3" initial="hidden" whileInView="show" viewport={{ once: true, margin: "-60px" }}
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.18, delayChildren: 0.6 } } }}>
               {(fr
                 ? [
-                    ["Drawdown et durée de récupération", "Un 60/40 a perdu plus de 30 % en 2008, un portefeuille 100 % actions plus de 50 %. Ce qui compte : la profondeur et le nombre de mois sous l'eau."],
-                    ["Corrélations en régime de stress", "En 2022, actions et obligations ont baissé ensemble. Le test montre ce qui a réellement amorti, et quand."],
-                    ["Risque de séquence", "À rendement égal, l'ordre des années change le résultat dès qu'il y a apports ou retraits."],
-                    ["Rééquilibrage, frais et fiscalité", "Ils déplacent le résultat net de plusieurs dixièmes de point par an."],
-                    ["Discipline face à un indice", "Séparer le bêta de marché de ce que l'allocation apporte vraiment."],
-                    ["Limites", "Biais de sélection, surajustement, historique court : lire sur plusieurs cycles, compléter par un Monte Carlo."],
+                    ["−50 %", "Un portefeuille 100 % actions en 2008. Auriez-vous tenu ?"],
+                    ["4 ans et +", "Le temps qu'il a fallu pour retrouver son capital."],
+                    ["2022", "Actions et obligations ont chuté ensemble. Votre mélange vous aurait-il protégé ?"],
+                    ["−26 %", "Ce que 1 % de frais par an vous coûte sur 30 ans."],
                   ]
                 : [
-                    ["Drawdown and time to recovery", "A 60/40 lost more than 30% in 2008, an all-equity portfolio more than 50%. What matters: depth and months under water."],
-                    ["Correlations under stress", "In 2022 equities and bonds fell together. The test shows what actually cushioned the fall, and when."],
-                    ["Sequence risk", "At the same return, the order of the years changes the outcome once there are contributions or withdrawals."],
-                    ["Rebalancing, fees and taxes", "They move the net result by several tenths of a point a year."],
-                    ["Discipline against a benchmark", "Separate market beta from what the allocation actually adds."],
-                    ["Limits", "Selection bias, overfitting, short histories: read across several cycles, pair with a Monte Carlo."],
+                    ["−50%", "An all-equity portfolio in 2008. Would you have held on?"],
+                    ["4+ years", "The time it took to get your money back."],
+                    ["2022", "Stocks and bonds fell together. Would your mix have protected you?"],
+                    ["−26%", "What 1% a year in fees costs you over 30 years."],
                   ]
-              ).map(([h, d], i) => (
-                <motion.li key={h} className="flex gap-4"
-                  variants={{ hidden: { opacity: 0, x: 48, filter: "blur(0px)" }, show: { opacity: 1, x: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } } }}>
-                  <motion.span className="mt-1 w-8 h-8 shrink-0 rounded-full bg-[#1B3F72] text-white flex items-center justify-center"
-                    variants={{ hidden: { scale: 0 }, show: { scale: 1, transition: { type: "spring", stiffness: 260, damping: 16 } } }}>
-                    <Check size={16} strokeWidth={3} />
-                  </motion.span>
-                  <span>
-                    <b className="block text-[17px] md:text-[18px] font-semibold text-text leading-snug">{h}</b>
-                    <span className="block mt-1 text-[15px] md:text-[16px] leading-relaxed text-text-2">{d}</span>
-                  </span>
+              ).map(([n, d]) => (
+                <motion.li key={n} className="rounded-2xl bg-white px-5 py-5 ring-1 ring-slate-200/80"
+                  variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } } }}>
+                  <b className="block text-[30px] md:text-[34px] leading-none font-semibold tracking-tight tabular-nums text-slate-950">{n}</b>
+                  <span className="mt-2.5 block text-[14.5px] md:text-[15px] leading-snug text-slate-900">{d}</span>
                 </motion.li>
               ))}
             </motion.ul>
+            <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 1.6 }}
+              className="mt-5 text-[13.5px] leading-snug text-slate-900">
+              {fr ? "Le passé ne prédit pas l'avenir : un backtest sert à connaître le risque, pas à deviner le rendement." : "The past does not predict the future: a backtest shows you the risk, it does not guess the return."}
+            </motion.p>
           </div>
         </div>
       </ZoomSection>
