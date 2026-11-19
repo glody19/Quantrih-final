@@ -22,20 +22,20 @@ const L = {
     indices: "Indices", indicesLead: "The benchmarks the market looks at first. Price return in local currency.",
     classes: "Asset classes", classesLead: "One ETF per asset class. Total return in USD, dividends reinvested.",
     themes: "Themes", themesLead: "Megatrend ETFs against the Nasdaq 100. Total return in USD.",
-    etfs: "Top 20 ETFs over 12 months", etfsLead: "80 liquid US-listed ETFs (sectors, countries, themes, commodities, factors), ranked live on their 1-year return. Leveraged funds are excluded.",
+    etfs: "Top 20 ETFs over 12 months", etfsShort: "Ranked live on the 1-year return among 80 liquid US-listed ETFs, leveraged funds excluded.", etfsLead: "80 liquid US-listed ETFs (sectors, countries, themes, commodities, factors), ranked live on their 1-year return. Leveraged funds are excluded.",
     news: "Market news", newsLead: "The latest headlines from the financial press.",
     updated: "Updated", live: "Live data", stale: "Price service unavailable: figures as of 30 June 2026.",
-    ann: "3Y, 5Y and 10Y are annualised.", ticker: "Ticker", name: "Name", noNews: "News unavailable right now.",
+    ann: "Tables: 3Y and 5Y are annualised.", ticker: "Ticker", name: "Name", noNews: "News unavailable right now.",
     open: "Click a row to open its analysis.",
   },
   fr: {
     indices: "Indices", indicesLead: "Les références que le marché regarde en premier. Variation du cours en devise locale.",
     classes: "Classes d'actifs", classesLead: "Un ETF par classe d'actifs. Rendement total en USD, dividendes réinvestis.",
     themes: "Thématiques", themesLead: "Les ETF des grandes tendances face au Nasdaq 100. Rendement total en USD.",
-    etfs: "Top 20 des ETF sur 12 mois", etfsLead: "80 ETF cotés aux États-Unis et liquides (secteurs, pays, thèmes, matières premières, facteurs), classés en direct sur leur rendement à 1 an. Les fonds à levier sont exclus.",
+    etfs: "Top 20 des ETF sur 12 mois", etfsShort: "Classés en direct sur le rendement à 1 an parmi 80 ETF cotés aux États-Unis, sans levier.", etfsLead: "80 ETF cotés aux États-Unis et liquides (secteurs, pays, thèmes, matières premières, facteurs), classés en direct sur leur rendement à 1 an. Les fonds à levier sont exclus.",
     news: "Actualités", newsLead: "Les derniers titres de la presse financière.",
     updated: "Mis à jour le", live: "Données en direct", stale: "Service de prix indisponible : chiffres au 30 juin 2026.",
-    ann: "3 ans, 5 ans et 10 ans sont annualisés.", ticker: "Ticker", name: "Nom", noNews: "Actualités indisponibles pour le moment.",
+    ann: "Tableaux : 3Y et 5Y sont annualisés (1M = 1 mois, YTD = depuis janvier).", ticker: "Ticker", name: "Nom", noNews: "Actualités indisponibles pour le moment.",
     open: "Cliquez sur une ligne pour ouvrir son analyse.",
   },
 };
@@ -47,7 +47,7 @@ const COLS: Record<ReturnKey, { en: string; fr: string }> = {
 
 const isNum = (v: any): v is number => typeof v === "number" && Number.isFinite(v);
 const fmt = (v: any) => (isNum(v) ? `${v >= 0 ? "+" : ""}${v.toFixed(2)}%` : "-");
-const tone = (v: any) => (!isNum(v) ? "text-slate-300" : v >= 0 ? "text-emerald-700" : "text-rose-700");
+const tone = (v: any) => (!isNum(v) ? "text-slate-900" : v >= 0 ? "text-emerald-700" : "text-rose-700");
 
 /** Fetches /api/stock/returns in chunks of 40 symbols. */
 function useReturns(symbols: string[]) {
@@ -84,14 +84,23 @@ function dateLabel(iso: string | null, lang: "en" | "fr") {
 }
 
 /* ── Section heading, same writing as the Dark Pools page ── */
-function Heading({ id, title, lead, meta }: { id: string; title: string; lead: string; meta?: React.ReactNode }) {
+function Heading({ id, title, lead, meta, compact }: { id: string; title: string; lead: string; meta?: React.ReactNode; compact?: boolean }) {
+  if (compact) {
+    return (
+      <div id={id} className="scroll-mt-36">
+        <h2 className="text-[19px] font-semibold tracking-tight text-slate-950">{title}</h2>
+        <p className="mt-1 text-[13px] leading-snug text-slate-900 min-h-[34px]">{lead}</p>
+        {meta && <div className="mt-1 text-[12px] text-slate-900">{meta}</div>}
+      </div>
+    );
+  }
   return (
     <div id={id} className="scroll-mt-36 flex flex-col md:flex-row md:items-end md:justify-between gap-3">
       <div>
-        <h2 className="text-[24px] md:text-[28px] font-semibold tracking-tight text-slate-900">{title}</h2>
-        <p className="mt-1.5 max-w-3xl text-[14.5px] leading-relaxed text-slate-500">{lead}</p>
+        <h2 className="text-[24px] md:text-[28px] font-semibold tracking-tight text-slate-950">{title}</h2>
+        <p className="mt-1.5 max-w-3xl text-[14.5px] leading-relaxed text-slate-900">{lead}</p>
       </div>
-      {meta && <div className="shrink-0 text-[12.5px] text-slate-500">{meta}</div>}
+      {meta && <div className="shrink-0 text-[12.5px] text-slate-900">{meta}</div>}
     </div>
   );
 }
@@ -133,42 +142,42 @@ function PerfTable({ rows, cols, defaultSort, lang, onSelect, bar }: {
   const t = L[lang];
 
   return (
-    <div className="mt-5 rounded-2xl bg-white ring-1 ring-slate-200/80 overflow-hidden">
+    <div className="mt-3 rounded-xl bg-white ring-1 ring-slate-200/80 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] text-[13.5px]">
+        <table className="w-full text-[12px] leading-tight">
           <thead>
-            <tr className="border-b border-slate-200 text-[12px] text-slate-500">
-              <th className="sticky left-0 z-10 bg-white text-left font-medium pl-4 pr-2 py-2.5 w-[84px]">{t.ticker}</th>
-              <th className="text-left font-medium px-2 py-2.5">
+            <tr className="border-b border-slate-200 text-[11.5px] text-slate-900">
+              <th className="sticky left-0 z-10 bg-white text-left font-semibold pl-2.5 pr-1 py-1.5">{t.ticker}</th>
+              <th className="text-left font-semibold px-1 py-1.5">
                 <button type="button" onClick={() => click("name")} className="inline-flex items-center gap-1 hover:text-slate-900">
                   {t.name} {sort.k === "name" && <Arrow size={12} />}
                 </button>
               </th>
               {cols.map((c) => (
-                <th key={c} className={cn("text-right font-medium px-2 py-2.5 whitespace-nowrap", sort.k === c && "bg-slate-50 text-slate-900")}>
-                  <button type="button" onClick={() => click(c)} className="inline-flex items-center gap-1 hover:text-slate-900">
-                    {sort.k === c && <Arrow size={12} />} {COLS[c][lang]}
+                <th key={c} className={cn("text-right font-semibold px-[5px] py-1.5 whitespace-nowrap", sort.k === c && "bg-slate-50 text-slate-950")}>
+                  <button type="button" onClick={() => click(c)} className="inline-flex items-center gap-0.5 hover:text-slate-950">
+                    {sort.k === c && <Arrow size={11} />}{COLS[c].en}
                   </button>
                 </th>
               ))}
-              <th className="w-3" />
+              <th className="w-1.5" />
             </tr>
           </thead>
           <tbody>
             {sorted.map((r, i) => (
               <tr key={r.ticker} onClick={onSelect ? () => onSelect(r.ticker) : undefined}
                 className={cn("border-b border-slate-100 last:border-0 transition-colors", onSelect && "cursor-pointer hover:bg-slate-50", r.highlight && "bg-slate-50/70")}>
-                <td className="sticky left-0 z-10 bg-inherit pl-4 pr-2 py-2.5 font-semibold text-slate-900 whitespace-nowrap">
-                  <span className="text-slate-400 tabular-nums mr-2 text-[11.5px]">{String(i + 1).padStart(2, "0")}</span>{r.ticker.replace(/^\^/, "")}
+                <td className="sticky left-0 z-10 bg-inherit pl-2.5 pr-1 py-1.5 font-semibold text-slate-950 whitespace-nowrap">
+                  <span className="text-slate-900 tabular-nums mr-1.5 text-[10.5px]">{String(i + 1).padStart(2, "0")}</span>{r.ticker.replace(/^\^/, "")}
                 </td>
-                <td className="px-2 py-2.5 text-slate-700 whitespace-nowrap max-w-[130px] sm:max-w-[280px] truncate" title={r.name}>{r.name}</td>
+                <td className="px-1 py-1.5 text-slate-950 whitespace-nowrap max-w-[150px] xl:max-w-[86px] 2xl:max-w-[150px] truncate" title={r.name}>{r.name}</td>
                 {cols.map((c) => {
                   const v = r.values[c];
                   return (
-                    <td key={c} className={cn("px-2 py-2.5 text-right tabular-nums whitespace-nowrap", tone(v), sort.k === c && "bg-slate-50/80 font-semibold")}>
+                    <td key={c} className={cn("px-[5px] py-1.5 text-right tabular-nums whitespace-nowrap", tone(v), sort.k === c && "bg-slate-50/80 font-semibold")}>
                       {bar === c && isNum(v) ? (
                         <span className="inline-flex items-center justify-end gap-2">
-                          <span className="hidden sm:block h-1.5 rounded-full bg-slate-200 w-16 overflow-hidden">
+                          <span className="hidden 2xl:block h-1.5 rounded-full bg-slate-200 w-10 overflow-hidden">
                             <span className={cn("block h-full rounded-full", v >= 0 ? "bg-emerald-600/70" : "bg-rose-600/70")} style={{ width: `${Math.min(100, (Math.abs(v) / maxBar) * 100)}%` }} />
                           </span>
                           {fmt(v)}
@@ -177,7 +186,7 @@ function PerfTable({ rows, cols, defaultSort, lang, onSelect, bar }: {
                     </td>
                   );
                 })}
-                <td className="w-3" />
+                <td className="w-1.5" />
               </tr>
             ))}
           </tbody>
@@ -190,19 +199,19 @@ function PerfTable({ rows, cols, defaultSort, lang, onSelect, bar }: {
 /* ── Indices: compact tiles ── */
 function IndexTiles({ data, lang }: { data: Record<string, Ret | null>; lang: "en" | "fr" }) {
   return (
-    <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6 gap-3">
+    <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-2.5">
       {majorIndices.map((idx, i) => {
         const r = data[idx.ticker];
         return (
           <motion.div key={idx.ticker} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.04 }}
-            className="rounded-2xl bg-white ring-1 ring-slate-200/80 px-4 py-3.5">
+            className="rounded-xl bg-white ring-1 ring-slate-200/80 px-3 py-2.5">
             <p className="text-[13px] font-semibold text-slate-900 truncate">{idx.asset}</p>
             <p className="mt-1 text-[18px] font-semibold tabular-nums text-slate-900">
               {isNum(r?.last) ? r!.last!.toLocaleString(lang === "fr" ? "fr-FR" : "en-US", { maximumFractionDigits: 2 }) : <span className="inline-block h-5 w-20 rounded bg-slate-100" />}
             </p>
             <div className="mt-1.5 flex gap-3 text-[12px] tabular-nums">
-              <span className="text-slate-400">{COLS.ytd[lang]} <b className={cn("font-semibold", tone(r?.ytd))}>{fmt(r?.ytd)}</b></span>
-              <span className="text-slate-400">{COLS.y1[lang]} <b className={cn("font-semibold", tone(r?.y1))}>{fmt(r?.y1)}</b></span>
+              <span className="text-slate-900">{COLS.ytd[lang]} <b className={cn("font-semibold", tone(r?.ytd))}>{fmt(r?.ytd)}</b></span>
+              <span className="text-slate-900">{COLS.y1[lang]} <b className={cn("font-semibold", tone(r?.y1))}>{fmt(r?.y1)}</b></span>
             </div>
           </motion.div>
         );
@@ -259,7 +268,7 @@ export function MarketOverview({ language, news, newsLoading, onSelect }: {
   const thm = useReturns(megatrends.map((x) => x.ticker));
   const etf = useReturns(etfUniverse.map((x) => x.ticker));
 
-  const LONG: ReturnKey[] = ["m1", "m3", "m6", "ytd", "y1", "y3", "y5", "y10"];
+  const SHORT: ReturnKey[] = ["m1", "ytd", "y1", "y3", "y5"];
 
   const rowsFrom = (list: any[], r: { data: Record<string, Ret | null>; state: string }, highlight?: (x: any) => boolean): Row[] =>
     list.map((x) => {
@@ -286,28 +295,31 @@ export function MarketOverview({ language, news, newsLoading, onSelect }: {
 
   return (
     <div className="w-full max-w-[2400px] mx-auto px-4 md:px-12 pb-6">
-      <section className="mt-14">
+      <section className="mt-12">
         <Heading id="indices" title={t.indices} lead={t.indicesLead} meta={meta(idx)} />
         <IndexTiles data={idx.data} lang={lang} />
       </section>
 
-      <section className="mt-16">
-        <Heading id="asset-classes" title={t.classes} lead={t.classesLead} meta={meta(cls)} />
-        <PerfTable rows={classRows} cols={LONG} defaultSort="y1" lang={lang} onSelect={onSelect} />
-        <p className="mt-2 text-[12px] text-slate-400">{t.ann} {t.open}</p>
-      </section>
+      {/* three compact tables side by side (two on medium screens, one on phones) */}
+      <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-5 gap-y-10 items-start">
+        <section className="min-w-0">
+          <Heading compact id="asset-classes" title={t.classes} lead={t.classesLead} meta={meta(cls)} />
+          <PerfTable rows={classRows} cols={SHORT} defaultSort="y1" lang={lang} onSelect={onSelect} />
+        </section>
 
-      <section className="mt-16">
-        <Heading id="themes" title={t.themes} lead={t.themesLead} meta={meta(thm)} />
-        <PerfTable rows={themeRows} cols={LONG} defaultSort="y1" lang={lang} onSelect={onSelect} />
-      </section>
+        <section className="min-w-0">
+          <Heading compact id="themes" title={t.themes} lead={t.themesLead} meta={meta(thm)} />
+          <PerfTable rows={themeRows} cols={SHORT} defaultSort="y1" lang={lang} onSelect={onSelect} />
+        </section>
 
-      <section className="mt-16">
-        <Heading id="top-etfs" title={t.etfs} lead={t.etfsLead} meta={meta(etf)} />
-        <PerfTable rows={etfRows} cols={["m1", "m3", "m6", "ytd", "y1"]} defaultSort="y1" lang={lang} onSelect={onSelect} bar="y1" />
-      </section>
+        <section className="min-w-0">
+          <Heading compact id="top-etfs" title={t.etfs} lead={t.etfsShort} meta={meta(etf)} />
+          <PerfTable rows={etfRows} cols={["m1", "m6", "ytd", "y1"]} defaultSort="y1" lang={lang} onSelect={onSelect} />
+        </section>
+      </div>
+      <p className="mt-2 text-[12px] text-slate-900">{t.ann} {t.open}</p>
 
-      <section className="mt-16">
+      <section className="mt-14">
         <Heading id="news" title={t.news} lead={t.newsLead} />
         <News items={news} loading={newsLoading} lang={lang} />
       </section>

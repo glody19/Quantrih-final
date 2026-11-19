@@ -31,8 +31,7 @@ export function ClassDot({ cls, className }: { cls: AssetClassKey; className?: s
 export function ClassChip({ cls, lang }: { cls: AssetClassKey; lang: "en" | "fr" }) {
   const m = ASSET_CLASS_META[cls];
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11.5px] font-medium text-slate-500 whitespace-nowrap">
-      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: m.color }} />
+    <span className="inline-flex items-center text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: m.color }}>
       {lang === "fr" ? m.fr : m.en}
     </span>
   );

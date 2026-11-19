@@ -41,7 +41,7 @@ import { Line } from "react-chartjs-2";
 import { fetchTotalReturnPrices } from "../../engine/data";
 import { runSimulation } from "../../engine/simulation";
 import { calculateCorrelationMatrix } from "../../engine/metrics";
-import { AssetPicker, RunButton, toOptions, WeightInput, WeightTotal, AllocationBar, EuropeanSwitch } from "../ui/AllocationInputs";
+import { AssetPicker, RunButton, toOptions, EuropeanSwitch } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { ASSET_DATA } from "../../constants";
 import { InfoTooltip } from "../ui/InfoTooltip";
@@ -68,7 +68,7 @@ export function TooltipLabel({
 }) {
   return (
     <div className="flex items-center gap-1.5 mb-1.5">
-      <label className="text-[13px] font-medium text-slate-600">{label}</label>
+      <label className="text-base font-semibold text-text ">{label}</label>
       <InfoTooltip content={tooltip} />
     </div>
   );
@@ -216,7 +216,7 @@ const localLabels: Record<string, Record<string, string>> = {
     portfoliosConfiguration: "Portfolios Configuration",
     portfolioAssets: "Portfolio Assets",
     selectAssetClass: "Select Asset Class",
-    addMore: "Add More",
+    addMore: "(Add More)",
     tooltipInitialAmount: "Initial Investment Capital (t=0).",
     tooltipCashflows: "Determines the longitudinal extraction or injection of capital.",
     tooltipWithdrawal: "Absolute quantum or relative ratio of capital distributed at each periodic interval.",
@@ -299,7 +299,7 @@ const localLabels: Record<string, Record<string, string>> = {
     portfoliosConfiguration: "Configuration des portefeuilles",
     portfolioAssets: "Actifs du portefeuille",
     selectAssetClass: "Sélectionner la classe d'actifs",
-    addMore: "Ajouter plus",
+    addMore: "(Ajouter plus)",
     tooltipInitialAmount: "Capital d'investissement initial (t=0).",
     tooltipCashflows: "Détermine l'extraction ou l'injection longitudinale de capital.",
     tooltipWithdrawal: "Quantité absolue ou ratio relatif de capital distribué à chaque intervalle périodique.",
@@ -382,7 +382,7 @@ const localLabels: Record<string, Record<string, string>> = {
     portfoliosConfiguration: "Portfolio-Konfiguration",
     portfolioAssets: "Portfolio Vermögenswerte",
     selectAssetClass: "Anlageklasse auswählen",
-    addMore: "Mehr hinzufügen",
+    addMore: "(Mehr hinzufügen)",
     tooltipInitialAmount: "Anfängliches Investitionskapital (t=0).",
     tooltipCashflows: "Bestimmt die langfristige Entnahme oder Zuführung von Kapital.",
     tooltipWithdrawal: "Absoluter Betrag oder relatives Verhältnis des zu jedem periodischen Intervall verteilten Kapitals.",
@@ -465,7 +465,7 @@ const localLabels: Record<string, Record<string, string>> = {
     portfoliosConfiguration: "Portefeuille-configuratie",
     portfolioAssets: "Portfolio vermogenswerte",
     selectAssetClass: "Selecteer beleggingscategorie",
-    addMore: "Meer toevoegen",
+    addMore: "(Meer toevoegen)",
     tooltipInitialAmount: "Initieel investeringskapitaal (t=0).",
     tooltipCashflows: "Bepaalt de longitudinale onttrekking of inbreng van kapitaal.",
     tooltipWithdrawal: "Absoluut bedrag of relatieve verhouding van het kapitaal dat op elk periodiek interval wordt uitgekeerd.",
@@ -548,7 +548,7 @@ const localLabels: Record<string, Record<string, string>> = {
     portfoliosConfiguration: "Configuración de carteras",
     portfolioAssets: "Activos del cartera",
     selectAssetClass: "Seleccionar clase de activo",
-    addMore: "Añadir más",
+    addMore: "(Añadir más)",
     tooltipInitialAmount: "Capital de inversión inicial (t=0).",
     tooltipCashflows: "Determina la extracción o inyección longitudinal de capital.",
     tooltipWithdrawal: "Monto absoluto o relación relativa del capital distribuido en cada intervalo periódico.",
@@ -630,7 +630,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
 
     if (!user) {
       return (
-        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center max-w-2xl mx-auto my-12 flex flex-col items-center gap-6 animate-fade-in">
+        <div className="bg-surface border border-border rounded-[2rem] p-12 text-center max-w-2xl mx-auto my-12 shadow-sm flex flex-col items-center gap-6 animate-fade-in">
           <div className="w-16 h-16 rounded-2xl bg-pv-blue/10 flex items-center justify-center text-pv-blue">
             <Database size={32} />
           </div>
@@ -809,7 +809,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
         {/* List & Analytics split layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Saved List */}
-          <div className="bg-white border border-slate-200 rounded-xl lg:col-span-8 flex flex-col overflow-hidden">
+          <div className="bg-surface border border-border rounded-[2rem] shadow-sm lg:col-span-8 flex flex-col overflow-hidden">
             <div className="px-6 py-4 border-b border-border bg-surface-2 flex items-center justify-between">
               <h3 className="font-bold text-text flex items-center gap-2">
                 <Database size={16} className="text-pv-blue" />
@@ -855,7 +855,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                         : "N/A";
 
                       return (
-                        <tr key={config.id} className="hover:bg-slate-50/70 transition-colors">
+                        <tr key={config.id} className="hover:bg-surface-2/60 transition-colors">
                           <td className="p-4 pl-6 font-bold text-text text-sm">
                             {config.name}
                           </td>
@@ -930,7 +930,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
           </div>
 
           {/* AI Analysis / Guidelines Panel */}
-          <div className="bg-white border border-slate-200 p-6 rounded-xl lg:col-span-4 flex flex-col gap-6 text-left">
+          <div className="bg-surface border border-border p-6 rounded-[2rem] shadow-sm lg:col-span-4 flex flex-col gap-6 text-left">
             <div className="border-b border-border pb-3">
               <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-text flex items-center gap-2">
                 <Activity size={16} className="text-pv-blue" />
@@ -1291,10 +1291,10 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
             <div className="simulator-view space-y-8">
           
 {/* PARAMETERS GRID */}
-          <div className="bg-white border border-slate-200 p-8 rounded-xl mb-6 flex flex-col gap-8">
+          <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-sm mb-6 flex flex-col gap-8">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
               <h2 className="text-base font-semibold tracking-tight text-text flex items-center gap-2">
-                <Settings size={14} className="text-slate-400" />{" "}
+                <Settings size={14} className="text-pv-blue" />{" "}
                 {currentLabels.strategyParams}
               </h2>
             </div>
@@ -1309,7 +1309,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     type="number"
                     value={initialAmount}
                     onChange={(e) => setInitialAmount(Number(e.target.value))}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                   />
                 </div>
                 <div className="space-y-1.5 focus-within:text-pv-blue">
@@ -1320,7 +1320,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                   <CustomSelect
                     value={cashflowType}
                     onChange={(e: any) => setCashflowType(e.target.value)}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                   >
                     <option value="none">{currentLabels.none}</option>
                     <option value="contribute">
@@ -1350,7 +1350,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                       onChange={(e) =>
                         setCashflowAmount(Number(e.target.value))
                       }
-                      className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
+                      className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                     />
                   </div>
                 )}
@@ -1366,7 +1366,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                         onChange={(e: any) =>
                           setInflationAdjusted(e.target.value === "yes")
                         }
-                        className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
+                        className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                       >
                         <option value="yes">{currentLabels.yes}</option>
                         <option value="no">{currentLabels.no}</option>
@@ -1380,7 +1380,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                       <CustomSelect
                         value={cashflowFreq}
                         onChange={(e: any) => setCashflowFreq(e.target.value)}
-                        className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
+                        className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                       >
                         <CashflowFrequencyOptions lang={language} annualValue="annual" />
                       </CustomSelect>
@@ -1399,7 +1399,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     type="number"
                     value={horizon}
                     onChange={(e) => setHorizon(Number(e.target.value))}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                   />
                 </div>
                 <div className="space-y-1.5 focus-within:text-pv-blue">
@@ -1410,7 +1410,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                   <CustomSelect
                     value={taxTreatment}
                     onChange={(e: any) => setTaxTreatment(e.target.value)}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                   >
                     <option value="pre_tax">{currentLabels.preTax}</option>
                     <option value="post_tax">{currentLabels.postTax}</option>
@@ -1428,7 +1428,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     min={0}
                     value={taxRatePct}
                     onChange={(e) => setTaxRatePct(Math.max(0, Number(e.target.value) || 0))}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                   />
                 </div>
                 )}
@@ -1443,7 +1443,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     min={0}
                     value={annualFeePct}
                     onChange={(e) => setAnnualFeePct(Math.max(0, Number(e.target.value) || 0))}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                   />
                 </div>
                 <div className="space-y-1.5 focus-within:text-pv-blue">
@@ -1457,7 +1457,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     min={0}
                     value={inflationRatePct}
                     onChange={(e) => setInflationRatePct(Math.max(0, Number(e.target.value) || 0))}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm tabular-nums font-medium outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-mono font-bold outline-none focus:border-pv-blue transition-colors"
                   />
                 </div>
                 <div className="space-y-1.5 focus-within:text-pv-blue">
@@ -1468,7 +1468,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                   <CustomSelect
                     value={simulationModel}
                     onChange={(e: any) => setSimulationModel(e.target.value as any)}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                   >
                     <option value="Bootstrap">{currentLabels.historicalReturns}</option>
                     <option value="Normal">{currentLabels.statisticalReturns}</option>
@@ -1484,7 +1484,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     onChange={(e: any) =>
                       setUseFullHistory(e.target.value === "yes")
                     }
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                   >
                     <option value="yes">{currentLabels.yes}</option>
                     <option value="no">{currentLabels.no}</option>
@@ -1499,7 +1499,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     disabled={simulationModel !== "Bootstrap"}
                     value={bootstrapModel}
                     onChange={(e: any) => setBootstrapModel(e.target.value)}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors disabled:opacity-50 cursor-pointer"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     <option value="single">{currentLabels.singleYear}</option>
                     <option value="block">{currentLabels.blockBootstrap}</option>
@@ -1514,7 +1514,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     disabled={cashflowType === "none"}
                     value={spendingRule}
                     onChange={(e: any) => setSpendingRule(e.target.value)}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium outline-none focus:border-slate-400 transition-colors disabled:opacity-50 cursor-pointer"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold outline-none focus:border-pv-blue transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     <option value="none">{currentLabels.noAdjustment}</option>
                     <option value="rolling_avg">{currentLabels.rollingAvg}</option>
@@ -1528,7 +1528,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                   <CustomSelect
                     value={sequenceOfReturns}
                     onChange={(e: any) => setSequenceOfReturns(e.target.value)}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                   >
                     <option value="no_adjustments">{currentLabels.noAdjustments}</option>
                     <option value="worst_first">{currentLabels.worstFirst}</option>
@@ -1542,7 +1542,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                   <CustomSelect
                     value={rebalancing}
                     onChange={(e: any) => setRebalancing(e.target.value)}
-                    className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-lg px-4 py-2 text-sm font-medium cursor-pointer outline-none focus:border-slate-400 transition-colors"
+                    className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-4 py-2.5 text-base font-bold cursor-pointer outline-none focus:border-pv-blue transition-colors"
                   >
                     <option value="annual">{currentLabels.rebalanceAnnually}</option>
                     <option value="monthly">{currentLabels.rebalanceMonthly}</option>
@@ -1559,7 +1559,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                 <div className="pt-2 border-t border-border mt-4 w-full">
                   <div className="flex flex-col gap-2.5">
                     <h3 className="text-sm font-semibold text-text flex items-center gap-2">
-                      <Activity size={14} className="text-slate-400" />
+                      <Activity size={14} className="text-pv-blue" />
                       {t("aa.sugg") || "Suggested Portfolios"}
                     </h3>
                     <div className="flex flex-wrap gap-2">
@@ -1568,7 +1568,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                           key={idx}
                           onClick={() => applyPredefinedPortfolio(preset)}
                           disabled={portfolioNames.length >= planLimits.maxPortfolios}
-                          className="text-[12.5px] bg-white border border-slate-200 px-3 py-1 rounded-full text-slate-600 hover:border-slate-400 hover:text-slate-900 transition-colors disabled:opacity-50 font-medium cursor-pointer"
+                          className="text-xs bg-surface-2 border border-border px-3.5 py-1.5 rounded-xl hover:border-pv-blue hover:text-pv-blue transition-all transform hover:scale-105 disabled:opacity-50 font-semibold shadow-sm cursor-pointer"
                         >
                           + {preset.name}
                         </button>
@@ -1579,8 +1579,8 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-200">
-                    <Database size={13} className="text-slate-500" />
+                  <div className="w-8 h-8 rounded-xl bg-pv-blue/10 flex items-center justify-center border border-pv-blue/20">
+                    <Database size={14} className="text-pv-blue" />
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-text flex items-center gap-2">
@@ -1593,21 +1593,21 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                   <button
                     onClick={addPortfolio}
                     disabled={portfolioNames.length >= planLimits.maxPortfolios}
-                    className="h-8 px-3 rounded-lg border border-slate-200 bg-white text-[13px] font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="text-base bg-gradient-to-r from-sky-500/10 to-blue-500/10 text-sky-500 px-4 py-2 border border-sky-500/30 rounded-2xl font-bold hover:from-sky-500/20 hover:to-blue-500/20 transition-all shadow-sm flex items-center justify-center gap-1.5 overflow-hidden relative disabled:opacity-50"
                   >
                     {t("pb.add")}
                   </button>
                 </div>
               </div>
 
-              <div className="w-full max-w-full mx-auto overflow-x-auto bg-white rounded-xl border border-slate-200 mt-3">
+              <div className="w-full max-w-full mx-auto overflow-x-auto bg-surface rounded-[2rem] border border-border mt-4 shadow-sm">
                 <table className="w-full text-left border-collapse min-w-[280px] lg:min-w-[800px]">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-white">
-                      <th className="py-2.5 px-2.5 text-[11px] font-medium uppercase tracking-wider text-slate-500 w-auto whitespace-nowrap">
-                        #
+                    <tr className="border-b border-border bg-surface-2">
+                      <th className="py-2.5 px-2.5 text-xs lg:text-sm font-semibold text-text w-auto whitespace-nowrap">
+                        {currentLabels.portfolioAssets || "Assets"}
                       </th>
-                      <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] text-[11px] font-medium uppercase tracking-wider text-slate-500 whitespace-nowrap">Ticker & Name</th>
+                      <th className="py-2.5 px-2.5 min-w-[420px] lg:min-w-[540px] font-semibold text-text text-xs lg:text-sm whitespace-nowrap">Ticker & Name</th>
                       {portfolioNames.map((pn, i) => (
                         <th
                           key={pn.id}
@@ -1620,7 +1620,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                               onChange={(e) =>
                                 updatePortfolioName(i, e.target.value)
                               }
-                              className="bg-transparent border-b border-dashed border-slate-300 outline-none focus:border-slate-600 transition-colors px-1 py-0.5 text-center text-[13.5px] font-semibold text-slate-900 w-full max-w-[120px] text-ellipsis"
+                              className="bg-transparent border-b border-dashed border-border outline-none focus:border-pv-blue transition-colors px-1 py-0.5 text-center font-bold text-text w-full max-w-[120px] text-ellipsis"
                               placeholder={`Portfolio #${i + 1}`}
                             />
                             {portfolioNames.length > 1 && (
@@ -1633,8 +1633,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                               </button>
                             )}
                           </div>
-                          <AllocationBar rows={portfolioAssets.map((a) => ({ symbol: a.symbol, weight: Number(a.weights[i]) || 0 }))} />
-                      </th>
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -1642,11 +1641,11 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                     {portfolioAssets.map((asset, aIdx) => (
                       <tr
                         key={aIdx}
-                        className="border-b border-border last:border-0 hover:bg-slate-50/70 transition-colors"
+                        className="border-b border-border last:border-0 hover:bg-surface-2/60 transition-colors"
                       >
                         <td className="py-2 pl-2.5 pr-1 text-xs lg:text-sm text-text font-semibold whitespace-nowrap w-auto">
                           <div className="flex items-center gap-1">
-                            <span className="text-slate-400 tabular-nums">{aIdx + 1}</span>
+                            <span>{currentLabels.asset || "Asset"} {aIdx + 1}</span>
                             {portfolioAssets.length > 1 && (
                               <button
                                 onClick={() => removeAssetRow(aIdx)}
@@ -1660,7 +1659,7 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                           {aIdx === portfolioAssets.length - 1 && (
                             <button
                               onClick={addAssetRow}
-                              className="text-slate-500 hover:text-slate-900 text-[12px] font-medium break-keep whitespace-nowrap block mt-1"
+                              className="text-pv-blue hover:underline text-[11px] font-semibold break-keep whitespace-nowrap block mt-1"
                             >
                               + {currentLabels.addMore}
                             </button>
@@ -1671,16 +1670,30 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
 </td>
                         {portfolioNames.map((pn, i) => (
                           <td key={pn.id} className="p-2 lg:p-3">
-                            <WeightInput value={asset.weights[i]} onChange={(v) => updateAssetWeight(aIdx, i, v)} />
+                            <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
+                              <input
+                                type="number"
+                                step="any"
+                                value={asset.weights[i] || ""}
+                                onChange={(e) =>
+                                  updateAssetWeight(aIdx, i, e.target.value)
+                                }
+                                placeholder="0"
+                                className="bg-surface text-sm p-2 lg:p-2.5 border border-border rounded-l-xl outline-none focus:border-pv-blue transition-colors w-full box-border text-text font-bold text-center"
+                              />
+                              <div className="bg-surface-2 border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold text-text-2 shrink-0 select-none">
+                                %
+                              </div>
+                            </div>
                           </td>
                         ))}
                       </tr>
                     ))}
 
                     {/* Totals Row */}
-                    <tr className="border-t border-slate-200 bg-white">
-                      <td className="px-3 py-3 text-[13px] font-semibold text-slate-700">
-                        {currentLabels.total}
+                    <tr className="bg-surface-2 font-bold">
+                      <td className="p-3.5 text-sm lg:text-base font-bold text-text">
+                        {(currentLabels as any).total || "Total"}
                       </td>
                       <td className="p-3.5"></td>
                       {portfolioNames.map((pn, i) => {
@@ -1692,7 +1705,32 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
                         const isOver = totalWeight > 100;
                         return (
                           <td key={"total-" + i} className="p-3.5">
-                            <WeightTotal total={totalWeight} />
+                            <div className="flex items-center max-w-[130px] mx-auto shadow-sm">
+                              <div
+                                className={cn(
+                                  "text-sm p-2 lg:p-2.5 border border-border rounded-l-xl w-full box-border text-center font-bold outline-none transition-colors",
+                                  isOk
+                                    ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                                    : isOver
+                                    ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
+                                    : "bg-surface text-text",
+                                )}
+                              >
+                                {Math.round(totalWeight * 100) / 100}
+                              </div>
+                              <div
+                                className={cn(
+                                  "border border-l-0 border-border rounded-r-xl px-2.5 py-2 lg:py-2.5 text-xs font-bold shrink-0 transition-colors",
+                                  isOk
+                                    ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                                    : isOver
+                                    ? "bg-red-500/10 border-red-500 text-red-600 dark:text-red-400"
+                                    : "bg-surface-2 text-text-2",
+                                )}
+                              >
+                                %
+                              </div>
+                            </div>
                           </td>
                         );
                       })}
@@ -1716,8 +1754,8 @@ export function MonteCarlo({ baseCcy }: { baseCcy: string }) {
             {/* RESULTS SECTION */}
           {mcResults && mcResults[activeResIdx].result.length > 0 && (
             <div id="report-content" className="space-y-6">
-              <div className="bg-white border border-slate-200 rounded-xl p-8 space-y-6 text-left">
-                <div className="flex border-b border-slate-200 flex-wrap gap-2 mb-6 bg-slate-50 p-1.5 rounded-xl">
+              <div className="bg-surface border border-border rounded-[2rem] p-8 space-y-6 text-left shadow-sm">
+                <div className="flex border-b border-border flex-wrap gap-2 mb-6 bg-surface-2 p-2 rounded-[2rem]">
                   {mcResults.map((r, idx) => (
                     <button
                       key={r.id}

@@ -149,7 +149,7 @@ export function Header({
                         className={cn(
                           "px-2.5 py-1.5 lg:px-2 2xl:px-3 lg:py-2 rounded-2xl whitespace-nowrap text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all flex items-center gap-1 relative overflow-visible",
                           isActive 
-                            ? "text-white bg-blue-600 shadow-md shadow-blue-500/20 scale-105 font-bold" 
+                            ? "text-slate-950 font-bold" 
                             : "text-text-2 hover:bg-surface-2 hover:text-text"
                         )}
                       >
@@ -158,7 +158,7 @@ export function Header({
                         {isActive && (
                           <motion.div
                             layoutId="activeHeaderHighlight"
-                            className="absolute inset-0 bg-blue-600 rounded-2xl -z-10"
+                            className="absolute inset-0 bg-slate-100 rounded-2xl -z-10"
                             transition={{ type: "spring", stiffness: 300, damping: 25 }}
                           />
                         )}
@@ -170,7 +170,7 @@ export function Header({
                               key={child.id}
                               onClick={() => onPageChange(child.id)}
                               className={`w-full text-left px-4 py-2.5 rounded-[1.5rem] text-[11px] lg:text-xs font-semibold transition-all ${
-                                currentPage === child.id ? "bg-blue-600 text-white font-bold" : "text-text hover:bg-surface-2"
+                                currentPage === child.id ? "bg-slate-100 text-slate-950 font-bold" : "text-text hover:bg-surface-2"
                               }`}
                             >
                               {child.label}
@@ -185,7 +185,7 @@ export function Header({
                       className={cn(
                         "px-2.5 py-1.5 lg:px-2 2xl:px-3 lg:py-2 rounded-2xl whitespace-nowrap text-[10px] lg:text-[11px] xl:text-[12px] font-semibold tracking-wide transition-all relative overflow-visible",
                         isActive 
-                          ? "text-white bg-blue-600 shadow-md shadow-blue-500/20 scale-105 font-bold" 
+                          ? "text-slate-950 font-bold" 
                           : "text-text-2 hover:bg-surface-2 hover:text-text"
                       )}
                     >
@@ -193,7 +193,7 @@ export function Header({
                       {isActive && (
                         <motion.div
                           layoutId="activeHeaderHighlight"
-                          className="absolute inset-0 bg-blue-600 rounded-2xl -z-10"
+                          className="absolute inset-0 bg-slate-100 rounded-2xl -z-10"
                           transition={{ type: "spring", stiffness: 300, damping: 25 }}
                         />
                       )}
@@ -410,7 +410,7 @@ export function Header({
                     className={cn(
                       "w-full text-left px-5 py-4 rounded-2xl text-xl font-bold tracking-tight transition-all flex items-center justify-between",
                       currentPage === menu.id || isChildActive
-                        ? "bg-blue-600 text-white shadow-md"
+                        ? "bg-slate-100 text-slate-950 font-bold"
                         : "text-slate-900 hover:bg-slate-100"
                     )}
                   >
@@ -438,7 +438,7 @@ export function Header({
                           }}
                           className={cn(
                             "w-full text-left px-4 py-3.5 rounded-xl text-lg font-semibold transition-all",
-                            currentPage === child.id ? "bg-blue-600 text-white font-bold" : "text-slate-900 hover:bg-slate-100"
+                            currentPage === child.id ? "bg-slate-100 text-slate-950 font-bold" : "text-slate-900 hover:bg-slate-100"
                           )}
                         >
                           {child.label}

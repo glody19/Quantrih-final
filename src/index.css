@@ -434,3 +434,9 @@ code, pre, kbd { font-family: var(--font-mono) !important; }
   /* the hero still fills the whole screen once zoomed out */
   html:not(.phone-desktop) main .min-h-\[100svh\] { min-height: calc(100svh / 0.8); }
 }
+
+/* Backtesting and Market pages: text in black (grey utility shades are darkened) */
+.tool-page, .market-page { color: #0B0B0F; }
+:is(.tool-page, .market-page) :is(.text-text-2, .text-text-3, .text-slate-500, .text-slate-600, .text-slate-700, .text-slate-800, .text-gray-500, .text-gray-600, .text-gray-700, .text-zinc-500, .text-zinc-600, .text-neutral-500, .text-neutral-600) { color: #111118 !important; }
+:is(.tool-page, .market-page) :is(.text-text-4, .text-slate-400, .text-gray-400) { color: #3A3D4A !important; }
+.tool-page #report-content table:not(.heat-table) thead th { color: #111118 !important; }

@@ -180,7 +180,6 @@ export function LazyPortfolios({ onNavigate, variant = "page", bare = false }: {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   const rows = useMemo(() => [...MODEL_PORTFOLIOS].sort((a, b) => ((stats[b.id] as any)?.[sort] ?? -999) - ((stats[a.id] as any)?.[sort] ?? -999)), [stats, sort]);
-  const asOf = Object.values(stats).find((s) => s)?.asOf;
 
   // /market?lazy=<id> (coming from the home page) opens that portfolio and scrolls to it
   useEffect(() => {
@@ -218,11 +217,6 @@ export function LazyPortfolios({ onNavigate, variant = "page", bare = false }: {
 
       <div ref={ref} className={cn("overflow-x-auto rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)]", bare ? "mt-0" : "mt-6", home && "flex-1 p-3 sm:p-5")}>
         {/* on the home page this card mirrors the Best 10 ETF card next to it: same date line, header and row height */}
-        {home && (
-          <p className="mb-3 text-right text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500 min-h-[18px]">
-            {asOf ? `${lang === "fr" ? "Dernière mise à jour" : "Last update"}: ${new Date(asOf).toLocaleDateString(lang === "fr" ? "fr-BE" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}` : ""}
-          </p>
-        )}
         <table className={cn("w-full", home ? "min-w-[520px] text-[13px] sm:text-[15px] border-separate border-spacing-y-[3px]" : "min-w-[620px] md:min-w-[760px] text-[14px] sm:text-[15px]")}>
           <thead>
             <tr className={cn(home ? "text-[13px] text-slate-500" : "text-sm text-text-3 border-b border-border")}>

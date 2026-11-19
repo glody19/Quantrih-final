@@ -5,15 +5,15 @@ import { usePlan } from "../../lib/plans";
 
 const T = {
   en: {
-    kicker: "Pro", title: "Fundamental analysis",
-    lead: "Valuation, profitability, growth, balance sheet strength and 10 years of financial statements for every listed company, in one place.",
-    points: ["Valuation ratios against the sector (P/E, EV/EBITDA, P/B, PEG)", "Margins, ROE, ROIC and their trend", "Debt, liquidity and cash flow coverage", "Dividend history and payout", "Analyst consensus and peers", "Income statement, balance sheet and cash flow, annual and quarterly"],
+    kicker: "Pro", title: "Financial statements",
+    lead: "Up to 10 years of reported income statements, balance sheets and cash flows for every listed company, annual and quarterly.",
+    points: ["Income statement: revenue, margins, earnings per share", "Balance sheet: assets, debt, equity", "Cash flow: operating, investing, free cash flow", "Annual and quarterly periods", "Up to 10 years of history", "Export of every table"],
     cta: "See the Pro plan", note: "Included in Pro. Cancel at any time.",
   },
   fr: {
-    kicker: "Pro", title: "Analyse fondamentale",
-    lead: "Valorisation, rentabilité, croissance, solidité du bilan et 10 ans d'états financiers pour chaque société cotée, au même endroit.",
-    points: ["Ratios de valorisation face au secteur (PER, VE/EBITDA, cours/valeur comptable, PEG)", "Marges, ROE, ROIC et leur évolution", "Dette, liquidité et couverture par les flux de trésorerie", "Historique et taux de distribution du dividende", "Consensus des analystes et sociétés comparables", "Compte de résultat, bilan et flux de trésorerie, annuels et trimestriels"],
+    kicker: "Pro", title: "États financiers",
+    lead: "Jusqu'à 10 ans de comptes de résultat, bilans et flux de trésorerie publiés pour chaque société cotée, annuels et trimestriels.",
+    points: ["Compte de résultat : chiffre d'affaires, marges, bénéfice par action", "Bilan : actifs, dette, capitaux propres", "Flux de trésorerie : exploitation, investissement, flux libre", "Périodes annuelles et trimestrielles", "Jusqu'à 10 ans d'historique", "Export de chaque tableau"],
     cta: "Voir la formule Pro", note: "Inclus dans Pro. Résiliable à tout moment.",
   },
 };
