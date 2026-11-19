@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Check, ExternalLink, Minus, Star, ShieldCheck, Receipt, Landmark, Megaphone, LayoutGrid, Table2, Search, ArrowRight } from "lucide-react";
 import { useTranslation } from "../../contexts/LanguageContext";
 import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
-import { HeroBand, HeroStats, NetworkArt, SectionHead, PALETTE } from "../education/Viz";
+import { PlainHead, SectionHead, PALETTE } from "../education/Viz";
 import { cn } from "../../lib/utils";
 import { PLATFORMS } from "./platformsData";
 import { INVESTMENT_PLATFORMS, PLATFORM_SOURCES, type InvestmentPlatform, type Market, type PlatformType } from "../../data/investmentPlatforms";
@@ -304,14 +304,12 @@ export function Platforms({ onNavigate }: { onNavigate?: (page: string) => void 
   return (
     <MobileZoomWrapper scaleMobile={0.8}>
       <div className="w-full pb-24 -mt-4 lg:-mt-6 font-sans">
-        <HeroBand kicker={lang === "fr" ? "Où investir" : "Where to invest"} title={l.title} sub={l.subtitle} art={<NetworkArt />}>
-          <HeroStats items={[
-            { value: popular.length, label: lang === "fr" ? "plateformes" : "platforms", color: PALETTE.gold },
-            { value: popular.filter((p) => p.type === "broker").length, label: l.broker, color: PALETTE.sky },
-            { value: popular.filter((p) => p.type === "crypto").length, label: l.crypto, color: PALETTE.coral },
-            { value: INVESTMENT_PLATFORMS.length, label: lang === "fr" ? "fiches détaillées" : "detailed profiles", color: PALETTE.teal },
-          ]} />
-        </HeroBand>
+        <PlainHead kicker={lang === "fr" ? "Où investir" : "Where to invest"} title={l.title} sub={l.subtitle} stats={[
+          { value: popular.length, label: lang === "fr" ? "plateformes" : "platforms" },
+          { value: popular.filter((p) => p.type === "broker").length, label: l.broker },
+          { value: popular.filter((p) => p.type === "crypto").length, label: l.crypto },
+          { value: INVESTMENT_PLATFORMS.length, label: lang === "fr" ? "fiches détaillées" : "detailed profiles" },
+        ]} />
         <div className="max-w-[1720px] mx-auto px-5 sm:px-8 lg:px-14 pt-12">
 
         {/* Market tabs */}

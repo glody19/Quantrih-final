@@ -8,7 +8,7 @@ import { MobileZoomWrapper } from "../ui/MobileZoomWrapper";
 import { SUMMARY_TRANSLATIONS, type Book } from "../../data/books";
 import { CATEGORIES, LIBRARY, BEST_SELLERS, RECENT, PAPERS, MEDIA, categoryOf, type CategoryId, type Media } from "../../data/learning";
 import { BookCard } from "../education/BookCard";
-import { HeroBand, HeroStats, LibraryArt, PALETTE } from "../education/Viz";
+import { PlainHead, PALETTE } from "../education/Viz";
 
 type Tab = "books" | "research" | "media";
 
@@ -179,14 +179,12 @@ export function Education() {
   return (
     <MobileZoomWrapper scaleMobile={0.8}>
       <div className="w-full pb-24 -mt-4 lg:-mt-6 font-sans">
-        <HeroBand kicker={L.kicker} title={L.title} sub={L.sub} art={<LibraryArt />}>
-          <HeroStats items={[
-            { value: LIBRARY.length, label: L.statBooks, color: PALETTE.gold },
-            { value: PAPERS.length, label: L.statPapers, color: PALETTE.sky },
-            { value: MEDIA.length, label: L.statMedia, color: PALETTE.coral },
-            { value: CATEGORIES.length, label: L.statTopics, color: PALETTE.teal },
-          ]} />
-        </HeroBand>
+        <PlainHead kicker={L.kicker} title={L.title} sub={L.sub} stats={[
+          { value: LIBRARY.length, label: L.statBooks },
+          { value: PAPERS.length, label: L.statPapers },
+          { value: MEDIA.length, label: L.statMedia },
+          { value: CATEGORIES.length, label: L.statTopics },
+        ]} />
 
         <div className="max-w-[1720px] mx-auto px-5 sm:px-8 lg:px-14">
           {/* feature: market structure and dark pools */}

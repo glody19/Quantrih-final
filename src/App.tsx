@@ -16,6 +16,7 @@ const MovingAverage = lazy(() => import("./components/pages/MovingAverage").then
 const DualMomentum = lazy(() => import("./components/pages/DualMomentum").then((m) => ({ default: m.DualMomentum })));
 const RelativeStrength = lazy(() => import("./components/pages/RelativeStrength").then((m) => ({ default: m.RelativeStrength })));
 const Education = lazy(() => import("./components/pages/Education").then((m) => ({ default: m.Education })));
+const BookPage = lazy(() => import("./components/pages/BookPage").then((m) => ({ default: m.BookPage })));
 const Market = lazy(() => import("./components/pages/Market").then((m) => ({ default: m.Market })));
 const SiteMap = lazy(() => import("./components/pages/SiteMap").then((m) => ({ default: m.SiteMap })));
 const Platforms = lazy(() => import("./components/pages/Platforms").then((m) => ({ default: m.Platforms })));
@@ -80,7 +81,7 @@ function AppContent() {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const currentPage = location.pathname === "/" ? "home" : location.pathname.substring(1);
+  const currentPage = location.pathname === "/" ? "home" : location.pathname.split("/")[1];
 
   const [theme, setTheme] = useState("light");
   const [baseCcy, setBaseCcy] = useState<string>(() => loadPrefs().baseCcy);
@@ -204,6 +205,7 @@ function AppContent() {
           <Route path="/lazy-portfolios" element={<Navigate to="/market#lazy-portfolios" replace />} />
           <Route path="/virtual-portfolio" element={<VirtualPortfolio />} />
           <Route path="/education" element={<Education />} />
+          <Route path="/education/:slug" element={<BookPage />} />
           <Route path="/donate" element={<Navigate to="/pricing" replace />} />
           <Route path="/about" element={<About />} />
           <Route path="/pricing" element={<Pricing onNavigate={handleNavigate} />} />
