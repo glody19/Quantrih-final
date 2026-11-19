@@ -274,7 +274,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
 
       {/* ── Why backtest: the three devices on the left (large), the case for it on the right ── */}
       <ZoomSection style={LARGE_GRID} className="relative w-full py-20 lg:py-24 overflow-hidden">
-        <div className="max-w-[1700px] mx-auto pl-2 pr-4 sm:pr-6 lg:pl-4 lg:pr-12 grid lg:grid-cols-[1.75fr_1fr] gap-8 lg:gap-10 items-center">
+        <div className="max-w-[1700px] mx-auto pl-2 pr-4 sm:pr-6 lg:pl-4 lg:pr-12 grid lg:grid-cols-[2.2fr_1fr] gap-8 lg:gap-10 items-center">
           <DeviceShowcase
             fr={fr}
             videoMp4="/media/demo-desktop.mp4"
@@ -326,10 +326,6 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
                 </motion.li>
               ))}
             </motion.ul>
-            <motion.button initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 3.4, duration: 0.5 }}
-              onClick={() => onGoPage("portfolio-backtest")} className="mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-pv-blue hover:bg-pv-blue-d text-white text-sm font-semibold">
-              {fr ? "Lancer un backtest" : "Run a backtest"} <ArrowRight size={15} />
-            </motion.button>
           </div>
         </div>
       </ZoomSection>

@@ -142,14 +142,10 @@ export function TopEtfs({ fr }: { fr: boolean }) {
     COLS.forEach(([k]) => { m[k] = Math.max(1, ...rows.map((r) => Math.abs((perf[r.s]?.[k] as number) ?? 0))); });
     return m;
   }, [rows, perf]);
-  const asOf = Object.values(perf).find((p) => p?.asOf)?.asOf;
   const loading = Object.keys(perf).length === 0;
 
   return (
     <div ref={ref} className="h-full rounded-[1.5rem] bg-white shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)] p-3 sm:p-5">
-      <p className="mb-3 text-right text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-500 min-h-[18px]">
-        {asOf ? `${fr ? "Dernière mise à jour" : "Last update"}: ${new Date(asOf).toLocaleDateString(fr ? "fr-BE" : "en-GB", { day: "numeric", month: "long", year: "numeric" })}` : ""}
-      </p>
       <div className="sm:overflow-x-auto">
         <table className="w-full w-full sm:min-w-[640px] text-[13px] sm:text-[15px] border-separate border-spacing-y-[3px]">
           <thead>
@@ -209,7 +205,6 @@ export function TopEtfs({ fr }: { fr: boolean }) {
         {fr
           ? `Classement parmi ${UNIVERSE.length} ETF cotés aux États-Unis. Rendement total en USD, dividendes réinvestis ; 3 et 5 ans annualisés. Les performances passées ne préjugent pas des performances futures.`
           : `Ranked among ${UNIVERSE.length} US-listed ETFs. Total return in USD, dividends reinvested; 3Y and 5Y annualised. Past performance does not predict future returns.`}
-        {asOf ? ` · ${asOf}` : ""}
       </p>
     </div>
   );

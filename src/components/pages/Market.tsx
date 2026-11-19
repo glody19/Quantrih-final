@@ -1868,9 +1868,8 @@ const isEuropeanMarketOpen = () => {
  </div>
  </div>
 
- {/* Fundamental analysis (Pro): ratios, peers, consensus and financial statements */}
+ {/* Fundamental analysis for everyone (ratios, peers, consensus); full financial statements for Pro */}
  <div id="fundamentals" className="mt-10 scroll-mt-36">
- <ProGate language={language} symbol={quote.symbol}>
  <div>
  <StockAnalysis
  quote={quote}
@@ -1887,8 +1886,9 @@ const isEuropeanMarketOpen = () => {
  />
  </div>
 
- {/* Financial statements: income statement, balance sheet, cash flow (reported data) */}
+ {/* Financial statements: income statement, balance sheet, cash flow (reported data), Pro */}
  <div className="mt-12">
+ <ProGate language={language} symbol={quote.symbol}>
  <FinancialStatements
  symbol={quote.symbol}
  income={income}
@@ -1899,8 +1899,8 @@ const isEuropeanMarketOpen = () => {
  currency={quote.currency || profile?.currency}
  language={language}
  />
- </div>
  </ProGate>
+ </div>
  </div>
 
 {/* WATCHLIST COMPARISON SECTION */}
