@@ -109,7 +109,7 @@
     background-attachment: scroll; /* Changed from fixed for better mobile performance */
     font-size: 17px; /* larger, easier to read */
     letter-spacing: -0.005em;
-    font-weight: 400;
+    font-weight: 500;
     -webkit-tap-highlight-color: transparent;
     /* overflow-x: hidden; removed to test sticky header */ /* Prevent horizontal scroll causing scroll-lock on mobile */
   }
@@ -440,3 +440,12 @@ code, pre, kbd { font-family: var(--font-mono) !important; }
 :is(.tool-page, .market-page) :is(.text-text-2, .text-text-3, .text-slate-500, .text-slate-600, .text-slate-700, .text-slate-800, .text-gray-500, .text-gray-600, .text-gray-700, .text-zinc-500, .text-zinc-600, .text-neutral-500, .text-neutral-600) { color: #111118 !important; }
 :is(.tool-page, .market-page) :is(.text-text-4, .text-slate-400, .text-gray-400) { color: #3A3D4A !important; }
 .tool-page #report-content table:not(.heat-table) thead th { color: #111118 !important; }
+
+/* Bolder writing everywhere, like the scrolling bar at the top of the home page (Inter medium / semibold):
+   running text in medium, titles in bold, highlighted text in semibold. Tables keep a medium weight. */
+body { font-weight: 500; }
+.font-normal { font-weight: 500 !important; }
+.font-light, .font-extralight, .font-thin { font-weight: 500 !important; }
+h1, h2 { font-weight: 700 !important; letter-spacing: -0.02em; }
+h3, h4 { font-weight: 600 !important; }
+p.text-lg, p.text-xl, p.text-2xl, p[class*="text-[17px]"], p[class*="text-[18px]"], p[class*="text-[19px]"], p[class*="text-[22px]"] { font-weight: 600; }
