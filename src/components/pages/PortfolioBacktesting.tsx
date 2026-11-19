@@ -299,6 +299,9 @@ export function PortfolioBacktesting({
     if (setBaseCcy) setBaseCcy(c);
   };
   const [applyEUTaxes, setApplyEUTaxes] = useState(true);
+  // Tax rates chosen by the user (applied only when the tax box is ticked)
+  const [divTaxPct, setDivTaxPct] = useState<number>(30);
+  const [tradeTaxPct, setTradeTaxPct] = useState<number>(0.12);
   const [annualFeePct, setAnnualFeePct] = useState(0.2);
 
 
@@ -544,9 +547,9 @@ export function PortfolioBacktesting({
         benchmarkId: includeBenchmark ? "benchmark" : undefined,
         transactionFeeAmount: broker === "custom" ? customFee : 0,
         reinvestDividends: dividendHandling !== "distribute",
-        // European taxes: 30% Belgian withholding on dividends and the 0.12% stock exchange tax (TOB) on each trade
-        dividendTaxRate: applyEUTaxes ? 0.3 : 0,
-        tradingCostRate: (Math.max(0, Number(slippage) || 0) + (applyEUTaxes ? 0.12 : 0)) / 100,
+        // Taxes at the rates the user chose: tax withheld on dividends, and a tax on each trade
+        dividendTaxRate: applyEUTaxes ? Math.min(100, Math.max(0, Number(divTaxPct) || 0)) / 100 : 0,
+        tradingCostRate: (Math.max(0, Number(slippage) || 0) + (applyEUTaxes ? Math.max(0, Number(tradeTaxPct) || 0) : 0)) / 100,
         annualFeeRate: (Number(annualFeePct) || 0) / 100,
         baseCurrency: (baseCurrency === "EUR" ? "EUR" : "USD") as "EUR" | "USD",
       };
@@ -1114,12 +1117,21 @@ export function PortfolioBacktesting({
                       htmlFor="euTaxes"
                       className="text-xs font-bold text-text cursor-pointer leading-tight uppercase tracking-wider"
                     >
-                      Apply European Taxes
-                      <span className="block text-text-3 font-normal text-xs normal-case tracking-normal mt-1">
-                        Simulate BE TOB & 30% div drag
-                      </span>
+                      {language === "fr" ? "Appliquer les taxes" : "Apply taxes"}
                     </label>
                   </div>
+                  {applyEUTaxes && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="block">
+                        <span className="block text-[12px] text-text-2 mb-1">{language === "fr" ? "Taxe sur dividendes (%)" : "Dividend tax (%)"}</span>
+                        <input type="number" step={0.5} min={0} max={100} value={divTaxPct} onChange={(e) => setDivTaxPct(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-1.5 text-sm font-mono font-bold outline-none focus:border-pv-blue" />
+                      </label>
+                      <label className="block">
+                        <span className="block text-[12px] text-text-2 mb-1">{language === "fr" ? "Taxe par transaction (%)" : "Tax per trade (%)"}</span>
+                        <input type="number" step={0.01} min={0} value={tradeTaxPct} onChange={(e) => setTradeTaxPct(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-[1.5rem] px-3 py-1.5 text-sm font-mono font-bold outline-none focus:border-pv-blue" />
+                      </label>
+                    </div>
+                  )}
                 </div>
               </div>
 

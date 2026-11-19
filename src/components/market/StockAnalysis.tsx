@@ -81,8 +81,8 @@ const L: Record<string, Record<string, string>> = {
 
 function Card({ title, icon, children, className }: { title: string; icon: React.ReactNode; children: React.ReactNode; className?: string }) {
   return (
-    <section className={cn("bg-surface border border-border rounded-2xl p-5 md:p-6 shadow-sm", className)}>
-      <h3 className="flex items-center gap-2 text-base font-semibold text-text mb-4">
+    <section className={cn("bg-surface border border-border rounded-2xl p-4 shadow-sm", className)}>
+      <h3 className="flex items-center gap-2 text-[15px] font-semibold text-text mb-2.5">
         <span className="text-pv-blue">{icon}</span>
         {title}
       </h3>
@@ -93,8 +93,8 @@ function Card({ title, icon, children, className }: { title: string; icon: React
 
 function Row({ label, value, tone }: { label: string; value: string; tone?: "up" | "down" | null }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2 border-b border-border/60 last:border-0">
-      <span className="text-sm text-text-3">{label}</span>
+    <div className="flex items-center justify-between gap-2 py-1.5 border-b border-border/60 last:border-0">
+      <span className="text-[13px] text-text-3 truncate">{label}</span>
       <span className={cn("text-sm font-semibold font-mono tabular-nums", tone === "up" ? "text-emerald-600" : tone === "down" ? "text-rose-600" : "text-text")}>
         {value}
       </span>
@@ -104,9 +104,9 @@ function Row({ label, value, tone }: { label: string; value: string; tone?: "up"
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-surface-2/60 border border-border/70 rounded-xl p-3.5">
+    <div className="bg-surface-2/60 border border-border/70 rounded-xl px-3 py-2">
       <div className="text-xs font-medium text-text-3 mb-1">{label}</div>
-      <div className="text-lg font-semibold text-text font-mono tabular-nums leading-tight">{value}</div>
+      <div className="text-base font-semibold text-text font-mono tabular-nums leading-tight">{value}</div>
       {sub && <div className="text-xs text-text-3 mt-0.5">{sub}</div>}
     </div>
   );
@@ -220,10 +220,10 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
   const divYield = isNum(r.dividendYieldTTM) ? r.dividendYieldTTM : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* KEY STATS */}
       <Card title={t.keyStats} icon={<BarChart2 size={18} />}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
           <Stat label={t.marketCap} value={big(quote?.marketCap ?? r.marketCapTTM)} />
           <Stat label={t.pe} value={mult(quote?.pe ?? r.priceEarningsRatioTTM)} />
           <Stat label={t.fpe} value={mult(r.priceToEarningsRatioForward)} />
@@ -237,7 +237,7 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
           <Stat label={t.change52} value={signedPct(r.week52Change)} />
           <Stat label={t.revGrowth} value={signedPct(r.revenueGrowth)} />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <RangeBar label={t.dayRange} low={quote?.dayLow} high={quote?.dayHigh} current={price} ccy={ccy} />
           <RangeBar label={t.range52} low={quote?.yearLow ?? r.fiftyTwoWeekLow} high={quote?.yearHigh ?? r.fiftyTwoWeekHigh} current={price} ccy={ccy} />
         </div>
@@ -248,7 +248,7 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
       </Card>
 
       {/* RATIO PANELS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
         <Card title={t.valuation} icon={<Scale size={18} />}>
           <Row label={t.pe} value={mult(r.priceEarningsRatioTTM ?? quote?.pe)} />
           <Row label={t.fpe} value={mult(r.priceToEarningsRatioForward)} />
@@ -285,14 +285,14 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
         </Card>
       </div>
 
-      {/* GROWTH & MARGINS */}
-      <div className="grid grid-cols-1 gap-6">
+      {/* GROWTH & MARGINS + ANALYSTS side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
         <Card title={t.growthTitle} icon={<Activity size={18} />}>
           {rows.length === 0 ? (
             <p className="text-sm text-text-3">{t.noData}</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-sm">
+              <table className="w-full min-w-[460px] text-sm">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wider text-text-3 border-b border-border">
                     <th className="py-2 pr-3 font-semibold">{t.period}</th>
@@ -321,10 +321,6 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
             </div>
           )}
         </Card>
-      </div>
-
-      {/* ANALYSTS */}
-      <div className="grid grid-cols-1 gap-6">
 
         <Card title={t.analysts} icon={<Target size={18} />}>
           {!isNum(r.targetMeanPrice) && recTotal === 0 ? (
@@ -359,7 +355,7 @@ export function StockAnalysis({ quote, profile, ratios, income, balance, cashFlo
 
       {/* PEERS + NEWS */}
       {((peers && peers.length > 0) || (news && news.length > 0)) && (
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
           {peers && peers.length > 0 && (
             <Card title={t.peers} icon={<Users size={18} />}>
               <div className="flex flex-wrap gap-2">

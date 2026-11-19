@@ -449,3 +449,20 @@ body { font-weight: 500; }
 h1, h2 { font-weight: 700 !important; letter-spacing: -0.02em; }
 h3, h4 { font-weight: 600 !important; }
 p.text-lg, p.text-xl, p.text-2xl, p[class*="text-[17px]"], p[class*="text-[18px]"], p[class*="text-[19px]"], p[class*="text-[22px]"] { font-weight: 600; }
+
+/* Backtesting parameter fields: slim, long pill shape like the ticker chips, fine border */
+.tool-page :is(input, button, select)[class*="rounded-[1.5rem]"],
+.tool-page :is(input, button, select)[class*="rounded-2xl"][class*="py-2.5"] {
+  border-radius: 9999px !important;
+  padding-top: 0.3rem !important;
+  padding-bottom: 0.3rem !important;
+  min-height: 0 !important;
+  border-width: 1px !important;
+  border-color: #D5DCE5 !important;
+  background-color: #F4F6F9 !important;
+}
+.tool-page :is(input, button, select)[class*="rounded-[1.5rem]"]:focus { border-color: var(--color-pv-blue) !important; }
+/* Weight and total cells of the portfolio tables: same slim pill */
+.tool-page .max-w-\[130px\].mx-auto { box-shadow: none !important; }
+.tool-page .max-w-\[130px\].mx-auto > :first-child { border-radius: 9999px 0 0 9999px !important; padding-top: 0.3rem !important; padding-bottom: 0.3rem !important; border-color: #D5DCE5 !important; }
+.tool-page .max-w-\[130px\].mx-auto > :last-child { border-radius: 0 9999px 9999px 0 !important; padding-top: 0.3rem !important; padding-bottom: 0.3rem !important; border-color: #D5DCE5 !important; }
