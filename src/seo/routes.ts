@@ -389,6 +389,6 @@ export const SEO_ROUTES: SeoRoute[] = [
 export function findSeoRoute(pathname: string): SeoRoute {
   const clean = pathname !== "/" ? pathname.replace(/\/+$/, "") : "/";
   const alias: Record<string, string> = { "/home": "/", "/portfolio": "/portfolio-backtest" };
-  const target = alias[clean] ?? clean;
+  const target = alias[clean] ?? (clean.startsWith("/education/") ? "/education" : clean);
   return SEO_ROUTES.find((r) => r.path === target) ?? SEO_ROUTES[0];
 }

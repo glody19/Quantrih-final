@@ -36,21 +36,83 @@ type NewBook = Omit<Book, "link"> & { link?: string };
 
 // Added with the page rebuild: French trading and investing authors, and recent releases by well-known names.
 const MORE_BOOKS: NewBook[] = [
-  { title: "L'art du trading", author: "Thami Kabbaj", year: "2007", tag: "Technical Analysis", tagFr: "Analyse Technique", origin: "fr", featured: true, coverColor: "#0B3558",
+  { title: "L'art du trading", author: "Thami Kabbaj", year: "2007", tag: "Technical Analysis", tagFr: "Analyse Technique", origin: "fr", featured: true, coverColor: "#0B3558", isbn: "9782212539158",
     summary: "The French reference on discretionary trading: chart analysis, money management and the psychology that ties them together.",
     summaryFr: "La référence francophone du trading discrétionnaire : analyse graphique, money management et la psychologie qui relie les deux." },
-  { title: "Psychologie des grands traders", author: "Thami Kabbaj", year: "2007", tag: "Trading Psychology", tagFr: "Psychologie du Trading", origin: "fr", coverColor: "#14466B",
+  { title: "Psychologie des grands traders", author: "Thami Kabbaj", year: "2007", tag: "Trading Psychology", tagFr: "Psychologie du Trading", origin: "fr", coverColor: "#14466B", isbn: "9782212552263",
     summary: "Behavioural biases at the trading desk and the routines top traders use to keep discipline under pressure.",
     summaryFr: "Les biais comportementaux en salle de marché et les routines des meilleurs traders pour garder leur discipline sous pression." },
-  { title: "Investir sans criser", author: "Thami Kabbaj", year: "2009", tag: "Trading Psychology", tagFr: "Psychologie du Trading", origin: "fr", coverColor: "#1D6FA8",
+  { title: "Investir sans criser", author: "Thami Kabbaj", year: "2011", tag: "Trading Psychology", tagFr: "Psychologie du Trading", origin: "fr", coverColor: "#1D6FA8",
     summary: "Written after the 2008 crash: how to keep a method and manage risk when markets break down.",
     summaryFr: "Écrit après le krach de 2008 : conserver une méthode et gérer son risque quand les marchés décrochent." },
+  { title: "Maîtriser l'analyse technique avec Thami Kabbaj", author: "Thami Kabbaj", year: "2011", tag: "Technical Analysis", tagFr: "Analyse Technique", origin: "fr", coverColor: "#0B3558", isbn: "9782212549560",
+    summary: "Technical analysis in ten illustrated lessons, from chart patterns to a complete trading plan.",
+    summaryFr: "L'analyse technique en dix leçons illustrées, des figures chartistes à un plan de trading complet." },
+  { title: "Gagner en bourse avec Thami Kabbaj", author: "Thami Kabbaj", year: "2011", tag: "Stock Picking", tagFr: "Sélection d'Actions", origin: "fr", coverColor: "#14466B", isbn: "9782212549553",
+    summary: "Twelve practical lessons on how markets work and the methods professionals use to invest.",
+    summaryFr: "Douze leçons pratiques sur le fonctionnement des marchés et les méthodes des professionnels pour investir." },
+  { title: "Gérer vos émotions en bourse avec Thami Kabbaj", author: "Thami Kabbaj", year: "2011", tag: "Trading Psychology", tagFr: "Psychologie du Trading", origin: "fr", coverColor: "#1D6FA8", isbn: "9782212549577",
+    summary: "Thirteen lessons on fear, greed and discipline, to invest like a professional.",
+    summaryFr: "Treize leçons sur la peur, l'avidité et la discipline, pour investir comme un professionnel." },
+  { title: "Agir", author: "Thami Kabbaj", year: "2019", tag: "Personal Finance", tagFr: "Finances Personnelles", origin: "fr", coverColor: "#0E86C7", isbn: "9782212571325",
+    summary: "Financial freedom as a decision: a five-year plan to stop depending on a salary and a banker.",
+    summaryFr: "La liberté financière comme décision : un plan sur cinq ans pour ne plus dépendre d'un salaire ni de son banquier." },
   { title: "Analyse technique : pratiques et méthodes", author: "Thierry Béchu, Éric Bertrand & Julien Nebenzahl", year: "1992", tag: "Technical Analysis", tagFr: "Analyse Technique", origin: "fr", coverColor: "#1B3F72",
     summary: "The long-standing French university textbook on technical analysis, from Dow theory to indicators and trading systems.",
     summaryFr: "Le manuel universitaire français de l'analyse technique, de la théorie de Dow aux indicateurs et aux systèmes de trading." },
   { title: "Épargnant 3.0", author: "Edouard Petit", year: "2017", tag: "Passive Investing", tagFr: "Investissement Passif", origin: "fr", coverColor: "#0E86C7",
     summary: "Index investing applied to French wrappers: ETF selection, PEA and life insurance, allocation and rebalancing.",
     summaryFr: "La gestion indicielle appliquée aux enveloppes françaises : choix des ETF, PEA et assurance-vie, allocation et rééquilibrage." },
+
+  // ── Other books by authors already in the library ──
+  { title: "Skin in the Game", author: "Nassim Nicholas Taleb", year: "2018", tag: "Risk Management", tagFr: "Gestion des Risques", coverColor: "#0C2233", isbn: "9780425284629",
+    summary: "Why decision makers must bear the consequences of their decisions, and what goes wrong when they do not.",
+    summaryFr: "Pourquoi celui qui décide doit supporter les conséquences de ses décisions, et ce qui dérape quand ce n'est pas le cas." },
+  { title: "The New Market Wizards", author: "Jack D. Schwager", year: "1992", tag: "Trading Psychology", tagFr: "Psychologie du Trading", coverColor: "#14466B", isbn: "9780887306679",
+    summary: "A second round of interviews with top traders on method, risk control and discipline.",
+    summaryFr: "Une deuxième série d'entretiens avec des traders d'exception sur la méthode, le contrôle du risque et la discipline." },
+  { title: "Hedge Fund Market Wizards", author: "Jack D. Schwager", year: "2012", tag: "Trading Psychology", tagFr: "Psychologie du Trading", coverColor: "#1B3F72", isbn: "9781118273043",
+    summary: "Interviews with fifteen hedge fund managers, from global macro to quantitative strategies.",
+    summaryFr: "Entretiens avec quinze gérants de hedge funds, de la macro globale aux stratégies quantitatives." },
+  { title: "The Disciplined Trader", author: "Mark Douglas", year: "1990", tag: "Trading Psychology", tagFr: "Psychologie du Trading", coverColor: "#0B3558", isbn: "9780132157575",
+    summary: "Douglas's first book: the mental habits that make most traders lose, and how to rebuild them.",
+    summaryFr: "Le premier livre de Douglas : les habitudes mentales qui font perdre la plupart des traders, et comment les reconstruire." },
+  { title: "Common Sense on Mutual Funds", author: "John C. Bogle", year: "1999", tag: "Passive Investing", tagFr: "Investissement Passif", coverColor: "#1D6FA8", isbn: "9780470138137",
+    summary: "Costs, turnover and the case for index funds, by the founder of Vanguard.",
+    summaryFr: "Les frais, la rotation des portefeuilles et les arguments pour les fonds indiciels, par le fondateur de Vanguard." },
+  { title: "Noise", author: "Daniel Kahneman, Olivier Sibony & Cass R. Sunstein", year: "2021", tag: "Behavioral Finance", tagFr: "Finance Comportementale", coverColor: "#0E86C7", isbn: "9780316451406",
+    summary: "The random scatter in professional judgments, and the procedures that reduce it.",
+    summaryFr: "La dispersion aléatoire des jugements professionnels, et les procédures qui la réduisent." },
+  { title: "Narrative Economics", author: "Robert J. Shiller", year: "2019", tag: "Behavioral Finance", tagFr: "Finance Comportementale", coverColor: "#14466B", isbn: "9780691182292",
+    summary: "How stories spread like epidemics and move markets and economies.",
+    summaryFr: "Comment les récits se propagent comme des épidémies et font bouger les marchés et l'économie." },
+  { title: "Come Into My Trading Room", author: "Alexander Elder", year: "2002", tag: "Technical Analysis", tagFr: "Analyse Technique", coverColor: "#0B3558", isbn: "9780471225348",
+    summary: "Elder's follow-up: psychology, trading systems, money management and record keeping.",
+    summaryFr: "La suite d'Elder : psychologie, systèmes de trading, gestion du capital et tenue d'un journal." },
+  { title: "Intermarket Analysis", author: "John J. Murphy", year: "2004", tag: "Technical Analysis", tagFr: "Analyse Technique", coverColor: "#1B3F72", isbn: "9780471023296",
+    summary: "The links between bonds, stocks, commodities and currencies, and how to use them in allocation.",
+    summaryFr: "Les liens entre obligations, actions, matières premières et devises, et comment s'en servir pour l'allocation." },
+  { title: "The Quants", author: "Scott Patterson", year: "2010", tag: "Quant Investing", tagFr: "Gestion Quantitative", coverColor: "#0C2233", isbn: "9780307453389",
+    summary: "The quantitative hedge funds, their models, and the August 2007 quant crash.",
+    summaryFr: "Les hedge funds quantitatifs, leurs modèles, et le krach des quants d'août 2007." },
+  { title: "The Greatest Trade Ever", author: "Gregory Zuckerman", year: "2009", tag: "Financial History", tagFr: "Histoire Financière", coverColor: "#14466B", isbn: "9780385529945",
+    summary: "How John Paulson bet against the US housing market and made billions in 2007.",
+    summaryFr: "Comment John Paulson a parié contre l'immobilier américain et gagné des milliards en 2007." },
+  { title: "Buffett: The Making of an American Capitalist", author: "Roger Lowenstein", year: "1995", tag: "Value Investing", tagFr: "Investissement de Valeur", coverColor: "#0B3558", isbn: "9780812979268",
+    summary: "The reference biography of Warren Buffett, from Omaha to Berkshire Hathaway.",
+    summaryFr: "La biographie de référence de Warren Buffett, d'Omaha à Berkshire Hathaway." },
+  { title: "Machine Learning for Asset Managers", author: "Marcos López de Prado", year: "2020", tag: "Machine Learning", tagFr: "Apprentissage Automatique", coverColor: "#1D6FA8", isbn: "9781108792899",
+    summary: "Denoising covariance matrices, clustering, feature importance and portfolio construction with machine learning.",
+    summaryFr: "Débruitage des matrices de covariance, clustering, importance des variables et construction de portefeuille par l'apprentissage automatique." },
+  { title: "Stocks on the Move", author: "Andreas F. Clenow", year: "2015", tag: "Quant Strategy", tagFr: "Stratégie Quantitative", coverColor: "#0E86C7", isbn: "9781511466141",
+    summary: "A complete, rules-based momentum strategy for stocks, with its backtest.",
+    summaryFr: "Une stratégie momentum sur actions entièrement codifiée, avec son backtest." },
+  { title: "The Complete TurtleTrader", author: "Michael W. Covel", year: "2007", tag: "Trend Following", tagFr: "Suivi de Tendance", coverColor: "#14466B", isbn: "9780061241703",
+    summary: "The Turtle experiment: Richard Dennis taught novices a trend-following system, and many became rich.",
+    summaryFr: "L'expérience des Turtles : Richard Dennis apprend un système de suivi de tendance à des débutants, dont beaucoup feront fortune." },
+  { title: "Risk Management and Financial Institutions", author: "John C. Hull", year: "2007", tag: "Risk Management", tagFr: "Gestion des Risques", coverColor: "#1B3F72", isbn: "9781119932482",
+    summary: "Market, credit, liquidity and operational risk in banks and insurers, and the regulation behind them.",
+    summaryFr: "Risques de marché, de crédit, de liquidité et opérationnel dans les banques et assurances, et la réglementation associée." },
 
   // ── Recent releases ──
   { title: "How Countries Go Broke", author: "Ray Dalio", year: "2025", tag: "Macroeconomics", tagFr: "Macroéconomie", recent: true, coverColor: "#0B3558",
@@ -125,6 +187,22 @@ export const LIBRARY: Book[] = [
   Number(!!b.featured) - Number(!!a.featured) ||
   Number(b.year) - Number(a.year)
 );
+
+const plain = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+/** URL slug of a book, e.g. "lart-du-trading". */
+export const bookSlug = (b: Book) => plain(b.title).replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+export const findBookBySlug = (slug: string) => LIBRARY.find((b) => bookSlug(b) === slug);
+
+/** Individual authors of a book ("A, B & C" → ["a", "b", "c"]), accents removed. */
+export const authorsOf = (b: Book) =>
+  b.author.split(/\s*(?:,|&|\band\b|\bet\b)\s*/).map((a) => plain(a).replace(/\./g, "").trim()).filter(Boolean);
+
+/** Other books that share at least one author, newest first. */
+export const otherBooksByAuthor = (b: Book) => {
+  const mine = new Set(authorsOf(b));
+  return LIBRARY.filter((x) => x !== b && authorsOf(x).some((a) => mine.has(a))).sort((x, y) => Number(y.year) - Number(x.year));
+};
 
 /** The well-known titles shown first. */
 export const HEADLINERS: Book[] = LIBRARY.filter((b) => (rank.get(b.title) ?? 999) < 12);

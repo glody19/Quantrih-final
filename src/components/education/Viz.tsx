@@ -22,6 +22,22 @@ export function CountUp({ value, duration = 2.2, delay = 0, decimals = 0, prefix
   return <span ref={ref} className={cn("tabular-nums", className)}>{prefix}{v.toFixed(decimals)}{suffix}</span>;
 }
 
+/** Plain page head: white background, black bold title, no animation. Used by text pages (Education, banks and brokers). */
+export function PlainHead({ kicker, title, sub, stats }: { kicker: string; title: string; sub: string; stats?: { value: number; label: string }[] }) {
+  return (
+    <div className="max-w-[1720px] mx-auto px-5 sm:px-8 lg:px-14 pt-10 lg:pt-12">
+      <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-slate-500">{kicker}</p>
+      <h1 className="mt-2 text-[30px] md:text-[40px] leading-[1.1] font-bold tracking-tight text-slate-950">{title}</h1>
+      <p className="mt-3 max-w-3xl text-[17px] md:text-[18px] leading-relaxed text-slate-700">{sub}</p>
+      {stats && (
+        <p className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-[15px] text-slate-600">
+          {stats.map((s) => <span key={s.label}><span className="font-bold text-slate-950 tabular-nums">{s.value}</span> {s.label}</span>)}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** Navy band with a grid, used as the head of both pages. */
 export function HeroBand({ kicker, title, sub, children, art }: { kicker: string; title: string; sub: string; children?: React.ReactNode; art?: React.ReactNode }) {
   return (
