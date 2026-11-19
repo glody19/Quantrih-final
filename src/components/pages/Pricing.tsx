@@ -7,10 +7,23 @@ import { useTranslation } from "../../contexts/LanguageContext";
 import { usePlan, PLAN_PRICES, type PlanId } from "../../lib/plans";
 import { billingErrorMessage, openBillingPortal, startCheckout, syncSubscription } from "../../lib/billing";
 
-const NAVY: React.CSSProperties = {
-  backgroundColor: "#0A1E2D",
-  backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(180deg,#0A1E2D 0%,#14466B 60%,#0A1E2D 100%)",
+// Colourful page: a vivid hero, a soft tinted body and one colour per plan.
+const HERO: React.CSSProperties = {
+  backgroundColor: "#1E2A78",
+  backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), radial-gradient(ellipse 60% 80% at 15% 10%, rgba(14,165,233,0.55) 0%, transparent 60%), radial-gradient(ellipse 55% 75% at 90% 20%, rgba(168,85,247,0.55) 0%, transparent 60%), linear-gradient(135deg, #1E2A78 0%, #2B3FB8 45%, #0E6BA8 100%)",
+  backgroundSize: "56px 56px, 56px 56px, 100% 100%, 100% 100%, 100% 100%",
+};
+const BODY: React.CSSProperties = { background: "linear-gradient(180deg, #EEF2FF 0%, #F0F9FF 35%, #FDF8F1 70%, #FFFFFF 100%)" };
+const BAND: React.CSSProperties = {
+  backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(120deg, #312E81 0%, #4338CA 40%, #0E7490 100%)",
   backgroundSize: "56px 56px, 56px 56px, 100% 100%",
+};
+
+/** One colour family per plan: frame gradient, header gradient, solid accent, soft tint. */
+const PLAN_STYLE: Record<PlanId, { frame: string; head: string; accent: string; soft: string; glow: string }> = {
+  free: { frame: "linear-gradient(140deg,#34D399,#0EA5E9)", head: "linear-gradient(135deg,#059669 0%,#0D9488 55%,#0284C7 100%)", accent: "#0D9488", soft: "#ECFDF5", glow: "rgba(13,148,136,0.45)" },
+  premium: { frame: "linear-gradient(140deg,#60A5FA,#8B5CF6,#EC4899)", head: "linear-gradient(135deg,#2563EB 0%,#6D28D9 60%,#9333EA 100%)", accent: "#6D28D9", soft: "#F5F3FF", glow: "rgba(109,40,217,0.55)" },
+  pro: { frame: "linear-gradient(140deg,#FCD34D,#F59E0B,#EA580C)", head: "linear-gradient(135deg,#0F172A 0%,#1E293B 55%,#78350F 100%)", accent: "#D97706", soft: "#FFFBEB", glow: "rgba(217,119,6,0.45)" },
 };
 
 type Cell = boolean | string;
@@ -178,8 +191,8 @@ const T = {
 function H({ children, center = false }: { children: React.ReactNode; center?: boolean }) {
   return (
     <div className={center ? "text-center" : undefined}>
-      <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-[24px] md:text-[30px] font-semibold tracking-tight text-slate-900">{children}</motion.h2>
-      <motion.span initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.3 }} style={{ transformOrigin: center ? "center" : "left" }} className={cn("block mt-3 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#1B3F72] to-[#3B82F6]", center && "mx-auto")} />
+      <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-[24px] md:text-[30px] font-bold tracking-tight text-slate-900">{children}</motion.h2>
+      <motion.span initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.3 }} style={{ transformOrigin: center ? "center" : "left" }} className={cn("block mt-3 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#2563EB] via-[#8B5CF6] to-[#F59E0B]", center && "mx-auto")} />
     </div>
   );
 }
@@ -239,96 +252,119 @@ export function Pricing({ onNavigate }: { onNavigate: (page: string) => void }) 
     if (!paying) cta(wanted);
   }, [signedIn, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const cell = (v: Cell, featured: boolean) =>
-    v === true ? <Check className={cn("w-5 h-5 mx-auto", featured ? "text-[#1D6FA8]" : "text-emerald-600")} /> :
+  const cell = (v: Cell, id: PlanId) =>
+    v === true ? <span className="mx-auto w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: PLAN_STYLE[id].frame }}><Check className="w-3.5 h-3.5" strokeWidth={3} /></span> :
     v === false ? <Minus className="w-4 h-4 mx-auto text-slate-300" /> :
-    <span className="text-[14px] font-semibold text-slate-800">{v}</span>;
+    <span className="text-[14px] font-semibold" style={{ color: PLAN_STYLE[id].accent }}>{v}</span>;
 
   return (
-    <div className="w-full font-sans pb-24 -mt-4 lg:-mt-6 bg-white">
+    <div className="w-full font-sans pb-24 -mt-4 lg:-mt-6" style={BODY}>
       {/* Header band */}
-      <div className="w-full" style={NAVY}>
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-12 pt-14 pb-40 text-center">
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[#A9C8EA]">{t.kicker}</motion.p>
-          <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mt-3 text-[34px] md:text-[52px] leading-[1.05] font-semibold tracking-tight !text-white">{t.title}</motion.h1>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mt-5 max-w-2xl mx-auto text-[17px] md:text-[19px] leading-relaxed text-white/75">{t.lead}</motion.p>
-          <div className="mt-8 inline-flex items-center p-1 rounded-full bg-white/10 ring-1 ring-white/15">
+      <div className="relative w-full overflow-hidden" style={HERO}>
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-12 pt-12 pb-36 text-center">
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-block text-[12px] font-semibold uppercase tracking-[0.18em] text-white px-3 py-1 rounded-full bg-white/15 ring-1 ring-white/25">{t.kicker}</motion.p>
+          <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mt-4 text-[32px] md:text-[48px] leading-[1.05] font-bold tracking-tight !text-white">{t.title}</motion.h1>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mt-4 max-w-2xl mx-auto text-[16px] md:text-[18px] leading-relaxed text-white/85">{t.lead}</motion.p>
+          <div className="mt-7 inline-flex items-center p-1 rounded-full bg-white/15 ring-1 ring-white/25 backdrop-blur-sm">
             {[false, true].map((y) => (
-              <button key={String(y)} type="button" onClick={() => setYearly(y)} className={cn("h-10 px-5 rounded-full text-sm font-semibold transition-colors", yearly === y ? "bg-white text-[#0A1E2D]" : "text-white/80 hover:text-white")}>
+              <button key={String(y)} type="button" onClick={() => setYearly(y)} className={cn("h-10 px-5 rounded-full text-sm font-semibold transition-colors", yearly === y ? "bg-white text-[#2B3FB8] shadow" : "text-white/85 hover:text-white")}>
                 {y ? t.yearly : t.monthly}
-                {y && <span className={cn("ml-2 text-[11px] px-2 py-0.5 rounded-full", yearly ? "bg-emerald-100 text-emerald-800" : "bg-emerald-400/20 text-emerald-200")}>{t.save}</span>}
+                {y && <span className={cn("ml-2 text-[11px] px-2 py-0.5 rounded-full", yearly ? "bg-gradient-to-r from-amber-300 to-orange-400 text-slate-900" : "bg-amber-300/25 text-amber-100")}>{t.save}</span>}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Plan cards */}
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-12 -mt-28">
+      {/* Plan cards: gradient frame, coloured header with the price, compact body */}
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-10 -mt-28">
         {banner && (
           <div className={cn("relative z-10 mb-5 mx-auto max-w-2xl rounded-2xl px-5 py-3.5 text-[15px] font-medium text-center shadow-lg", banner.ok ? "bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200" : "bg-white text-slate-700 ring-1 ring-slate-200")}>{banner.text}</div>
         )}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
           {ORDER.map((id, i) => {
             const p = t.plans[id];
+            const st = PLAN_STYLE[id];
             const featured = id === "premium";
             const price = PLAN_PRICES[id];
             const isCurrent = signedIn && plan === id;
             return (
               <motion.div key={id} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.1 * i }}
-                className={cn("relative flex flex-col rounded-[1.5rem] bg-white p-7 md:p-8", featured ? "ring-2 ring-[#1D6FA8] shadow-[0_30px_70px_-30px_rgba(20,70,107,0.55)]" : "ring-1 ring-slate-200 shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)]")}>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-[22px] font-semibold tracking-tight text-slate-900">{p.name}</h3>
-                  <span className={cn("text-[11px] font-semibold uppercase tracking-[0.12em] px-2.5 py-1 rounded-full", featured ? "bg-[#1D6FA8] text-white" : "bg-slate-100 text-slate-600")}>{featured && <Sparkles className="w-3 h-3 inline -mt-0.5 mr-1" />}{p.tag}</span>
-                </div>
-                <p className="mt-3 text-[15px] text-slate-500 leading-relaxed min-h-[48px]">{p.desc}</p>
-                <div className="mt-6 flex items-baseline gap-1.5">
-                  <span className="text-[44px] leading-none font-semibold tracking-tight text-slate-900">{fmt(yearly ? price.yearly : price.monthly)}</span>
-                  <span className="text-slate-500">{yearly ? t.perYear : t.perMonth}</span>
-                </div>
-                <p className="mt-2 text-sm text-slate-500 min-h-[20px]">{yearly && price.yearly > 0 ? t.billedYearly.replace("{x}", fmt(Math.round((price.yearly / 12) * 100) / 100)) : ""}</p>
-                {isCurrent && paying ? (
-                  <button type="button" onClick={() => cta(id)} disabled={!!busy}
-                    className="mt-6 h-12 rounded-full text-[15px] font-semibold transition-colors bg-white text-[#0A1E2D] ring-1 ring-slate-300 hover:ring-[#0A1E2D] inline-flex items-center justify-center gap-2">
-                    {busy === id && <Loader2 className="w-4 h-4 animate-spin" />}{t.manage}
-                  </button>
-                ) : (
-                  <button type="button" onClick={() => cta(id)} disabled={isCurrent || !!busy}
-                    className={cn("mt-6 h-12 rounded-full text-[15px] font-semibold transition-colors inline-flex items-center justify-center gap-2 disabled:cursor-default", isCurrent ? "bg-slate-100 text-slate-500" : featured ? "bg-[#1D6FA8] text-white hover:bg-[#14466B]" : id === "pro" ? "bg-[#0A1E2D] text-white hover:bg-[#14466B]" : "bg-white text-[#0A1E2D] ring-1 ring-slate-300 hover:ring-[#0A1E2D]")}>
-                    {busy === id && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {isCurrent ? t.current : paying && id !== "free" ? t.switchTo.replace("{p}", p.name) : p.cta}
-                  </button>
+                whileHover={{ y: -6 }}
+                className={cn("relative rounded-[1.4rem] p-[2.5px]", featured && "md:-mt-3 md:mb-[-12px]")}
+                style={{ background: st.frame, boxShadow: `0 28px 60px -28px ${st.glow}` }}>
+                {featured && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1 rounded-full text-white shadow-md whitespace-nowrap" style={{ background: st.frame }}>
+                    <Sparkles className="w-3 h-3 inline -mt-0.5 mr-1" />{p.tag}
+                  </span>
                 )}
-                <ul className="mt-7 space-y-3 text-[15px] text-slate-700">
-                  {t.highlights[id].map((h) => (
-                    <li key={h} className="flex gap-3"><Check className={cn("w-5 h-5 shrink-0 mt-0.5", featured ? "text-[#1D6FA8]" : "text-emerald-600")} />{h}</li>
-                  ))}
-                </ul>
+                <div className="h-full flex flex-col rounded-[1.25rem] bg-white overflow-hidden">
+                  <div className="relative px-6 pt-6 pb-5 text-white overflow-hidden" style={{ background: st.head }}>
+                    <div className="absolute -right-10 -top-12 w-40 h-40 rounded-full bg-white/10" aria-hidden />
+                    <div className="absolute right-6 -bottom-16 w-28 h-28 rounded-full bg-white/10" aria-hidden />
+                    <div className="relative flex items-center justify-between gap-2">
+                      <h3 className="text-[21px] font-bold tracking-tight !text-white">{p.name}</h3>
+                      {!featured && <span className="text-[10.5px] font-semibold uppercase tracking-[0.1em] px-2.5 py-1 rounded-full bg-white/20 ring-1 ring-white/30 text-white">{p.tag}</span>}
+                    </div>
+                    <p className="relative mt-2 text-[14px] text-white/85 leading-snug min-h-[40px]">{p.desc}</p>
+                    <div className="relative mt-4 flex items-baseline gap-1.5">
+                      <span className="text-[40px] leading-none font-bold tracking-tight text-white">{fmt(yearly ? price.yearly : price.monthly)}</span>
+                      <span className="text-white/80 text-sm">{yearly ? t.perYear : t.perMonth}</span>
+                    </div>
+                    <p className="relative mt-1.5 text-[12.5px] text-white/75 min-h-[18px]">{yearly && price.yearly > 0 ? t.billedYearly.replace("{x}", fmt(Math.round((price.yearly / 12) * 100) / 100)) : ""}</p>
+                  </div>
+                  <div className="flex-1 flex flex-col px-6 pt-5 pb-6">
+                    {isCurrent && paying ? (
+                      <button type="button" onClick={() => cta(id)} disabled={!!busy}
+                        className="h-11 rounded-full text-[14.5px] font-semibold transition-colors bg-white ring-2 inline-flex items-center justify-center gap-2"
+                        style={{ color: st.accent, ["--tw-ring-color" as string]: st.accent } as React.CSSProperties}>
+                        {busy === id && <Loader2 className="w-4 h-4 animate-spin" />}{t.manage}
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => cta(id)} disabled={isCurrent || !!busy}
+                        className={cn("h-11 rounded-full text-[14.5px] font-semibold transition-all inline-flex items-center justify-center gap-2 disabled:cursor-default", isCurrent ? "bg-slate-100 text-slate-500" : "text-white hover:brightness-110 hover:shadow-lg")}
+                        style={isCurrent ? undefined : { background: id === "pro" ? "linear-gradient(135deg,#F59E0B,#EA580C)" : st.head }}>
+                        {busy === id && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {isCurrent ? t.current : paying && id !== "free" ? t.switchTo.replace("{p}", p.name) : p.cta}
+                      </button>
+                    )}
+                    <ul className="mt-5 space-y-2.5 text-[14px] text-slate-800">
+                      {t.highlights[id].map((h) => (
+                        <li key={h} className="flex gap-2.5 items-start">
+                          <span className="mt-0.5 w-5 h-5 shrink-0 rounded-full flex items-center justify-center" style={{ background: st.soft, color: st.accent }}><Check className="w-3 h-3" strokeWidth={3} /></span>
+                          {h}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </motion.div>
             );
           })}
         </div>
-        <p className="mt-6 text-center text-sm text-slate-500 inline-flex w-full items-center justify-center gap-1.5"><Lock className="w-3.5 h-3.5" />{t.secure} {t.note}</p>
+        <p className="mt-7 text-center text-sm text-slate-600 inline-flex w-full items-center justify-center gap-1.5"><Lock className="w-3.5 h-3.5" />{t.secure} {t.note}</p>
       </div>
 
       {/* Detailed comparison */}
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-12 mt-24">
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-10 mt-20">
         <H>{t.compareTitle}</H>
-        <div className="mt-8 overflow-x-auto rounded-[1.5rem] ring-1 ring-slate-200 shadow-[0_18px_50px_-36px_rgba(6,18,27,0.35)]">
+        <div className="mt-8 overflow-x-auto rounded-[1.4rem] bg-white ring-1 ring-indigo-100 shadow-[0_24px_60px_-36px_rgba(67,56,202,0.45)]">
           <table className="w-full min-w-[720px] text-left">
             <thead>
-              <tr className="bg-[#0A1E2D] text-white">
-                <th className="px-6 py-4 w-[46%]" />
-                {ORDER.map((id) => <th key={id} className={cn("px-4 py-4 text-center text-[15px] font-semibold", id === "premium" && "bg-[#14466B]")}>{t.plans[id].name}<span className="block text-[12px] font-normal text-white/60">{fmt(PLAN_PRICES[id].monthly)} {t.perMonth}</span></th>)}
+              <tr>
+                <th className="px-6 py-4 w-[46%] bg-white" />
+                {ORDER.map((id) => <th key={id} className="px-4 py-4 text-center text-[15px] font-bold text-white" style={{ background: PLAN_STYLE[id].head }}>{t.plans[id].name}<span className="block text-[12px] font-medium text-white/75">{fmt(PLAN_PRICES[id].monthly)} {t.perMonth}</span></th>)}
               </tr>
             </thead>
-            {t.groups.map((g) => (
+            {t.groups.map((g, gi) => (
               <tbody key={g.title}>
-                <tr><td colSpan={4} className="px-6 pt-7 pb-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#1D6FA8]">{g.title}</td></tr>
+                <tr><td colSpan={4} className="px-6 pt-6 pb-2">
+                  <span className="text-[11.5px] font-bold uppercase tracking-[0.16em] px-2.5 py-1 rounded-full" style={{ color: ["#4338CA", "#0E7490", "#7C3AED", "#B45309", "#0F766E"][gi % 5], background: ["#EEF2FF", "#ECFEFF", "#F5F3FF", "#FFFBEB", "#F0FDFA"][gi % 5] }}>{g.title}</span>
+                </td></tr>
                 {g.rows.map((r) => (
-                  <tr key={r.k} className="border-t border-slate-100">
-                    <td className="px-6 py-3.5 text-[15px] text-slate-700">{r.k}{r.soon && <span className="ml-2 text-[11px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">{t.soon}</span>}</td>
-                    {r.v.map((v, i) => <td key={i} className={cn("px-4 py-3.5 text-center", i === 1 && "bg-[#1D6FA8]/[0.04]")}>{cell(v, i === 1)}</td>)}
+                  <tr key={r.k} className="border-t border-slate-100 hover:bg-slate-50/70">
+                    <td className="px-6 py-3 text-[14.5px] text-slate-800">{r.k}{r.soon && <span className="ml-2 text-[10.5px] font-semibold uppercase tracking-wider text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">{t.soon}</span>}</td>
+                    {r.v.map((v, i) => <td key={i} className="px-4 py-3 text-center" style={i === 1 ? { background: "rgba(109,40,217,0.04)" } : undefined}>{cell(v, ORDER[i])}</td>)}
                   </tr>
                 ))}
               </tbody>
@@ -338,17 +374,17 @@ export function Pricing({ onNavigate }: { onNavigate: (page: string) => void }) 
       </div>
 
       {/* Reports for advisors */}
-      <div className="w-full mt-24" style={NAVY}>
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-12 py-16 grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 items-center">
+      <div className="w-full mt-20" style={BAND}>
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-10 py-16 grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 items-center">
           <div>
             <h2 className="text-[26px] md:text-[34px] font-semibold tracking-tight !text-white">{t.proTitle}</h2>
-            <span className="block mt-3 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#38BDF8] to-[#E2B84F]" />
-            <p className="mt-5 text-[17px] leading-relaxed text-white/75">{t.proLead}</p>
+            <span className="block mt-3 h-[3px] w-16 rounded-full bg-gradient-to-r from-[#67E8F9] to-[#FCD34D]" />
+            <p className="mt-5 text-[17px] leading-relaxed text-white/85">{t.proLead}</p>
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
               {t.proPoints.map(([a, b]) => (
-                <div key={a} className="rounded-2xl bg-white/[0.06] ring-1 ring-white/10 p-4">
+                <div key={a} className="rounded-2xl bg-white/10 ring-1 ring-white/20 p-4 backdrop-blur-sm">
                   <p className="font-semibold text-white">{a}</p>
-                  <p className="mt-1.5 text-sm text-white/65 leading-relaxed">{b}</p>
+                  <p className="mt-1.5 text-sm text-white/80 leading-relaxed">{b}</p>
                 </div>
               ))}
             </div>
@@ -375,14 +411,14 @@ export function Pricing({ onNavigate }: { onNavigate: (page: string) => void }) 
       {/* FAQ */}
       <div className="max-w-[900px] mx-auto px-4 sm:px-6 mt-24">
         <H center>{t.faqTitle}</H>
-        <div className="mt-8 divide-y divide-slate-200 border-y border-slate-200">
+        <div className="mt-8 space-y-3">
           {t.faq.map(([q, a], i) => (
-            <div key={q}>
-              <button type="button" onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between gap-4 py-5 text-left">
+            <div key={q} className={cn("rounded-2xl bg-white px-5 ring-1 transition-shadow", open === i ? "ring-indigo-200 shadow-[0_16px_40px_-28px_rgba(67,56,202,0.6)]" : "ring-slate-200")} style={{ borderLeft: `4px solid ${["#0D9488", "#6D28D9", "#D97706", "#2563EB", "#DB2777", "#0E7490"][i % 6]}` }}>
+              <button type="button" onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center justify-between gap-4 py-4 text-left">
                 <span className="text-[17px] font-semibold text-slate-900">{q}</span>
                 <ChevronDown className={cn("w-5 h-5 text-slate-400 shrink-0 transition-transform", open === i && "rotate-180")} />
               </button>
-              {open === i && <p className="pb-5 -mt-1 text-[16px] leading-relaxed text-slate-600">{a}</p>}
+              {open === i && <p className="pb-4 -mt-1 text-[15.5px] leading-relaxed text-slate-700">{a}</p>}
             </div>
           ))}
         </div>
