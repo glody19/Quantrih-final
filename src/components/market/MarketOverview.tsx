@@ -301,7 +301,7 @@ export function MarketOverview({ language, news, newsLoading, onSelect }: {
       </section>
 
       {/* three compact tables side by side (two on medium screens, one on phones) */}
-      <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-x-5 gap-y-10 items-start">
+      <div className="mt-12 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-8 items-start">
         <section className="min-w-0">
           <Heading compact id="asset-classes" title={t.classes} lead={t.classesLead} meta={meta(cls)} />
           <PerfTable rows={classRows} cols={SHORT} defaultSort="y1" lang={lang} onSelect={onSelect} />
@@ -318,11 +318,6 @@ export function MarketOverview({ language, news, newsLoading, onSelect }: {
         </section>
       </div>
       <p className="mt-2 text-[12px] text-slate-900">{t.ann} {t.open}</p>
-
-      <section className="mt-14">
-        <Heading id="news" title={t.news} lead={t.newsLead} />
-        <News items={news} loading={newsLoading} lang={lang} />
-      </section>
     </div>
   );
 }

@@ -1698,6 +1698,15 @@ const isEuropeanMarketOpen = () => {
  </div>
  )}
 
+ {!loading && error && activeSymbol && (
+ <div className="bg-surface border border-border rounded-2xl p-4 h-[460px] xl:h-[520px] mb-8 flex flex-col">
+ <div className="text-[15px] font-bold text-slate-950 mb-2">{activeSymbol.toUpperCase()}</div>
+ <div className="flex-1 w-full relative bg-white border border-border/60 rounded-[1.5rem] overflow-hidden">
+ <AdvancedTradingViewChart symbol={activeSymbol} theme="dark" />
+ </div>
+ </div>
+ )}
+
  {loading && !quote && (
  <div className="space-y-8 animate-pulse">
  <div className="bg-surface border border-border rounded-[2rem] p-6 h-32"></div>
@@ -1851,7 +1860,7 @@ const isEuropeanMarketOpen = () => {
  {/* Specific Company Chart & Stats Layout */}
  <div className="w-full">
  {/* Specific Company Graph */}
- <div className="w-full bg-surface border border-border rounded-[2rem] p-6 flex flex-col h-[700px] xl:h-[850px] shadow-sm">
+ <div className="w-full bg-surface border border-border rounded-[2rem] p-4 flex flex-col h-[460px] xl:h-[520px] shadow-sm">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4 border-b border-border/30 pb-4 shrink-0">
  <div>
  <h3 className="text-sm font-bold flex items-center gap-2 relative inline-flex pb-1"><TrendingUp className="text-pv-blue" size={16} /><span className="bg-gradient-to-r from-text to-text-3 bg-clip-text text-transparent">{quote.symbol} Technical Analysis</span></h3>
@@ -1860,7 +1869,7 @@ const isEuropeanMarketOpen = () => {
 
  <div className="flex-1 w-full relative bg-white border border-border/60 rounded-[1.5rem] overflow-hidden group">
  <AdvancedTradingViewChart 
- symbol={quote.symbol}
+ symbol={activeSymbol || quote.symbol}
  theme="dark" 
  />
  </div>
@@ -1916,7 +1925,8 @@ const isEuropeanMarketOpen = () => {
  <div className="flex flex-col gap-4">
  <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
  <div className="xl:col-span-12 flex flex-col gap-0">
- <div className="bg-surface border border-border rounded-2xl p-2.5 pb-1 flex flex-col h-[320px] xl:h-[400px] relative shadow-sm group transition-all duration-300 hover:shadow-md hover:border-pv-blue/20">
+ <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+ <div className="xl:col-span-7 bg-surface border border-border rounded-2xl p-2.5 pb-1 flex flex-col h-[320px] xl:h-[400px] relative shadow-sm group transition-all duration-300 hover:shadow-md hover:border-pv-blue/20">
  <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-b from-transparent to-pv-blue/[0.01] pointer-events-none rounded-2xl"></div>
  <div className="flex bg-slate-100 p-1 rounded-lg w-fit mb-2 mt-1 ml-1 z-10 relative shadow-inner">
  {[
@@ -1963,6 +1973,22 @@ const isEuropeanMarketOpen = () => {
  </div>
  )}
 </div>
+ {/* Market news next to the comparison chart, same frame height */}
+ <div id="news" className="scroll-mt-24 xl:col-span-5 bg-surface border border-border rounded-2xl p-4 h-[320px] xl:h-[400px] flex flex-col">
+ <h3 className="text-sm font-bold text-text mb-2">{language === 'fr' ? 'Actualités' : 'News'}</h3>
+ <ul className="flex-1 overflow-y-auto divide-y divide-border/60 pr-1">
+ {(marketNews || []).filter((n: any) => n && (n.headline || n.summary)).slice(0, 12).map((n: any, i: number) => (
+ <li key={n.id || i}>
+ <a href={n.url || '#'} target="_blank" rel="noopener noreferrer" className="block py-2 group">
+ <span className="block text-[13.5px] leading-snug font-semibold text-text group-hover:text-pv-blue">{n.headline || n.summary}</span>
+ <span className="block text-[11.5px] text-text-2 mt-0.5">{n.source || 'Yahoo Finance'}{n.date ? ` · ${n.date}` : ''}</span>
+ </a>
+ </li>
+ ))}
+ {!marketNewsLoading && (!marketNews || marketNews.length === 0) && <li className="py-2 text-sm text-text-2">{language === 'fr' ? 'Actualités indisponibles pour le moment.' : 'News unavailable right now.'}</li>}
+ </ul>
+ </div>
+ </div>
 
 {/* Watchlist Table Header & Add Ticker Form */}
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-5 mb-2.5">
