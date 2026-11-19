@@ -286,42 +286,49 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
             desktopAlt={fr ? "Démonstration : lancement d'un backtest Quantrih et lecture des résultats" : "Demo: running a Quantrih backtest and reading the results"}
           />
           <div>
-            {/* Why backtest: spoken to the visitor, one short proof per card */}
+            {/* Why backtest: a cascade of short reasons, in the platform's own financial terms */}
             <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
               className="text-[30px] md:text-[38px] leading-[1.1] font-semibold tracking-tight text-slate-950">
-              {fr ? "Avant d'investir, voyez ce que vous auriez vécu." : "Before you invest, see what you would have lived through."}
+              {fr ? "Ce que le backtest mesure avant d'investir" : "What a backtest measures before you invest"}
             </motion.h2>
             <motion.p initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.3 }}
-              className="mt-4 text-[17px] md:text-[19px] leading-snug text-slate-900">
-              {fr ? "Un backtest rejoue votre portefeuille sur les vraies années de marché. Vous savez à quoi vous attendre avant d'engager votre argent." : "A backtest replays your portfolio through real market years. You know what to expect before you commit your money."}
+              className="mt-3 text-[17px] md:text-[18px] leading-snug text-slate-900">
+              {fr ? "Votre allocation rejouée sur des décennies de données de marché réelles." : "Your allocation replayed on decades of real market data."}
             </motion.p>
-            <motion.ul className="mt-7 grid grid-cols-2 gap-3" initial="hidden" whileInView="show" viewport={{ once: true, margin: "-60px" }}
-              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.18, delayChildren: 0.6 } } }}>
+            <motion.ul className="mt-6 grid gap-3.5" initial="hidden" whileInView="show" viewport={{ once: true, margin: "-60px" }}
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.22, delayChildren: 0.6 } } }}>
               {(fr
                 ? [
-                    ["−50 %", "Un portefeuille 100 % actions en 2008. Auriez-vous tenu ?"],
-                    ["4 ans et +", "Le temps qu'il a fallu pour retrouver son capital."],
-                    ["2022", "Actions et obligations ont chuté ensemble. Votre mélange vous aurait-il protégé ?"],
-                    ["−26 %", "Ce que 1 % de frais par an vous coûte sur 30 ans."],
+                    ["Drawdown maximal", "\u221250\u00a0% pour un portefeuille 100\u00a0% actions en 2008"],
+                    ["Durée de récupération", "plus de 4\u00a0ans sous l'eau après 2008"],
+                    ["Corrélations en régime de stress", "2022\u00a0: actions et obligations en baisse simultanée"],
+                    ["Risque de séquence", "l'ordre des rendements pèse sur les apports et les retraits"],
+                    ["Rééquilibrage et frais", "1\u00a0% de frais annuels\u00a0: \u221226\u00a0% de capital sur 30\u00a0ans"],
+                    ["Bêta et alpha", "exposition au marché contre valeur ajoutée de l'allocation"],
+                    ["Surajustement", "validation sur plusieurs cycles et par Monte Carlo"],
                   ]
                 : [
-                    ["−50%", "An all-equity portfolio in 2008. Would you have held on?"],
-                    ["4+ years", "The time it took to get your money back."],
-                    ["2022", "Stocks and bonds fell together. Would your mix have protected you?"],
-                    ["−26%", "What 1% a year in fees costs you over 30 years."],
+                    ["Maximum drawdown", "\u221250% for an all-equity portfolio in 2008"],
+                    ["Recovery time", "over 4 years under water after 2008"],
+                    ["Correlations under stress", "2022: equities and bonds down together"],
+                    ["Sequence risk", "the order of returns drives contributions and withdrawals"],
+                    ["Rebalancing and fees", "1% a year in fees: \u221226% of capital over 30 years"],
+                    ["Beta and alpha", "market exposure versus what the allocation adds"],
+                    ["Overfitting", "validated across several cycles and with Monte Carlo"],
                   ]
-              ).map(([n, d]) => (
-                <motion.li key={n} className="rounded-2xl bg-white px-5 py-5 ring-1 ring-slate-200/80"
-                  variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } } }}>
-                  <b className="block text-[30px] md:text-[34px] leading-none font-semibold tracking-tight tabular-nums text-slate-950">{n}</b>
-                  <span className="mt-2.5 block text-[14.5px] md:text-[15px] leading-snug text-slate-900">{d}</span>
+              ).map(([h, d]) => (
+                <motion.li key={h} className="flex items-start gap-3"
+                  variants={{ hidden: { opacity: 0, x: 40 }, show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } } }}>
+                  <motion.span className="mt-0.5 w-6 h-6 shrink-0 rounded-full bg-slate-950 text-white flex items-center justify-center"
+                    variants={{ hidden: { scale: 0 }, show: { scale: 1, transition: { type: "spring", stiffness: 260, damping: 16 } } }}>
+                    <Check size={13} strokeWidth={3} />
+                  </motion.span>
+                  <span className="text-[16px] md:text-[17px] leading-snug text-slate-950">
+                    <b className="font-bold">{h}{fr ? "\u00a0:" : ":"}</b> <span className="text-slate-900">{d}</span>
+                  </span>
                 </motion.li>
               ))}
             </motion.ul>
-            <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 1.6 }}
-              className="mt-5 text-[13.5px] leading-snug text-slate-900">
-              {fr ? "Le passé ne prédit pas l'avenir : un backtest sert à connaître le risque, pas à deviner le rendement." : "The past does not predict the future: a backtest shows you the risk, it does not guess the return."}
-            </motion.p>
           </div>
         </div>
       </ZoomSection>
