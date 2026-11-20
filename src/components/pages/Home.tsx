@@ -12,6 +12,7 @@ import { IpoNews } from "../home/IpoNews";
 import { FiberBackground } from "../home/FiberBackground";
 import { LazyPortfolios } from "./LazyPortfolios";
 import { RelativeCompare } from "../home/RelativeCompare";
+import { ToolsShowcase } from "../home/ToolsShowcase";
 
 // ───────────────────────────── backgrounds (hybrid by section) ─────────────────────────────
 // Dark gradient with a fine white grid
@@ -333,32 +334,14 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
         </div>
       </ZoomSection>
 
-      {/* ── Tools & strategies: four light cards on the fibre background ── */}
+      {/* ── Tools & strategies: five cards with a small diagram each, 3 + 2 on large screens ── */}
       {/* the fibre runs behind this section and the next one without a cut */}
       <div className="relative w-full overflow-hidden" style={TINT}>
       <FiberBackground light side="right" className="opacity-60" />
-      <section className="relative w-full pt-20 lg:pt-24 pb-10">
+      <section className="relative w-full pt-24 lg:pt-32 pb-16 lg:pb-20">
         <div className="relative px-6 lg:px-16">
           <SectionTitle text={t("home.tools.title")} sub={t("home.tools.subtitle")} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4 w-full max-w-[86rem] mx-auto">
-            {pages.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="h-full rounded-[1.5rem] bg-white/85 backdrop-blur-sm px-6 py-6 flex flex-col items-center text-center shadow-[0_18px_44px_-30px_rgba(6,18,27,0.45)]"
-              >
-                {/* each text comes in after the card: title, then description, then link */}
-                <motion.h4 initial={{ opacity: 0, y: -14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.35 + i * 0.1 }} className="text-[17px] font-bold tracking-tight uppercase text-[#1B3F72]">{p.title}</motion.h4>
-                <motion.p initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.75 + i * 0.1 }} className="mt-3 text-[14px] text-text-2 leading-relaxed">{p.desc}</motion.p>
-                <motion.button initial={{ opacity: 0, x: -14 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 1.2 + i * 0.1 }} onClick={() => onGoPage(p.id)} className="mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1B3F72] hover:gap-2.5">
-                  {p.cta} <ArrowRight size={14} />
-                </motion.button>
-              </motion.div>
-            ))}
-          </div>
+          <ToolsShowcase tools={pages} fr={fr} onGo={onGoPage} />
         </div>
       </section>
 
