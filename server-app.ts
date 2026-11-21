@@ -1431,8 +1431,29 @@ export function createApp() {
         }
       }
       
+      // FMP may skip European listings: fetch the missing symbols from Yahoo instead of returning nulls
+      const has = (sym: string) => quotes.some((q: any) => q && (q.symbol === sym || q.symbol === sym.toUpperCase()) && q.regularMarketPrice != null);
+      const missing = symbols.filter((s) => !has(s));
+      if (quotes.length > 0 && missing.length > 0) {
+        try {
+          const extra = await yf.quote(missing);
+          quotes = quotes.concat(Array.isArray(extra) ? extra : [extra]);
+        } catch (error: any) {
+          if (Array.isArray(error?.result)) quotes = quotes.concat(error.result);
+        }
+      }
+      // FMP quotes carry no currency: infer it from the exchange suffix so prices are never read in the wrong currency
+      const SUFFIX_CCY: Record<string, string> = { DE: "EUR", F: "EUR", PA: "EUR", AS: "EUR", BR: "EUR", MI: "EUR", MC: "EUR", LS: "EUR", VI: "EUR", IR: "EUR", HE: "EUR", L: "GBp", SW: "CHF", CO: "DKK", ST: "SEK", OL: "NOK", TO: "CAD", T: "JPY", HK: "HKD", AX: "AUD" };
+      const inferCcy = (sym: string) => {
+        if (/-EUR$/i.test(sym)) return "EUR";
+        if (/-USD$/i.test(sym)) return "USD";
+        const m = /=X$/i.test(sym) ? null : sym.match(/\.([A-Z]+)$/i);
+        return m ? SUFFIX_CCY[m[1].toUpperCase()] || "USD" : "USD";
+      };
+      quotes = quotes.map((q: any) => (q && q.symbol && !q.currency && !/=X$/i.test(q.symbol) ? { ...q, currency: inferCcy(q.symbol) } : q));
+
       const finalQuotes = symbols.map(sym => {
-        const found = quotes.find((q: any) => q.symbol === sym || q.symbol === sym.toUpperCase() || q.symbol === sym.toLowerCase());
+        const found = quotes.find((q: any) => q && q.regularMarketPrice != null && (q.symbol === sym || q.symbol === sym.toUpperCase() || q.symbol === sym.toLowerCase()));
         if (found && found.regularMarketPrice != null) return found;
         return { symbol: sym, regularMarketPrice: null, regularMarketChangePercent: null, regularMarketChange: null };
       });
