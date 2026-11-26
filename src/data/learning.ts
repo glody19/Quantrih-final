@@ -1,5 +1,5 @@
 // Everything the Education page shows besides the original book list:
-// strategy categories, popularity order, extra books, research papers, videos, podcasts and lectures.
+// strategy categories, popularity order, extra books and research papers.
 // Links: a DOI or an official page when it is known for certain, otherwise a search for the exact title.
 
 import { BOOKS, type Book } from "./books";
@@ -30,7 +30,6 @@ export const categoryOf = (b: Book): CategoryId => TAG_CATEGORY[b.tag] ?? "value
 
 const g = (title: string, author: string) => `https://www.google.com/search?tbm=bks&q=${encodeURIComponent(`${title} ${author}`)}`;
 const scholar = (title: string) => `https://scholar.google.com/scholar?q=${encodeURIComponent(`"${title}"`)}`;
-const yt = (q: string) => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
 
 type NewBook = Omit<Book, "link"> & { link?: string };
 
@@ -310,77 +309,4 @@ export const PAPERS: Paper[] = [
   { title: "SPIVA Scorecards", authors: "S&P Dow Jones Indices", year: 2025, venue: "Semi-annual report", cat: "index", url: "https://www.spglobal.com/spdji/en/research-insights/spiva/",
     en: "Twice a year, the share of active funds beaten by their benchmark, by region and horizon.",
     fr: "Deux fois par an, la part des fonds actifs battus par leur indice, par région et par horizon." },
-];
-
-// ───────────────────────── Videos, podcasts, lectures ─────────────────────────
-
-export interface Media {
-  name: string;
-  by: string;
-  kind: "video" | "podcast" | "course";
-  lang: "en" | "fr";
-  cat: CategoryId;
-  en: string;
-  fr: string;
-  url: string;
-}
-
-/** Well-known channels and shows, most followed first within each kind. */
-export const MEDIA: Media[] = [
-  { name: "Ben Felix", by: "PWL Capital", kind: "video", lang: "en", cat: "index", url: "https://www.youtube.com/@BenFelixCSI",
-    en: "Evidence-based videos on factor investing, asset allocation and retirement research, each one sourced to the papers.",
-    fr: "Des vidéos fondées sur la recherche : investissement factoriel, allocation d'actifs, retraite, avec les articles en référence." },
-  { name: "Patrick Boyle", by: "Former hedge fund manager, King's College London", kind: "video", lang: "en", cat: "macro", url: "https://www.youtube.com/@PBoyle",
-    en: "Markets, derivatives and financial scandals explained with dry precision by a practitioner and lecturer.",
-    fr: "Marchés, dérivés et scandales financiers expliqués avec précision par un praticien devenu enseignant." },
-  { name: "The Plain Bagel", by: "Richard Coffin, CFA", kind: "video", lang: "en", cat: "index", url: "https://www.youtube.com/@ThePlainBagel",
-    en: "Clear, sourced explainers on market structure, products and investor behaviour.",
-    fr: "Des explications claires et sourcées sur la structure des marchés, les produits et le comportement des investisseurs." },
-  { name: "Aswath Damodaran", by: "NYU Stern", kind: "video", lang: "en", cat: "value", url: yt("Aswath Damodaran valuation"),
-    en: "Full valuation and corporate finance classes, plus company valuations worked through in the open.",
-    fr: "Ses cours complets de valorisation et de finance d'entreprise, et des valorisations de sociétés détaillées pas à pas." },
-  { name: "Heu?reka", by: "Gilles Mitteau", kind: "video", lang: "fr", cat: "macro", url: yt("Heu?reka Gilles Mitteau"),
-    en: "The French reference for finance and economics on video: money creation, bonds, crises, by a former trader.",
-    fr: "La référence francophone en vidéo sur la finance et l'économie : création monétaire, obligations, crises, par un ancien trader." },
-  { name: "Zonebourse", by: "Zonebourse", kind: "video", lang: "fr", cat: "value", url: yt("Zonebourse chaîne"),
-    en: "Company analysis, sector reviews and investor education from the French market data house.",
-    fr: "Analyses de sociétés, revues sectorielles et pédagogie boursière par la maison française de données de marché." },
-  { name: "Xavier Delmas", by: "Xavier Delmas", kind: "video", lang: "fr", cat: "value", url: yt("Xavier Delmas bourse"),
-    en: "Long-term stock investing and market commentary for French-speaking investors.",
-    fr: "Investissement en actions à long terme et commentaires de marché pour les investisseurs francophones." },
-  { name: "S'investir", by: "Matthieu Louvet", kind: "video", lang: "fr", cat: "index", url: yt("S'investir Matthieu Louvet"),
-    en: "Dividend and ETF investing, PEA and French tax wrappers in practice.",
-    fr: "Investissement en dividendes et en ETF, PEA et enveloppes fiscales françaises en pratique." },
-  { name: "Thami Kabbaj", by: "Thami Kabbaj", kind: "video", lang: "fr", cat: "trading", url: yt("Thami Kabbaj trading"),
-    en: "Trading psychology and method from the author of L'art du trading.",
-    fr: "Psychologie et méthode de trading par l'auteur de L'art du trading." },
-
-  { name: "Rational Reminder", by: "Ben Felix, Cameron Passmore", kind: "podcast", lang: "en", cat: "index", url: "https://rationalreminder.ca/",
-    en: "Weekly interviews with the academics behind the research: Fama, French, Merton, Cederburg, Ilmanen and many others.",
-    fr: "Chaque semaine, des entretiens avec les chercheurs eux-mêmes : Fama, French, Merton, Cederburg, Ilmanen et bien d'autres." },
-  { name: "Odd Lots", by: "Bloomberg, Joe Weisenthal and Tracy Alloway", kind: "podcast", lang: "en", cat: "macro", url: "https://www.bloomberg.com/oddlots",
-    en: "Market plumbing, macro and commodities with the people who do the work.",
-    fr: "La mécanique des marchés, la macro et les matières premières, avec ceux qui les pratiquent." },
-  { name: "Masters in Business", by: "Bloomberg, Barry Ritholtz", kind: "podcast", lang: "en", cat: "value", url: "https://www.google.com/search?q=" + encodeURIComponent("Masters in Business Barry Ritholtz podcast Bloomberg"),
-    en: "Long-form conversations with fund managers, economists and founders of the industry.",
-    fr: "De longs entretiens avec des gérants, des économistes et des fondateurs du secteur." },
-  { name: "The Meb Faber Show", by: "Meb Faber, Cambria", kind: "podcast", lang: "en", cat: "quant", url: "https://mebfaber.com/podcast/",
-    en: "Trend following, global asset allocation and quant research with managers and authors.",
-    fr: "Suivi de tendance, allocation mondiale et recherche quantitative avec des gérants et des auteurs." },
-  { name: "Capital Allocators", by: "Ted Seides", kind: "podcast", lang: "en", cat: "index", url: "https://capitalallocators.com/",
-    en: "How endowments, pension funds and family offices select managers and build portfolios.",
-    fr: "Comment les fonds de dotation, les fonds de pension et les family offices choisissent leurs gérants et construisent leurs portefeuilles." },
-  { name: "Flirting with Models", by: "Corey Hoffstein", kind: "podcast", lang: "en", cat: "quant", url: "https://www.google.com/search?q=" + encodeURIComponent("Flirting with Models podcast Corey Hoffstein"),
-    en: "Technical interviews with systematic managers on signal design, portfolio construction and failure modes.",
-    fr: "Des entretiens techniques avec des gérants systématiques : conception des signaux, construction de portefeuille, modes d'échec." },
-  { name: "La Martingale", by: "Matthieu Stefani", kind: "podcast", lang: "fr", cat: "index", url: "https://lamartingale.io/",
-    en: "The most followed French podcast on personal investing: one asset class or strategy per episode, with a specialist.",
-    fr: "Le podcast francophone le plus suivi sur l'investissement personnel : une classe d'actifs ou une stratégie par épisode, avec un spécialiste." },
-
-  { name: "Finance Theory I (15.401)", by: "Andrew Lo, MIT OpenCourseWare", kind: "course", lang: "en", cat: "pricing", url: "https://ocw.mit.edu/courses/15-401-finance-theory-i-fall-2008/",
-    en: "The full MIT Sloan lecture series: present value, fixed income, equities, options, CAPM and market efficiency.",
-    fr: "Le cycle complet de cours du MIT Sloan : valeur actuelle, taux, actions, options, MEDAF et efficience des marchés." },
-  { name: "Financial Markets (ECON 252)", by: "Robert Shiller, Open Yale Courses", kind: "course", lang: "en", cat: "risk", url: "https://oyc.yale.edu/economics/econ-252",
-    en: "Shiller's Yale course on risk, behavioural finance, banking and the institutions of markets.",
-    fr: "Le cours de Shiller à Yale sur le risque, la finance comportementale, la banque et les institutions de marché." },
 ];

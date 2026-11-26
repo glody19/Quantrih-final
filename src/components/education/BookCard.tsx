@@ -90,8 +90,10 @@ export function useCover(book: Book) {
   return { ...state, fail };
 }
 
-export function BookCard({ book, summary, tag, tagColor, find, index, showDrawn = false }: {
-  book: Book; summary: string; tag: string; tagColor: string; find: string; index: number;
+export function BookCard({ book, summary, tag, find, index, showDrawn = false }: {
+  book: Book; summary: string; tag: string; find: string; index: number;
+  /** Kept for older callers; the card no longer uses colour. */
+  tagColor?: string;
   /** Show a typographic cover instead of hiding the book when no real cover exists. */
   showDrawn?: boolean;
 }) {
@@ -113,7 +115,7 @@ export function BookCard({ book, summary, tag, tagColor, find, index, showDrawn 
       className={visible ? "group flex flex-col" : "group flex flex-col pointer-events-none"}
       style={visible ? undefined : { position: "absolute", width: 1, height: 1, overflow: "hidden" }}
     >
-      <Link to={`/education/${bookSlug(book)}`} onClick={() => window.scrollTo(0, 0)} title={summary} className="relative mx-auto w-[148px] h-[222px]">
+      <Link to={`/education/${bookSlug(book)}`} onClick={() => window.scrollTo(0, 0)} className="relative mx-auto w-[148px] h-[222px]">
         {/* static cover: no page turn on hover, only a gentle lift */}
         <div className="absolute inset-0 rounded-r-md rounded-l-sm overflow-hidden shadow-[8px_12px_26px_rgba(6,18,27,0.32)] bg-slate-100 transition-transform duration-300 group-hover:-translate-y-1">
           {drawn && (
@@ -133,11 +135,12 @@ export function BookCard({ book, summary, tag, tagColor, find, index, showDrawn 
         </div>
       </Link>
       <div className="pt-4 flex flex-col gap-1 flex-grow">
-        <Link to={`/education/${bookSlug(book)}`} onClick={() => window.scrollTo(0, 0)} className="text-[15px] font-semibold text-slate-900 leading-snug line-clamp-2 group-hover:text-[#1D6FA8] transition-colors">{book.title}</Link>
-        <p className="text-[13.5px] text-[#1B3F72] line-clamp-1">{book.author} · <span className="tabular-nums text-slate-500">{book.year}</span>{book.origin === "fr" && <span className="text-slate-500"> · FR</span>}</p>
+        <Link to={`/education/${bookSlug(book)}`} onClick={() => window.scrollTo(0, 0)} className="text-[15px] font-semibold text-slate-900 leading-snug line-clamp-2 hover:underline">{book.title}</Link>
+        <p className="text-[13.5px] text-slate-600 line-clamp-1">{book.author} · <span className="tabular-nums text-slate-500">{book.year}</span>{book.origin === "fr" && <span className="text-slate-500"> · FR</span>}</p>
+        <p className="mt-1 text-[13.5px] leading-snug text-slate-700 line-clamp-4">{summary}</p>
         <div className="mt-auto pt-2 flex items-center justify-between gap-2 text-[13px]">
-          <span className="inline-flex items-center gap-1.5 truncate font-medium text-slate-600"><span className="w-2 h-2 shrink-0 rounded-full" style={{ background: tagColor }} />{tag}</span>
-          <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 font-semibold text-[#1D6FA8] hover:underline shrink-0">{find} <ArrowUpRight size={13} /></a>
+          <span className="truncate font-medium text-slate-500">{tag}</span>
+          <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 font-semibold text-slate-900 hover:underline shrink-0">{find} <ArrowUpRight size={13} /></a>
         </div>
       </div>
     </motion.article>
