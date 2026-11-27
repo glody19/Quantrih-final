@@ -2,9 +2,13 @@
 // about: what the author writes about, in two or three sentences. ideas: the key ideas, three or four short lines.
 // English visitors see the shorter English summary from the book list.
 
+import { RICH_DETAILS } from "./bookDetailsRich";
+
 export interface BookDetail {
   about: string;
   ideas: string[];
+  /** Who will get the most out of the book. */
+  forWho?: string;
 }
 
 export const BOOK_DETAILS: Record<string, BookDetail> = {
@@ -1233,6 +1237,6 @@ export const BOOK_DETAILS: Record<string, BookDetail> = {
 
 /** Detail for one book, if it was written. */
 export const detailOf = (title: string): BookDetail | undefined => {
-  const d = BOOK_DETAILS[title];
+  const d = RICH_DETAILS[title] ?? BOOK_DETAILS[title];
   return d && d.about ? d : undefined;
 };
