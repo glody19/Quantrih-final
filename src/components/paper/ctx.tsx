@@ -38,8 +38,8 @@ export const PALETTE = {
     "--hover": "rgba(255,255,255,0.035)", "--chip": "rgba(255,255,255,0.06)", "--warn": "#F5B544",
   },
   light: {
-    "--bg": "#F4F6F9", "--panel": "#FFFFFF", "--panel2": "#F8FAFC", "--line": "#E6E9EE", "--line2": "#D3D9E1",
-    "--text": "#0E1726", "--sub": "#5E6B7E", "--accent": "#0B6BDB", "--accent2": "#0957B3", "--up": "#0B9A56", "--down": "#D92D3F",
+    "--bg": "#FFFFFF", "--panel": "#FFFFFF", "--panel2": "#F8FAFC", "--line": "#E3E7ED", "--line2": "#D3D9E1",
+    "--text": "#0A0F1A", "--sub": "#4B5563", "--accent": "#0B6BDB", "--accent2": "#0957B3", "--up": "#0B9A56", "--down": "#D92D3F",
     "--hover": "#F3F6FA", "--chip": "#EDF1F6", "--warn": "#B7791F",
   },
 } as const;
@@ -52,10 +52,10 @@ export const k = {
   hover: "hover:bg-[var(--hover)]",
   chip: "bg-[var(--chip)] text-[var(--text)]",
   input: "w-full h-10 rounded-lg border border-[var(--line2)] bg-[var(--panel2)] px-3 text-[14px] tabular-nums text-[var(--text)] outline-none focus:border-[var(--accent)] placeholder:text-[var(--sub)]",
-  th: "text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[var(--sub)]",
+  th: "text-[11.5px] font-bold uppercase tracking-[0.06em] text-[var(--sub)]",
   up: "text-[var(--up)]",
   down: "text-[var(--down)]",
-  btn: "h-9 px-3.5 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+  btn: "h-9 px-3.5 rounded-lg text-[13px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
 };
 export const sign = (v: number) => (v > 1e-9 ? k.up : v < -1e-9 ? k.down : "");
 
@@ -64,7 +64,7 @@ export function Seg<T extends string>({ value, options, onChange, size = "md" }:
     <div className="inline-flex p-0.5 rounded-lg bg-[var(--chip)]">
       {options.map((o) => (
         <button key={o.id} onClick={() => onChange(o.id)}
-          className={cn("rounded-md font-semibold transition-colors whitespace-nowrap", size === "sm" ? "h-7 px-2.5 text-[12px]" : "h-8 px-3 text-[13px]",
+          className={cn("rounded-md font-bold transition-colors whitespace-nowrap", size === "sm" ? "h-7 px-2.5 text-[12px]" : "h-8 px-3 text-[13px]",
             value === o.id ? "bg-[var(--panel)] text-[var(--text)] shadow-sm" : "text-[var(--sub)] hover:text-[var(--text)]")}>
           {o.label}
         </button>
@@ -98,7 +98,7 @@ export function Badge({ symbol, size = 30 }: { symbol: string; size?: number }) 
   let h = 0; for (const ch of symbol) h = (h * 31 + ch.charCodeAt(0)) % 360;
   const label = symbol.replace(/[-.].*$/, "").slice(0, 4);
   return (
-    <span className="inline-flex shrink-0 items-center justify-center rounded-lg font-bold tracking-tight"
+    <span className="inline-flex shrink-0 items-center justify-center rounded-lg font-extrabold tracking-tight"
       style={{ width: size, height: size, fontSize: size * (label.length > 3 ? 0.27 : 0.33), background: `hsla(${h},70%,55%,0.16)`, color: `hsl(${h},70%,${62}%)` }}>
       {label}
     </span>

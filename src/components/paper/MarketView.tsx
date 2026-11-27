@@ -77,7 +77,7 @@ export function MarketView({ product, setProduct }: { product: string | null; se
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex flex-wrap gap-1.5">
               {kinds.map((o) => (
-                <button key={o.id} onClick={() => setKind(o.id)} className={cn("h-8 px-3 rounded-full text-[12.5px] font-semibold border transition-colors",
+                <button key={o.id} onClick={() => setKind(o.id)} className={cn("h-8 px-3 rounded-full text-[12.5px] font-bold border transition-colors",
                   kind === o.id ? "bg-[var(--text)] text-[var(--panel)] border-transparent" : "border-[var(--line2)] text-[var(--sub)] hover:text-[var(--text)]")}>
                   {o.id === "fav" && <Star size={12} className="inline -mt-0.5 mr-1" />}{o.label}
                 </button>
@@ -85,7 +85,7 @@ export function MarketView({ product, setProduct }: { product: string | null; se
             </div>
             <div className="ml-auto flex flex-wrap items-center gap-2">
               <Seg value={region} onChange={setRegion} size="sm" options={[{ id: "all", label: L("Toutes", "All") }, { id: "eu", label: "Europe" }, { id: "us", label: L("États-Unis", "US") }, { id: "world", label: L("Monde", "World") }, { id: "em", label: L("Émergents", "EM") }]} />
-              <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className={cn(k.input, "h-8 w-auto text-[12.5px] font-semibold py-0")}>
+              <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className={cn(k.input, "h-8 w-auto text-[12.5px] font-bold py-0")}>
                 <option value="default">{L("Tri : pertinence", "Sort: relevance")}</option>
                 <option value="up">{L("Plus fortes hausses", "Top gainers")}</option>
                 <option value="down">{L("Plus fortes baisses", "Top losers")}</option>
@@ -115,15 +115,15 @@ export function MarketView({ product, setProduct }: { product: string | null; se
                       className={cn("border-t border-[var(--line)] cursor-pointer", k.hover, product === i.s && "bg-[var(--hover)]")} onClick={() => { setProduct(i.s); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
                       <td className="pl-4"><button onClick={(e) => { e.stopPropagation(); P.toggleFav(i.s); }} aria-label="Favourite" className={cn("p-1", fav ? "text-[var(--warn)]" : k.sub)}><Star size={15} fill={fav ? "currentColor" : "none"} /></button></td>
                       <td className="px-3 py-2.5"><div className="flex items-center gap-3 min-w-0"><Badge symbol={i.s} /><div className="min-w-0"><b className="block truncate max-w-[300px]">{q?.name && i.found ? q.name : i.n}</b><span className={cn("text-[12px]", k.sub)}>{i.s}{i.sec ? ` · ${i.sec}` : ""}{held ? ` · ${L("en portefeuille", "held")} ${fmtQty(held)}` : ""}</span></div></div></td>
-                      <td className="px-3"><span className={cn("inline-flex items-center gap-1 h-6 px-2 rounded-md text-[11.5px] font-semibold", k.chip)}>{kinds.find((x) => x.id === i.k)?.label}{i.priips && <TriangleAlert size={11} className="text-[var(--warn)]" />}</span></td>
+                      <td className="px-3"><span className={cn("inline-flex items-center gap-1 h-6 px-2 rounded-md text-[11.5px] font-bold", k.chip)}>{kinds.find((x) => x.id === i.k)?.label}{i.priips && <TriangleAlert size={11} className="text-[var(--warn)]" />}</span></td>
                       <td className={cn("px-3 text-[12.5px]", k.sub)}>{i.x}</td>
                       <td className={cn("px-3 text-[12.5px]", k.sub)}>{q?.ccy ? cashCcy(q.ccy) : cashCcy(i.c)}</td>
                       <td className="text-right px-3 tabular-nums">{i.ter != null ? `${F.num(i.ter, 2)} %` : <span className={k.sub}>-</span>}</td>
-                      <td className="text-right px-3 tabular-nums font-semibold">{q ? F.px(q.price) : <span className={k.sub}>-</span>}</td>
-                      <td className={cn("text-right px-3 tabular-nums font-semibold", q && sign(q.pct))}>{q ? F.pct(q.pct) : ""}</td>
+                      <td className="text-right px-3 tabular-nums font-bold">{q ? F.px(q.price) : <span className={k.sub}>-</span>}</td>
+                      <td className={cn("text-right px-3 tabular-nums font-bold", q && sign(q.pct))}>{q ? F.pct(q.pct) : ""}</td>
                       <td className="text-right px-4 whitespace-nowrap">
-                        <button onClick={(e) => { e.stopPropagation(); P.openTicket(i.s, "buy"); }} className="h-7 px-3 rounded-md text-[12px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent2)]">{L("Acheter", "Buy")}</button>
-                        {held > 0 && <button onClick={(e) => { e.stopPropagation(); P.openTicket(i.s, "sell", held); }} className={cn("ml-1 h-7 px-3 rounded-md text-[12px] font-bold text-[var(--down)]", k.hover)}>{L("Vendre", "Sell")}</button>}
+                        <button onClick={(e) => { e.stopPropagation(); P.openTicket(i.s, "buy"); }} className="h-7 px-3 rounded-md text-[12px] font-extrabold text-white bg-[var(--accent)] hover:bg-[var(--accent2)]">{L("Acheter", "Buy")}</button>
+                        {held > 0 && <button onClick={(e) => { e.stopPropagation(); P.openTicket(i.s, "sell", held); }} className={cn("ml-1 h-7 px-3 rounded-md text-[12px] font-extrabold text-[var(--down)]", k.hover)}>{L("Vendre", "Sell")}</button>}
                       </td>
                     </motion.tr>
                   );
@@ -175,8 +175,8 @@ function ProductPanel({ symbol, onBack }: { symbol: string; onBack: () => void }
         <div className="ml-auto flex items-center gap-4">
           {q ? (
             <div className="text-right">
-              <b className="block text-[22px] tabular-nums leading-tight">{F.px(q.price)} <span className={cn("text-[13px] font-semibold", k.sub)}>{q.ccy}</span></b>
-              <span className={cn("text-[13px] font-semibold tabular-nums", sign(q.pct))}>{q.change >= 0 ? "+" : ""}{F.px(q.change)} ({F.pct(q.pct)})</span>
+              <b className="block text-[22px] tabular-nums leading-tight">{F.px(q.price)} <span className={cn("text-[13px] font-bold", k.sub)}>{q.ccy}</span></b>
+              <span className={cn("text-[13px] font-bold tabular-nums", sign(q.pct))}>{q.change >= 0 ? "+" : ""}{F.px(q.change)} ({F.pct(q.pct)})</span>
             </div>
           ) : <span className={k.sub}>{L("Cours indisponible", "No quote")}</span>}
           <div className="flex gap-1.5">
@@ -189,17 +189,17 @@ function ProductPanel({ symbol, onBack }: { symbol: string; onBack: () => void }
         <div className="p-3 h-[420px] lg:h-[480px] min-w-0"><PriceChart symbol={symbol} dark={P.dark} labels={{ loading: L("Chargement du graphique", "Loading chart"), fallback: L("Historique indisponible ici, graphique TradingView affiché.", "Price history unavailable here, showing the TradingView chart.") }} /></div>
         <aside className="border-t xl:border-t-0 xl:border-l border-[var(--line)] p-4 grid content-start gap-4 text-[13.5px]">
           <dl className="grid gap-2">
-            {facts.map(([l, v]) => <div key={l} className="flex justify-between gap-3"><dt className={k.sub}>{l}</dt><dd className="font-semibold text-right">{v}</dd></div>)}
+            {facts.map(([l, v]) => <div key={l} className="flex justify-between gap-3"><dt className={k.sub}>{l}</dt><dd className="font-bold text-right">{v}</dd></div>)}
           </dl>
           {inst.priips && acct.settings.priips && <p className="flex gap-2 text-[12.5px] rounded-lg p-2.5 bg-[var(--chip)]"><TriangleAlert size={15} className="shrink-0 text-[var(--warn)]" />{L("Fonds américain sans KID : achat bloqué pour les particuliers européens. Vous pouvez lever cette règle dans les paramètres.", "US fund without a KID: purchase blocked for European retail investors. You can lift this rule in settings.")}</p>}
           <div className="rounded-xl border border-[var(--line)] p-3">
-            <span className={cn("text-[12px] font-bold uppercase tracking-[0.08em]", k.sub)}>{L("Ma position", "My position")}</span>
+            <span className={cn("text-[12px] font-extrabold uppercase tracking-[0.08em]", k.sub)}>{L("Ma position", "My position")}</span>
             {pos ? (
               <dl className="mt-2 grid gap-1.5">
-                <div className="flex justify-between"><dt className={k.sub}>{L("Quantité", "Quantity")}</dt><dd className="font-semibold tabular-nums">{fmtQty(pos.qty)}</dd></div>
-                <div className="flex justify-between"><dt className={k.sub}>{L("Prix de revient", "Avg price")}</dt><dd className="font-semibold tabular-nums">{F.px(pos.costLocal / pos.qty)} {pos.ccy}</dd></div>
-                <div className="flex justify-between"><dt className={k.sub}>{L("Valeur", "Value")}</dt><dd className="font-semibold tabular-nums">{F.eur(valueEur)}</dd></div>
-                <div className="flex justify-between"><dt className={k.sub}>{L("P&L (frais inclus)", "P&L (after fees)")}</dt><dd className={cn("font-semibold tabular-nums", sign(valueEur - pos.costEur))}>{F.signed(valueEur - pos.costEur)}</dd></div>
+                <div className="flex justify-between"><dt className={k.sub}>{L("Quantité", "Quantity")}</dt><dd className="font-bold tabular-nums">{fmtQty(pos.qty)}</dd></div>
+                <div className="flex justify-between"><dt className={k.sub}>{L("Prix de revient", "Avg price")}</dt><dd className="font-bold tabular-nums">{F.px(pos.costLocal / pos.qty)} {pos.ccy}</dd></div>
+                <div className="flex justify-between"><dt className={k.sub}>{L("Valeur", "Value")}</dt><dd className="font-bold tabular-nums">{F.eur(valueEur)}</dd></div>
+                <div className="flex justify-between"><dt className={k.sub}>{L("P&L (frais inclus)", "P&L (after fees)")}</dt><dd className={cn("font-bold tabular-nums", sign(valueEur - pos.costEur))}>{F.signed(valueEur - pos.costEur)}</dd></div>
               </dl>
             ) : <p className={cn("mt-1.5 text-[13px]", k.sub)}>{L("Aucune position sur ce produit.", "No position in this product.")}</p>}
           </div>
