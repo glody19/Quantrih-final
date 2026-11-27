@@ -136,7 +136,7 @@ export function StrategiesView() {
     <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
       {/* strategy list */}
       <aside className={cn(k.panel, "p-2 self-start xl:sticky xl:top-4")}>
-        <p className={cn("px-3 pt-2 pb-2 text-[12px] font-bold uppercase tracking-[0.08em]", k.sub)}>{L("Stratégies d'allocation", "Allocation strategies")}</p>
+        <p className={cn("px-3 pt-2 pb-2 text-[12px] font-extrabold uppercase tracking-[0.08em]", k.sub)}>{L("Stratégies d'allocation", "Allocation strategies")}</p>
         <ul className="grid gap-0.5 max-h-[70vh] overflow-y-auto">
           {cards.map((c) => (
             <li key={c.id}>
@@ -157,12 +157,12 @@ export function StrategiesView() {
         <motion.section key={sel} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className={cn(k.panel, "p-5")}>
           <div className="flex flex-wrap items-start gap-4">
             <div className="min-w-0 flex-1">
-              <h2 className="text-[20px] !font-bold tracking-tight">{name}</h2>
+              <h2 className="text-[20px] !font-extrabold tracking-tight">{name}</h2>
               <p className={cn("mt-1 text-[13.5px] max-w-[70ch]", k.sub)}>{desc}</p>
               <div className="mt-3 flex flex-wrap gap-2 text-[12.5px]">
-                <span className={cn("h-7 px-2.5 rounded-md inline-flex items-center font-semibold", k.chip)}>{weights.length} {L("lignes", "lines")}</span>
-                {ter > 0 && <span className={cn("h-7 px-2.5 rounded-md inline-flex items-center font-semibold", k.chip)}>{L("Frais ETF moyens", "Avg ETF fees")} {F.num(ter, 2)} % / {L("an", "yr")}</span>}
-                <span className={cn("h-7 px-2.5 rounded-md inline-flex items-center font-semibold", k.chip)}>{L("100 % UCITS en euros", "100% UCITS in euros")}</span>
+                <span className={cn("h-7 px-2.5 rounded-md inline-flex items-center font-bold", k.chip)}>{weights.length} {L("lignes", "lines")}</span>
+                {ter > 0 && <span className={cn("h-7 px-2.5 rounded-md inline-flex items-center font-bold", k.chip)}>{L("Frais ETF moyens", "Avg ETF fees")} {F.num(ter, 2)} % / {L("an", "yr")}</span>}
+                <span className={cn("h-7 px-2.5 rounded-md inline-flex items-center font-bold", k.chip)}>{L("100 % UCITS en euros", "100% UCITS in euros")}</span>
               </div>
             </div>
             {weights.length > 0 && (
@@ -190,7 +190,7 @@ export function StrategiesView() {
                     return (
                       <tr key={w.symbol} className="border-t border-[var(--line)]">
                         <td className="py-2 pr-3"><button onClick={() => P.openProduct(w.symbol)} className="flex items-center gap-3 text-left min-w-0"><Badge symbol={w.symbol} size={28} /><span className="min-w-0"><b className="block truncate max-w-[280px]">{inst.n}</b><span className={cn("text-[12px]", k.sub)}>{w.symbol}{inst.sec ? ` · ${inst.sec}` : ""}</span></span></button></td>
-                        <td className="text-right px-3 tabular-nums font-semibold">
+                        <td className="text-right px-3 tabular-nums font-bold">
                           {sel === "custom"
                             ? <input value={w.weight} onChange={(e) => { const v = parseFloat(e.target.value.replace(",", ".")) || 0; setCustom((c) => c.map((x, j) => (j === idx ? { ...x, weight: v } : x))); }} inputMode="decimal" className={cn(k.input, "h-8 w-20 text-right inline-block")} />
                             : `${F.num(w.weight, w.weight % 1 ? 1 : 0)} %`}
@@ -208,7 +208,7 @@ export function StrategiesView() {
               {sel === "custom" && (
                 <div className="mt-3 grid gap-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={cn("text-[13px] font-semibold", Math.abs(totalW - 100) > 0.01 ? "text-[var(--warn)]" : k.sub)}>{L("Total", "Total")} {F.num(totalW, 1)} %{Math.abs(totalW - 100) > 0.01 ? L(" (les poids sont ramenés à 100 %)", " (weights are scaled to 100%)") : ""}</span>
+                    <span className={cn("text-[13px] font-bold", Math.abs(totalW - 100) > 0.01 ? "text-[var(--warn)]" : k.sub)}>{L("Total", "Total")} {F.num(totalW, 1)} %{Math.abs(totalW - 100) > 0.01 ? L(" (les poids sont ramenés à 100 %)", " (weights are scaled to 100%)") : ""}</span>
                     <button onClick={() => setCustom((c) => c.map((x) => ({ ...x, weight: +(100 / c.length).toFixed(2) })))} className={cn(k.btn, "h-8 ml-auto", k.chip)}>{L("Pondération égale", "Equal weight")}</button>
                     <button onClick={() => setSel("invvol")} className={cn(k.btn, "h-8", k.chip)}><Scale size={13} />{L("Parité de risque", "Risk parity")}</button>
                   </div>
@@ -236,12 +236,12 @@ export function StrategiesView() {
         <section className={cn(k.panel, "p-5")}>
           <div className="flex flex-wrap items-end gap-3">
             <div className="grid gap-1.5">
-              <span className={cn("text-[12.5px] font-semibold", k.sub)}>{L("Action", "Action")}</span>
+              <span className={cn("text-[12.5px] font-bold", k.sub)}>{L("Action", "Action")}</span>
               <Seg value={mode} onChange={setMode} options={[{ id: "invest", label: L("Investir un montant", "Invest an amount") }, { id: "rebalance", label: L("Rééquilibrer vers la cible", "Rebalance to target") }]} />
             </div>
             <label className="grid gap-1.5">
-              <span className={cn("text-[12.5px] font-semibold", k.sub)}>{mode === "invest" ? L("Montant à investir", "Amount to invest") : L("Argent frais ajouté", "New money added")}</span>
-              <div className="relative w-[180px]"><input value={amountIn} onChange={(e) => setAmountIn(e.target.value)} inputMode="decimal" className={cn(k.input, "pr-8 font-semibold")} /><span className={cn("absolute right-3 top-1/2 -translate-y-1/2", k.sub)}>€</span></div>
+              <span className={cn("text-[12.5px] font-bold", k.sub)}>{mode === "invest" ? L("Montant à investir", "Amount to invest") : L("Argent frais ajouté", "New money added")}</span>
+              <div className="relative w-[180px]"><input value={amountIn} onChange={(e) => setAmountIn(e.target.value)} inputMode="decimal" className={cn(k.input, "pr-8 font-bold")} /><span className={cn("absolute right-3 top-1/2 -translate-y-1/2", k.sub)}>€</span></div>
             </label>
             <span className={cn("text-[12.5px] pb-2.5", k.sub)}>{L("Espèces disponibles", "Free cash")} <b className="text-[var(--text)]">{F.eur(acct.cash.EUR || 0)}</b></span>
             <button onClick={execute} disabled={P.signedIn && (!plan.orders.length || !P.dataOk || busy)} className={cn(k.btn, "ml-auto h-10 px-5 text-white bg-[var(--accent)] hover:bg-[var(--accent2)]")}>
@@ -260,16 +260,16 @@ export function StrategiesView() {
                 <tbody>
                   {plan.orders.map((o) => (
                     <tr key={o.symbol} className="border-t border-[var(--line)]">
-                      <td className="py-2 pr-3"><span className={cn("mr-2 text-[11.5px] font-bold uppercase", o.side === "buy" ? "text-[var(--accent)]" : "text-[var(--down)]")}>{o.side === "buy" ? L("Achat", "Buy") : L("Vente", "Sell")}</span><b>{o.symbol}</b></td>
+                      <td className="py-2 pr-3"><span className={cn("mr-2 text-[11.5px] font-extrabold uppercase", o.side === "buy" ? "text-[var(--accent)]" : "text-[var(--down)]")}>{o.side === "buy" ? L("Achat", "Buy") : L("Vente", "Sell")}</span><b>{o.symbol}</b></td>
                       <td className="text-right px-3 tabular-nums">{fmtQty(o.qty)}</td>
                       <td className="text-right px-3 tabular-nums">{F.px(o.price)} {o.inst.c}</td>
                       <td className="text-right px-3 tabular-nums">{F.eur(o.targetEur, 0)}</td>
-                      <td className="text-right px-3 tabular-nums font-semibold">{F.eur(o.costs.valueEur)}</td>
+                      <td className="text-right px-3 tabular-nums font-bold">{F.eur(o.costs.valueEur)}</td>
                       <td className="text-right px-3 tabular-nums">{F.eur(o.costs.commission + o.costs.fxFee + o.costs.tax)}</td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot><tr className="border-t border-[var(--line2)] font-semibold">
+                <tfoot><tr className="border-t border-[var(--line2)] font-bold">
                   <td className="py-2.5 pr-3" colSpan={4}>{L("Espèces après exécution", "Cash after execution")}: <span className={cashAfter < 0 ? "text-[var(--down)]" : ""}>{F.eur(cashAfter)}</span></td>
                   <td className="text-right px-3 tabular-nums">{F.eur(tot.buy - tot.sell)}</td>
                   <td className="text-right px-3 tabular-nums">{F.eur(tot.fees)}</td>
@@ -282,11 +282,11 @@ export function StrategiesView() {
 
         {/* recurring plans */}
         <section className={cn(k.panel, "p-5")}>
-          <h3 className="flex items-center gap-2 text-[15px] !font-bold"><CalendarClock size={17} />{L("Versement programmé", "Recurring investment")}</h3>
+          <h3 className="flex items-center gap-2 text-[15px] !font-extrabold"><CalendarClock size={17} />{L("Versement programmé", "Recurring investment")}</h3>
           <p className={cn("mt-1 text-[13px] max-w-[75ch]", k.sub)}>{L("Chaque mois, à la date choisie, le montant est investi selon cette stratégie (au premier passage sur la page à partir de cette date). L'investissement régulier lisse le prix d'achat et retire la question du bon moment.", "Each month, on the chosen day, the amount is invested with this strategy (the first time you open the page from that day). Regular investing smooths the purchase price and removes market timing.")}</p>
           <div className="mt-3 flex flex-wrap items-end gap-3">
-            <label className="grid gap-1.5"><span className={cn("text-[12.5px] font-semibold", k.sub)}>{L("Montant mensuel", "Monthly amount")}</span><div className="relative w-[140px]"><input value={planAmt} onChange={(e) => setPlanAmt(e.target.value)} inputMode="decimal" className={cn(k.input, "pr-8")} /><span className={cn("absolute right-3 top-1/2 -translate-y-1/2", k.sub)}>€</span></div></label>
-            <label className="grid gap-1.5"><span className={cn("text-[12.5px] font-semibold", k.sub)}>{L("Jour du mois", "Day of month")}</span><input value={planDay} onChange={(e) => setPlanDay(e.target.value)} inputMode="numeric" className={cn(k.input, "w-[90px]")} /></label>
+            <label className="grid gap-1.5"><span className={cn("text-[12.5px] font-bold", k.sub)}>{L("Montant mensuel", "Monthly amount")}</span><div className="relative w-[140px]"><input value={planAmt} onChange={(e) => setPlanAmt(e.target.value)} inputMode="decimal" className={cn(k.input, "pr-8")} /><span className={cn("absolute right-3 top-1/2 -translate-y-1/2", k.sub)}>€</span></div></label>
+            <label className="grid gap-1.5"><span className={cn("text-[12.5px] font-bold", k.sub)}>{L("Jour du mois", "Day of month")}</span><input value={planDay} onChange={(e) => setPlanDay(e.target.value)} inputMode="numeric" className={cn(k.input, "w-[90px]")} /></label>
             <label className="flex items-center gap-2 h-10 text-[13px] cursor-pointer"><input type="checkbox" checked={planDeposit} onChange={(e) => setPlanDeposit(e.target.checked)} className="w-4 h-4 accent-[var(--accent)]" />{L("Déposer ce montant chaque mois (comme un virement)", "Deposit this amount each month (like a transfer)")}</label>
             <button onClick={addPlan} disabled={!weights.length} className={cn(k.btn, "ml-auto h-10", k.chip)}><Plus size={14} />{L("Programmer", "Schedule")} « {name} »</button>
           </div>
@@ -298,7 +298,7 @@ export function StrategiesView() {
                   <span className={k.sub}>{F.eur(p.amount, 0)} · {L("le", "day")} {p.day} · {p.deposit ? L("avec dépôt", "with deposit") : L("sur les espèces", "from cash")}</span>
                   <span className={cn("text-[12px]", k.sub)}>{p.lastRun === month() ? L("exécuté ce mois-ci", "done this month") : L("prochaine exécution", "next run")}{p.lastRun !== month() ? ` : ${new Date().getDate() >= p.day ? L("à la prochaine actualisation des cours", "at the next quote refresh") : `${p.day}/${new Date().getMonth() + 1}`}` : ""}</span>
                   <span className="ml-auto flex gap-1">
-                    <button onClick={() => P.setAcct((a) => ({ ...a, plans: a.plans.map((x) => (x.id === p.id ? { ...x, active: !x.active } : x)) }))} className={cn("h-7 px-2.5 rounded-md text-[12px] font-semibold", k.chip)}>{p.active ? L("Suspendre", "Pause") : L("Reprendre", "Resume")}</button>
+                    <button onClick={() => P.setAcct((a) => ({ ...a, plans: a.plans.map((x) => (x.id === p.id ? { ...x, active: !x.active } : x)) }))} className={cn("h-7 px-2.5 rounded-md text-[12px] font-bold", k.chip)}>{p.active ? L("Suspendre", "Pause") : L("Reprendre", "Resume")}</button>
                     <button onClick={() => P.setAcct((a) => ({ ...a, plans: a.plans.filter((x) => x.id !== p.id) }))} className={cn("p-1.5 rounded-md", k.sub, k.hover)} aria-label="Delete"><Trash2 size={14} /></button>
                   </span>
                 </li>

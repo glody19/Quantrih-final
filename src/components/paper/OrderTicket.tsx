@@ -76,7 +76,7 @@ export function OrderTicket({ symbol, initialSide, initialQty, onClose }: { symb
   const availCcy = isEur || acct.settings.autoFx ? "EUR" : cashCcy(inst.c);
   const sideColor = side === "buy" ? "bg-[var(--accent)] hover:bg-[var(--accent2)]" : "bg-[var(--down)] hover:brightness-95";
   const Row = ({ l, v, strong, tone }: { l: React.ReactNode; v: React.ReactNode; strong?: boolean; tone?: string }) => (
-    <div className="flex items-baseline justify-between gap-3 py-1"><span className={k.sub}>{l}</span><span className={cn("tabular-nums text-right", strong && "font-bold text-[15px]", tone)}>{v}</span></div>
+    <div className="flex items-baseline justify-between gap-3 py-1"><span className={k.sub}>{l}</span><span className={cn("tabular-nums text-right", strong && "font-extrabold text-[15px]", tone)}>{v}</span></div>
   );
 
   return (
@@ -93,7 +93,7 @@ export function OrderTicket({ symbol, initialSide, initialQty, onClose }: { symb
           </div>
           <div className="text-right">
             <b className="block text-[16px] tabular-nums">{q ? F.px(q.price) : "-"}</b>
-            {q && <span className={cn("text-[12.5px] font-semibold tabular-nums", sign(q.pct))}>{F.pct(q.pct)}</span>}
+            {q && <span className={cn("text-[12.5px] font-bold tabular-nums", sign(q.pct))}>{F.pct(q.pct)}</span>}
           </div>
           <button onClick={onClose} className={cn("ml-1 -mr-1 p-1 rounded-md", k.sub, k.hover)} aria-label={L("Fermer", "Close")}><X size={18} /></button>
         </div>
@@ -102,7 +102,7 @@ export function OrderTicket({ symbol, initialSide, initialQty, onClose }: { symb
           <div className="px-5 py-4 grid gap-3.5 text-[13.5px]">
             <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-[var(--chip)]">
               {(["buy", "sell"] as const).map((s) => (
-                <button key={s} onClick={() => setSide(s)} className={cn("h-9 rounded-lg text-[14px] font-bold transition-colors",
+                <button key={s} onClick={() => setSide(s)} className={cn("h-9 rounded-lg text-[14px] font-extrabold transition-colors",
                   side === s ? (s === "buy" ? "bg-[var(--accent)] text-white" : "bg-[var(--down)] text-white") : "text-[var(--sub)] hover:text-[var(--text)]")}>
                   {s === "buy" ? L("Acheter", "Buy") : L("Vendre", "Sell")}
                 </button>
@@ -128,13 +128,13 @@ export function OrderTicket({ symbol, initialSide, initialQty, onClose }: { symb
               <span className={k.sub}>{mode === "qty" ? L("Quantité", "Quantity") : L("Montant", "Amount")}</span>
               <div className="grid gap-1.5">
                 <div className="relative">
-                  <input value={input} onChange={(e) => setInput(e.target.value)} autoFocus inputMode="decimal" placeholder="0" className={cn(k.input, "pr-[84px] text-[15px] font-semibold")} />
-                  <button onClick={() => { setMode(mode === "qty" ? "eur" : "qty"); setInput(""); }} className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 px-2 rounded-md text-[11.5px] font-bold bg-[var(--chip)] text-[var(--text)]">{mode === "qty" ? L("Parts", "Shares") : "EUR"} ⇄</button>
+                  <input value={input} onChange={(e) => setInput(e.target.value)} autoFocus inputMode="decimal" placeholder="0" className={cn(k.input, "pr-[84px] text-[15px] font-bold")} />
+                  <button onClick={() => { setMode(mode === "qty" ? "eur" : "qty"); setInput(""); }} className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 px-2 rounded-md text-[11.5px] font-extrabold bg-[var(--chip)] text-[var(--text)]">{mode === "qty" ? L("Parts", "Shares") : "EUR"} ⇄</button>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {side === "sell" && held > 0
-                    ? [0.25, 0.5, 1].map((f) => <button key={f} onClick={() => { setMode("qty"); const v = held * f; setInput(String(acct.settings.fractions || inst.k === "crypto" ? +v.toFixed(6) : Math.max(1, Math.floor(v)))); }} className={cn("h-6 px-2 rounded-md text-[11.5px] font-semibold", k.chip)}>{f === 1 ? L("Tout", "All") : `${f * 100} %`}</button>)
-                    : [500, 1000, 5000].map((v) => <button key={v} onClick={() => { setMode("eur"); setInput(String(v)); }} className={cn("h-6 px-2 rounded-md text-[11.5px] font-semibold", k.chip)}>{F.eur(v, 0)}</button>)}
+                    ? [0.25, 0.5, 1].map((f) => <button key={f} onClick={() => { setMode("qty"); const v = held * f; setInput(String(acct.settings.fractions || inst.k === "crypto" ? +v.toFixed(6) : Math.max(1, Math.floor(v)))); }} className={cn("h-6 px-2 rounded-md text-[11.5px] font-bold", k.chip)}>{f === 1 ? L("Tout", "All") : `${f * 100} %`}</button>)
+                    : [500, 1000, 5000].map((v) => <button key={v} onClick={() => { setMode("eur"); setInput(String(v)); }} className={cn("h-6 px-2 rounded-md text-[11.5px] font-bold", k.chip)}>{F.eur(v, 0)}</button>)}
                   {mode === "eur" && qty > 0 && <span className={cn("ml-auto text-[12px] self-center", k.sub)}>= {fmtQty(qty)} {L("parts", "shares")}</span>}
                 </div>
               </div>
@@ -155,9 +155,9 @@ export function OrderTicket({ symbol, initialSide, initialQty, onClose }: { symb
           </div>
         ) : costs && q && rate ? (
           <div className="px-5 py-4 grid gap-3 text-[13.5px]">
-            <p className="text-[15px] font-bold">
+            <p className="text-[15px] font-extrabold">
               {side === "buy" ? L("Achat", "Buy") : L("Vente", "Sell")} {fmtQty(qty)} × {symbol} · {type === "MKT" ? L("au marché", "at market") : `${type === "LMT" ? L("limite", "limit") : "stop"} ${F.px(lim)} ${q.ccy}`}
-              {type !== "MKT" && <span className={cn("font-medium text-[13px]", k.sub)}> · {tif === "day" ? L("journalier", "day") : L("permanent", "GTC")}</span>}
+              {type !== "MKT" && <span className={cn("font-semibold text-[13px]", k.sub)}> · {tif === "day" ? L("journalier", "day") : L("permanent", "GTC")}</span>}
             </p>
             <div className="rounded-xl bg-[var(--panel2)] border border-[var(--line)] px-3.5 py-2.5">
               <Row l={L("Valeur", "Value")} v={F.money(costs.valueLocal, cashCcy(inst.c))} />

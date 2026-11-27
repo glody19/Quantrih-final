@@ -6,7 +6,7 @@
 import { describe, type Instrument, type Kind } from "./universe";
 
 export const STORE = "quantrih_paper_v3";
-export const THEME_KEY = "quantrih_paper_theme";
+export const THEME_KEY = "quantrih_paper_theme_v2";
 export const FAV_KEY = "quantrih_paper_favs";
 export const PENDING_MODEL = "quantrih_vp_pending_model";
 export const DEFAULT_FAVS = ["VWCE.DE", "IWDA.AS", "SXR8.DE", "ASML.AS", "MC.PA", "AAPL", "NVDA", "BTC-EUR"];
