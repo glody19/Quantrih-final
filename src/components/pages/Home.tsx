@@ -460,7 +460,7 @@ export function Home({ onGoPage }: { onGoPage: (id: string) => void }) {
           <SectionTitle
             dark
             text={fr ? "Commencez gratuitement, passez à la vitesse supérieure quand vous voulez." : "Start for free, step up whenever you want."}
-            sub={fr ? "Freemium pour découvrir. Premium et Pro pour enregistrer, comparer, analyser les fondamentaux et présenter vos rapports. Sans engagement, annulable à tout moment." : "Freemium to discover. Premium and Pro to save, compare, analyse fundamentals and present your reports. No commitment, cancel at any time."}
+            sub={fr ? "Freemium pour découvrir. Premium et Pro pour enregistrer, comparer et présenter vos rapports, Pro avec les états financiers. Sans engagement, annulable à tout moment." : "Freemium to discover. Premium and Pro to save, compare and present your reports, Pro with financial statements. No commitment, cancel at any time."}
           />
           <motion.button
             whileHover={{ scale: 1.03 }}

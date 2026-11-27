@@ -34,7 +34,7 @@ import { CostLab, type CostLabBase } from "../backtest/CostLab";
 import { AssetPicker, RunButton, toOptions, EuropeanSwitch } from "../ui/AllocationInputs";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
-import { usePlan, clampStartDate } from "../../lib/plans";
+import { usePlan, clampStartDate, PORTFOLIO_COLORS } from "../../lib/plans";
 import { summarizeResults } from "../../lib/savedSummary";
 import { usePendingLoad } from "../../lib/pendingLoad";
 import { PlanNotice, planMessages } from "../account/PlanNotice";
@@ -573,7 +573,7 @@ export function PortfolioBacktesting({
               )
             : new Date().getFullYear();
 
-        const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#3B6EA8"];
+        const colors = PORTFOLIO_COLORS;
         const color = colors[i % colors.length];
 
         const yearsInteger = Array.from(
@@ -703,7 +703,7 @@ export function PortfolioBacktesting({
     // Sort chronologically
     const sortedDates = Array.from(uniqueDates).sort();
 
-    const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#3B6EA8"];
+    const colors = PORTFOLIO_COLORS;
 
     return {
       labels: sortedDates,
@@ -734,7 +734,7 @@ export function PortfolioBacktesting({
     results.forEach((r) => r.dates.forEach((d) => uniqueDates.add(d)));
     const sortedDates = Array.from(uniqueDates).sort();
 
-    const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#3B6EA8"];
+    const colors = PORTFOLIO_COLORS;
     const bgColors = [
       "rgba(44, 108, 173, 0.2)",
       "rgba(234, 179, 8, 0.2)",

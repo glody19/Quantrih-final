@@ -60,7 +60,7 @@ import { AssetPicker, RunButton, toOptions, ShareLinkButton, EuropeanSwitch } fr
 import { consumeSharedFlag } from "../../lib/shareLink";
 import { TickerInput } from "../ui/TickerInput";
 import { CloudSaveLoad } from "../ui/CloudSaveLoad";
-import { usePlan, clampStartDate } from "../../lib/plans";
+import { usePlan, clampStartDate, PORTFOLIO_COLORS } from "../../lib/plans";
 import { summarizeResults } from "../../lib/savedSummary";
 import { usePendingLoad } from "../../lib/pendingLoad";
 import { PlanNotice, planMessages } from "../account/PlanNotice";
@@ -1089,7 +1089,7 @@ export function AssetAllocations({
     setIsRunning(true);
 
     try {
-      const colors = ["#2c6cad", "#1a467a", "#d97757", "#10b981"];
+      const colors = ["#2c6cad", "#1a467a", "#d97757", "#10b981", ...PORTFOLIO_COLORS.slice(4)];
       const enginePortfolios: any[] = [];
       // The plan caps how many portfolios one backtest compares
       const runCount = Math.min(portfolios.length, planLimits.maxPortfolios);
@@ -1172,7 +1172,7 @@ export function AssetAllocations({
               )
             : new Date().getFullYear();
 
-        const colors = ["#2c6cad", "#eab308", "#ef4444", "#10b981", "#3B6EA8"];
+        const colors = PORTFOLIO_COLORS;
         const color = colors[i % colors.length];
 
         const yearsInteger = Array.from(
