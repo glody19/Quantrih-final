@@ -11,7 +11,7 @@ const L = {
     saved: "Analyses enregistrées", pdf: "Rapports PDF", portfolios: "Portefeuilles par backtest", years: "Durée maximale d'un backtest", compare: "Portefeuilles comparés",
     branding: "Rapports à votre marque", white: "Marque blanche", csv: "Export CSV", notes: "Notes et étiquettes", unlimited: "Illimité", full: "Historique complet", yrs: "ans",
     admin: "Aperçu administrateur", adminLead: "Voir le site comme chaque formule. Visible uniquement par les administrateurs.",
-    fundamentals: "Analyse fondamentale", fundCore: "Essentielle", fundFull: "Complète",
+    fundamentals: "États financiers", fundCore: "Essentielle", fundFull: "10 ans",
     billing: "Abonnement et facturation", monthly: "Facturé chaque mois", yearly: "Facturé chaque année", renews: "Prochain renouvellement le {d}", ends: "Accès jusqu'au {d}, puis retour au Freemium",
     pastDue: "Le dernier paiement a échoué. Mettez à jour votre carte pour garder votre formule.",
     portal: "Factures et moyen de paiement", cancel: "Annuler l'abonnement", resume: "Reprendre l'abonnement",
@@ -24,7 +24,7 @@ const L = {
     saved: "Saved analyses", pdf: "PDF reports", portfolios: "Portfolios per backtest", years: "Longest backtest", compare: "Portfolios compared",
     branding: "Reports under your brand", white: "White label", csv: "CSV export", notes: "Notes and tags", unlimited: "Unlimited", full: "Full history", yrs: "years",
     admin: "Admin preview", adminLead: "See the site as each plan does. Visible to administrators only.",
-    fundamentals: "Fundamental analysis", fundCore: "Core", fundFull: "Complete",
+    fundamentals: "Financial statements", fundCore: "Core", fundFull: "10 years",
     billing: "Subscription and billing", monthly: "Billed monthly", yearly: "Billed yearly", renews: "Renews on {d}", ends: "Access until {d}, then back to Freemium",
     pastDue: "The last payment failed. Update your card to keep your plan.",
     portal: "Invoices and payment method", cancel: "Cancel subscription", resume: "Resume subscription",
@@ -70,7 +70,7 @@ export function PlanPanel({ plan, subscription, isAdmin, savedCount, uid, langua
     [l.white, lim.whiteLabel],
     [l.csv, lim.csv],
     [l.notes, lim.notes],
-    [l.fundamentals, lim.fundamentals === "full" ? l.fundFull : lim.fundamentals === "core" ? l.fundCore : false],
+    [l.fundamentals, lim.fundamentals === "full" ? l.fundFull : false],
   ];
 
   return (

@@ -37,9 +37,15 @@ export interface PlanLimits {
 
 export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
   free: { maxPortfolios: 3, maxYears: 20, pdfPerMonth: 1, branding: false, whiteLabel: false, maxSaved: 5, compareMax: 2, csv: false, notes: false, fundamentals: "none" },
-  premium: { maxPortfolios: 6, maxYears: Infinity, pdfPerMonth: 10, branding: true, whiteLabel: false, maxSaved: 100, compareMax: 4, csv: true, notes: true, fundamentals: "core" },
-  pro: { maxPortfolios: 10, maxYears: Infinity, pdfPerMonth: Infinity, branding: true, whiteLabel: true, maxSaved: Infinity, compareMax: 8, csv: true, notes: true, fundamentals: "full" },
+  premium: { maxPortfolios: 7, maxYears: Infinity, pdfPerMonth: 10, branding: true, whiteLabel: false, maxSaved: 100, compareMax: 4, csv: true, notes: true, fundamentals: "core" },
+  pro: { maxPortfolios: 15, maxYears: Infinity, pdfPerMonth: Infinity, branding: true, whiteLabel: true, maxSaved: Infinity, compareMax: 8, csv: true, notes: true, fundamentals: "full" },
 };
+
+/** Distinct line colours, enough for the largest plan (15 portfolios). */
+export const PORTFOLIO_COLORS = [
+  "#2c6cad", "#eab308", "#ef4444", "#10b981", "#8b5cf6", "#f97316", "#0f172a", "#ec4899",
+  "#14b8a6", "#a16207", "#64748b", "#84cc16", "#9f1239", "#06b6d4", "#1a467a",
+];
 
 export const PLAN_PRICES: Record<PlanId, { monthly: number; yearly: number }> = {
   free: { monthly: 0, yearly: 0 },

@@ -25,8 +25,8 @@ type PaidPlan = "premium" | "pro";
 type Interval = "month" | "year";
 
 const PRICES: Record<PaidPlan, { name: string; description: string; month: number; year: number }> = {
-  premium: { name: "Quantrih Premium", description: "6 portefeuilles par backtest, historique complet, 100 analyses enregistrées, 10 rapports PDF par mois.", month: 1500, year: 15000 },
-  pro: { name: "Quantrih Pro", description: "10 portefeuilles, analyses et rapports illimités, marque blanche, analyse fondamentale.", month: 4000, year: 40000 },
+  premium: { name: "Quantrih Premium", description: "7 portefeuilles par backtest, historique complet, 100 analyses enregistrées, 10 rapports PDF par mois.", month: 1500, year: 15000 },
+  pro: { name: "Quantrih Pro", description: "15 portefeuilles par backtest, analyses et rapports illimités, marque blanche, états financiers.", month: 4000, year: 40000 },
 };
 
 const lookupKey = (plan: PaidPlan, interval: Interval) => `quantrih_${plan}_${interval === "month" ? "monthly" : "yearly"}`;
