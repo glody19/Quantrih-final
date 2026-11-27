@@ -39,7 +39,7 @@ export function VirtualPortfolio() {
   const navigate = useNavigate();
 
   const [acct, setAcct] = useState<Account>(loadAccount);
-  const [dark, setDark] = useState<boolean>(() => readJson<string>(THEME_KEY, "dark") === "dark");
+  const [dark, setDark] = useState<boolean>(() => readJson<string>(THEME_KEY, "light") === "dark");
   const [favs, setFavs] = useState<string[]>(() => { const f = readJson<string[]>(FAV_KEY, DEFAULT_FAVS); return Array.isArray(f) ? f : DEFAULT_FAVS; });
   const [view, setView] = useState<View>(() => { try { return (sessionStorage.getItem("quantrih_paper_view") as View) || "portfolio"; } catch { return "portfolio"; } });
   const [product, setProduct] = useState<string | null>(null);
@@ -195,13 +195,13 @@ export function VirtualPortfolio() {
 
   return (
     <PaperCtx.Provider value={ctx}>
-      <div style={(dark ? PALETTE.dark : PALETTE.light) as React.CSSProperties} className="-mt-4 lg:-mt-6 min-h-screen bg-[var(--bg)] text-[var(--text)] transition-colors font-sans">
+      <div style={(dark ? PALETTE.dark : PALETTE.light) as React.CSSProperties} className="-mt-4 lg:-mt-6 min-h-screen bg-[var(--bg)] text-[var(--text)] transition-colors font-sans font-semibold">
         {/* ── top bar ── */}
         <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--panel)]/95 backdrop-blur">
           <div className="max-w-[1680px] mx-auto px-3 sm:px-5 h-14 flex items-center gap-4">
             <div className="flex items-baseline gap-2 mr-2 min-w-0">
-              <h1 className="text-[17px] !font-bold tracking-tight whitespace-nowrap">{L("Trading virtuel", "Paper trading")}</h1>
-              <span className="hidden sm:inline-flex h-5 px-1.5 rounded text-[10.5px] font-bold uppercase tracking-wider items-center bg-[var(--chip)] text-[var(--sub)]">{L("Simulation · EUR", "Simulation · EUR")}</span>
+              <h1 className="text-[17px] !font-extrabold tracking-tight whitespace-nowrap">{L("Trading virtuel", "Paper trading")}</h1>
+              <span className="hidden sm:inline-flex h-5 px-1.5 rounded text-[10.5px] font-extrabold uppercase tracking-wider items-center bg-[var(--chip)] text-[var(--sub)]">{L("Simulation · EUR", "Simulation · EUR")}</span>
             </div>
             <div className="hidden md:flex items-center gap-6 ml-auto text-[12.5px]">
               <span><span className={k.sub}>{L("Valeur totale", "Total value")} </span><b className="tabular-nums text-[14px]">{eur(head.total)}</b></span>
@@ -217,7 +217,7 @@ export function VirtualPortfolio() {
           {/* mobile nav */}
           <nav className="lg:hidden flex gap-1 overflow-x-auto px-3 pb-2">
             {nav.map((n) => (
-              <button key={n.id} onClick={() => ctx.go(n.id)} className={cn("shrink-0 h-9 px-3 rounded-lg inline-flex items-center gap-2 text-[13px] font-semibold", view === n.id ? "bg-[var(--chip)] text-[var(--text)]" : k.sub)}>{n.icon}{n.label}</button>
+              <button key={n.id} onClick={() => ctx.go(n.id)} className={cn("shrink-0 h-9 px-3 rounded-lg inline-flex items-center gap-2 text-[13px] font-bold", view === n.id ? "bg-[var(--chip)] text-[var(--text)]" : k.sub)}>{n.icon}{n.label}</button>
             ))}
           </nav>
         </header>
@@ -226,16 +226,16 @@ export function VirtualPortfolio() {
           {/* ── side nav ── */}
           <nav className="hidden lg:flex flex-col gap-0.5 self-start sticky top-[72px]">
             {nav.map((n) => (
-              <button key={n.id} onClick={() => ctx.go(n.id)} className={cn("relative h-11 px-3 rounded-lg flex items-center gap-3 text-[14px] font-semibold transition-colors text-left",
+              <button key={n.id} onClick={() => ctx.go(n.id)} className={cn("relative h-11 px-3 rounded-lg flex items-center gap-3 text-[14px] font-bold transition-colors text-left",
                 view === n.id ? "bg-[var(--panel)] text-[var(--text)] shadow-sm border border-[var(--line)]" : "text-[var(--sub)] hover:text-[var(--text)] hover:bg-[var(--hover)] border border-transparent")}>
                 {view === n.id && <motion.span layoutId="pt-nav" className="absolute left-0 top-2.5 bottom-2.5 w-[3px] rounded-r bg-[var(--accent)]" />}
                 {n.icon}<span className="flex-1">{n.label}</span>
-                {n.badge && <span className="min-w-5 h-5 px-1.5 rounded-full text-[11px] font-bold inline-flex items-center justify-center bg-[var(--accent)] text-white">{n.badge}</span>}
+                {n.badge && <span className="min-w-5 h-5 px-1.5 rounded-full text-[11px] font-extrabold inline-flex items-center justify-center bg-[var(--accent)] text-white">{n.badge}</span>}
               </button>
             ))}
             <div className="mt-4 px-3 grid gap-1 text-[12px]">
               <span className={k.sub}>{L("Barème", "Fees")}</span>
-              <button onClick={() => setSettingsOpen(true)} className="text-left font-semibold hover:text-[var(--accent)]">{FEE_PROFILES[acct.settings.fees][fr ? "fr" : "en"]}</button>
+              <button onClick={() => setSettingsOpen(true)} className="text-left font-bold hover:text-[var(--accent)]">{FEE_PROFILES[acct.settings.fees][fr ? "fr" : "en"]}</button>
               <span className={cn("mt-1", k.sub)}>{acct.settings.autoFx ? L("Conversion auto des devises", "Auto currency conversion") : L("Comptes en devises", "Currency accounts")}{acct.settings.tob ? L(" · TOB", " · TOB") : ""}</span>
             </div>
           </nav>
@@ -261,7 +261,7 @@ export function VirtualPortfolio() {
           {gate && !user && (
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} className="fixed z-[90] bottom-5 left-1/2 -translate-x-1/2 w-[min(92vw,420px)] rounded-xl border border-[var(--line2)] bg-[var(--panel)] shadow-2xl p-4">
               <button onClick={() => setGate(false)} className={cn("absolute right-3 top-3", k.sub)} aria-label="Close"><X size={16} /></button>
-              <p className="text-[14px] font-bold">{L("Créez un compte gratuit pour passer des ordres", "Create a free account to place orders")}</p>
+              <p className="text-[14px] font-extrabold">{L("Créez un compte gratuit pour passer des ordres", "Create a free account to place orders")}</p>
               <p className={cn("mt-1 text-[13px]", k.sub)}>{L("100 000 € virtuels, tous les marchés européens et américains, frais et change réalistes.", "€100,000 of virtual money, European and US markets, realistic fees and FX.")}</p>
               <button onClick={() => navigate("/auth?mode=signup")} className={cn(k.btn, "mt-3 w-full h-10 text-white bg-[var(--accent)] hover:bg-[var(--accent2)]")}>{L("Créer un compte", "Create an account")}</button>
             </motion.div>
@@ -297,10 +297,10 @@ function SettingsDialog({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-[85] flex items-center justify-center p-3" role="dialog" aria-modal="true">
       <motion.div className="absolute inset-0 bg-black/55" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
       <motion.div initial={{ opacity: 0, scale: 0.98, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} className="relative w-full max-w-[560px] max-h-[92vh] overflow-y-auto rounded-2xl border border-[var(--line2)] bg-[var(--panel)] text-[var(--text)] shadow-2xl">
-        <div className="flex items-center justify-between px-5 h-14 border-b border-[var(--line)]"><h2 className="text-[16px] !font-bold">{L("Paramètres du compte", "Account settings")}</h2><button onClick={onClose} className={k.sub} aria-label="Close"><X size={18} /></button></div>
+        <div className="flex items-center justify-between px-5 h-14 border-b border-[var(--line)]"><h2 className="text-[16px] !font-extrabold">{L("Paramètres du compte", "Account settings")}</h2><button onClick={onClose} className={k.sub} aria-label="Close"><X size={18} /></button></div>
         <div className="p-5 grid gap-5">
           <div>
-            <p className={cn("text-[12px] font-bold uppercase tracking-[0.08em] mb-2", k.sub)}>{L("Barème de frais", "Fee schedule")}</p>
+            <p className={cn("text-[12px] font-extrabold uppercase tracking-[0.08em] mb-2", k.sub)}>{L("Barème de frais", "Fee schedule")}</p>
             <div className="grid gap-1.5">
               {(Object.keys(FEE_PROFILES) as FeeProfile[]).map((id) => (
                 <label key={id} className={cn("flex items-start gap-3 rounded-lg border px-3 py-2.5 cursor-pointer", acct.settings.fees === id ? "border-[var(--accent)] bg-[var(--hover)]" : "border-[var(--line)]")}>
@@ -317,7 +317,7 @@ function SettingsDialog({ onClose }: { onClose: () => void }) {
             <Toggle on={acct.settings.priips} onChange={(v) => set({ priips: v })} title={L("Règle PRIIPs (Union européenne)", "PRIIPs rule (European Union)")} desc={L("Bloque l'achat des fonds américains sans document d'informations clés, comme un courtier européen.", "Blocks US funds without a key information document, as a European broker does.")} />
           </div>
           <div className="rounded-xl border border-[var(--line)] p-4">
-            <p className="text-[13.5px] font-bold">{L("Réinitialiser le compte", "Reset the account")}</p>
+            <p className="text-[13.5px] font-extrabold">{L("Réinitialiser le compte", "Reset the account")}</p>
             <p className={cn("text-[12.5px] mt-0.5", k.sub)}>{L("Efface positions, ordres, historique et versements programmés.", "Deletes positions, orders, history and recurring plans.")}</p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Seg value={String(start)} onChange={(v) => setStart(+v)} size="sm" options={[10_000, 50_000, 100_000, 250_000].map((v) => ({ id: String(v), label: v.toLocaleString(fr ? "fr-BE" : "en-IE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }) }))} />

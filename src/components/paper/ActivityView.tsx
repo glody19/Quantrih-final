@@ -39,14 +39,14 @@ export function OrdersView() {
                   <tr key={o.id} className="border-t border-[var(--line)]">
                     <td className={cn("px-4 py-2.5 tabular-nums", k.sub)}>{date(o.t)}</td>
                     <td className="px-4"><b>{o.symbol}</b><span className={cn("block text-[12px] truncate max-w-[220px]", k.sub)}>{o.name}</span></td>
-                    <td className={cn("px-4 font-bold", o.side === "buy" ? "text-[var(--accent)]" : "text-[var(--down)]")}>{o.side === "buy" ? L("Achat", "Buy") : L("Vente", "Sell")}</td>
+                    <td className={cn("px-4 font-extrabold", o.side === "buy" ? "text-[var(--accent)]" : "text-[var(--down)]")}>{o.side === "buy" ? L("Achat", "Buy") : L("Vente", "Sell")}</td>
                     <td className="px-4">{o.type === "LMT" ? L("Limite", "Limit") : "Stop loss"}</td>
                     <td className="text-right px-3 tabular-nums">{fmtQty(o.qty)}</td>
-                    <td className="text-right px-3 tabular-nums font-semibold">{F.px(o.price)} {o.ccy}</td>
+                    <td className="text-right px-3 tabular-nums font-bold">{F.px(o.price)} {o.ccy}</td>
                     <td className="text-right px-3 tabular-nums">{q ? F.px(q.price) : "-"}</td>
                     <td className={cn("text-right px-3 tabular-nums", k.sub)}>{dist != null ? F.pct(dist) : "-"}</td>
                     <td className="text-right px-3">{o.tif === "day" ? L("Journalier", "Day") : L("Permanent", "GTC")}</td>
-                    <td className="text-right px-4"><button onClick={() => P.setAcct((a) => ({ ...a, orders: a.orders.filter((x) => x.id !== o.id) }))} className={cn("h-7 px-2.5 rounded-md text-[12px] font-bold text-[var(--down)]", k.hover)}>{L("Annuler", "Cancel")}</button></td>
+                    <td className="text-right px-4"><button onClick={() => P.setAcct((a) => ({ ...a, orders: a.orders.filter((x) => x.id !== o.id) }))} className={cn("h-7 px-2.5 rounded-md text-[12px] font-extrabold text-[var(--down)]", k.hover)}>{L("Annuler", "Cancel")}</button></td>
                   </tr>
                 );
               })}
@@ -61,8 +61,8 @@ export function OrdersView() {
               {acct.trades.slice(0, 200).map((t) => (
                 <tr key={t.id} className="border-t border-[var(--line)]">
                   <td className={cn("px-4 py-2.5 tabular-nums", k.sub)}>{date(t.t)}</td>
-                  <td className="px-4"><div className="flex items-center gap-2.5"><Badge symbol={t.symbol} size={24} /><b>{t.symbol}</b>{t.type === "STRAT" && <span className={cn("text-[10.5px] font-bold px-1.5 py-0.5 rounded", k.chip)}>{L("STRATÉGIE", "STRATEGY")}</span>}</div></td>
-                  <td className={cn("px-4 font-bold", t.side === "buy" ? "text-[var(--accent)]" : "text-[var(--down)]")}>{t.side === "buy" ? L("Achat", "Buy") : L("Vente", "Sell")}</td>
+                  <td className="px-4"><div className="flex items-center gap-2.5"><Badge symbol={t.symbol} size={24} /><b>{t.symbol}</b>{t.type === "STRAT" && <span className={cn("text-[10.5px] font-extrabold px-1.5 py-0.5 rounded", k.chip)}>{L("STRATÉGIE", "STRATEGY")}</span>}</div></td>
+                  <td className={cn("px-4 font-extrabold", t.side === "buy" ? "text-[var(--accent)]" : "text-[var(--down)]")}>{t.side === "buy" ? L("Achat", "Buy") : L("Vente", "Sell")}</td>
                   <td className="text-right px-3 tabular-nums">{fmtQty(t.qty)}</td>
                   <td className="text-right px-3 tabular-nums">{F.px(t.price)} <span className={cn("text-[11px]", k.sub)}>{t.ccy}</span></td>
                   <td className={cn("text-right px-3 tabular-nums", k.sub)}>{t.rate === 1 ? "-" : t.rate.toFixed(4)}</td>
@@ -70,8 +70,8 @@ export function OrdersView() {
                   <td className="text-right px-3 tabular-nums">{F.eur(t.commission)}</td>
                   <td className="text-right px-3 tabular-nums">{t.fxFee ? F.eur(t.fxFee) : "-"}</td>
                   <td className="text-right px-3 tabular-nums">{t.tax ? F.eur(t.tax) : "-"}</td>
-                  <td className="text-right px-3 tabular-nums font-semibold">{F.eur(t.side === "buy" ? -t.totalEur : t.totalEur)}</td>
-                  <td className={cn("text-right px-3 tabular-nums font-semibold", t.realized != null && sign(t.realized))}>{t.realized != null ? F.signed(t.realized) : ""}</td>
+                  <td className="text-right px-3 tabular-nums font-bold">{F.eur(t.side === "buy" ? -t.totalEur : t.totalEur)}</td>
+                  <td className={cn("text-right px-3 tabular-nums font-bold", t.realized != null && sign(t.realized))}>{t.realized != null ? F.signed(t.realized) : ""}</td>
                 </tr>
               ))}
             </tbody>
@@ -108,10 +108,10 @@ export function CashView() {
     <div className="grid gap-4">
       <div className="grid gap-4 lg:grid-cols-3">
         <section className={cn(k.panel, "p-5")}>
-          <h2 className="text-[15px] !font-bold">{L("Soldes par devise", "Balances by currency")}</h2>
+          <h2 className="text-[15px] !font-extrabold">{L("Soldes par devise", "Balances by currency")}</h2>
           <ul className="mt-3 grid gap-2">
             {Object.entries(acct.cash).filter(([, v]) => Math.abs(v) > 0.005).map(([c, v]) => (
-              <li key={c} className="flex items-center gap-3 text-[14px]"><Badge symbol={c} size={28} /><b>{c}</b><span className="ml-auto tabular-nums font-semibold">{F.money(v, c)}</span>{c !== "EUR" && <span className={cn("text-[12px] tabular-nums w-24 text-right", k.sub)}>≈ {F.eur(v / (rates[c] || 1))}</span>}</li>
+              <li key={c} className="flex items-center gap-3 text-[14px]"><Badge symbol={c} size={28} /><b>{c}</b><span className="ml-auto tabular-nums font-bold">{F.money(v, c)}</span>{c !== "EUR" && <span className={cn("text-[12px] tabular-nums w-24 text-right", k.sub)}>≈ {F.eur(v / (rates[c] || 1))}</span>}</li>
             ))}
           </ul>
           <p className={cn("mt-4 text-[12.5px]", k.sub)}>{acct.settings.autoFx
@@ -120,17 +120,17 @@ export function CashView() {
         </section>
 
         <section className={cn(k.panel, "p-5")}>
-          <h2 className="text-[15px] !font-bold">{L("Change de devises", "Currency exchange")}</h2>
+          <h2 className="text-[15px] !font-extrabold">{L("Change de devises", "Currency exchange")}</h2>
           <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-end gap-2">
-            <label className="grid gap-1"><span className={cn("text-[12px] font-semibold", k.sub)}>{L("De", "From")}</span><select value={from} onChange={(e) => setFrom(e.target.value)} className={k.input}>{CCYS.map((c) => <option key={c}>{c}</option>)}</select></label>
+            <label className="grid gap-1"><span className={cn("text-[12px] font-bold", k.sub)}>{L("De", "From")}</span><select value={from} onChange={(e) => setFrom(e.target.value)} className={k.input}>{CCYS.map((c) => <option key={c}>{c}</option>)}</select></label>
             <button onClick={() => { setFrom(to); setTo(from); }} className={cn("h-10 px-2 rounded-lg", k.chip)} aria-label="Swap">⇄</button>
-            <label className="grid gap-1"><span className={cn("text-[12px] font-semibold", k.sub)}>{L("Vers", "To")}</span><select value={to} onChange={(e) => setTo(e.target.value)} className={k.input}>{CCYS.map((c) => <option key={c}>{c}</option>)}</select></label>
+            <label className="grid gap-1"><span className={cn("text-[12px] font-bold", k.sub)}>{L("Vers", "To")}</span><select value={to} onChange={(e) => setTo(e.target.value)} className={k.input}>{CCYS.map((c) => <option key={c}>{c}</option>)}</select></label>
           </div>
-          <label className="mt-2 grid gap-1"><span className={cn("text-[12px] font-semibold", k.sub)}>{L("Montant", "Amount")} ({from})</span><input value={amt} onChange={(e) => setAmt(e.target.value)} inputMode="decimal" className={k.input} /></label>
+          <label className="mt-2 grid gap-1"><span className={cn("text-[12px] font-bold", k.sub)}>{L("Montant", "Amount")} ({from})</span><input value={amt} onChange={(e) => setAmt(e.target.value)} inputMode="decimal" className={k.input} /></label>
           <div className="mt-2 text-[13px] grid gap-1">
             <div className="flex justify-between"><span className={k.sub}>{L("Taux", "Rate")} {from}/{to}</span><span className="tabular-nums">{rf && rt ? (rt / rf).toFixed(4) : "-"}</span></div>
             <div className="flex justify-between"><span className={k.sub}>{L("Frais de change", "FX fee")} ({(feePct * 100).toLocaleString(F.loc)} %)</span><span className="tabular-nums">{rf ? F.eur((a / rf) * feePct) : "-"}</span></div>
-            <div className="flex justify-between font-semibold"><span>{L("Vous recevez", "You receive")}</span><span className="tabular-nums">{F.money(received, to)}</span></div>
+            <div className="flex justify-between font-bold"><span>{L("Vous recevez", "You receive")}</span><span className="tabular-nums">{F.money(received, to)}</span></div>
           </div>
           {err && a > 0 && <p className="mt-2 text-[12.5px] text-[var(--down)]">{err}</p>}
           <button disabled={!!err || a <= 0} onClick={() => { if (!P.requireUser()) return; const n = convert(acct, from, to, a, rates); if (n) { P.setAcct(n); P.notify(L(`Change effectué : ${F.money(a, from)} → ${F.money(received, to)}`, `Exchanged ${F.money(a, from)} → ${F.money(received, to)}`)); } }}
@@ -138,7 +138,7 @@ export function CashView() {
         </section>
 
         <section className={cn(k.panel, "p-5")}>
-          <h2 className="text-[15px] !font-bold">{L("Déposer des fonds virtuels", "Deposit virtual funds")}</h2>
+          <h2 className="text-[15px] !font-extrabold">{L("Déposer des fonds virtuels", "Deposit virtual funds")}</h2>
           <p className={cn("mt-1 text-[12.5px]", k.sub)}>{L("Simule un virement depuis votre compte bancaire. Les dépôts sont exclus du calcul de performance.", "Simulates a bank transfer. Deposits are excluded from the performance calculation.")}</p>
           <div className="mt-3 flex gap-2">
             <div className="relative flex-1"><input value={dep} onChange={(e) => setDep(e.target.value)} inputMode="decimal" className={cn(k.input, "pr-8")} /><span className={cn("absolute right-3 top-1/2 -translate-y-1/2", k.sub)}>€</span></div>
@@ -153,7 +153,7 @@ export function CashView() {
 
       <section className={cn(k.panel, "overflow-hidden")}>
         <div className="flex flex-wrap items-center gap-3 px-5 py-3 border-b border-[var(--line)]">
-          <h2 className="text-[15px] !font-bold mr-auto">{L("Relevé de compte", "Account statement")}</h2>
+          <h2 className="text-[15px] !font-extrabold mr-auto">{L("Relevé de compte", "Account statement")}</h2>
           <Seg value={filter} onChange={setFilter} size="sm" options={[{ id: "all", label: L("Tout", "All") }, { id: "trades", label: L("Achats / ventes", "Trades") }, { id: "fees", label: L("Frais et taxes", "Fees and tax") }, { id: "fx", label: L("Change", "FX") }, { id: "deposit", label: L("Dépôts", "Deposits") }]} />
         </div>
         {moves.length === 0 ? <Empty>{L("Aucun mouvement.", "No movement.")}</Empty> : (
@@ -166,7 +166,7 @@ export function CashView() {
                     <td className={cn("px-5 py-2 tabular-nums whitespace-nowrap", k.sub)}>{new Date(m.t).toLocaleString(F.loc, { dateStyle: "short", timeStyle: "short" })}</td>
                     <td className="px-5">{P.fr ? m.desc : translateDesc(m.desc)}</td>
                     <td className={cn("px-5", k.sub)}>{m.ccy}</td>
-                    <td className={cn("text-right px-5 tabular-nums font-semibold", sign(m.amount))}>{m.amount > 0 ? "+" : ""}{F.money(m.amount, m.ccy)}</td>
+                    <td className={cn("text-right px-5 tabular-nums font-bold", sign(m.amount))}>{m.amount > 0 ? "+" : ""}{F.money(m.amount, m.ccy)}</td>
                   </tr>
                 ))}
               </tbody>

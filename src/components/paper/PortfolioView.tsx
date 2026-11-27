@@ -95,9 +95,9 @@ export function PortfolioView() {
       <div className={cn(k.panel, "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 divide-[var(--line)]")}>
         {stats.map((s, i) => (
           <motion.div key={s.l} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className={cn("px-5 py-4", i > 0 && "xl:border-l border-[var(--line)]")}>
-            <span className={cn("block text-[12px] font-semibold", k.sub)}>{s.l}</span>
+            <span className={cn("block text-[12px] font-bold", k.sub)}>{s.l}</span>
             <b className={cn("block tabular-nums mt-0.5", s.big ? "text-[24px] tracking-tight" : "text-[18px]", s.tone)}>{s.v}</b>
-            {s.sub && <span className={cn("text-[12.5px] font-semibold tabular-nums", s.tone)}>{s.sub}</span>}
+            {s.sub && <span className={cn("text-[12.5px] font-bold tabular-nums", s.tone)}>{s.sub}</span>}
           </motion.div>
         ))}
       </div>
@@ -106,7 +106,7 @@ export function PortfolioView() {
         {/* value over time */}
         <section className={cn(k.panel, "p-4")}>
           <div className="flex items-center justify-between gap-3 mb-2">
-            <h2 className="text-[15px] !font-bold">{L("Évolution du compte", "Account value")}</h2>
+            <h2 className="text-[15px] !font-extrabold">{L("Évolution du compte", "Account value")}</h2>
             <Seg value={range} onChange={setRange} size="sm" options={[{ id: "1M", label: "1M" }, { id: "3M", label: "3M" }, { id: "1Y", label: L("1A", "1Y") }, { id: "ALL", label: L("Tout", "All") }]} />
           </div>
           {hist.length < 2 ? <Empty>{L("La courbe se construit jour après jour : revenez demain pour voir l'évolution de votre compte.", "The curve builds day by day: come back tomorrow to see your account's progress.")}</Empty> : (
@@ -127,7 +127,7 @@ export function PortfolioView() {
         {/* breakdown */}
         <section className={cn(k.panel, "p-4")}>
           <div className="flex items-center justify-between gap-2 mb-1">
-            <h2 className="text-[15px] !font-bold">{L("Répartition", "Breakdown")}</h2>
+            <h2 className="text-[15px] !font-extrabold">{L("Répartition", "Breakdown")}</h2>
             <Seg value={split} onChange={setSplit} size="sm" options={[{ id: "cls", label: L("Classe", "Class") }, { id: "ccy", label: L("Devise", "Currency") }, { id: "region", label: L("Région", "Region") }]} />
           </div>
           <div className="grid grid-cols-[140px_1fr] items-center gap-3">
@@ -154,12 +154,12 @@ export function PortfolioView() {
       {/* positions */}
       <section className={cn(k.panel, "overflow-hidden")}>
         <div className="flex items-center justify-between px-5 h-12 border-b border-[var(--line)]">
-          <h2 className="text-[15px] !font-bold">{L("Positions", "Positions")} <span className={cn("ml-1 text-[12.5px]", k.sub)}>{pf.rows.length}</span></h2>
+          <h2 className="text-[15px] !font-extrabold">{L("Positions", "Positions")} <span className={cn("ml-1 text-[12.5px]", k.sub)}>{pf.rows.length}</span></h2>
           <button onClick={() => P.go("market")} className={cn(k.btn, "h-8 text-white bg-[var(--accent)] hover:bg-[var(--accent2)]")}>{L("Rechercher un produit", "Find a product")}</button>
         </div>
         {pf.rows.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-[15px] font-semibold">{L("Votre portefeuille est vide.", "Your portfolio is empty.")}</p>
+            <p className="text-[15px] font-bold">{L("Votre portefeuille est vide.", "Your portfolio is empty.")}</p>
             <p className={cn("mt-1 text-[13.5px]", k.sub)}>{L("Achetez un produit depuis la recherche, ou investissez d'un coup selon une stratégie d'allocation.", "Buy a product from search, or invest at once with an allocation strategy.")}</p>
             <div className="mt-4 flex justify-center gap-2">
               <button onClick={() => P.go("market")} className={cn(k.btn, k.chip)}>{L("Rechercher", "Search")}</button>
@@ -176,37 +176,37 @@ export function PortfolioView() {
               </tr></thead>
               {groups.map(([kind, rows]) => (
                 <tbody key={kind}>
-                  <tr><td colSpan={10} className={cn("px-5 pt-3 pb-1 text-[11.5px] font-bold uppercase tracking-[0.08em]", k.sub)}>{KIND_LABEL[kind][fr ? 0 : 1]}</td></tr>
+                  <tr><td colSpan={10} className={cn("px-5 pt-3 pb-1 text-[11.5px] font-extrabold uppercase tracking-[0.08em]", k.sub)}>{KIND_LABEL[kind][fr ? 0 : 1]}</td></tr>
                   {rows.map((r) => (
                     <tr key={r.s} className={cn("border-t border-[var(--line)] cursor-pointer", k.hover)} onClick={() => P.openProduct(r.s)}>
                       <td className="px-5 py-2.5"><div className="flex items-center gap-3 min-w-0"><Badge symbol={r.s} /><div className="min-w-0"><b className="block truncate max-w-[260px]">{r.name}</b><span className={cn("text-[12px]", k.sub)}>{r.s} · {r.x}</span></div></div></td>
                       <td className="text-right px-3 tabular-nums">{fmtQty(r.qty)}</td>
                       <td className="text-right px-3 tabular-nums">{r.price != null ? <>{F.px(r.price)} <span className={cn("text-[11px]", k.sub)}>{r.ccy}</span></> : "-"}</td>
-                      <td className={cn("text-right px-3 tabular-nums font-semibold", sign(r.pct || 0))}>{r.pct != null ? F.pct(r.pct) : "-"}</td>
+                      <td className={cn("text-right px-3 tabular-nums font-bold", sign(r.pct || 0))}>{r.pct != null ? F.pct(r.pct) : "-"}</td>
                       <td className="text-right px-3 tabular-nums">{F.px(r.avgLocal)}</td>
                       <td className="text-right px-3 tabular-nums">{F.money(r.valueLocal, cashCcy(r.ccy))}</td>
-                      <td className="text-right px-3 tabular-nums font-semibold">{F.eur(r.valueEur)}</td>
-                      <td className={cn("text-right px-3 tabular-nums font-semibold", sign(r.gain))}>{F.signed(r.gain)}<span className="block text-[11.5px]">{F.pct(r.gainPct)}</span></td>
+                      <td className="text-right px-3 tabular-nums font-bold">{F.eur(r.valueEur)}</td>
+                      <td className={cn("text-right px-3 tabular-nums font-bold", sign(r.gain))}>{F.signed(r.gain)}<span className="block text-[11.5px]">{F.pct(r.gainPct)}</span></td>
                       <td className="text-right px-3 tabular-nums">{F.num((r.valueEur / (pf.total || 1)) * 100, 1)} %</td>
                       <td className="text-right px-4 whitespace-nowrap">
-                        <button onClick={(e) => { e.stopPropagation(); P.openTicket(r.s, "buy"); }} className={cn("h-7 px-2.5 rounded-md text-[12px] font-bold text-[var(--accent)]", k.hover)}>{L("Acheter", "Buy")}</button>
-                        <button onClick={(e) => { e.stopPropagation(); P.openTicket(r.s, "sell", r.qty); }} className={cn("h-7 px-2.5 rounded-md text-[12px] font-bold text-[var(--down)]", k.hover)}>{L("Vendre", "Sell")}</button>
+                        <button onClick={(e) => { e.stopPropagation(); P.openTicket(r.s, "buy"); }} className={cn("h-7 px-2.5 rounded-md text-[12px] font-extrabold text-[var(--accent)]", k.hover)}>{L("Acheter", "Buy")}</button>
+                        <button onClick={(e) => { e.stopPropagation(); P.openTicket(r.s, "sell", r.qty); }} className={cn("h-7 px-2.5 rounded-md text-[12px] font-extrabold text-[var(--down)]", k.hover)}>{L("Vendre", "Sell")}</button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               ))}
               <tbody>
-                <tr><td colSpan={10} className={cn("px-5 pt-3 pb-1 text-[11.5px] font-bold uppercase tracking-[0.08em]", k.sub)}>{L("Espèces", "Cash")}</td></tr>
+                <tr><td colSpan={10} className={cn("px-5 pt-3 pb-1 text-[11.5px] font-extrabold uppercase tracking-[0.08em]", k.sub)}>{L("Espèces", "Cash")}</td></tr>
                 {Object.entries(acct.cash).filter(([, v]) => Math.abs(v) > 0.005).map(([c, v]) => (
                   <tr key={c} className="border-t border-[var(--line)]">
                     <td className="px-5 py-2.5"><div className="flex items-center gap-3"><Badge symbol={c} /><b>{L("Espèces", "Cash")} {c}</b></div></td>
                     <td colSpan={4} />
                     <td className="text-right px-3 tabular-nums">{F.money(v, c)}</td>
-                    <td className="text-right px-3 tabular-nums font-semibold">{F.eur(c === "EUR" ? v : v / (P.rateOf(c) || 1))}</td>
+                    <td className="text-right px-3 tabular-nums font-bold">{F.eur(c === "EUR" ? v : v / (P.rateOf(c) || 1))}</td>
                     <td />
                     <td className="text-right px-3 tabular-nums">{F.num(((c === "EUR" ? v : v / (P.rateOf(c) || 1)) / (pf.total || 1)) * 100, 1)} %</td>
-                    <td className="text-right px-4"><button onClick={() => P.go("cash")} className={cn("h-7 px-2.5 rounded-md text-[12px] font-bold", k.sub, k.hover)}>{L("Convertir", "Convert")}</button></td>
+                    <td className="text-right px-4"><button onClick={() => P.go("cash")} className={cn("h-7 px-2.5 rounded-md text-[12px] font-extrabold", k.sub, k.hover)}>{L("Convertir", "Convert")}</button></td>
                   </tr>
                 ))}
               </tbody>
